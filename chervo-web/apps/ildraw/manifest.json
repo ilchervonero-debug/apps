@@ -1,0 +1,19 @@
+{
+  "name": "iLDraw",
+  "short_name": "iLDraw",
+  "description": "Herramienta de dibujo técnico",
+  "start_url": "/apps/ildraw/",
+  "scope": "/apps/ildraw/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1c1c1e",
+  "orientation": "landscape-primary",
+  "icons": [
+    {
+      "src": "/apps/ildraw/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

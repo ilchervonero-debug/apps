@@ -1,0 +1,32 @@
+{
+  "_comment": "Respaldo del contenido de las bases de Notion (workspace bentancur) para migrar al workspace propio. Generado 2026-06-10.",
+  "servicios": [
+    { "Orden": 1,  "Nombre": "Dibujo 2D y 3D",        "Descripcion": "Plantas, cortes, vistas, modelado." },
+    { "Orden": 2,  "Nombre": "Intendencia & BPS",      "Descripcion": "Carpetas listas para presentar." },
+    { "Orden": 3,  "Nombre": "Declaraciones juradas",  "Descripcion": "Armado y gestión de DDJJ." },
+    { "Orden": 4,  "Nombre": "Renders",                "Descripcion": "Imágenes de presentación." },
+    { "Orden": 5,  "Nombre": "Drone",                  "Descripcion": "Fotos aéreas y registro de obra." },
+    { "Orden": 6,  "Nombre": "Edición de video",       "Descripcion": "Recorridos y video de obra." },
+    { "Orden": 7,  "Nombre": "Retoque fotográfico",    "Descripcion": "Post-producción y fotomontajes." },
+    { "Orden": 8,  "Nombre": "Documentación de obra",  "Descripcion": "Memoria, pliegos y avance." },
+    { "Orden": 9,  "Nombre": "Presupuestos",           "Descripcion": "Claros, ordenados, listos para firmar." },
+    { "Orden": 10, "Nombre": "Metrados",               "Descripcion": "Cómputo métrico por rubro." },
+    { "Orden": 11, "Nombre": "Asesorías",              "Descripcion": "Gestión y viabilidad de proyectos." },
+    { "Orden": 12, "Nombre": "Software remoto",        "Descripcion": "AutoCAD, Revit, SketchUp." }
+  ],
+  "clientes": [
+    { "Nombre": "Gerardo Neyra",        "Rol": "Arq." },
+    { "Nombre": "Victoria Silva Goñi",  "Rol": "Arq." },
+    { "Nombre": "José Miguel Entenza",  "Rol": "Arq." },
+    { "Nombre": "Karina Lucas",         "Rol": "Arq." },
+    { "Nombre": "Casariego Automóviles", "Rol": "" }
+  ],
+  "configuracion": [
+    { "Clave": "hero_palabras_rotativas", "Valor": "dibujo de planos,renders,retoque fotografico,fotos con drone,edicion de video,documentacion de obra,presupuestos,metrados,tramites municipales,declaraciones juradas,modelado 3D,asesorias" },
+    { "Clave": "whatsapp", "Valor": "+598 92 459 376" },
+    { "Clave": "email", "Valor": "ilchervonero@gmail.com" }
+  ],
+  "aplicaciones": [
+    { "Orden": 1, "Nombre": "iLDraw", "Descripcion": "Pizarra de dibujo online para bocetar ideas y croquis", "URL": "https://ilchervo.com/apps/ildraw/", "Icono": "✏️", "Activo": true }
+  ]
+}
