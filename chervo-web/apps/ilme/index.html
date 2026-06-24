@@ -65,7 +65,7 @@
     border-radius:6px;cursor:pointer;color:var(--tinta);
   }
   .cal-dia.otro{color:#C2C2BE}
-  .cal-dia.hoy{border:2px solid var(--rojo);color:var(--rojo);background:transparent;font-weight:600}
+  .cal-dia.hoy{background:var(--rojo);color:#fff;font-weight:600}
   .cal-dia.sel:not(.hoy){background:var(--fondo-2)}
   .cal-dia .pts{position:absolute;bottom:2px;left:0;right:0;display:flex;gap:2px;justify-content:center}
   .cal-dia .pt{width:3.5px;height:3.5px;border-radius:1px;background:var(--gris)}
@@ -102,6 +102,7 @@
   .dtab.sel{background:var(--rojo)}
   .dtab.sel .d{color:#aaa}
   .dtab.sel .n{color:#fff}
+  .dtab.hoy{border:2px solid var(--rojo)}
   .dtab.hoy:not(.sel) .n{color:var(--rojo)}
   .dtab .sqs{display:flex;gap:2px;justify-content:center;margin-top:4px;min-height:6px;flex-wrap:wrap;padding:0 2px}
   .sq{width:6px;height:6px;border-radius:1.5px;flex-shrink:0}
