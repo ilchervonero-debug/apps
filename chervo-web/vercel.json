@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/ilframe/:path*",
-      "destination": "/ilframe/:path*"
+      "destination": "/ilframe/index.html"
     }
   ]
 }
