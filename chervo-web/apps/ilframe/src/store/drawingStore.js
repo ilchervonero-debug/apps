@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 const SNAP      = 100
 const DEFAULT_H = 3000
@@ -30,7 +31,7 @@ function interpH(profile, t) {
   return Math.round(left.h + (right.h - left.h) * ((t - left.t) / (right.t - left.t)))
 }
 
-function makeElement(id, points, length) {
+function makeElement(id, points, length, componentId = null) {
   return {
     id,
     type:             'line',
@@ -38,138 +39,159 @@ function makeElement(id, points, length) {
     properties:       { length, height: DEFAULT_H },
     elevationProfile: defaultProfile(DEFAULT_H),
     connections:      [],
+    componentId,
   }
 }
 
-export const useDrawingStore = create((set, get) => ({
-  elements:        [],
-  selectedId:      null,
-  selectedElement: null,
-  activeTool:      'line',
-  currentPoints:   [],
-  snapPos:         [0, 0],
-  activeCanvas:    'plan',   // 'plan' | 'elevation'
+export const useDrawingStore = create(
+  persist(
+    (set, get) => ({
+      elements:          [],
+      selectedId:        null,
+      selectedElement:   null,
+      activeTool:        'line',
+      currentPoints:     [],
+      snapPos:           [0, 0],
+      activeCanvas:      'plan',
+      activeComponentId: null,
 
-  setSnapPos:      (pos)    => set({ snapPos: pos }),
-  setActiveTool:   (tool)   => set({ activeTool: tool }),
-  setActiveCanvas: (canvas) => set({ activeCanvas: canvas }),
+      setSnapPos:           (pos)    => set({ snapPos: pos }),
+      setActiveTool:        (tool)   => set({ activeTool: tool }),
+      setActiveCanvas:      (canvas) => set({ activeCanvas: canvas }),
+      setActiveComponentId: (id)     => set({ activeComponentId: id }),
 
-  addPoint: (rawPoint) => {
-    const state = get()
-    const pt  = [Math.round(rawPoint[0] / SNAP) * SNAP, Math.round(rawPoint[1] / SNAP) * SNAP]
-    const pts = [...state.currentPoints, pt]
+      addPoint: (rawPoint) => {
+        const state = get()
+        const pt  = [Math.round(rawPoint[0] / SNAP) * SNAP, Math.round(rawPoint[1] / SNAP) * SNAP]
+        const pts = [...state.currentPoints, pt]
 
-    if (state.activeTool === 'line' && pts.length === 2) {
-      const len = dist(pts[0], pts[1])
-      if (len < SNAP) return
-      set({ elements: [...state.elements, makeElement(wallId(state.elements), pts, len)], currentPoints: [] })
-      return
-    }
-    set({ currentPoints: pts })
-  },
-
-  finishDrawing: () => {
-    const { currentPoints, elements } = get()
-    if (currentPoints.length < 2) { set({ currentPoints: [] }); return }
-    const len = dist(currentPoints[0], currentPoints[currentPoints.length - 1])
-    set({ elements: [...elements, makeElement(wallId(elements), currentPoints, len)], currentPoints: [] })
-  },
-
-  finishLineWithLength: (start, direction, length) => {
-    const { elements } = get()
-    const dx = direction[0] - start[0], dy = direction[1] - start[1]
-    const d  = Math.sqrt(dx * dx + dy * dy)
-    const end = [Math.round(start[0] + (d > 0 ? dx / d : 1) * length), Math.round(start[1] + (d > 0 ? dy / d : 0) * length)]
-    set({ elements: [...elements, makeElement(wallId(elements), [start, end], length)], currentPoints: [] })
-  },
-
-  cancelDrawing: () => set({ currentPoints: [] }),
-
-  // ── Element ──────────────────────────────────────────────────────────────
-
-  updateElement: (id, updates) => {
-    set(state => {
-      const elements = state.elements.map(el => {
-        if (el.id !== id) return el
-        const updated = { ...el, ...updates }
-        // Sync profile endpoints if base height changes
-        if (updates.properties?.height !== undefined) {
-          const h = updates.properties.height
-          updated.elevationProfile = (updated.elevationProfile || defaultProfile()).map(n =>
-            (n.t === 0 || n.t === 1) ? { ...n, h } : n
-          )
+        if (state.activeTool === 'line' && pts.length === 2) {
+          const len = dist(pts[0], pts[1])
+          if (len < SNAP) return
+          set({
+            elements: [...state.elements, makeElement(wallId(state.elements), pts, len, state.activeComponentId)],
+            currentPoints: [],
+          })
+          return
         }
-        return updated
-      })
-      return { elements, selectedElement: _syncSelected(state, id, elements) }
-    })
-  },
+        set({ currentPoints: pts })
+      },
 
-  deleteElement: (id) => {
-    set(state => ({
-      elements:        state.elements.filter(el => el.id !== id),
-      selectedId:      state.selectedId === id ? null : state.selectedId,
-      selectedElement: state.selectedId === id ? null : state.selectedElement,
-    }))
-  },
+      finishDrawing: () => {
+        const { currentPoints, elements, activeComponentId } = get()
+        if (currentPoints.length < 2) { set({ currentPoints: [] }); return }
+        const len = dist(currentPoints[0], currentPoints[currentPoints.length - 1])
+        set({
+          elements: [...elements, makeElement(wallId(elements), currentPoints, len, activeComponentId)],
+          currentPoints: [],
+        })
+      },
 
-  selectElement: (id) => {
-    set(state => ({
-      selectedId:      id,
-      selectedElement: state.elements.find(el => el.id === id) ?? null,
-    }))
-  },
+      finishLineWithLength: (start, direction, length) => {
+        const { elements, activeComponentId } = get()
+        const dx = direction[0] - start[0], dy = direction[1] - start[1]
+        const d  = Math.sqrt(dx * dx + dy * dy)
+        const end = [
+          Math.round(start[0] + (d > 0 ? dx / d : 1) * length),
+          Math.round(start[1] + (d > 0 ? dy / d : 0) * length),
+        ]
+        set({
+          elements: [...elements, makeElement(wallId(elements), [start, end], length, activeComponentId)],
+          currentPoints: [],
+        })
+      },
 
-  deselectElement: () => set({ selectedId: null, selectedElement: null }),
+      cancelDrawing: () => set({ currentPoints: [] }),
 
-  // ── Elevation profile ────────────────────────────────────────────────────
+      // ── Element ──────────────────────────────────────────────────────────────
 
-  // Update height of a profile node by its index in the sorted array
-  updateProfileNode: (id, index, h) => {
-    set(state => {
-      const elements = state.elements.map(el => {
-        if (el.id !== id) return el
-        const profile = [...(el.elevationProfile || defaultProfile())]
-        if (index < 0 || index >= profile.length) return el
-        profile[index] = { ...profile[index], h: Math.max(300, Math.min(10000, Math.round(h))) }
-        return { ...el, elevationProfile: profile }
-      })
-      return { elements, selectedElement: _syncSelected(state, id, elements) }
-    })
-  },
+      updateElement: (id, updates) => {
+        set(state => {
+          const elements = state.elements.map(el => {
+            if (el.id !== id) return el
+            const updated = { ...el, ...updates }
+            if (updates.properties?.height !== undefined) {
+              const h = updates.properties.height
+              updated.elevationProfile = (updated.elevationProfile || defaultProfile()).map(n =>
+                (n.t === 0 || n.t === 1) ? { ...n, h } : n
+              )
+            }
+            return updated
+          })
+          return { elements, selectedElement: _syncSelected(state, id, elements) }
+        })
+      },
 
-  // Add an interior node at position t (0..1), skip if one exists nearby
-  addProfileNode: (id, t) => {
-    set(state => {
-      const el = state.elements.find(e => e.id === id)
-      if (!el) return state
-      const profile = el.elevationProfile || defaultProfile()
-      if (profile.some(n => Math.abs(n.t - t) < 0.02)) return state   // already exists
-      const newH    = interpH(profile, t)
-      const newProf = [...profile, { t, h: newH }].sort((a, b) => a.t - b.t)
-      const elements = state.elements.map(e => e.id === id ? { ...e, elevationProfile: newProf } : e)
-      return { elements, selectedElement: _syncSelected(state, id, elements) }
-    })
-  },
+      deleteElement: (id) => {
+        set(state => ({
+          elements:        state.elements.filter(el => el.id !== id),
+          selectedId:      state.selectedId === id ? null : state.selectedId,
+          selectedElement: state.selectedId === id ? null : state.selectedElement,
+        }))
+      },
 
-  // Remove a profile node by index (endpoints t=0 / t=1 are protected)
-  removeProfileNode: (id, index) => {
-    set(state => {
-      const el = state.elements.find(e => e.id === id)
-      if (!el) return state
-      const profile = el.elevationProfile || defaultProfile()
-      const node = profile[index]
-      if (!node || node.t === 0 || node.t === 1) return state
-      const newProf  = profile.filter((_, i) => i !== index)
-      const elements = state.elements.map(e => e.id === id ? { ...e, elevationProfile: newProf } : e)
-      return { elements, selectedElement: _syncSelected(state, id, elements) }
-    })
-  },
+      selectElement: (id) => {
+        set(state => ({
+          selectedId:      id,
+          selectedElement: state.elements.find(el => el.id === id) ?? null,
+        }))
+      },
 
-  clearAll: () => set({ elements: [], selectedId: null, selectedElement: null, currentPoints: [] }),
-}))
+      deselectElement: () => set({ selectedId: null, selectedElement: null }),
 
-// Helper: keep selectedElement in sync after an elements update
+      // ── Elevation profile ────────────────────────────────────────────────────
+
+      updateProfileNode: (id, index, h) => {
+        set(state => {
+          const elements = state.elements.map(el => {
+            if (el.id !== id) return el
+            const profile = [...(el.elevationProfile || defaultProfile())]
+            if (index < 0 || index >= profile.length) return el
+            profile[index] = { ...profile[index], h: Math.max(300, Math.min(10000, Math.round(h))) }
+            return { ...el, elevationProfile: profile }
+          })
+          return { elements, selectedElement: _syncSelected(state, id, elements) }
+        })
+      },
+
+      addProfileNode: (id, t) => {
+        set(state => {
+          const el = state.elements.find(e => e.id === id)
+          if (!el) return state
+          const profile = el.elevationProfile || defaultProfile()
+          if (profile.some(n => Math.abs(n.t - t) < 0.02)) return state
+          const newH    = interpH(profile, t)
+          const newProf = [...profile, { t, h: newH }].sort((a, b) => a.t - b.t)
+          const elements = state.elements.map(e => e.id === id ? { ...e, elevationProfile: newProf } : e)
+          return { elements, selectedElement: _syncSelected(state, id, elements) }
+        })
+      },
+
+      removeProfileNode: (id, index) => {
+        set(state => {
+          const el = state.elements.find(e => e.id === id)
+          if (!el) return state
+          const profile = el.elevationProfile || defaultProfile()
+          const node = profile[index]
+          if (!node || node.t === 0 || node.t === 1) return state
+          const newProf  = profile.filter((_, i) => i !== index)
+          const elements = state.elements.map(e => e.id === id ? { ...e, elevationProfile: newProf } : e)
+          return { elements, selectedElement: _syncSelected(state, id, elements) }
+        })
+      },
+
+      clearAll: () => set({ elements: [], selectedId: null, selectedElement: null, currentPoints: [] }),
+
+      clearComponent: (componentId) => set(state => ({
+        elements:        state.elements.filter(el => el.componentId !== componentId),
+        selectedId:      null,
+        selectedElement: null,
+      })),
+    }),
+    { name: 'ilframe-drawing-v1' }
+  )
+)
+
 function _syncSelected(state, id, elements) {
   return state.selectedId === id
     ? (elements.find(el => el.id === id) ?? null)
