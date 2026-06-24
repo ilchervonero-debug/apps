@@ -96,14 +96,16 @@
   .dtab{
     flex:1;border:none;background:none;font-family:inherit;cursor:pointer;
     padding:6px 0 5px;border-radius:10px;text-align:center;color:var(--gris);
+    transition:all .3s cubic-bezier(.2,.7,.2,1);
   }
   .dtab .d{display:block;font-size:.58rem;text-transform:uppercase;letter-spacing:.06em}
-  .dtab .n{display:block;font-size:.92rem;font-weight:600;margin-top:1px;color:var(--tinta)}
-  .dtab.sel{background:var(--rojo)}
+  .dtab .n{display:block;font-size:.92rem;font-weight:600;margin-top:1px;color:var(--tinta);transition:color .3s cubic-bezier(.2,.7,.2,1)}
+  .dtab.sel{background:var(--rojo);transform:scale(1.08)}
   .dtab.sel .d{color:#aaa}
   .dtab.sel .n{color:#fff}
   .dtab.hoy{border:2px solid var(--rojo)}
   .dtab.hoy:not(.sel) .n{color:var(--rojo)}
+  .dtab:active{transform:scale(.95)}
   .dtab .sqs{display:flex;gap:2px;justify-content:center;margin-top:4px;min-height:6px;flex-wrap:wrap;padding:0 2px}
   .sq{width:6px;height:6px;border-radius:1.5px;flex-shrink:0}
   .sq.tarea{background:var(--rojo)}
@@ -543,9 +545,14 @@ function pintarStrip(){
     if(x0===null) return;
     const dx=e.changedTouches[0].clientX-x0; x0=null;
     if(Math.abs(dx)<40) return;
+    FX.toggle();
     sel=addDias(sel,dx<0?1:-1);
     mesVista=new Date(sel.getFullYear(),sel.getMonth(),1);
     pintarTodo();
+    setTimeout(()=>{
+      const botonSel=zona.querySelector('.dtab.sel');
+      if(botonSel) botonSel.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    },0);
   },{passive:true});
 })();
 
