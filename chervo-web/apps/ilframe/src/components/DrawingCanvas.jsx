@@ -29,34 +29,32 @@ export default function DrawingCanvas() {
     drawView(planRef.current, 'plan', elements, selectedId, currentPoints, mousePos)
   }, [elements, selectedId, currentPoints, mousePos])
 
-  const handleMouseDown = (e) => {
-    if (e.target === dividerRef.current || e.target.closest('.divider')) {
-      setIsDragging(true)
-      e.preventDefault()
-    }
-  }
+  const getClientY = (e) => e.touches ? e.touches[0].clientY : e.clientY
 
-  const handleMouseMove = (e) => {
-    if (isDragging) {
-      const container = dividerRef.current.parentElement
-      const rect = container.getBoundingClientRect()
-      const newHeight = ((e.clientY - rect.top) / rect.height) * 100
-      setElevationHeight(newHeight)
-    }
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
+  const handleDividerStart = (e) => {
+    setIsDragging(true)
+    e.preventDefault()
   }
 
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove)
-      window.addEventListener('mouseup', handleMouseUp)
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove)
-        window.removeEventListener('mouseup', handleMouseUp)
-      }
+    if (!isDragging) return
+    const handleMove = (e) => {
+      const container = dividerRef.current.parentElement
+      const rect = container.getBoundingClientRect()
+      const clientY = getClientY(e)
+      const newHeight = Math.min(80, Math.max(20, ((clientY - rect.top) / rect.height) * 100))
+      setElevationHeight(newHeight)
+    }
+    const handleUp = () => setIsDragging(false)
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('mouseup', handleUp)
+    window.addEventListener('touchmove', handleMove, { passive: false })
+    window.addEventListener('touchend', handleUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('mouseup', handleUp)
+      window.removeEventListener('touchmove', handleMove)
+      window.removeEventListener('touchend', handleUp)
     }
   }, [isDragging])
 
@@ -85,14 +83,21 @@ export default function DrawingCanvas() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [drawingView])
 
+  const getSvgCoords = (e, svg) => {
+    const rect = svg.getBoundingClientRect()
+    const touch = e.changedTouches?.[0] || e.touches?.[0]
+    const clientX = touch ? touch.clientX : e.clientX
+    const clientY = touch ? touch.clientY : e.clientY
+    return [
+      (clientX - rect.left) / (rect.width / 1000) * SCALE,
+      (clientY - rect.top) / (rect.height / 400) * SCALE,
+    ]
+  }
+
   const handleCanvasClick = (e, view) => {
     const svg = view === 'elevation' ? elevationRef.current : planRef.current
     if (!svg) return
-
-    const rect = svg.getBoundingClientRect()
-    const svgX = (e.clientX - rect.left) / (rect.width / 1000) * SCALE
-    const svgY = (e.clientY - rect.top) / (rect.height / 400) * SCALE
-
+    const [svgX, svgY] = getSvgCoords(e, svg)
     if (activeTool && ['line', 'polyline', 'door', 'window'].includes(activeTool)) {
       setDrawingView(view)
       addPoint([svgX, svgY])
@@ -102,9 +107,7 @@ export default function DrawingCanvas() {
   const handleCanvasMouseMove = (e, view) => {
     const svg = view === 'elevation' ? elevationRef.current : planRef.current
     if (!svg) return
-    const rect = svg.getBoundingClientRect()
-    const x = (e.clientX - rect.left) / (rect.width / 1000) * SCALE
-    const y = (e.clientY - rect.top) / (rect.height / 400) * SCALE
+    const [x, y] = getSvgCoords(e, svg)
     setMousePos([x, y])
   }
 
@@ -117,14 +120,17 @@ export default function DrawingCanvas() {
           className="canvas-svg"
           viewBox="0 0 1000 400"
           onClick={(e) => handleCanvasClick(e, 'elevation')}
+          onTouchEnd={(e) => { e.preventDefault(); handleCanvasClick(e, 'elevation') }}
           onMouseMove={(e) => handleCanvasMouseMove(e, 'elevation')}
+          onTouchMove={(e) => handleCanvasMouseMove(e, 'elevation')}
         />
       </div>
 
       <div
         ref={dividerRef}
         className={`canvas-divider ${isDragging ? 'dragging' : ''}`}
-        onMouseDown={handleMouseDown}
+        onMouseDown={handleDividerStart}
+        onTouchStart={handleDividerStart}
       >
         <div className="divider-handle"></div>
       </div>
@@ -136,7 +142,9 @@ export default function DrawingCanvas() {
           className="canvas-svg"
           viewBox="0 0 1000 400"
           onClick={(e) => handleCanvasClick(e, 'plan')}
+          onTouchEnd={(e) => { e.preventDefault(); handleCanvasClick(e, 'plan') }}
           onMouseMove={(e) => handleCanvasMouseMove(e, 'plan')}
+          onTouchMove={(e) => handleCanvasMouseMove(e, 'plan')}
         />
       </div>
     </div>
