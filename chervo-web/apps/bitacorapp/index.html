@@ -624,13 +624,11 @@ auth.onAuthStateChanged(user => {
 async function loginConGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-            await auth.signInWithRedirect(provider);
-        } else {
-            await auth.signInWithPopup(provider);
-        }
+        await auth.signInWithPopup(provider);
     } catch(e) {
-        toast('Error al iniciar sesión', 'err');
+        if (e.code !== 'auth/popup-closed-by-user') {
+            toast('Error al iniciar sesión: ' + e.code, 'err');
+        }
     }
 }
 
