@@ -177,13 +177,13 @@
   .rec-hora{font-size:.7rem;color:var(--gris);font-family:'Geist Mono',monospace;margin-top:2px}
 
   /* ── Captura ── */
-  .captura{
+  .captura{z-index:100;
     position:fixed;left:0;right:0;bottom:0;
     background:var(--fondo);border-top:1px solid var(--linea);
     padding:10px 12px calc(10px + env(safe-area-inset-bottom));
   }
   .cap-tipos{display:flex;gap:4px;margin-bottom:8px}
-  .tipo{
+  .tipo{background:var(--fondo-2) !important;
     border:none;font-family:inherit;font-size:.72rem;cursor:pointer;
     padding:5px 12px;border-radius:99px;background:var(--fondo-2);color:var(--gris);
   }
