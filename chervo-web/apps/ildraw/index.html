@@ -512,7 +512,7 @@ function drawDim2Obj(obj){
   const mx=(sA.x+sB.x)/2,my=(sA.y+sB.y)/2;
   const fs=Math.max(6,(obj.fontSize||10)*vpZ);
   ctx.font=`600 ${fs}px -apple-system,sans-serif`;
-  const off=fs+6;
+  const off=fs/2+2;
   const ox=Math.cos(ang+Math.PI/2)*off,oy=Math.sin(ang+Math.PI/2)*off;
   let textAng=ang;
   if(textAng>Math.PI/2||textAng<-Math.PI/2) textAng+=Math.PI;
