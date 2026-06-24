@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iLFrame</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: white;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      background: white;
+      border-bottom: 1px solid #ccc;
+      padding: 16px 24px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .header-app {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .header-app-il {
+      color: #fe0000;
+    }
+
+    .header-app-frame {
+      color: #888;
+    }
+
+    .header-project {
+      font-size: 13px;
+      color: #888;
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      width: 56px;
+      height: 56px;
+      border: none;
+      background: none;
+      color: #fe0000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .action-btn:hover {
+      background: #f5f5f5;
+      border-radius: 6px;
+    }
+
+    .action-btn svg {
+      width: 32px;
+      height: 32px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tabs-left {
+      background: #f5f5f5;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      width: 12px;
+      border-right: 1px solid #ddd;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: #f5f5f5;
+      color: #999;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tab-btn.active {
+      background: #ddd;
+      color: #666;
+    }
+
+    .canvas-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .canvas-view {
+      flex: 1;
+      overflow: auto;
+      background: white;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .canvas-view:last-of-type {
+      border-bottom: none;
+    }
+
+    .canvas-view svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      min-width: 100%;
+      min-height: 100%;
+    }
+
+    .tools-float {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      width: 56px;
+      height: 56px;
+      background: #fe0000;
+      border: none;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(254,0,0,0.25);
+      color: white;
+    }
+
+    .tools-float:hover {
+      background: #e60000;
+    }
+
+    .tools-float svg {
+      width: 32px;
+      height: 32px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .tools-panel {
+      position: absolute;
+      bottom: 80px;
+      right: 16px;
+      width: 56px;
+      background: #fe0000;
+      border-radius: 8px;
+      padding: 4px 0;
+      z-index: 100;
+      max-height: 300px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 12px rgba(254,0,0,0.25);
+    }
+
+    .tools-panel.hidden {
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .tool-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      color: white;
+      border: none;
+      background: none;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .tool-btn:hover {
+      background: rgba(0,0,0,0.15);
+    }
+
+    .tool-btn.active {
+      background: rgba(0,0,0,0.3);
+    }
+
+    .tool-btn svg {
+      width: 32px;
+      height: 32px;
+      stroke: white;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .tool-btn.point svg {
+      fill: white;
+    }
+
+    .command-line {
+      background: white;
+      border-top: 1px solid #ccc;
+      padding: 12px 24px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .cmd-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .cmd-tab {
+      padding: 8px 14px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      background: white;
+      color: #999;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 12px;
+    }
+
+    .cmd-tab.active {
+      border-color: #fe0000;
+      background: #fe0000;
+      color: white;
+    }
+
+    .cmd-element {
+      font-weight: 700;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .cmd-separator {
+      color: #bbb;
+    }
+
+    .cmd-name {
+      color: #888;
+      font-size: 12px;
+    }
+
+    .cmd-input {
+      padding: 8px 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 12px;
+      width: 16ch;
+    }
+
+    .cmd-input:focus {
+      outline: none;
+      border-color: #fe0000;
+    }
+
+    .cmd-submit {
+      margin-left: auto;
+      padding: 10px 24px;
+      background: #fe0000;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .cmd-submit:hover {
+      background: #e60000;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .reticulado-panel {
+      position: absolute;
+      bottom: 80px;
+      left: 16px;
+      width: 280px;
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      border: 1px solid #ddd;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .reticulado-panel.hidden {
+      display: none;
+    }
+
+    .reticulado-header {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fe0000;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .reticulado-section {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .reticulado-section label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="header-left">
+        <div class="header-app"><span class="header-app-il">iL</span><span class="header-app-frame">Frame</span></div>
+        <div class="header-project">Mi Proyecto</div>
+      </div>
+      <div class="header-actions">
+        <button class="action-btn" title="Guardar">
+          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </button>
+        <button class="action-btn" title="Cargar">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="tabs-left">
+        <button class="tab-btn active">A</button>
+        <button class="tab-btn">P</button>
+      </div>
+
+      <div class="canvas-area">
+        <div class="canvas-view" id="elevationView">
+          <svg viewBox="0 0 1000 400"><defs><pattern id="grid-e" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="#f5f5f5" stroke-width="0.5"/></pattern></defs><rect width="1000" height="400" fill="url(#grid-e)"/><line x1="50" y1="350" x2="950" y2="350" stroke="#fe0000" stroke-width="1" opacity="0.4"/><line x1="50" y1="350" x2="50" y2="50" stroke="#fe0000" stroke-width="1" opacity="0.4"/><text x="960" y="368" font-size="12" font-weight="bold" fill="#fe0000">X</text><text x="20" y="45" font-size="12" font-weight="bold" fill="#fe0000">Z</text><rect x="50" y="50" width="900" height="300" fill="none" stroke="#333" stroke-width="2"/></svg>
+        </div>
+
+        <div class="canvas-view" id="planView">
+          <svg viewBox="0 0 1000 400"><defs><pattern id="grid-p" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="#f5f5f5" stroke-width="0.5"/></pattern></defs><rect width="1000" height="400" fill="url(#grid-p)"/><line x1="50" y1="350" x2="950" y2="350" stroke="#fe0000" stroke-width="1" opacity="0.4"/><line x1="50" y1="350" x2="50" y2="50" stroke="#fe0000" stroke-width="1" opacity="0.4"/><text x="960" y="368" font-size="12" font-weight="bold" fill="#fe0000">X</text><text x="20" y="45" font-size="12" font-weight="bold" fill="#fe0000">Y</text><line x1="50" y1="100" x2="700" y2="100" stroke="#333" stroke-width="4"/><line x1="700" y1="100" x2="700" y2="350" stroke="#333" stroke-width="4"/></svg>
+        </div>
+
+        <button class="tools-float" id="toolsToggle">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/><circle cx="5" cy="12" r="1.5"/></svg>
+        </button>
+
+        <div class="tools-panel hidden" id="toolsPanel">
+          <button class="tool-btn active" title="Línea"><svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/></svg></button>
+          <button class="tool-btn point" title="Punto"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/></svg></button>
+          <button class="tool-btn" title="Polilínea"><svg viewBox="0 0 24 24"><polyline points="4 4 8 10 16 8 20 16"/></svg></button>
+          <button class="tool-btn" title="Seleccionar"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="6" height="6"/><rect x="15" y="3" width="6" height="6"/><rect x="3" y="15" width="6" height="6"/><rect x="15" y="15" width="6" height="6"/></svg></button>
+          <hr style="margin: 4px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+          <button class="tool-btn" title="Reticulado" id="reticuladoBtn"><svg viewBox="0 0 24 24"><polyline points="3 21 12 3 21 21"/><line x1="3" y1="21" x2="21" y2="21"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="8" y1="15" x2="16" y2="15"/></svg></button>
+        </div>
+
+        <!-- Panel de Reticulados -->
+        <div class="reticulado-panel hidden" id="reticuladoPanel">
+          <div class="reticulado-header">Reticulados</div>
+
+          <div class="reticulado-section">
+            <label>Tipo de Techo:</label>
+            <select id="roofType" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px;">
+              <option value="simple">2 Aguas (Simple)</option>
+              <option value="gable">Gable (Triangular)</option>
+              <option value="flat">Plano</option>
+              <option value="shed">Inclinado</option>
+            </select>
+          </div>
+
+          <div class="reticulado-section">
+            <label>Diagonal:</label>
+            <select id="diagonalType" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px;">
+              <option value="warren">Warren</option>
+              <option value="pratt">Pratt</option>
+            </select>
+          </div>
+
+          <div class="reticulado-section">
+            <label>Luz (span):</label>
+            <input type="number" id="roofSpan" value="4000" min="1000" max="20000" step="100" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px;">
+          </div>
+
+          <div class="reticulado-section">
+            <label>Altura:</label>
+            <input type="number" id="roofHeight" value="800" min="200" max="5000" step="100" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px;">
+          </div>
+
+          <div class="reticulado-section">
+            <label>Subdivisiones:</label>
+            <input type="number" id="roofSubdivisions" value="4" min="2" max="12" step="1" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 4px;">
+          </div>
+
+          <button id="generateReticuladoBtn" style="width: 100%; padding: 10px; background: #fe0000; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; margin-bottom: 8px;">Generar</button>
+          <button id="cancelReticuladoBtn" style="width: 100%; padding: 10px; background: #999; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="command-line">
+      <div style="display: flex; gap: 12px; align-items: center; flex: 1;">
+        <span class="cmd-element" id="selectedElementId">—</span>
+        <span class="cmd-name" id="selectedElementName">Selecciona elemento</span>
+
+        <select id="profileSelector" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; font-size: 12px; display: none;">
+          <option value="">Perfil...</option>
+        </select>
+
+        <input type="number" id="lengthInput" class="cmd-input" placeholder="Largo (mm)" style="display: none;">
+        <input type="number" id="heightInput" class="cmd-input" placeholder="Alto (mm)" style="display: none;">
+        <input type="number" id="angleInput" class="cmd-input" placeholder="Ángulo" style="display: none;">
+      </div>
+
+      <button class="cmd-submit" id="applyPropsBtn" style="display: none;">✓ Aplicar</button>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      activeTab: 'elevation',
+      activeTool: 'line',
+      splitRatio: 50,
+      isDraggingSlider: false,
+      isDrawing: false,
+      elements: {},
+      currentDraw: null,
+      selectedElement: null,
+      elementCounter: { wall: 0, column: 0, element: 0 },
+      profiles: {},
+      selectedProfile: null
+    };
+
+    // Perfiles precargados (datos locales)
+    const PROFILES_DATA = {
+      "IRAM-IAS-U500": {
+        "CU": [
+          {"height":89.0,"width":40.0,"lip_width":10.0,"thickness":0.95,"weight_kg_per_m":1.35},
+          {"height":100.0,"width":40.0,"lip_width":15.0,"thickness":0.95,"weight_kg_per_m":1.5},
+          {"height":100.0,"width":40.0,"lip_width":15.0,"thickness":1.24,"weight_kg_per_m":1.96},
+          {"height":150.0,"width":40.0,"lip_width":15.0,"thickness":0.95,"weight_kg_per_m":1.87},
+          {"height":150.0,"width":40.0,"lip_width":15.0,"thickness":1.24,"weight_kg_per_m":2.45},
+          {"height":200.0,"width":44.0,"lip_width":15.0,"thickness":1.24,"weight_kg_per_m":3.01},
+          {"height":250.0,"width":44.0,"lip_width":15.0,"thickness":1.6,"weight_kg_per_m":4.51},
+          {"height":300.0,"width":44.0,"lip_width":15.0,"thickness":1.6,"weight_kg_per_m":5.14}
+        ],
+        "U": [
+          {"height":91.0,"width":35.0,"lip_width":0.0,"thickness":0.95,"weight_kg_per_m":1.14},
+          {"height":102.0,"width":35.0,"lip_width":0.0,"thickness":0.95,"weight_kg_per_m":1.22},
+          {"height":152.0,"width":35.0,"lip_width":0.0,"thickness":0.95,"weight_kg_per_m":1.59},
+          {"height":152.0,"width":35.0,"lip_width":0.0,"thickness":1.24,"weight_kg_per_m":2.09}
+        ]
+      },
+      "Stud and Track": {
+        "CU": [
+          {"height":89.0,"width":40.0,"lip_width":10.0,"thickness":0.95,"weight_kg_per_m":1.35},
+          {"height":100.0,"width":40.0,"lip_width":15.0,"thickness":0.95,"weight_kg_per_m":1.5},
+          {"height":150.0,"width":40.0,"lip_width":15.0,"thickness":1.24,"weight_kg_per_m":2.45},
+          {"height":200.0,"width":44.0,"lip_width":15.0,"thickness":1.24,"weight_kg_per_m":3.01}
+        ],
+        "U": [
+          {"height":91.0,"width":35.0,"lip_width":0.0,"thickness":0.95,"weight_kg_per_m":1.14},
+          {"height":102.0,"width":35.0,"lip_width":0.0,"thickness":0.95,"weight_kg_per_m":1.22},
+          {"height":152.0,"width":35.0,"lip_width":0.0,"thickness":1.24,"weight_kg_per_m":2.09}
+        ]
+      },
+      "Euro": {
+        "CU": [
+          {"height":90.0,"width":43.0,"lip_width":15.0,"thickness":1.5,"weight_kg_per_m":2.32},
+          {"height":150.0,"width":43.0,"lip_width":15.0,"thickness":1.5,"weight_kg_per_m":3.03},
+          {"height":200.0,"width":43.0,"lip_width":15.0,"thickness":2.0,"weight_kg_per_m":4.83}
+        ],
+        "U": [
+          {"height":93.0,"width":40.0,"lip_width":0.0,"thickness":1.5,"weight_kg_per_m":1.94},
+          {"height":153.0,"width":40.0,"lip_width":0.0,"thickness":1.5,"weight_kg_per_m":2.64}
+        ]
+      }
+    };
+
+    // Cargar perfiles locales
+    function loadProfiles() {
+      try {
+        state.profiles = PROFILES_DATA;
+        populateProfileSelector();
+        console.log('✅ Perfiles precargados:', Object.keys(state.profiles));
+      } catch (err) {
+        console.error('❌ Error cargando perfiles:', err);
+      }
+    }
+
+    // Poblar selector de perfiles
+    function populateProfileSelector() {
+      const selector = document.getElementById('profileSelector');
+      selector.innerHTML = '<option value="">Seleccionar perfil...</option>';
+
+      Object.entries(state.profiles).forEach(([standard, profiles]) => {
+        if (profiles.CU) {
+          profiles.CU.forEach(profile => {
+            const text = `${standard} | CU ${profile.height}x${profile.width}x${profile.thickness}`;
+            const option = document.createElement('option');
+            option.value = JSON.stringify({type: 'CU', ...profile});
+            option.textContent = text;
+            selector.appendChild(option);
+          });
+        }
+
+        if (profiles.CC) {
+          profiles.CC.forEach(profile => {
+            const text = `${standard} | CC ${profile.height}x${profile.width}x${profile.thickness}`;
+            const option = document.createElement('option');
+            option.value = JSON.stringify({type: 'CC', ...profile});
+            option.textContent = text;
+            selector.appendChild(option);
+          });
+        }
+      });
+    }
+
+    // Cargar perfiles al iniciar
+    loadProfiles();
+
+    const toolMap = { 0: 'line', 1: 'point', 2: 'polyline', 3: 'select' };
+
+    // Helper: generar ID único
+    function generateElementId(type = 'element') {
+      const key = type === 'wall' ? 'wall' : type === 'column' ? 'column' : 'element';
+      state.elementCounter[key]++;
+      const prefix = key === 'wall' ? 'M' : key === 'column' ? 'C' : 'E';
+      return `${prefix}-${state.elementCounter[key]}`;
+    }
+
+    // Helper: distancia entre 2 puntos
+    function distance(x1, y1, x2, y2) {
+      return Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+    }
+
+    // Helper: ángulo entre 2 puntos (grados)
+    function angle(x1, y1, x2, y2) {
+      return Math.atan2(y2-y1, x2-x1) * 180 / Math.PI;
+    }
+
+    // Helper: convertir coordenadas canvas a SVG viewport
+    function canvasToSVG(canvas, clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const svg = canvas.querySelector('svg');
+      const viewBox = svg.viewBox.baseVal;
+      return {
+        x: (clientX - rect.left) * (viewBox.width / rect.width),
+        y: (clientY - rect.top) * (viewBox.height / rect.height)
+      };
+    }
+
+    // Redibuja elementos en canvas
+    function redrawCanvas(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      const svg = canvas.querySelector('svg');
+      const drawLayer = svg.querySelector('[data-layer="draw"]') || svg;
+
+      Object.values(state.elements).forEach(el => {
+        if (el.view !== canvasId) return;
+        if (el.svgElement && el.svgElement.parentNode === drawLayer) {
+          el.svgElement.remove();
+        }
+      });
+
+      Object.values(state.elements).forEach(el => {
+        if (el.view !== canvasId) return;
+        if (!el.svgElement || !el.svgElement.parentNode) {
+          renderElement(el, svg);
+        }
+      });
+    }
+
+    // Renderiza un elemento en SVG
+    function renderElement(el, svg) {
+      let svgEl;
+      const color = state.selectedElement === el.id ? '#fe0000' : '#333';
+      const opacity = state.selectedElement === el.id ? 0.8 : 0.6;
+
+      if (el.type === 'line') {
+        svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        svgEl.setAttribute('x1', el.x1);
+        svgEl.setAttribute('y1', el.y1);
+        svgEl.setAttribute('x2', el.x2);
+        svgEl.setAttribute('y2', el.y2);
+        svgEl.setAttribute('stroke', color);
+        svgEl.setAttribute('stroke-width', '2');
+        svgEl.setAttribute('opacity', opacity);
+      } else if (el.type === 'point') {
+        svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        svgEl.setAttribute('cx', el.cx);
+        svgEl.setAttribute('cy', el.cy);
+        svgEl.setAttribute('r', '4');
+        svgEl.setAttribute('fill', color);
+        svgEl.setAttribute('opacity', opacity);
+      } else if (el.type === 'polyline') {
+        svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+        svgEl.setAttribute('points', el.points.map(p => `${p.x},${p.y}`).join(' '));
+        svgEl.setAttribute('stroke', color);
+        svgEl.setAttribute('stroke-width', '2');
+        svgEl.setAttribute('fill', 'none');
+        svgEl.setAttribute('opacity', opacity);
+      }
+
+      if (svgEl) {
+        svgEl.setAttribute('data-id', el.id);
+        svgEl.setAttribute('style', 'cursor: pointer;');
+        el.svgElement = svgEl;
+        svg.appendChild(svgEl);
+      }
+    }
+
+    // Modos de dibujo
+    function startLine(canvas, e) {
+      const svg = canvasToSVG(canvas, e.clientX, e.clientY);
+
+      if (!state.currentDraw) {
+        state.currentDraw = {
+          type: 'line',
+          view: canvas.id,
+          x1: svg.x,
+          y1: svg.y,
+          x2: svg.x,
+          y2: svg.y
+        };
+        canvas.style.cursor = 'crosshair';
+      } else {
+        const id = generateElementId('wall');
+        state.elements[id] = {
+          id,
+          type: 'line',
+          view: canvas.id,
+          x1: state.currentDraw.x1,
+          y1: state.currentDraw.y1,
+          x2: svg.x,
+          y2: svg.y
+        };
+        redrawCanvas(canvas.id);
+        state.currentDraw = null;
+        canvas.style.cursor = 'default';
+      }
+    }
+
+    function addPoint(canvas, e) {
+      const svg = canvasToSVG(canvas, e.clientX, e.clientY);
+      const id = generateElementId('column');
+      state.elements[id] = {
+        id,
+        type: 'point',
+        view: canvas.id,
+        cx: svg.x,
+        cy: svg.y
+      };
+      redrawCanvas(canvas.id);
+    }
+
+    function startPolyline(canvas, e) {
+      const svg = canvasToSVG(canvas, e.clientX, e.clientY);
+
+      if (!state.currentDraw) {
+        state.currentDraw = {
+          type: 'polyline',
+          view: canvas.id,
+          points: [{ x: svg.x, y: svg.y }]
+        };
+        canvas.style.cursor = 'crosshair';
+      } else {
+        state.currentDraw.points.push({ x: svg.x, y: svg.y });
+      }
+    }
+
+    function finishPolyline(canvas) {
+      if (state.currentDraw?.type === 'polyline' && state.currentDraw.points.length > 1) {
+        const id = generateElementId('element');
+        state.elements[id] = {
+          id,
+          type: 'polyline',
+          view: canvas.id,
+          points: state.currentDraw.points
+        };
+        redrawCanvas(canvas.id);
+        state.currentDraw = null;
+        canvas.style.cursor = 'default';
+      }
+    }
+
+    function selectElement(canvas, e) {
+      const svg = canvasToSVG(canvas, e.clientX, e.clientY);
+      let foundElement = null;
+      let minDistance = Infinity;
+
+      for (const el of Object.values(state.elements)) {
+        if (el.view !== canvas.id) continue;
+
+        let distance_to_element = Infinity;
+
+        if (el.type === 'point' || el.type === 'column') {
+          distance_to_element = distance(svg.x, svg.y, el.cx, el.cy);
+        } else if (el.type === 'line' || el.type === 'viga' || el.type === 'beam') {
+          distance_to_element = distanceToLine(svg.x, svg.y, el.x1, el.y1, el.x2, el.y2);
+        } else if (el.type === 'truss') {
+          // Para reticulados, encontrar el nodo más cercano
+          for (const point of el.points) {
+            const d = distance(svg.x, svg.y, point.x, point.y);
+            if (d < distance_to_element) {
+              distance_to_element = d;
+            }
+          }
+        }
+
+        // Usar el elemento más cercano (tolerancia 50px)
+        if (distance_to_element < 50 && distance_to_element < minDistance) {
+          minDistance = distance_to_element;
+          foundElement = el;
+        }
+      }
+
+      if (foundElement) {
+        state.selectedElement = foundElement.id;
+        showElementProperties(foundElement);
+      } else {
+        state.selectedElement = null;
+        clearElementProperties();
+      }
+      redrawCanvas(canvas.id);
+    }
+
+    function distanceToLine(px, py, x1, y1, x2, y2) {
+      const num = Math.abs((y2-y1)*px - (x2-x1)*py + x2*y1 - y2*x1);
+      const den = distance(x1, y1, x2, y2);
+      return den === 0 ? distance(px, py, x1, y1) : num / den;
+    }
+
+    function showElementProperties(el) {
+      const cmdElement = document.getElementById('selectedElementId');
+      const cmdName = document.getElementById('selectedElementName');
+      const profileSelector = document.getElementById('profileSelector');
+      const lengthInput = document.getElementById('lengthInput');
+      const heightInput = document.getElementById('heightInput');
+      const angleInput = document.getElementById('angleInput');
+      const applyBtn = document.getElementById('applyPropsBtn');
+
+      cmdElement.textContent = el.id;
+
+      // Mostrar/ocultar controles según tipo de elemento
+      if (el.type === 'line' || el.type === 'beam' || el.type === 'viga') {
+        cmdName.textContent = 'Viga';
+        profileSelector.style.display = 'inline-block';
+        lengthInput.style.display = 'inline-block';
+        heightInput.style.display = 'none';
+        angleInput.style.display = 'inline-block';
+        applyBtn.style.display = 'inline-block';
+
+        const len = distance(el.x1, el.y1, el.x2, el.y2);
+        const ang = angle(el.x1, el.y1, el.x2, el.y2);
+        lengthInput.value = len.toFixed(0);
+        angleInput.value = ang.toFixed(1);
+        lengthInput.placeholder = `Largo: ${len.toFixed(0)}mm`;
+
+      } else if (el.type === 'point' || el.type === 'column' || el.type === 'columna') {
+        cmdName.textContent = 'Columna';
+        profileSelector.style.display = 'inline-block';
+        lengthInput.style.display = 'none';
+        heightInput.style.display = 'inline-block';
+        angleInput.style.display = 'none';
+        applyBtn.style.display = 'inline-block';
+
+        heightInput.value = el.height || '2400';
+        heightInput.placeholder = `Alto: ${el.height || '2400'}mm`;
+
+      } else if (el.type === 'truss') {
+        cmdName.textContent = 'Reticulado';
+        profileSelector.style.display = 'inline-block';
+        lengthInput.style.display = 'inline-block';
+        heightInput.style.display = 'inline-block';
+        angleInput.style.display = 'none';
+        applyBtn.style.display = 'inline-block';
+
+        lengthInput.value = el.span || '4000';
+        heightInput.value = el.height || '800';
+        lengthInput.placeholder = `Luz: ${el.span || '4000'}mm`;
+        heightInput.placeholder = `Alto: ${el.height || '800'}mm`;
+
+      } else {
+        cmdName.textContent = el.type;
+        profileSelector.style.display = 'none';
+        lengthInput.style.display = 'none';
+        heightInput.style.display = 'none';
+        angleInput.style.display = 'none';
+        applyBtn.style.display = 'none';
+      }
+
+      // Cargar perfil guardado si existe
+      if (el.profile) {
+        profileSelector.value = JSON.stringify(el.profile);
+      }
+    }
+
+    function clearElementProperties() {
+      document.getElementById('selectedElementId').textContent = '—';
+      document.getElementById('selectedElementName').textContent = 'Selecciona elemento';
+      document.getElementById('profileSelector').style.display = 'none';
+      document.getElementById('lengthInput').style.display = 'none';
+      document.getElementById('heightInput').style.display = 'none';
+      document.getElementById('angleInput').style.display = 'none';
+      document.getElementById('applyPropsBtn').style.display = 'none';
+    }
+
+    // Aplicar propiedades al elemento
+    document.getElementById('applyPropsBtn').addEventListener('click', () => {
+      if (!state.selectedElement) return;
+
+      const el = state.elements[state.selectedElement];
+      const profileVal = document.getElementById('profileSelector').value;
+
+      if (profileVal) {
+        el.profile = JSON.parse(profileVal);
+      }
+
+      el.length = document.getElementById('lengthInput').value;
+      el.height = document.getElementById('heightInput').value;
+      el.angle = document.getElementById('angleInput').value;
+
+      console.log('✅ Propiedades aplicadas:', el);
+    });
+
+    // Selector de perfil
+    document.getElementById('profileSelector').addEventListener('change', (e) => {
+      if (e.target.value && state.selectedElement) {
+        state.selectedProfile = JSON.parse(e.target.value);
+        const el = state.elements[state.selectedElement];
+        el.profile = state.selectedProfile;
+        console.log('✅ Perfil asignado:', state.selectedProfile);
+      }
+    });
+
+    // Event listeners - Tools
+    document.getElementById('toolsToggle').addEventListener('click', () => {
+      document.getElementById('toolsPanel').classList.toggle('hidden');
+    });
+
+    document.querySelectorAll('.tool-btn').forEach((btn, idx) => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        state.activeTool = toolMap[idx];
+        state.currentDraw = null;
+        document.getElementById('elevationView').style.cursor = 'default';
+        document.getElementById('planView').style.cursor = 'default';
+      });
+    });
+
+
+    // Event listeners - Canvas
+    const elevationView = document.getElementById('elevationView');
+    const planView = document.getElementById('planView');
+
+    [elevationView, planView].forEach(canvas => {
+      canvas.addEventListener('mousedown', (e) => {
+        if (state.isDraggingSlider) return;
+
+        if (state.activeTool === 'line') startLine(canvas, e);
+        else if (state.activeTool === 'point') addPoint(canvas, e);
+        else if (state.activeTool === 'polyline') startPolyline(canvas, e);
+        else if (state.activeTool === 'select') selectElement(canvas, e);
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        if (!state.currentDraw || state.activeTool !== 'line') return;
+
+        const svg = canvasToSVG(canvas, e.clientX, e.clientY);
+        const svgElem = canvas.querySelector('svg');
+        let previewLine = svgElem.querySelector('[data-preview="line"]');
+
+        if (!previewLine) {
+          previewLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          previewLine.setAttribute('data-preview', 'line');
+          previewLine.setAttribute('stroke', '#fe0000');
+          previewLine.setAttribute('stroke-width', '1');
+          previewLine.setAttribute('stroke-dasharray', '5,5');
+          previewLine.setAttribute('opacity', '0.5');
+          svgElem.appendChild(previewLine);
+        }
+
+        previewLine.setAttribute('x1', state.currentDraw.x1);
+        previewLine.setAttribute('y1', state.currentDraw.y1);
+        previewLine.setAttribute('x2', svg.x);
+        previewLine.setAttribute('y2', svg.y);
+      });
+
+      canvas.addEventListener('dblclick', (e) => {
+        if (state.activeTool === 'polyline') {
+          finishPolyline(canvas);
+        }
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        state.currentDraw = null;
+        document.getElementById('elevationView').style.cursor = 'default';
+        document.getElementById('planView').style.cursor = 'default';
+        document.querySelectorAll('[data-preview]').forEach(el => el.remove());
+      }
+      if (e.key === 'Delete' && state.selectedElement) {
+        delete state.elements[state.selectedElement];
+        state.selectedElement = null;
+        clearElementProperties();
+        redrawCanvas('elevationView');
+        redrawCanvas('planView');
+      }
+    });
+
+    // ── Reticulados (Cerchas precargadas) ────────────────────
+    document.getElementById('reticuladoBtn').addEventListener('click', () => {
+      document.getElementById('reticuladoPanel').classList.toggle('hidden');
+    });
+
+    document.getElementById('cancelReticuladoBtn').addEventListener('click', () => {
+      document.getElementById('reticuladoPanel').classList.add('hidden');
+    });
+
+    function generateReticulado(roofType, diagonalType, span, height, subdivisions, canvas) {
+      const startX = 100;
+      const startY = 300;
+
+      // Crear estructura base de cercha
+      const points = [];
+      const members = [];
+
+      // Nodos horizontales (acordes superiores e inferiores)
+      for (let i = 0; i <= subdivisions; i++) {
+        const x = startX + (span / subdivisions) * i;
+
+        // Nodo inferior (chord base)
+        points.push({ x, y: startY, id: `base-${i}` });
+
+        // Nodo superior (chord techo)
+        const topY = startY - height * (1 - Math.abs(i - subdivisions/2) / (subdivisions/2));
+        points.push({ x, y: topY, id: `top-${i}` });
+      }
+
+      // Generar miembros (barras)
+      for (let i = 0; i < subdivisions; i++) {
+        const baseIdx = i * 2;
+
+        // Acordes (superiores e inferiores)
+        members.push({
+          from: `base-${i}`, to: `base-${i+1}`, type: 'chord',
+          fromPoint: points[baseIdx], toPoint: points[(i+1)*2]
+        });
+
+        members.push({
+          from: `top-${i}`, to: `top-${i+1}`, type: 'chord',
+          fromPoint: points[baseIdx+1], toPoint: points[(i+1)*2+1]
+        });
+
+        // Diagonales (Warren o Pratt)
+        if (diagonalType === 'warren') {
+          // Warren: X alternado
+          if (i % 2 === 0) {
+            members.push({
+              from: `top-${i}`, to: `base-${i+1}`, type: 'diagonal',
+              fromPoint: points[baseIdx+1], toPoint: points[(i+1)*2]
+            });
+            members.push({
+              from: `base-${i}`, to: `top-${i+1}`, type: 'diagonal',
+              fromPoint: points[baseIdx], toPoint: points[(i+1)*2+1]
+            });
+          } else {
+            members.push({
+              from: `top-${i+1}`, to: `base-${i}`, type: 'diagonal',
+              fromPoint: points[(i+1)*2+1], toPoint: points[baseIdx]
+            });
+            members.push({
+              from: `base-${i+1}`, to: `top-${i}`, type: 'diagonal',
+              fromPoint: points[(i+1)*2], toPoint: points[baseIdx+1]
+            });
+          }
+        } else {
+          // Pratt: + vertical + diagonal
+          members.push({
+            from: `top-${i}`, to: `base-${i}`, type: 'vertical',
+            fromPoint: points[baseIdx+1], toPoint: points[baseIdx]
+          });
+          members.push({
+            from: `top-${i+1}`, to: `base-${i+1}`, type: 'vertical',
+            fromPoint: points[(i+1)*2+1], toPoint: points[(i+1)*2]
+          });
+
+          members.push({
+            from: `top-${i}`, to: `base-${i+1}`, type: 'diagonal',
+            fromPoint: points[baseIdx+1], toPoint: points[(i+1)*2]
+          });
+          members.push({
+            from: `top-${i+1}`, to: `base-${i}`, type: 'diagonal',
+            fromPoint: points[(i+1)*2+1], toPoint: points[baseIdx]
+          });
+        }
+      }
+
+      // Guardar cercha como elemento
+      const id = generateElementId('cercha');
+      state.elements[id] = {
+        id,
+        type: 'truss',
+        view: canvas.id,
+        roofType,
+        diagonalType,
+        span,
+        height,
+        subdivisions,
+        points,
+        members,
+        x: startX,
+        y: startY
+      };
+
+      // Renderizar en canvas
+      renderTruss(id, canvas);
+    }
+
+    function renderTruss(trussId, canvas) {
+      const truss = state.elements[trussId];
+      const svg = canvas.querySelector('svg');
+
+      // Dibujar miembros
+      truss.members.forEach(member => {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', member.fromPoint.x);
+        line.setAttribute('y1', member.fromPoint.y);
+        line.setAttribute('x2', member.toPoint.x);
+        line.setAttribute('y2', member.toPoint.y);
+        line.setAttribute('stroke', member.type === 'chord' ? '#333' : '#666');
+        line.setAttribute('stroke-width', member.type === 'chord' ? '2.5' : '1.5');
+        line.setAttribute('opacity', '0.7');
+        line.setAttribute('data-truss-id', trussId);
+        svg.appendChild(line);
+      });
+
+      // Dibujar nodos (puntos)
+      truss.points.forEach(point => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', point.x);
+        circle.setAttribute('cy', point.y);
+        circle.setAttribute('r', '3');
+        circle.setAttribute('fill', '#fe0000');
+        circle.setAttribute('opacity', '0.6');
+        circle.setAttribute('data-truss-id', trussId);
+        svg.appendChild(circle);
+      });
+    }
+
+    document.getElementById('generateReticuladoBtn').addEventListener('click', () => {
+      const roofType = document.getElementById('roofType').value;
+      const diagonalType = document.getElementById('diagonalType').value;
+      const span = parseInt(document.getElementById('roofSpan').value);
+      const height = parseInt(document.getElementById('roofHeight').value);
+      const subdivisions = parseInt(document.getElementById('roofSubdivisions').value);
+
+      const canvas = document.getElementById('elevationView');
+      generateReticulado(roofType, diagonalType, span, height, subdivisions, canvas);
+
+      document.getElementById('reticuladoPanel').classList.add('hidden');
+    });
+  </script>
+</body>
+</html>
