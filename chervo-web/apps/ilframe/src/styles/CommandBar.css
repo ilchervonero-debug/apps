@@ -1,226 +1,159 @@
 .command-bar {
   background: white;
   border-top: 1px solid #e0e0e0;
-  padding: 12px 16px;
+  padding: 10px 16px;
   flex-shrink: 0;
   overflow-y: auto;
-  max-height: 140px;
-  min-height: 48px;
+  max-height: 130px;
+  min-height: 44px;
   font-size: 12px;
+  font-family: inherit;
 }
 
-/* Controles de dibujo */
-.cmd-drawing-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px;
+.command-bar.drawing-mode {
   background: #fffbfb;
-  border: 1px solid #ffe0e0;
-  border-radius: 4px;
-  margin-bottom: 8px;
+  border-top: 2px solid #fe0000;
 }
 
-.drawing-info {
-  color: #fe0000;
-  font-weight: 700;
-  font-size: 13px;
-  margin-right: auto;
+.command-bar.selected-mode {
+  background: #fafafa;
+  border-top: 2px solid #1a1a1a;
 }
 
-.btn-finish,
-.btn-cancel {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-finish {
-  background: #fe0000;
-  color: white;
-}
-
-.btn-finish:hover {
-  background: #e60000;
-}
-
-.btn-cancel {
-  background: #f5f5f5;
-  color: #666;
-  border: 1px solid #ddd;
-}
-
-.btn-cancel:hover {
-  background: #efefef;
-}
-
-/* Lista de elementos */
-.cmd-elements-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.list-header {
-  font-weight: 700;
-  color: #666;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 4px 0;
-}
-
-.list-empty {
-  color: #999;
-  font-style: italic;
-  padding: 8px 0;
-}
-
-.list-items {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.list-item {
+/* Row layout */
+.cmd-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 8px;
-  background: #f9f9f9;
-  border: 1px solid #f0f0f0;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 11px;
+  flex-wrap: wrap;
 }
 
-.list-item:hover {
-  background: #f5f5f5;
-  border-color: #e0e0e0;
+.cmd-row + .cmd-row {
+  margin-top: 8px;
 }
 
-.item-id {
-  font-weight: 800;
-  color: #fe0000;
-  font-family: monospace;
-  min-width: 24px;
+.cmd-len-row {
+  padding-top: 6px;
+  border-top: 1px solid #ffe0e0;
 }
 
-.item-type {
-  color: #888;
-  font-weight: 600;
-  text-transform: uppercase;
-  min-width: 50px;
-}
-
-.item-props {
-  color: #666;
-  font-family: monospace;
-  margin-left: auto;
-}
-
-.item-conn {
-  color: #fe0000;
-  font-weight: 600;
+/* Badge */
+.cmd-badge {
   font-size: 10px;
-}
-
-/* Editor de elemento */
-.cmd-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.editor-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.editor-id {
   font-weight: 800;
-  color: #fe0000;
-  font-family: monospace;
-  font-size: 13px;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  flex-shrink: 0;
 }
+.cmd-badge.draw { background: #fe0000; color: white; }
+.cmd-badge.sel  { background: #1a1a1a; color: white; font-family: monospace; }
 
-.editor-type {
-  color: #888;
-  font-weight: 600;
-  text-transform: uppercase;
+/* Text elements */
+.cmd-pts  { font-size: 12px; color: #555; }
+.cmd-live { font-family: monospace; font-weight: 800; font-size: 14px; color: #fe0000; }
+.cmd-sep  { color: #ccc; }
+.cmd-label {
   font-size: 11px;
-}
-
-.btn-close {
-  margin-left: auto;
-  background: none;
-  border: none;
-  color: #999;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0;
-  transition: color 0.2s;
-}
-
-.btn-close:hover {
-  color: #666;
-}
-
-.editor-section {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.editor-label {
   font-weight: 600;
   color: #888;
-  font-size: 11px;
   text-transform: uppercase;
+  flex-shrink: 0;
 }
+.cmd-unit { font-size: 11px; color: #aaa; font-weight: 600; }
 
-.editor-section label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.editor-section input[type="number"] {
-  padding: 6px 8px;
-  border: 1px solid #ddd;
+/* Inputs */
+.cmd-len-input,
+.cmd-prop-input {
+  padding: 5px 9px;
+  border: 1.5px solid #ddd;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 13px;
   font-family: monospace;
   width: 100px;
+  transition: border-color 0.15s;
 }
-
-.editor-section input[type="number"]:focus {
+.cmd-len-input:focus,
+.cmd-prop-input:focus {
   outline: none;
   border-color: #fe0000;
   box-shadow: 0 0 0 2px rgba(254, 0, 0, 0.1);
 }
 
-.connections {
+/* Buttons */
+.btn-ok {
+  padding: 5px 12px;
+  background: #fe0000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.btn-ok:not(:disabled):hover { background: #d40000; }
+.btn-ok:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-esc {
+  padding: 5px 10px;
+  background: #f5f5f5;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.btn-esc:hover { background: #ebebeb; }
+
+.btn-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.btn-close:hover { color: #555; }
+
+/* Empty state */
+.cmd-empty {
+  color: #aaa;
+  font-style: italic;
+  padding: 2px 0;
+  font-size: 12px;
+}
+.cmd-empty strong { color: #555; font-style: normal; }
+
+/* Element list (idle state) */
+.cmd-list {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
-.connection-tag {
-  background: #f5f5f5;
-  border: 1px solid #ddd;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: 600;
-  color: #fe0000;
-  font-family: monospace;
+.cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #f7f7f7;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  cursor: pointer;
   font-size: 11px;
+  transition: all 0.15s;
 }
+.cmd-item:hover { background: #f0f0f0; border-color: #ddd; }
+
+.item-id  { font-weight: 800; color: #fe0000; font-family: monospace; }
+.item-len { color: #777; font-family: monospace; }
+.item-h   { color: #aaa; font-family: monospace; }
