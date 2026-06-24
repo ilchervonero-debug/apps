@@ -1,8 +1,17 @@
 {
-  "buildCommand": "echo 'Static site'",
-  "outputDirectory": "chervo-web",
-  "rewrites": [
-    { "source": "/ilframe", "destination": "/ilframe/index.html" },
-    { "source": "/ilframe/:path*", "destination": "/ilframe/index.html" }
+  "version": 2,
+  "projects": [
+    {
+      "name": "ilframe",
+      "rootDirectory": "ilframe"
+    },
+    {
+      "name": "chervo-web",
+      "rootDirectory": "chervo-web"
+    },
+    {
+      "name": "djcu-app",
+      "rootDirectory": "djcu-app"
+    }
   ]
 }
