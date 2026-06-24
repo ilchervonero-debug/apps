@@ -1,3 +1,27 @@
 {
-  "version": 2
+  "buildCommand": "echo 'sitio estatico: index.html ya viene generado'",
+  "outputDirectory": "chervo-web",
+  "rewrites": [
+    { "source": "/ilframe", "destination": "/ilframe/index.html" },
+    { "source": "/ilframe/:path*", "destination": "/ilframe/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*\\.html|)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(self), geolocation=()" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" }
+      ]
+    }
+  ]
 }
