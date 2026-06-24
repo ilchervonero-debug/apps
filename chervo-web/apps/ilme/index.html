@@ -65,7 +65,7 @@
     border-radius:6px;cursor:pointer;color:var(--tinta);
   }
   .cal-dia.otro{color:#C2C2BE}
-  .cal-dia.hoy{background:var(--tinta);color:#fff;font-weight:600}
+  .cal-dia.hoy{background:var(--rojo);color:#fff;font-weight:600}
   .cal-dia.sel:not(.hoy){background:var(--fondo-2)}
   .cal-dia .pts{position:absolute;bottom:2px;left:0;right:0;display:flex;gap:2px;justify-content:center}
   .cal-dia .pt{width:3.5px;height:3.5px;border-radius:1px;background:var(--gris)}
@@ -99,14 +99,14 @@
   }
   .dtab .d{display:block;font-size:.58rem;text-transform:uppercase;letter-spacing:.06em}
   .dtab .n{display:block;font-size:.92rem;font-weight:600;margin-top:1px;color:var(--tinta)}
-  .dtab.sel{background:var(--tinta)}
+  .dtab.sel{background:var(--rojo)}
   .dtab.sel .d{color:#aaa}
   .dtab.sel .n{color:#fff}
   .dtab.hoy{border:2px solid var(--rojo)}
   .dtab.hoy:not(.sel) .n{color:var(--rojo)}
   .dtab .sqs{display:flex;gap:2px;justify-content:center;margin-top:4px;min-height:6px;flex-wrap:wrap;padding:0 2px}
   .sq{width:6px;height:6px;border-radius:1.5px;flex-shrink:0}
-  .sq.tarea{background:var(--tinta)}
+  .sq.tarea{background:var(--rojo)}
   .sq.pago{background:var(--rojo)}
   .sq.nota{background:#B8B8B4}
   .dtab.sel .sq.tarea{background:#888}
@@ -131,7 +131,7 @@
     flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;
     background:transparent;font-size:.8rem;color:transparent;
   }
-  .item.hecho .chk{background:var(--tinta);border-color:var(--tinta);color:#fff}
+  .item.hecho .chk{background:var(--rojo);border-color:var(--tinta);color:#fff}
   .item.hecho .txt{text-decoration:line-through;color:var(--gris)}
   .ic{width:21px;flex-shrink:0;text-align:center;font-size:.95rem;margin-top:1px}
   .ic.pago{color:var(--rojo);font-weight:700}
@@ -169,7 +169,7 @@
 
   /* recordatorios y rutinas con hora (en marca: negro / rojo al sonar) */
   .ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
-  .sq.recordatorio{background:var(--tinta)}
+  .sq.recordatorio{background:var(--rojo)}
   .item.recordatorio .ic{color:var(--tinta)}
   .item.alarma{background:#F4DEDE}
   .item.alarma .ic{color:var(--rojo);animation:parpadeo .6s infinite}
@@ -207,7 +207,7 @@
   #recInputs.ver{display:flex}
   .rec-chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
   .rchip,.rrep{border:none;font-family:inherit;font-size:.78rem;cursor:pointer;padding:8px 13px;border-radius:8px;background:var(--fondo-2);color:var(--gris)}
-  .rchip.sel,.rrep.sel{background:var(--tinta);color:#fff}
+  .rchip.sel,.rrep.sel{background:var(--rojo);color:#fff}
   #recRepetir{display:none}
   #recFecha,#recHora{border:none;background:var(--fondo-2);border-radius:8px;padding:9px 10px;font-family:inherit;font-size:.9rem;color:var(--tinta);outline:none}
   #recFecha{flex:1;min-width:130px}
@@ -217,7 +217,7 @@
   /* toast (aviso visible) */
   #toast{
     position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);
-    background:var(--tinta);color:#fff;padding:11px 18px;border-radius:12px;
+    background:var(--rojo);color:#fff;padding:11px 18px;border-radius:12px;
     font-size:.85rem;max-width:85%;text-align:center;z-index:90;
     opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
     box-shadow:0 8px 24px rgba(28,28,28,.25);
@@ -245,7 +245,7 @@
     border:none;font-family:'Geist Mono',monospace;font-size:1.1rem;cursor:pointer;
     padding:13px 0;border-radius:10px;background:var(--fondo-2);color:var(--tinta);
   }
-  .calc-grid button.op{background:var(--tinta);color:#fff}
+  .calc-grid button.op{background:var(--rojo);color:#fff}
   .calc-grid button.ig{background:var(--rojo);color:#fff}
 
   /* ── Botón menú del panel ── */
@@ -352,7 +352,7 @@
   </div>
   <div class="cap-row" id="capRow">
     <input id="inp" placeholder="Escribí o pegá un link…" autocomplete="off">
-    <button id="btnVoz" style="border:none;background:var(--tinta);color:#fff;width:42px;height:42px;border-radius:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0">
+    <button id="btnVoz" style="border:none;background:var(--rojo);color:#fff;width:42px;height:42px;border-radius:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
     </button>
     <button id="btnAdd">+</button>
