@@ -597,7 +597,6 @@ function filaItem(it, onChk, onEdit, onMan, onDel, fechaCtx){
   const grip=document.createElement('div'); grip.className='drag-grip'; grip.innerHTML=ICON.grip;
   acc.appendChild(grip);
   if(onEdit) acc.appendChild(btnAcc('editar',onEdit));
-  if(onMan) acc.appendChild(btnAcc('mover',onMan));
   if(onDel) acc.appendChild(btnAcc('borrar',onDel,true));
   row.appendChild(acc);
   return row;
