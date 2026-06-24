@@ -19,10 +19,10 @@
   :root{
     --fondo:#F2F2F0;
     --fondo-2:#E7E7E4;
-    --tinta:#1C1C1C;
+    --tinta:#333333;
     --gris:#7A7A7A;
     --linea:#DCDCD8;
-    --rojo:#7B1D1D;
+    --rojo:#FF0000;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
@@ -65,7 +65,7 @@
     border-radius:6px;cursor:pointer;color:var(--tinta);
   }
   .cal-dia.otro{color:#C2C2BE}
-  .cal-dia.hoy{background:var(--tinta);color:#fff;font-weight:600}
+  .cal-dia.hoy{background:var(--rojo);color:#fff;font-weight:600}
   .cal-dia.sel:not(.hoy){background:var(--fondo-2)}
   .cal-dia .pts{position:absolute;bottom:2px;left:0;right:0;display:flex;gap:2px;justify-content:center}
   .cal-dia .pt{width:3.5px;height:3.5px;border-radius:1px;background:var(--gris)}
@@ -96,22 +96,25 @@
   .dtab{
     flex:1;border:none;background:none;font-family:inherit;cursor:pointer;
     padding:6px 0 5px;border-radius:10px;text-align:center;color:var(--gris);
+    transition:all .3s cubic-bezier(.2,.7,.2,1);
   }
   .dtab .d{display:block;font-size:.58rem;text-transform:uppercase;letter-spacing:.06em}
-  .dtab .n{display:block;font-size:.92rem;font-weight:600;margin-top:1px;color:var(--tinta)}
-  .dtab.sel{background:var(--tinta)}
+  .dtab .n{display:block;font-size:.92rem;font-weight:600;margin-top:1px;color:var(--tinta);transition:color .3s cubic-bezier(.2,.7,.2,1)}
+  .dtab.sel{background:var(--rojo);transform:scale(1.08)}
   .dtab.sel .d{color:#aaa}
   .dtab.sel .n{color:#fff}
+  .dtab.hoy{border:2px solid var(--rojo)}
   .dtab.hoy:not(.sel) .n{color:var(--rojo)}
+  .dtab:active{transform:scale(.95)}
   .dtab .sqs{display:flex;gap:2px;justify-content:center;margin-top:4px;min-height:6px;flex-wrap:wrap;padding:0 2px}
   .sq{width:6px;height:6px;border-radius:1.5px;flex-shrink:0}
-  .sq.tarea{background:var(--tinta)}
+  .sq.tarea{background:var(--rojo)}
   .sq.pago{background:var(--rojo)}
   .sq.nota{background:#B8B8B4}
   .dtab.sel .sq.tarea{background:#888}
 
   /* ── Hoja ── */
-  main{flex:1;overflow-y:auto;padding:14px 16px 110px;-webkit-overflow-scrolling:touch}
+  main{flex:1;overflow-y:auto;padding:14px 16px 110px;-webkit-overflow-scrolling:touch;background:var(--fondo)}
   .dia-titulo{font-size:.76rem;color:var(--gris);margin-bottom:10px;text-transform:capitalize}
   .vacio{color:#BDBDB9;font-size:.88rem;padding:30px 0;text-align:center}
 
@@ -130,7 +133,7 @@
     flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;
     background:transparent;font-size:.8rem;color:transparent;
   }
-  .item.hecho .chk{background:var(--tinta);border-color:var(--tinta);color:#fff}
+  .item.hecho .chk{background:var(--rojo);border-color:var(--tinta);color:#fff}
   .item.hecho .txt{text-decoration:line-through;color:var(--gris)}
   .ic{width:21px;flex-shrink:0;text-align:center;font-size:.95rem;margin-top:1px}
   .ic.pago{color:var(--rojo);font-weight:700}
@@ -168,7 +171,7 @@
 
   /* recordatorios y rutinas con hora (en marca: negro / rojo al sonar) */
   .ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
-  .sq.recordatorio{background:var(--tinta)}
+  .sq.recordatorio{background:var(--rojo)}
   .item.recordatorio .ic{color:var(--tinta)}
   .item.alarma{background:#F4DEDE}
   .item.alarma .ic{color:var(--rojo);animation:parpadeo .6s infinite}
@@ -177,7 +180,7 @@
   .rec-hora{font-size:.7rem;color:var(--gris);font-family:'Geist Mono',monospace;margin-top:2px}
 
   /* ── Captura ── */
-  .captura{
+  .captura{z-index:100;
     position:fixed;left:0;right:0;bottom:0;
     background:var(--fondo);border-top:1px solid var(--linea);
     padding:10px 12px calc(10px + env(safe-area-inset-bottom));
@@ -187,7 +190,7 @@
     border:none;font-family:inherit;font-size:.72rem;cursor:pointer;
     padding:5px 12px;border-radius:99px;background:var(--fondo-2);color:var(--gris);
   }
-  .tipo.sel{background:var(--tinta);color:#fff}
+  .tipo.sel{background:var(--rojo);color:#fff}
   .tipo.sel.t-pago{background:var(--rojo)}
   .cap-row{display:flex;gap:8px;align-items:center}
   #inp{
@@ -196,7 +199,7 @@
   }
   #inp::placeholder{color:#ADADA9}
   #btnAdd{
-    border:none;background:var(--tinta);color:#fff;width:42px;height:42px;
+    border:none;background:var(--rojo);color:#fff;width:42px;height:42px;
     border-radius:12px;font-size:1.2rem;cursor:pointer;flex-shrink:0;
   }
   #btnVoz.escuchando{background:var(--rojo);animation:pulsoVoz 1s infinite}
@@ -206,7 +209,7 @@
   #recInputs.ver{display:flex}
   .rec-chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
   .rchip,.rrep{border:none;font-family:inherit;font-size:.78rem;cursor:pointer;padding:8px 13px;border-radius:8px;background:var(--fondo-2);color:var(--gris)}
-  .rchip.sel,.rrep.sel{background:var(--tinta);color:#fff}
+  .rchip.sel,.rrep.sel{background:var(--rojo);color:#fff}
   #recRepetir{display:none}
   #recFecha,#recHora{border:none;background:var(--fondo-2);border-radius:8px;padding:9px 10px;font-family:inherit;font-size:.9rem;color:var(--tinta);outline:none}
   #recFecha{flex:1;min-width:130px}
@@ -216,7 +219,7 @@
   /* toast (aviso visible) */
   #toast{
     position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);
-    background:var(--tinta);color:#fff;padding:11px 18px;border-radius:12px;
+    background:var(--rojo);color:#fff;padding:11px 18px;border-radius:12px;
     font-size:.85rem;max-width:85%;text-align:center;z-index:90;
     opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
     box-shadow:0 8px 24px rgba(28,28,28,.25);
@@ -244,7 +247,7 @@
     border:none;font-family:'Geist Mono',monospace;font-size:1.1rem;cursor:pointer;
     padding:13px 0;border-radius:10px;background:var(--fondo-2);color:var(--tinta);
   }
-  .calc-grid button.op{background:var(--tinta);color:#fff}
+  .calc-grid button.op{background:var(--rojo);color:#fff}
   .calc-grid button.ig{background:var(--rojo);color:#fff}
 
   /* ── Botón menú del panel ── */
@@ -282,7 +285,7 @@
   .memo-txt[contenteditable="true"]{background:var(--fondo-2);border-radius:8px;padding:8px 10px}
   .memo-txt[contenteditable="true"]:empty::before{content:'Escribí lo que quieras…';color:#ADADA9}
   .captura.memoria #inp{display:none}
-  .captura.memoria #btnAdd{width:100%;height:42px;font-size:.92rem;font-family:inherit;font-weight:600}
+  .captura.memoria #btnAdd{flex:1;margin:0 4px;height:42px;font-size:.92rem;font-family:inherit;font-weight:600}
 
   /* ── Borrados ── */
   #borrOv{
@@ -297,10 +300,22 @@
   }
   .borr-cab{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
   .borr-cab .t{font-weight:600;font-size:.95rem}
-  #borrLista{overflow-y:auto;flex:1}
+  #borrLista{overflow-y:auto;flex:1;min-height:0;padding-bottom:20px}
   .borr-item{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--linea)}
   .borr-item .bi-txt{flex:1;min-width:0;font-size:.86rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gris)}
   .borr-item .bi-org{font-family:'Geist Mono',monospace;font-size:.6rem;color:#ADADA9;display:block}
+
+  /* ── Animaciones y Efectos ── */
+  .dias-strip{scroll-behavior:smooth}
+  .item,.memo,.app-card{transition:all .2s cubic-bezier(.2,.7,.2,1)}
+  .item:active,.memo:active{transform:scale(.98);opacity:.8}
+  .acc{transition:all .15s}
+  .acc:active{transform:scale(.9)}
+  button:active{opacity:.85}
+  .dtab:active{transform:scale(.95)}
+  .chk:active{transform:scale(.85)}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+  .item.hecho{animation:pulse .3s}
 </style>
 </head>
 <body>
@@ -351,7 +366,7 @@
   </div>
   <div class="cap-row" id="capRow">
     <input id="inp" placeholder="Escribí o pegá un link…" autocomplete="off">
-    <button id="btnVoz" style="border:none;background:var(--tinta);color:#fff;width:42px;height:42px;border-radius:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0">
+    <button id="btnVoz" style="border:none;background:var(--rojo);color:#fff;width:42px;height:42px;border-radius:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
     </button>
     <button id="btnAdd">+</button>
@@ -411,6 +426,15 @@
 <div id="toast"></div>
 
 <script>
+// ── Efectos (Sonidos + Vibraciones) ──
+const FX = {
+  beep: ()=> { try{ const c = new (window.AudioContext||window.webkitAudioContext)(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = 800; g.gain.setValueAtTime(.3, c.currentTime); g.gain.exponentialRampToValueAtTime(.01, c.currentTime + .1); o.start(c.currentTime); o.stop(c.currentTime + .1); } catch(e){} },
+  click: ()=> { try{ const c = new (window.AudioContext||window.webkitAudioContext)(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = 600; g.gain.setValueAtTime(.2, c.currentTime); g.gain.exponentialRampToValueAtTime(.01, c.currentTime + .05); o.start(c.currentTime); o.stop(c.currentTime + .05); } catch(e){} },
+  save: ()=> { FX.beep(); if(navigator.vibrate) navigator.vibrate(30); },
+  delete: ()=> { FX.click(); if(navigator.vibrate) navigator.vibrate([20,10,20]); },
+  toggle: ()=> { if(navigator.vibrate) navigator.vibrate(15); }
+};
+
 // ── Storage con fallback ──
 let memStore = {};
 const store = {
@@ -521,9 +545,14 @@ function pintarStrip(){
     if(x0===null) return;
     const dx=e.changedTouches[0].clientX-x0; x0=null;
     if(Math.abs(dx)<40) return;
+    FX.toggle();
     sel=addDias(sel,dx<0?1:-1);
     mesVista=new Date(sel.getFullYear(),sel.getMonth(),1);
     pintarTodo();
+    setTimeout(()=>{
+      const botonSel=zona.querySelector('.dtab.sel');
+      if(botonSel) botonSel.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    },0);
   },{passive:true});
 })();
 
@@ -578,7 +607,7 @@ function filaItem(it, onChk, onEdit, onMan, onDel, fechaCtx){
       t.contentEditable='true'; t.classList.add('editando');
       t.oninput=()=>{ it.txt=t.innerText; save(); };
       t.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); t.blur(); } };
-      t.onblur=()=>{ if(itemEdit===it.id){ itemEdit=null; save(); pintarTodo(); } };
+      t.onblur=()=>{ if(itemEdit===it.id){ itemEdit=null; FX.save(); save(); pintarTodo(); } };
     }
     cuerpo.appendChild(t);
   }
@@ -596,7 +625,7 @@ function filaItem(it, onChk, onEdit, onMan, onDel, fechaCtx){
   const grip=document.createElement('div'); grip.className='drag-grip'; grip.innerHTML=ICON.grip;
   acc.appendChild(grip);
   if(onEdit) acc.appendChild(btnAcc('editar',onEdit));
-  if(onMan) acc.appendChild(btnAcc('mover',onMan));
+  if(onMan) acc.appendChild(btnAcc('mover',()=>{ FX.save(); onMan(); }));
   if(onDel) acc.appendChild(btnAcc('borrar',onDel,true));
   row.appendChild(acc);
   return row;
@@ -668,14 +697,14 @@ function pintarDia(){
   };
   items.forEach((it)=>{
     const row=filaItem(it,
-      ()=>{ it.hecho=!it.hecho; save(); pintarTodo(); },
+      ()=>{ it.hecho=!it.hecho; FX.toggle(); save(); FX.save(); pintarTodo(); },
       ()=>{ itemEdit=it.id; pintarTodo(); },
       ()=>{ data.dias[k]=data.dias[k].filter(x=>x.id!==it.id);
             if(!data.dias[k].length) delete data.dias[k];
             const nk=key(addDias(sel,1));
             (data.dias[nk]=data.dias[nk]||[]).push(it);
             save(); pintarTodo(); },
-      ()=>{ aBorrados(it,{tipo:'dia',k});
+      ()=>{ FX.delete(); aBorrados(it,{tipo:'dia',k});
             data.dias[k]=data.dias[k].filter(x=>x.id!==it.id);
             if(!data.dias[k].length) delete data.dias[k];
             save(); pintarTodo(); },
@@ -698,7 +727,7 @@ function pintarDia(){
         ()=>{ r.hecho=!r.hecho; save(); pintarTodo(); },
         ()=>{ itemEdit=r.id; pintarTodo(); },
         null,
-        ()=>{ aBorrados(r,{tipo:'rutina'});
+        ()=>{ FX.delete(); aBorrados(r,{tipo:'rutina'});
               data.rutinas=data.rutinas.filter(x=>x.id!==r.id); save(); pintarTodo(); }
       );
       row.dataset.id=r.id; row.classList.add('rut-item');
@@ -740,6 +769,7 @@ function pintarMemos(focoId){
     accs.appendChild(mGrip);
     accs.appendChild(btnAcc('editar',()=>{ memoEdit=m.id; pintarMemos(m.id); }));
     accs.appendChild(btnAcc('borrar',()=>{
+      FX.delete();
       aBorrados({id:m.id,tipo:'memo',txt:m.txt,creado:m.creado},{tipo:'memo'});
       data.memos=data.memos.filter(y=>y.id!==m.id);
       if(memoEdit===m.id) memoEdit=null;
@@ -750,7 +780,7 @@ function pintarMemos(focoId){
     const ed=document.createElement('div'); ed.className='memo-txt';
     ed.contentEditable = enEdicion?'true':'false';
     ed.textContent=m.txt||'';
-    if(enEdicion) ed.oninput=()=>{ m.txt=ed.innerText; m.editado=Date.now(); save(); };
+    if(enEdicion) ed.oninput=()=>{ m.txt=ed.innerText; m.editado=Date.now(); FX.toggle(); save(); };
     b.appendChild(ed);
     if(!enEdicion) habilitarArrastre(b, l, '.memo', ids=>{
       data.memos.sort((a,c)=> ids.indexOf(String(a.id)) - ids.indexOf(String(c.id)));
@@ -918,14 +948,14 @@ function agregar(){
   if(modo!=='agenda'){
     data.memos.push({id,txt:'',creado:Date.now()});
     memoEdit=id;
-    save(); pintarMemos(id); return;
+    save(); FX.save(); pintarMemos(id); return;
   }
   const inp=document.getElementById('inp');
   const v=inp.value.trim(); if(!v) return;
   if(tipoSel==='rutina'){
     const hora=recHora.value||'';   // hora opcional → si la ponés, es alarma recurrente
     data.rutinas.push({id,tipo:'rutina',txt:v,hora,repetir:rutRepetir,hecho:false,racha:0});
-    save(); inp.value=''; recHora.value=''; pintarTodo(); return;
+    save(); FX.save(); inp.value=''; recHora.value=''; pintarTodo(); return;
   }
   if(tipoSel==='recordatorio'){
     const fecha=recFecha.value;   // ya viene YYYY-MM-DD, mismo formato que key()
@@ -935,7 +965,7 @@ function agregar(){
     (data.dias[k]=data.dias[k]||[]).push({id,tipo:'recordatorio',txt:v,fecha,hora,hecho:false});
     sel=new Date(fecha+'T00:00:00');  // mostrar el día del recordatorio (hora local, sin corrimiento)
     mesVista=new Date(sel.getFullYear(),sel.getMonth(),1);
-    save(); inp.value=''; pintarTodo();
+    save(); FX.save(); inp.value=''; pintarTodo();
     return;
   }
   const tipo = esURL(v)&&tipoSel==='tarea' ? 'nota' : tipoSel;
@@ -948,10 +978,10 @@ function agregar(){
     (data.dias[kPago]=data.dias[kPago]||[]).push(nuevoItem);
     sel=new Date(fechaPago+'T00:00:00');
     mesVista=new Date(sel.getFullYear(),sel.getMonth(),1);
-    save(); inp.value=''; recFecha.value=''; pintarTodo(); return;
+    save(); FX.save(); inp.value=''; recFecha.value=''; pintarTodo(); return;
   }
   (data.dias[k]=data.dias[k]||[]).push(nuevoItem);
-  save(); inp.value=''; pintarTodo();
+  save(); FX.save(); inp.value=''; pintarTodo();
 }
 document.getElementById('btnAdd').onclick=agregar;
 document.getElementById('inp').addEventListener('keydown',e=>{ if(e.key==='Enter') agregar(); });
@@ -1024,8 +1054,8 @@ function pintarBorrados(){
     const o=document.createElement('span'); o.className='bi-org'; o.textContent=org+' · '+fmtFH(b._ts);
     t.appendChild(o);
     t.appendChild(document.createTextNode(b.txt||'(vacío)'));
-    const r=btnAcc('restaurar',()=>restaurar(b));
-    const x=btnAcc('borrar',()=>{ data.borrados=data.borrados.filter(y=>y!==b); save(); pintarBorrados(); },true);
+    const r=btnAcc('restaurar',()=>{ FX.save(); restaurar(b); });
+    const x=btnAcc('borrar',()=>{ FX.delete(); data.borrados=data.borrados.filter(y=>y!==b); save(); pintarBorrados(); },true);
     row.appendChild(t); row.appendChild(r); row.appendChild(x);
     l.appendChild(row);
   });

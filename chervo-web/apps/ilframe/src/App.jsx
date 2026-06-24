@@ -45,11 +45,17 @@ export default function App() {
 
       {/* ── Main Layout: Panel + Canvas ── */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-        {/* Panel Lateral Fijo */}
+        {/* Panel Lateral - overlay sobre el canvas */}
         {sideMenuOpen && (
-          <div style={{ width: '280px', background: 'white', borderRight: '1px solid #e0e0e0', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <SidePanel isOpen={true} onToggle={() => setSideMenuOpen(false)} />
-          </div>
+          <>
+            <div
+              onClick={() => setSideMenuOpen(false)}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)', zIndex: 99 }}
+            />
+            <div style={{ position: 'absolute', top: 0, left: 0, width: 'min(280px, 85vw)', height: '100%', background: 'white', borderRight: '1px solid #e0e0e0', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 100, boxShadow: '4px 0 24px rgba(0,0,0,0.12)' }}>
+              <SidePanel isOpen={true} onToggle={() => setSideMenuOpen(false)} />
+            </div>
+          </>
         )}
 
         {/* Canvas + CommandBar */}

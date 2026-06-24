@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/ilframe", "destination": "/ilframe/index.html" },
+    { "source": "/ilframe/:path*", "destination": "/ilframe/index.html" }
+  ]
+}
