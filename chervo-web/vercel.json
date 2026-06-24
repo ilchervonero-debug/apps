@@ -2,15 +2,7 @@
   "rewrites": [
     {
       "source": "/ilframe/:path*",
-      "destination": "/ilframe/dist/:path*"
-    },
-    {
-      "source": "/ilframe",
-      "destination": "/ilframe/dist/index.html"
-    },
-    {
-      "source": "/ilframe/",
-      "destination": "/ilframe/dist/index.html"
+      "destination": "/ilframe/:path*"
     }
   ]
 }

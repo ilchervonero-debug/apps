@@ -1,18 +1,4 @@
 {
-  "buildCommand": "echo 'Static site with integrated apps'",
-  "outputDirectory": "chervo-web",
-  "rewrites": [
-    {
-      "source": "/ilframe/:path*",
-      "destination": "/ilframe/dist/:path*"
-    },
-    {
-      "source": "/ilframe",
-      "destination": "/ilframe/dist/index.html"
-    },
-    {
-      "source": "/ilframe/",
-      "destination": "/ilframe/dist/index.html"
-    }
-  ]
+  "buildCommand": "echo 'Static site'",
+  "outputDirectory": "chervo-web"
 }
