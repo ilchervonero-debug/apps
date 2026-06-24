@@ -302,6 +302,18 @@
   .borr-item{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--linea)}
   .borr-item .bi-txt{flex:1;min-width:0;font-size:.86rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gris)}
   .borr-item .bi-org{font-family:'Geist Mono',monospace;font-size:.6rem;color:#ADADA9;display:block}
+
+  /* ── Animaciones y Efectos ── */
+  .dias-strip{scroll-behavior:smooth}
+  .item,.memo,.app-card{transition:all .2s cubic-bezier(.2,.7,.2,1)}
+  .item:active,.memo:active{transform:scale(.98);opacity:.8}
+  .acc{transition:all .15s}
+  .acc:active{transform:scale(.9)}
+  button:active{opacity:.85}
+  .dtab:active{transform:scale(.95)}
+  .chk:active{transform:scale(.85)}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+  .item.hecho{animation:pulse .3s}
 </style>
 </head>
 <body>
@@ -412,6 +424,15 @@
 <div id="toast"></div>
 
 <script>
+// ── Efectos (Sonidos + Vibraciones) ──
+const FX = {
+  beep: ()=> { try{ const c = new (window.AudioContext||window.webkitAudioContext)(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = 800; g.gain.setValueAtTime(.3, c.currentTime); g.gain.exponentialRampToValueAtTime(.01, c.currentTime + .1); o.start(c.currentTime); o.stop(c.currentTime + .1); } catch(e){} },
+  click: ()=> { try{ const c = new (window.AudioContext||window.webkitAudioContext)(); const o = c.createOscillator(); const g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = 600; g.gain.setValueAtTime(.2, c.currentTime); g.gain.exponentialRampToValueAtTime(.01, c.currentTime + .05); o.start(c.currentTime); o.stop(c.currentTime + .05); } catch(e){} },
+  save: ()=> { FX.beep(); if(navigator.vibrate) navigator.vibrate(30); },
+  delete: ()=> { FX.click(); if(navigator.vibrate) navigator.vibrate([20,10,20]); },
+  toggle: ()=> { if(navigator.vibrate) navigator.vibrate(15); }
+};
+
 // ── Storage con fallback ──
 let memStore = {};
 const store = {
@@ -579,7 +600,7 @@ function filaItem(it, onChk, onEdit, onMan, onDel, fechaCtx){
       t.contentEditable='true'; t.classList.add('editando');
       t.oninput=()=>{ it.txt=t.innerText; save(); };
       t.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); t.blur(); } };
-      t.onblur=()=>{ if(itemEdit===it.id){ itemEdit=null; save(); pintarTodo(); } };
+      t.onblur=()=>{ if(itemEdit===it.id){ itemEdit=null; FX.save(); save(); pintarTodo(); } };
     }
     cuerpo.appendChild(t);
   }
@@ -668,14 +689,14 @@ function pintarDia(){
   };
   items.forEach((it)=>{
     const row=filaItem(it,
-      ()=>{ it.hecho=!it.hecho; save(); pintarTodo(); },
+      ()=>{ it.hecho=!it.hecho; FX.toggle(); save(); FX.save(); pintarTodo(); },
       ()=>{ itemEdit=it.id; pintarTodo(); },
       ()=>{ data.dias[k]=data.dias[k].filter(x=>x.id!==it.id);
             if(!data.dias[k].length) delete data.dias[k];
             const nk=key(addDias(sel,1));
             (data.dias[nk]=data.dias[nk]||[]).push(it);
             save(); pintarTodo(); },
-      ()=>{ aBorrados(it,{tipo:'dia',k});
+      ()=>{ FX.delete(); aBorrados(it,{tipo:'dia',k});
             data.dias[k]=data.dias[k].filter(x=>x.id!==it.id);
             if(!data.dias[k].length) delete data.dias[k];
             save(); pintarTodo(); },
@@ -698,7 +719,7 @@ function pintarDia(){
         ()=>{ r.hecho=!r.hecho; save(); pintarTodo(); },
         ()=>{ itemEdit=r.id; pintarTodo(); },
         null,
-        ()=>{ aBorrados(r,{tipo:'rutina'});
+        ()=>{ FX.delete(); aBorrados(r,{tipo:'rutina'});
               data.rutinas=data.rutinas.filter(x=>x.id!==r.id); save(); pintarTodo(); }
       );
       row.dataset.id=r.id; row.classList.add('rut-item');
@@ -740,6 +761,7 @@ function pintarMemos(focoId){
     accs.appendChild(mGrip);
     accs.appendChild(btnAcc('editar',()=>{ memoEdit=m.id; pintarMemos(m.id); }));
     accs.appendChild(btnAcc('borrar',()=>{
+      FX.delete();
       aBorrados({id:m.id,tipo:'memo',txt:m.txt,creado:m.creado},{tipo:'memo'});
       data.memos=data.memos.filter(y=>y.id!==m.id);
       if(memoEdit===m.id) memoEdit=null;
@@ -750,7 +772,7 @@ function pintarMemos(focoId){
     const ed=document.createElement('div'); ed.className='memo-txt';
     ed.contentEditable = enEdicion?'true':'false';
     ed.textContent=m.txt||'';
-    if(enEdicion) ed.oninput=()=>{ m.txt=ed.innerText; m.editado=Date.now(); save(); };
+    if(enEdicion) ed.oninput=()=>{ m.txt=ed.innerText; m.editado=Date.now(); FX.toggle(); save(); };
     b.appendChild(ed);
     if(!enEdicion) habilitarArrastre(b, l, '.memo', ids=>{
       data.memos.sort((a,c)=> ids.indexOf(String(a.id)) - ids.indexOf(String(c.id)));
@@ -918,14 +940,14 @@ function agregar(){
   if(modo!=='agenda'){
     data.memos.push({id,txt:'',creado:Date.now()});
     memoEdit=id;
-    save(); pintarMemos(id); return;
+    save(); FX.save(); pintarMemos(id); return;
   }
   const inp=document.getElementById('inp');
   const v=inp.value.trim(); if(!v) return;
   if(tipoSel==='rutina'){
     const hora=recHora.value||'';   // hora opcional → si la ponés, es alarma recurrente
     data.rutinas.push({id,tipo:'rutina',txt:v,hora,repetir:rutRepetir,hecho:false,racha:0});
-    save(); inp.value=''; recHora.value=''; pintarTodo(); return;
+    save(); FX.save(); inp.value=''; recHora.value=''; pintarTodo(); return;
   }
   if(tipoSel==='recordatorio'){
     const fecha=recFecha.value;   // ya viene YYYY-MM-DD, mismo formato que key()
@@ -935,7 +957,7 @@ function agregar(){
     (data.dias[k]=data.dias[k]||[]).push({id,tipo:'recordatorio',txt:v,fecha,hora,hecho:false});
     sel=new Date(fecha+'T00:00:00');  // mostrar el día del recordatorio (hora local, sin corrimiento)
     mesVista=new Date(sel.getFullYear(),sel.getMonth(),1);
-    save(); inp.value=''; pintarTodo();
+    save(); FX.save(); inp.value=''; pintarTodo();
     return;
   }
   const tipo = esURL(v)&&tipoSel==='tarea' ? 'nota' : tipoSel;
@@ -948,10 +970,10 @@ function agregar(){
     (data.dias[kPago]=data.dias[kPago]||[]).push(nuevoItem);
     sel=new Date(fechaPago+'T00:00:00');
     mesVista=new Date(sel.getFullYear(),sel.getMonth(),1);
-    save(); inp.value=''; recFecha.value=''; pintarTodo(); return;
+    save(); FX.save(); inp.value=''; recFecha.value=''; pintarTodo(); return;
   }
   (data.dias[k]=data.dias[k]||[]).push(nuevoItem);
-  save(); inp.value=''; pintarTodo();
+  save(); FX.save(); inp.value=''; pintarTodo();
 }
 document.getElementById('btnAdd').onclick=agregar;
 document.getElementById('inp').addEventListener('keydown',e=>{ if(e.key==='Enter') agregar(); });
@@ -1024,8 +1046,8 @@ function pintarBorrados(){
     const o=document.createElement('span'); o.className='bi-org'; o.textContent=org+' · '+fmtFH(b._ts);
     t.appendChild(o);
     t.appendChild(document.createTextNode(b.txt||'(vacío)'));
-    const r=btnAcc('restaurar',()=>restaurar(b));
-    const x=btnAcc('borrar',()=>{ data.borrados=data.borrados.filter(y=>y!==b); save(); pintarBorrados(); },true);
+    const r=btnAcc('restaurar',()=>{ FX.save(); restaurar(b); });
+    const x=btnAcc('borrar',()=>{ FX.delete(); data.borrados=data.borrados.filter(y=>y!==b); save(); pintarBorrados(); },true);
     row.appendChild(t); row.appendChild(r); row.appendChild(x);
     l.appendChild(row);
   });
