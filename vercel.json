@@ -1,17 +1,3 @@
 {
-  "version": 2,
-  "projects": [
-    {
-      "name": "ilframe",
-      "rootDirectory": "ilframe"
-    },
-    {
-      "name": "chervo-web",
-      "rootDirectory": "chervo-web"
-    },
-    {
-      "name": "djcu-app",
-      "rootDirectory": "djcu-app"
-    }
-  ]
+  "version": 2
 }
