@@ -7,6 +7,7 @@ export default function CommandBar() {
   const currentPoints = useDrawingStore(s => s.currentPoints)
   const snapPos       = useDrawingStore(s => s.snapPos)
   const selEl         = useDrawingStore(s => s.selectedElement)
+  const activeCanvas  = useDrawingStore(s => s.activeCanvas)
   const selectEl      = useDrawingStore(s => s.selectElement)
   const deselect      = useDrawingStore(s => s.deselectElement)
   const updateEl      = useDrawingStore(s => s.updateElement)
@@ -14,6 +15,9 @@ export default function CommandBar() {
   const cancelDrawing = useDrawingStore(s => s.cancelDrawing)
   const finishWithLen = useDrawingStore(s => s.finishLineWithLength)
   const deleteEl      = useDrawingStore(s => s.deleteElement)
+  const addNode       = useDrawingStore(s => s.addProfileNode)
+  const removeNode    = useDrawingStore(s => s.removeProfileNode)
+  const updateNode    = useDrawingStore(s => s.updateProfileNode)
 
   const [lenInput, setLenInput] = useState('')
 
@@ -46,7 +50,6 @@ export default function CommandBar() {
           <button className="btn-esc" onClick={cancelDrawing}>✕ Cancelar</button>
         </div>
 
-        {/* Only show length input after first point is placed (line tool) */}
         {currentPoints.length === 1 && (
           <div className="cmd-row cmd-len-row">
             <span className="cmd-label">Longitud exacta</span>
@@ -67,7 +70,61 @@ export default function CommandBar() {
     )
   }
 
-  // ── Selected element ─────────────────────────────────────────────────────
+  // ── Selected element — Elevation canvas ──────────────────────────────────
+  if (selEl && activeCanvas === 'elevation') {
+    const profile = [...(selEl.elevationProfile || [{ t: 0, h: 3000 }, { t: 1, h: 3000 }])]
+      .sort((a, b) => a.t - b.t)
+
+    const addCumbrera = () => addNode(selEl.id, 0.5)
+
+    return (
+      <div className="command-bar elev-mode">
+        <div className="cmd-row">
+          <span className="cmd-badge elev">{selEl.id}</span>
+          <span className="cmd-label">ALZADO</span>
+          <span className="cmd-sep">·</span>
+          <span className="cmd-pts">
+            {profile.length} nodo{profile.length !== 1 ? 's' : ''}
+          </span>
+          <button className="btn-add-node" onClick={addCumbrera} title="Agregar nodo central (cumbrera)">
+            + Cumbrera
+          </button>
+          <button className="btn-close" onClick={deselect}>×</button>
+        </div>
+
+        <div className="cmd-row cmd-nodes-row">
+          {profile.map((node, i) => {
+            const isEndpoint = node.t === 0 || node.t === 1
+            const label = node.t === 0 ? 'Inicio' : node.t === 1 ? 'Fin' : `t=${(node.t * 100).toFixed(0)}%`
+            return (
+              <div key={i} className={`node-item${isEndpoint ? ' endpoint' : ''}`}>
+                <span className="node-label">{label}</span>
+                <input
+                  type="number"
+                  className="cmd-prop-input node-h-input"
+                  value={+(node.h / 1000).toFixed(3)}
+                  step="0.1"
+                  min="0.3"
+                  max="10"
+                  onChange={e => updateNode(selEl.id, i, parseFloat(e.target.value) * 1000 || node.h)}
+                />
+                <span className="cmd-unit">m</span>
+                {!isEndpoint && (
+                  <button
+                    className="btn-del-node"
+                    onClick={() => removeNode(selEl.id, i)}
+                    title="Eliminar nodo"
+                  >×</button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
+  // ── Selected element — Plan canvas ───────────────────────────────────────
   if (selEl) {
     return (
       <div className="command-bar selected-mode">

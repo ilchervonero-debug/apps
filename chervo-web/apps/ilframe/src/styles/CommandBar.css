@@ -157,3 +157,89 @@
 .item-id  { font-weight: 800; color: #fe0000; font-family: monospace; }
 .item-len { color: #777; font-family: monospace; }
 .item-h   { color: #aaa; font-family: monospace; }
+
+/* ── Elevation mode ──────────────────────────────────────────────────────── */
+
+.command-bar.elev-mode {
+  background: #fafcff;
+  border-top: 2px solid #2266ff;
+}
+
+.cmd-badge.elev { background: #2266ff; color: white; font-family: monospace; }
+
+.cmd-nodes-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid #dce8ff;
+}
+
+.node-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  background: #f0f5ff;
+  border: 1.5px solid #c0d4ff;
+  border-radius: 4px;
+}
+
+.node-item.endpoint {
+  background: #f5f5f5;
+  border-color: #ddd;
+}
+
+.node-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2266ff;
+  text-transform: uppercase;
+  min-width: 36px;
+}
+
+.node-item.endpoint .node-label { color: #888; }
+
+.node-h-input {
+  padding: 3px 6px;
+  border: 1.5px solid #c0d4ff;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: monospace;
+  width: 72px;
+  transition: border-color 0.15s;
+}
+
+.node-item.endpoint .node-h-input { border-color: #ddd; }
+
+.node-h-input:focus {
+  outline: none;
+  border-color: #2266ff;
+  box-shadow: 0 0 0 2px rgba(34,102,255,0.12);
+}
+
+.btn-del-node {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.btn-del-node:hover { color: #fe0000; }
+
+.btn-add-node {
+  padding: 4px 10px;
+  background: #2266ff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.btn-add-node:hover { background: #1a55e0; }

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
-const SNAP = 100           // mm snap increment
-const DEFAULT_H = 3000     // mm default wall height
+const SNAP      = 100
+const DEFAULT_H = 3000
 
 function dist(p1, p2) {
   const dx = p2[0] - p1[0], dy = p2[1] - p1[1]
@@ -13,6 +13,34 @@ function wallId(elements) {
   return `M${n + 1}`
 }
 
+function defaultProfile(h = DEFAULT_H) {
+  return [{ t: 0, h }, { t: 1, h }]
+}
+
+// Interpolate profile height at position t
+function interpH(profile, t) {
+  const sorted = [...profile].sort((a, b) => a.t - b.t)
+  let left  = sorted[0]
+  let right = sorted[sorted.length - 1]
+  for (const n of sorted) {
+    if (n.t <= t) left  = n
+    if (n.t >= t) { right = n; break }
+  }
+  if (left.t === right.t) return left.h
+  return Math.round(left.h + (right.h - left.h) * ((t - left.t) / (right.t - left.t)))
+}
+
+function makeElement(id, points, length) {
+  return {
+    id,
+    type:             'line',
+    points,
+    properties:       { length, height: DEFAULT_H },
+    elevationProfile: defaultProfile(DEFAULT_H),
+    connections:      [],
+  }
+}
+
 export const useDrawingStore = create((set, get) => ({
   elements:        [],
   selectedId:      null,
@@ -20,34 +48,23 @@ export const useDrawingStore = create((set, get) => ({
   activeTool:      'line',
   currentPoints:   [],
   snapPos:         [0, 0],
+  activeCanvas:    'plan',   // 'plan' | 'elevation'
 
-  setSnapPos: (pos) => set({ snapPos: pos }),
-
-  setActiveTool: (tool) => set({ activeTool: tool }),
+  setSnapPos:      (pos)    => set({ snapPos: pos }),
+  setActiveTool:   (tool)   => set({ activeTool: tool }),
+  setActiveCanvas: (canvas) => set({ activeCanvas: canvas }),
 
   addPoint: (rawPoint) => {
     const state = get()
-    const pt = [
-      Math.round(rawPoint[0] / SNAP) * SNAP,
-      Math.round(rawPoint[1] / SNAP) * SNAP,
-    ]
+    const pt  = [Math.round(rawPoint[0] / SNAP) * SNAP, Math.round(rawPoint[1] / SNAP) * SNAP]
     const pts = [...state.currentPoints, pt]
 
-    // Line tool: auto-finish after 2 points
     if (state.activeTool === 'line' && pts.length === 2) {
       const len = dist(pts[0], pts[1])
-      if (len < SNAP) return  // ignore near-zero lines
-      const el = {
-        id:         wallId(state.elements),
-        type:       'line',
-        points:     pts,
-        properties: { length: len, height: DEFAULT_H },
-        connections: [],
-      }
-      set({ elements: [...state.elements, el], currentPoints: [] })
+      if (len < SNAP) return
+      set({ elements: [...state.elements, makeElement(wallId(state.elements), pts, len)], currentPoints: [] })
       return
     }
-
     set({ currentPoints: pts })
   },
 
@@ -55,48 +72,36 @@ export const useDrawingStore = create((set, get) => ({
     const { currentPoints, elements } = get()
     if (currentPoints.length < 2) { set({ currentPoints: [] }); return }
     const len = dist(currentPoints[0], currentPoints[currentPoints.length - 1])
-    const el = {
-      id:         wallId(elements),
-      type:       'line',
-      points:     currentPoints,
-      properties: { length: len, height: DEFAULT_H },
-      connections: [],
-    }
-    set({ elements: [...elements, el], currentPoints: [] })
+    set({ elements: [...elements, makeElement(wallId(elements), currentPoints, len)], currentPoints: [] })
   },
 
-  // Finish line from currentPoints[0] in direction of snapPos, with exact length
   finishLineWithLength: (start, direction, length) => {
     const { elements } = get()
-    const dx = direction[0] - start[0]
-    const dy = direction[1] - start[1]
+    const dx = direction[0] - start[0], dy = direction[1] - start[1]
     const d  = Math.sqrt(dx * dx + dy * dy)
-    const ux = d > 0 ? dx / d : 1
-    const uy = d > 0 ? dy / d : 0
-    const end = [
-      Math.round(start[0] + ux * length),
-      Math.round(start[1] + uy * length),
-    ]
-    const el = {
-      id:         wallId(elements),
-      type:       'line',
-      points:     [start, end],
-      properties: { length, height: DEFAULT_H },
-      connections: [],
-    }
-    set({ elements: [...elements, el], currentPoints: [] })
+    const end = [Math.round(start[0] + (d > 0 ? dx / d : 1) * length), Math.round(start[1] + (d > 0 ? dy / d : 0) * length)]
+    set({ elements: [...elements, makeElement(wallId(elements), [start, end], length)], currentPoints: [] })
   },
 
   cancelDrawing: () => set({ currentPoints: [] }),
 
+  // ── Element ──────────────────────────────────────────────────────────────
+
   updateElement: (id, updates) => {
     set(state => {
-      const elements = state.elements.map(el => el.id === id ? { ...el, ...updates } : el)
-      const selectedElement =
-        state.selectedId === id
-          ? (elements.find(el => el.id === id) ?? null)
-          : state.selectedElement
-      return { elements, selectedElement }
+      const elements = state.elements.map(el => {
+        if (el.id !== id) return el
+        const updated = { ...el, ...updates }
+        // Sync profile endpoints if base height changes
+        if (updates.properties?.height !== undefined) {
+          const h = updates.properties.height
+          updated.elevationProfile = (updated.elevationProfile || defaultProfile()).map(n =>
+            (n.t === 0 || n.t === 1) ? { ...n, h } : n
+          )
+        }
+        return updated
+      })
+      return { elements, selectedElement: _syncSelected(state, id, elements) }
     })
   },
 
@@ -117,7 +122,56 @@ export const useDrawingStore = create((set, get) => ({
 
   deselectElement: () => set({ selectedId: null, selectedElement: null }),
 
-  clearAll: () => set({
-    elements: [], selectedId: null, selectedElement: null, currentPoints: [],
-  }),
+  // ── Elevation profile ────────────────────────────────────────────────────
+
+  // Update height of a profile node by its index in the sorted array
+  updateProfileNode: (id, index, h) => {
+    set(state => {
+      const elements = state.elements.map(el => {
+        if (el.id !== id) return el
+        const profile = [...(el.elevationProfile || defaultProfile())]
+        if (index < 0 || index >= profile.length) return el
+        profile[index] = { ...profile[index], h: Math.max(300, Math.min(10000, Math.round(h))) }
+        return { ...el, elevationProfile: profile }
+      })
+      return { elements, selectedElement: _syncSelected(state, id, elements) }
+    })
+  },
+
+  // Add an interior node at position t (0..1), skip if one exists nearby
+  addProfileNode: (id, t) => {
+    set(state => {
+      const el = state.elements.find(e => e.id === id)
+      if (!el) return state
+      const profile = el.elevationProfile || defaultProfile()
+      if (profile.some(n => Math.abs(n.t - t) < 0.02)) return state   // already exists
+      const newH    = interpH(profile, t)
+      const newProf = [...profile, { t, h: newH }].sort((a, b) => a.t - b.t)
+      const elements = state.elements.map(e => e.id === id ? { ...e, elevationProfile: newProf } : e)
+      return { elements, selectedElement: _syncSelected(state, id, elements) }
+    })
+  },
+
+  // Remove a profile node by index (endpoints t=0 / t=1 are protected)
+  removeProfileNode: (id, index) => {
+    set(state => {
+      const el = state.elements.find(e => e.id === id)
+      if (!el) return state
+      const profile = el.elevationProfile || defaultProfile()
+      const node = profile[index]
+      if (!node || node.t === 0 || node.t === 1) return state
+      const newProf  = profile.filter((_, i) => i !== index)
+      const elements = state.elements.map(e => e.id === id ? { ...e, elevationProfile: newProf } : e)
+      return { elements, selectedElement: _syncSelected(state, id, elements) }
+    })
+  },
+
+  clearAll: () => set({ elements: [], selectedId: null, selectedElement: null, currentPoints: [] }),
 }))
+
+// Helper: keep selectedElement in sync after an elements update
+function _syncSelected(state, id, elements) {
+  return state.selectedId === id
+    ? (elements.find(el => el.id === id) ?? null)
+    : state.selectedElement
+}

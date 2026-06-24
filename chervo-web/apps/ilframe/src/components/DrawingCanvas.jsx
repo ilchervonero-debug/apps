@@ -2,15 +2,13 @@ import { useRef, useEffect, useState } from 'react'
 import { useDrawingStore } from '../store/drawingStore'
 import '../styles/DrawingCanvas.css'
 
-// Canvas coordinate space (mm = real-world millimetres)
-const PLAN_W  = 10000   // plan canvas width  in mm
-const PLAN_H  = 6000    // plan canvas height in mm
-const ELEV_H  = 4000    // elevation canvas height in mm
-const FLOOR_Y = 3600    // floor line position in elevation (from top, mm)
-const GRID    = 500     // visual grid spacing (mm)
-const SNAP    = 100     // snap increment (mm)
+const PLAN_W  = 10000
+const PLAN_H  = 6000
+const ELEV_H  = 4000
+const FLOOR_Y = 3600
+const GRID    = 500
+const SNAP    = 100
 
-// Convert screen pixels → mm in the SVG coordinate space
 function toMM(cx, cy, svgEl, W, H) {
   const r = svgEl.getBoundingClientRect()
   return [(cx - r.left) / r.width * W, (cy - r.top) / r.height * H]
@@ -24,12 +22,27 @@ function dist([x1, y1], [x2, y2]) {
   return Math.round(Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2))
 }
 
+// Build polygon points from elevationProfile + wall geometry
+function profileToPolygon(el) {
+  const x0  = el.points[0][0]
+  const len = el.properties?.length ?? 0
+  const profile = [...(el.elevationProfile || [{ t: 0, h: 3000 }, { t: 1, h: 3000 }])]
+    .sort((a, b) => a.t - b.t)
+  const topPts = profile.map(n => [x0 + n.t * len, FLOOR_Y - n.h])
+  return [
+    [x0, FLOOR_Y],
+    ...topPts,
+    [x0 + len, FLOOR_Y],
+  ]
+}
+
 export default function DrawingCanvas() {
   const elevRef = useRef(null)
   const planRef = useRef(null)
   const divRef  = useRef(null)
+  const draggingNode = useRef(null)   // { id, index }
 
-  const [splitPct,  setSplitPct]  = useState(38)   // elevation % of total height
+  const [splitPct,  setSplitPct]  = useState(38)
   const [dragging,  setDragging]  = useState(false)
   const [localSnap, setLocalSnap] = useState([500, 500])
 
@@ -41,15 +54,40 @@ export default function DrawingCanvas() {
   const finishDrawing = useDrawingStore(s => s.finishDrawing)
   const cancelDrawing = useDrawingStore(s => s.cancelDrawing)
   const setSnapPos    = useDrawingStore(s => s.setSnapPos)
+  const setActiveCanvas = useDrawingStore(s => s.setActiveCanvas)
 
-  // Push snap position to store so CommandBar can read it
   useEffect(() => { setSnapPos(localSnap) }, [localSnap, setSnapPos])
 
-  // Redraw both canvases whenever anything changes
   useEffect(() => {
-    renderElev(elevRef.current, elements, selectedId)
+    renderElev(elevRef.current, elements, selectedId, draggingNode)
     renderPlan(planRef.current, elements, selectedId, currentPoints, localSnap, activeTool)
   }, [elements, selectedId, currentPoints, localSnap, activeTool])
+
+  // Persistent elevation drag + double-click handlers
+  useEffect(() => {
+    const svg = elevRef.current
+    if (!svg) return
+
+    const onMove = e => {
+      if (!draggingNode.current) return
+      const [, mmY] = toMM(e.clientX, e.clientY, svg, PLAN_W, ELEV_H)
+      const newH = Math.max(300, Math.min(10000, Math.round(FLOOR_Y - mmY)))
+      useDrawingStore.getState().updateProfileNode(
+        draggingNode.current.id,
+        draggingNode.current.index,
+        newH
+      )
+    }
+
+    const onUp = () => { draggingNode.current = null }
+
+    svg.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      svg.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [])
 
   // Divider drag
   useEffect(() => {
@@ -85,12 +123,31 @@ export default function DrawingCanvas() {
     addPoint(localSnap)
   }
 
+  const onElevDblClick = e => {
+    const svg = elevRef.current
+    if (!svg) return
+    const selId = useDrawingStore.getState().selectedId
+    if (!selId) return
+    const el = useDrawingStore.getState().elements.find(x => x.id === selId)
+    if (!el) return
+    const [mmX] = toMM(e.clientX, e.clientY, svg, PLAN_W, ELEV_H)
+    const x0  = el.points[0][0]
+    const len = el.properties?.length ?? 0
+    if (len === 0) return
+    const t = Math.max(0.01, Math.min(0.99, (mmX - x0) / len))
+    useDrawingStore.getState().addProfileNode(selId, t)
+  }
+
   const isDrawing = activeTool && ['line', 'polyline'].includes(activeTool)
 
   return (
     <div className="drawing-canvas">
       {/* ── Elevation (top) ─────────────────────────────────────── */}
-      <div className="canvas-section" style={{ height: `${splitPct}%` }}>
+      <div
+        className="canvas-section"
+        style={{ height: `${splitPct}%` }}
+        onMouseEnter={() => setActiveCanvas('elevation')}
+      >
         <div className="canvas-header">Alzado</div>
         <svg
           ref={elevRef}
@@ -98,6 +155,7 @@ export default function DrawingCanvas() {
           viewBox={`0 0 ${PLAN_W} ${ELEV_H}`}
           preserveAspectRatio="xMinYMin meet"
           style={{ cursor: 'default' }}
+          onDoubleClick={onElevDblClick}
         />
       </div>
 
@@ -111,7 +169,11 @@ export default function DrawingCanvas() {
       </div>
 
       {/* ── Plan (bottom) ───────────────────────────────────────── */}
-      <div className="canvas-section" style={{ height: `${100 - splitPct}%` }}>
+      <div
+        className="canvas-section"
+        style={{ height: `${100 - splitPct}%` }}
+        onMouseEnter={() => setActiveCanvas('plan')}
+      >
         <div className="canvas-header">Planta</div>
         <svg
           ref={planRef}
@@ -129,55 +191,107 @@ export default function DrawingCanvas() {
 
 // ─── Elevation renderer ──────────────────────────────────────────────────────
 
-function renderElev(svg, elements, selectedId) {
+function renderElev(svg, elements, selectedId, draggingNode) {
   if (!svg) return
   svg.innerHTML = ''
 
   bg(svg, PLAN_W, ELEV_H, '#f7f7f7')
 
-  // Vertical grid (aligned with plan X axis)
   for (let x = 0; x <= PLAN_W; x += GRID) {
     ln(svg, x, 0, x, ELEV_H, '#e6e6e6', '1')
   }
 
-  // 3m reference guide line
   const ref3m = FLOOR_Y - 3000
   ln(svg, 0, ref3m, PLAN_W, ref3m, '#ddd', '1.5')
   tx(svg, 90, ref3m - 70, '3.0 m', { sz: '160', fill: '#bbb' })
 
-  // Floor line
   ln(svg, 0, FLOOR_Y, PLAN_W, FLOOR_Y, '#222', '14')
 
-  // Wall rectangles
   elements.forEach(el => {
     if (el.type !== 'line' || el.points.length < 2) return
-    const h   = el.properties?.height ?? 3000
-    const len = el.properties?.length ?? 0
-    const x0  = el.points[0][0]
     const sel = el.id === selectedId
+    renderElevWall(svg, el, sel, draggingNode)
+  })
+}
 
-    const rw = Math.max(len, 200)
-    const rh = h
+function renderElevWall(svg, el, sel, draggingNode) {
+  const poly = profileToPolygon(el)
 
-    rct(svg, x0, FLOOR_Y - rh, rw, rh, {
-      fill:   sel ? 'rgba(254,0,0,.12)' : 'rgba(40,40,40,.08)',
-      stroke: sel ? '#fe0000' : '#333',
-      sw:     sel ? '14' : '6',
-      id:     el.id,
-    })
+  // Fill polygon
+  const shape = svg_('polygon')
+  shape.setAttribute('points', poly.map(p => `${p[0]},${p[1]}`).join(' '))
+  shape.setAttribute('fill', sel ? 'rgba(254,0,0,.12)' : 'rgba(40,40,40,.08)')
+  shape.setAttribute('stroke', sel ? '#fe0000' : '#333')
+  shape.setAttribute('stroke-width', sel ? '14' : '6')
+  shape.setAttribute('stroke-linejoin', 'round')
+  shape.setAttribute('data-id', el.id)
+  shape.setAttribute('cursor', 'pointer')
+  svg.appendChild(shape)
 
-    tx(svg, x0 + rw / 2, FLOOR_Y - rh - 90, el.id, {
-      sz: '200', fill: sel ? '#fe0000' : '#999', anchor: 'middle', bold: true,
-    })
+  shape.addEventListener('click', e => {
+    e.stopPropagation()
+    useDrawingStore.getState().selectElement(el.id)
   })
 
-  // Click to select
-  svg.querySelectorAll('[data-id]').forEach(el =>
-    el.addEventListener('click', e => {
-      e.stopPropagation()
-      useDrawingStore.getState().selectElement(el.getAttribute('data-id'))
+  // Label
+  const x0  = el.points[0][0]
+  const len = el.properties?.length ?? 0
+  const profile = [...(el.elevationProfile || [{ t: 0, h: 3000 }, { t: 1, h: 3000 }])].sort((a, b) => a.t - b.t)
+  const maxH = Math.max(...profile.map(n => n.h))
+  tx(svg, x0 + len / 2, FLOOR_Y - maxH - 90, el.id, {
+    sz: '200', fill: sel ? '#fe0000' : '#999', anchor: 'middle', bold: true,
+  })
+
+  if (!sel) return
+
+  // Draggable profile nodes (only when selected)
+  profile.forEach((node, i) => {
+    const nx = x0 + node.t * len
+    const ny = FLOOR_Y - node.h
+    const isEndpoint = node.t === 0 || node.t === 1
+
+    const c = svg_('circle')
+    c.setAttribute('cx', nx)
+    c.setAttribute('cy', ny)
+    c.setAttribute('r', isEndpoint ? '80' : '110')
+    c.setAttribute('fill', isEndpoint ? '#1a1a1a' : '#fe0000')
+    c.setAttribute('stroke', 'white')
+    c.setAttribute('stroke-width', '20')
+    c.setAttribute('cursor', 'ns-resize')
+    c.setAttribute('pointer-events', 'all')
+    svg.appendChild(c)
+
+    // Height label on node
+    tx(svg, nx + 140, ny - 80, `${(node.h / 1000).toFixed(2)} m`, {
+      sz: '160', fill: isEndpoint ? '#555' : '#fe0000',
     })
-  )
+
+    c.addEventListener('mousedown', e => {
+      e.stopPropagation()
+      draggingNode.current = { id: el.id, index: i }
+    })
+
+    // Double-click on interior node deletes it
+    if (!isEndpoint) {
+      c.addEventListener('dblclick', e => {
+        e.stopPropagation()
+        useDrawingStore.getState().removeProfileNode(el.id, i)
+      })
+    }
+  })
+
+  // Profile top line (for clarity)
+  if (profile.length >= 2) {
+    const topLine = svg_('polyline')
+    topLine.setAttribute('points', profile.map(n => `${x0 + n.t * len},${FLOOR_Y - n.h}`).join(' '))
+    topLine.setAttribute('fill', 'none')
+    topLine.setAttribute('stroke', '#fe0000')
+    topLine.setAttribute('stroke-width', '8')
+    topLine.setAttribute('stroke-dasharray', '60 40')
+    topLine.setAttribute('opacity', '0.5')
+    topLine.setAttribute('pointer-events', 'none')
+    svg.appendChild(topLine)
+  }
 }
 
 // ─── Plan renderer ───────────────────────────────────────────────────────────
@@ -188,7 +302,6 @@ function renderPlan(svg, elements, selectedId, currentPoints, snapPos, activeToo
 
   bg(svg, PLAN_W, PLAN_H, '#fff')
 
-  // Grid lines
   for (let x = 0; x <= PLAN_W; x += GRID) {
     const major = x % (GRID * 2) === 0
     ln(svg, x, 0, x, PLAN_H, major ? '#d0d0d0' : '#ebebeb', major ? '1.5' : '0.8')
@@ -198,14 +311,12 @@ function renderPlan(svg, elements, selectedId, currentPoints, snapPos, activeToo
     ln(svg, 0, y, PLAN_W, y, major ? '#d0d0d0' : '#ebebeb', major ? '1.5' : '0.8')
   }
 
-  // Grid dots at every intersection
   for (let x = 0; x <= PLAN_W; x += GRID) {
     for (let y = 0; y <= PLAN_H; y += GRID) {
       cr(svg, x, y, 14, '#c8c8c8')
     }
   }
 
-  // Axis labels (every meter)
   for (let x = GRID; x <= PLAN_W; x += GRID) {
     tx(svg, x, PLAN_H - 25, `${x / 1000}`, { sz: '95', fill: '#bbb', anchor: 'middle' })
   }
@@ -213,13 +324,11 @@ function renderPlan(svg, elements, selectedId, currentPoints, snapPos, activeToo
     tx(svg, 28, y + 40, `${y / 1000}`, { sz: '95', fill: '#bbb', anchor: 'middle' })
   }
 
-  // Origin axes
   ln(svg, 0, 0, 800, 0, '#fe0000', '5')
   ln(svg, 0, 0, 0, 800, '#fe0000', '5')
   tx(svg, 900, 70, 'X', { sz: '180', fill: '#fe0000', bold: true })
   tx(svg, 60, 960, 'Y', { sz: '180', fill: '#fe0000', bold: true })
 
-  // Drawn walls
   elements.forEach(el => {
     if (el.type !== 'line' || el.points.length < 2) return
     const sel = el.id === selectedId
@@ -241,24 +350,20 @@ function renderPlan(svg, elements, selectedId, currentPoints, snapPos, activeToo
     })
   })
 
-  // Preview while drawing
   if (currentPoints.length > 0) {
     const last = currentPoints[currentPoints.length - 1]
 
-    // Placed segments
     currentPoints.forEach((p, i) => {
       if (i > 0) ln(svg, currentPoints[i-1][0], currentPoints[i-1][1], p[0], p[1], '#fe0000', '14')
       cr(svg, p[0], p[1], 42, '#fe0000')
     })
 
-    // Ghost line to snap cursor
     const d = dist(last, snapPos)
     const ghost = ln(svg, last[0], last[1], snapPos[0], snapPos[1], '#fe0000', '8')
     ghost.setAttribute('stroke-dasharray', '200 100')
     ghost.setAttribute('opacity', '0.6')
     ghost.setAttribute('pointer-events', 'none')
 
-    // Distance label
     if (d > 0) {
       const mx = (last[0] + snapPos[0]) / 2
       const my = (last[1] + snapPos[1]) / 2
@@ -274,7 +379,6 @@ function renderPlan(svg, elements, selectedId, currentPoints, snapPos, activeToo
     }
   }
 
-  // Snap cursor (when drawing tool is active)
   if (activeTool && ['line', 'polyline'].includes(activeTool)) {
     const [sx, sy] = snapPos
     const arm = 260
@@ -285,7 +389,6 @@ function renderPlan(svg, elements, selectedId, currentPoints, snapPos, activeToo
     cr(svg, sx, sy, 80, 'rgba(34,102,255,0.45)')
   }
 
-  // Click-to-select (only when not mid-draw — during draw, clicks add points)
   if (currentPoints.length === 0) {
     svg.querySelectorAll('[data-id]').forEach(el =>
       el.addEventListener('click', e => {
