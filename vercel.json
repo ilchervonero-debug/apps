@@ -1,4 +1,10 @@
 {
-  "buildCommand": "echo 'Sitio estático con subrutas'",
-  "outputDirectory": "chervo-web"
+  "buildCommand": "echo 'Sitio estático con apps integradas'",
+  "outputDirectory": "chervo-web",
+  "rewrites": [
+    {
+      "source": "/ilframe/:path*",
+      "destination": "/ilframe/:path*"
+    }
+  ]
 }
