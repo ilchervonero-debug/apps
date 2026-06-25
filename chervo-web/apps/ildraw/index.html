@@ -1139,6 +1139,9 @@ window.addEventListener('keydown',e=>{
   }
 });
 resize();
+if(screen.orientation && screen.orientation.lock){
+  screen.orientation.lock('portrait').catch(()=>{});
+}
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
