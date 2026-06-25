@@ -423,6 +423,10 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Renombrar
         </button>
+        <button class="btn-editar-nombre" onclick="exportarPDF()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+            PDF
+        </button>
     </div>
     <div class="bloques-timeline" id="bloques-timeline"></div>
 </div>
@@ -1074,6 +1078,68 @@ function toast(msg, tipo='ok') {
     const el=document.getElementById('toast');
     el.textContent=msg; el.className='toast show '+(tipo==='err'?'err':'');
     clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// ===== EXPORTAR PDF =====
+function exportarPDF() {
+    if (proyectoIdx === null) return;
+    const p = proyectos[proyectoIdx];
+    const bloques = p.bloques || [];
+
+    const bloquesHtml = bloques.map(b => {
+        const textoHtml = b.texto ? `<div class="md-render">${md(b.texto)}</div>` : '';
+        const fotosHtml = (b.fotos||[]).length
+            ? `<div class="fotos">${b.fotos.map(src=>`<img src="${src}">`).join('')}</div>`
+            : '';
+        return `<div class="bloque">
+            <div class="bloque-fecha">${fechaCorta(b.fecha)}${b.editado?' · editado':''}</div>
+            ${textoHtml}${fotosHtml}
+        </div>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8">
+<title>${esc(p.nombre)}</title>
+<style>
+  body{font-family:'Helvetica Neue',Arial,sans-serif;margin:0;padding:0;color:#1a1a1a;background:#fff;font-size:13px;}
+  .portada{padding:40px 48px 32px;border-bottom:3px solid #C70000;margin-bottom:32px;}
+  .portada h1{font-size:2rem;font-weight:900;margin:0 0 6px;letter-spacing:-1px;}
+  .portada h1 span{color:#C70000;}
+  .portada .meta{font-size:0.8rem;color:#888;}
+  .bloque{padding:16px 48px;border-bottom:1px solid #e8e8e8;break-inside:avoid;}
+  .bloque-fecha{font-size:0.72rem;color:#aaa;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;}
+  .md-render{line-height:1.7;}
+  .md-render h1{font-size:1.15rem;font-weight:800;margin:8px 0 4px;}
+  .md-render h2{font-size:1rem;font-weight:700;margin:6px 0 4px;}
+  .md-render h3{font-size:0.9rem;font-weight:700;margin:4px 0 3px;}
+  .md-render p{margin:0 0 6px;}
+  .md-render ul,.md-render ol{padding-left:18px;margin:0 0 6px;}
+  .md-render strong{font-weight:800;}
+  .md-render em{font-style:italic;color:#555;}
+  .md-render code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:0.85em;}
+  .md-render blockquote{border-left:3px solid #C70000;padding-left:10px;color:#555;font-style:italic;margin:4px 0;}
+  .fotos{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .fotos img{border-radius:6px;object-fit:cover;flex:1 1 calc(50% - 4px);max-width:calc(50% - 4px);max-height:240px;}
+  .fotos img:only-child{flex:none;width:100%;max-width:100%;max-height:320px;object-fit:contain;}
+  @media print{
+    body{margin:0;}
+    .bloque{break-inside:avoid;}
+  }
+</style>
+</head><body>
+<div class="portada">
+  <h1><span>Bitacora</span>app</h1>
+  <h2 style="margin:0 0 8px;font-size:1.3rem;">${esc(p.nombre)}</h2>
+  <div class="meta">Exportado el ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})} · ${bloques.length} nota${bloques.length!==1?'s':''}</div>
+</div>
+${bloquesHtml}
+<script>window.onload=()=>{window.print();}<\/script>
+</body></html>`;
+
+    const w = window.open('','_blank');
+    if (!w) { toast('Permitir ventanas emergentes para exportar','err'); return; }
+    w.document.write(html);
+    w.document.close();
 }
 
 // ===== PWA =====
