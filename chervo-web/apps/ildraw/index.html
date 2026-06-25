@@ -14,7 +14,7 @@
 :root{
   --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
   --accent:#C70000;--red:#C70000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
-  --tb:46px;--prop:44px;
+  --tb:56px;--prop:44px;
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -41,11 +41,11 @@ body{display:flex;flex-direction:column;background:#fff;}
 .tg{display:flex;align-items:center;gap:2px;padding:0 6px;height:100%;flex-shrink:0;border-right:1px solid rgba(0,0,0,.06);}
 .tg:last-child{border-right:none;}
 
-.tb{width:36px;height:36px;border-radius:8px;background:transparent;border:none;
+.tb{width:44px;height:44px;border-radius:8px;background:transparent;border:none;
   color:var(--ink);cursor:pointer;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;position:relative;
   transition:background .1s;}
-.tb svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;
+.tb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 .tb.on{background:var(--accent);color:#fff;border-radius:8px;}
 .tb:active{background:rgba(0,0,0,.08);}
@@ -57,45 +57,56 @@ body{display:flex;flex-direction:column;background:#fff;}
 #wrap{flex:1;position:relative;overflow:hidden;}
 #cv{position:absolute;top:0;left:0;}
 
-/* TOOL PANEL — cae verticalmente desde el botón lápiz (derecha) */
+/* TOOL PANEL — sube desde el FAB (esquina inf. derecha) */
 #panel-herr{
-  position:fixed;top:var(--tb);right:0;
+  position:fixed;bottom:calc(var(--prop)+82px);right:0;
   background:#fff;
-  border-left:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea;
-  border-radius:0 0 0 16px;
+  border:1px solid #e5e5ea;
+  border-radius:16px 0 16px 16px;
+  box-shadow:0 4px 20px rgba(0,0,0,.1);
   z-index:150;display:none;flex-direction:column;
   padding:12px;gap:8px;
 }
-#panel-herr.open{display:flex;animation:phDown .18s ease;}
-@keyframes phDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+#panel-herr.open{display:flex;animation:phUp .18s ease;}
+@keyframes phUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .ph-col{display:flex;flex-direction:column;gap:6px;}
 .ph-lbl{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;}
-.ph-g3{display:grid;grid-template-columns:repeat(3,52px);gap:6px;}
+.ph-g3{display:grid;grid-template-columns:repeat(3,62px);gap:6px;}
 .ph-hsep{height:1px;background:#e5e5ea;margin:2px 0;}
 /* botones herramienta — rojo, icono blanco, talle dedo */
 .phb{
-  width:52px;height:52px;border-radius:10px;
+  width:62px;height:62px;border-radius:10px;
   background:var(--accent);border:none;color:#fff;cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:background .12s;
 }
-.phb svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.8;
+.phb svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 .phb.on{background:#8c0000;}
 .phb:active{background:#8c0000;}
-/* botón lápiz — círculo rojo FAB */
-#btn-herr{width:40px!important;height:40px!important;border-radius:50%!important;
-  background:var(--accent)!important;color:#fff!important;}
+/* FAB herramientas — flota sobre canvas, esquina inf. derecha */
+#btn-herr{
+  position:fixed;right:16px;bottom:calc(var(--prop)+16px);
+  width:56px;height:56px;border-radius:50%;
+  background:var(--accent);border:none;color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 12px rgba(199,0,0,.35);
+  z-index:160;transition:background .2s;
+}
+#btn-herr svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 /* iconos naked de bar 1: sin caja, solo el trazo */
 .ti{background:none;border:none;padding:0;cursor:pointer;flex-shrink:0;
-  min-width:36px;min-height:36px;
+  min-width:44px;min-height:44px;
   display:flex;align-items:center;justify-content:center;}
 .ti svg{fill:none;stroke:currentColor;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;width:22px;height:22px;}
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;width:26px;height:26px;}
 /* undo/redo — siempre rojo */
 .ti-r{color:var(--accent);}
 /* select/snap — oscuro apagado, rojo activo */
 .ti-t{color:var(--ink);}
 .ti-t.on{color:var(--accent);}
+/* flecha de selección: relleno sólido cuando activo */
+#escBtn path{fill:none;stroke:currentColor;}
+#escBtn.on path{fill:var(--accent);stroke:none;}
 
 /* PROP BAR */
 #propbar{
@@ -204,15 +215,16 @@ body{display:flex;flex-direction:column;background:#fff;}
   <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
   <button class="ti ti-t on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
   <select onchange="cellPx=+this.value;render()" style="background:#f2f2f7;color:var(--ink);border:1px solid #e5e5ea;border-radius:6px;padding:3px 6px;font-size:10px;font-family:var(--font);flex-shrink:0">
-    <option value="20">S</option><option value="30" selected>M</option><option value="50">L</option>
+    <option value="15">0.5</option><option value="30" selected>1</option><option value="60">2</option><option value="150">5</option>
   </select>
-  <div style="flex:1"></div>
-  <button class="tb" id="btn-herr" data-tip="Herramientas" onclick="toggleTools()" style="margin-right:6px">
-    <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-  </button>
 </div>
 
-<!-- PANEL HERRAMIENTAS — cae vertical desde botón lápiz (derecha) -->
+<!-- FAB HERRAMIENTAS — flota sobre canvas -->
+<button id="btn-herr" data-tip="Herramientas" onclick="toggleTools()">
+  <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+</button>
+
+<!-- PANEL HERRAMIENTAS — sube desde el FAB -->
 <div id="panel-herr">
   <div class="ph-col">
     <span class="ph-lbl">Dibujo</span>
