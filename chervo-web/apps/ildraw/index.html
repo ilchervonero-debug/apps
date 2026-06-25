@@ -57,9 +57,9 @@ body{display:flex;flex-direction:column;background:#fff;}
 #wrap{flex:1;position:relative;overflow:hidden;}
 #cv{position:absolute;top:0;left:0;}
 
-/* TOOL PANEL — sube desde el FAB (esquina inf. derecha) */
+/* TOOL PANEL — cae desde el FAB (esquina sup. derecha) */
 #panel-herr{
-  position:fixed;bottom:calc(var(--prop)+82px);right:0;
+  position:fixed;top:calc(var(--tb)+82px);right:0;
   background:#fff;
   border:1px solid #e5e5ea;
   border-radius:16px 0 16px 16px;
@@ -67,8 +67,8 @@ body{display:flex;flex-direction:column;background:#fff;}
   z-index:150;display:none;flex-direction:column;
   padding:12px;gap:8px;
 }
-#panel-herr.open{display:flex;animation:phUp .18s ease;}
-@keyframes phUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+#panel-herr.open{display:flex;animation:phDown .18s ease;}
+@keyframes phDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .ph-col{display:flex;flex-direction:column;gap:6px;}
 .ph-lbl{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;}
 .ph-g3{display:grid;grid-template-columns:repeat(3,62px);gap:6px;}
@@ -83,9 +83,9 @@ body{display:flex;flex-direction:column;background:#fff;}
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 .phb.on{background:#8c0000;}
 .phb:active{background:#8c0000;}
-/* FAB herramientas — flota sobre canvas, esquina inf. derecha */
+/* FAB herramientas — flota sobre canvas, esquina sup. derecha */
 #btn-herr{
-  position:fixed;right:16px;bottom:calc(var(--prop)+16px);
+  position:fixed;right:16px;top:calc(var(--tb)+16px);
   width:56px;height:56px;border-radius:50%;
   background:var(--accent);border:none;color:#fff;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
