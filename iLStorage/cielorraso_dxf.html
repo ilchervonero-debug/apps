@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Cielorraso — Metrado DXF</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:#f2f2f2;font-family:Arial,sans-serif;font-size:10pt;color:#333;}
+.app{display:flex;flex-direction:column;height:100dvh;overflow:hidden;}
+
+header{background:#C00000;color:white;padding:7px 12px;font-size:10pt;font-weight:bold;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+header .sub{font-size:7.5pt;opacity:.75;font-weight:normal;}
+
+.load-bar{background:white;border-bottom:1px solid #ddd;padding:6px 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap;}
+.btn-red{background:#C00000;color:white;border:none;padding:7px 11px;border-radius:4px;font-size:8.5pt;cursor:pointer;font-weight:bold;white-space:nowrap;}
+.btn-red:active{background:#a00000;}
+.btn-grey{background:#595959;color:white;border:none;padding:7px 11px;border-radius:4px;font-size:8.5pt;cursor:pointer;font-weight:bold;white-space:nowrap;}
+.btn-grey:active{background:#404040;}
+.btn-green{background:#217346;color:white;border:none;padding:7px 11px;border-radius:4px;font-size:8.5pt;cursor:pointer;font-weight:bold;white-space:nowrap;}
+.btn-green:active{background:#165a34;}
+.btn-orange{background:#c87000;color:white;border:none;padding:7px 11px;border-radius:4px;font-size:8.5pt;cursor:pointer;font-weight:bold;white-space:nowrap;}
+.btn-orange:active{background:#a05800;}
+.btn-outline{background:white;color:#595959;border:1.5px solid #ccc;padding:6px 10px;border-radius:4px;font-size:8.5pt;cursor:pointer;font-weight:bold;white-space:nowrap;}
+.btn-outline:active{background:#f0f0f0;}
+input[type=file]{display:none;}
+.sel{font-size:8.5pt;padding:6px 6px;border:1px solid #ccc;border-radius:4px;background:white;color:#333;}
+.fname{font-size:7.5pt;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+
+.config-bar{background:#fff8f8;border-bottom:2px solid #e8e8e8;padding:7px 10px;display:flex;flex-wrap:wrap;gap:7px;flex-shrink:0;align-items:flex-end;}
+.cfg-group{display:flex;flex-direction:column;gap:2px;flex:1;min-width:68px;}
+.cfg-lbl{font-size:7pt;color:#999;font-weight:bold;text-transform:uppercase;}
+.cfg-row{display:flex;gap:3px;align-items:center;}
+.cfg-input{font-size:8.5pt;padding:5px 6px;border:1px solid #ccc;border-radius:4px;background:white;width:100%;}
+.cfg-unit{font-size:7.5pt;color:#888;white-space:nowrap;}
+.dir-btn{flex:1;border:1px solid #ccc;background:white;padding:5px 3px;border-radius:4px;font-size:7.5pt;cursor:pointer;text-align:center;color:#555;}
+.dir-btn.active{background:#C00000;color:white;border-color:#C00000;}
+.apply-btn{background:#595959;color:white;border:none;padding:6px 14px;border-radius:4px;font-size:8.5pt;cursor:pointer;white-space:nowrap;font-weight:bold;}
+.apply-btn:active{background:#404040;}
+
+/* CANVAS TOOLS BAR */
+.canvas-tools{background:#404040;padding:5px 10px;display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.tool-btn{border:none;padding:5px 10px;border-radius:4px;font-size:8pt;cursor:pointer;font-weight:bold;color:white;background:rgba(255,255,255,0.15);}
+.tool-btn.active-tool{background:#E07000;color:white;}
+.tool-btn:active{opacity:.7;}
+.tool-sep{width:1px;background:rgba(255,255,255,.2);height:20px;}
+.canvas-status{flex:1;font-size:7.5pt;color:rgba(255,255,255,.7);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.canvas-wrap{flex:0 0 38vh;background:#fafafa;border-bottom:1px solid #ddd;position:relative;overflow:hidden;}
+canvas{display:block;touch-action:none;}
+
+.results-panel{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f2f2f2;min-height:0;}
+.rp-top{background:white;border-bottom:1px solid #ddd;padding:7px 10px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.rp-title{font-weight:bold;font-size:8.5pt;color:#595959;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:6px;}
+
+.pending-section{padding:8px 8px 0;}
+.saved-section{padding:6px 8px 0;}
+.section-head{font-size:7.5pt;font-weight:bold;text-transform:uppercase;margin-bottom:5px;padding:0 2px;}
+.pend-head{color:#C00000;}
+.saved-head-lbl{color:#aaa;}
+
+/* PENDING ITEM — editable */
+.pend-item{background:#fff8f8;border-radius:5px;padding:8px 10px;margin-bottom:6px;border-left:4px solid #C00000;}
+.pi-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.pi-name{font-size:8.5pt;font-weight:bold;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pi-vals{font-size:7.5pt;color:#aaa;margin-bottom:5px;}
+.pi-cenefa-row{display:flex;gap:5px;align-items:center;}
+.pi-cenefa-row label{font-size:7.5pt;color:#E07000;font-weight:bold;white-space:nowrap;}
+.pi-cenefa-input{font-size:8.5pt;padding:4px 6px;border:1px solid #E07000;border-radius:4px;width:70px;background:white;}
+.pi-cenefa-where{flex:1;font-size:8.5pt;padding:4px 6px;border:1px solid #ddd;border-radius:4px;background:white;}
+.pi-mark-btn{background:#E07000;color:white;border:none;padding:4px 8px;border-radius:4px;font-size:7.5pt;cursor:pointer;white-space:nowrap;}
+.pi-mark-btn.active-mark{background:#a05800;}
+
+.saved-item{background:white;border-radius:5px;padding:8px 10px;margin-bottom:5px;display:flex;align-items:flex-start;gap:8px;box-shadow:0 1px 2px rgba(0,0,0,.05);border-left:4px solid #ccc;}
+.si-info{flex:1;min-width:0;}
+.si-name{font-size:8.5pt;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.si-vals{font-size:7.5pt;color:#888;margin-top:2px;line-height:1.6;}
+.si-del{background:none;border:none;color:#ccc;font-size:14pt;cursor:pointer;padding:0 4px;line-height:1;}
+.si-del:active{color:#C00000;}
+
+.manual-section{padding:6px 8px 0;}
+.manual-card{background:white;border-radius:6px;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.manual-title{font-size:7.5pt;color:#595959;font-weight:bold;text-transform:uppercase;margin-bottom:8px;}
+.manual-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.m-group{display:flex;flex-direction:column;gap:2px;}
+.m-lbl{font-size:7pt;color:#aaa;}
+.m-input{font-size:9pt;padding:6px;border:1px solid #ddd;border-radius:4px;width:100%;}
+
+/* TOTALS */
+.totals{background:white;margin:8px;border-radius:6px;border-top:3px solid #C00000;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.tot-head{background:#C00000;color:white;padding:6px 12px;font-size:8.5pt;font-weight:bold;border-radius:3px 3px 0 0;}
+.tot-body{padding:10px 12px;}
+.tot-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;}
+.t-row{display:flex;flex-direction:column;}
+.t-lbl{font-size:7pt;color:#aaa;}
+.t-val{font-size:10.5pt;font-weight:bold;color:#C00000;}
+.t-val-orange{font-size:10.5pt;font-weight:bold;color:#c87000;}
+.t-val-grey{font-size:10.5pt;font-weight:bold;color:#595959;}
+
+.terminacion-section{background:#f8f4ff;margin:0 8px 0;border-radius:6px;border-top:3px solid #595959;box-shadow:0 1px 3px rgba(0,0,0,.07);}
+.term-head{background:#595959;color:white;padding:6px 12px;font-size:8.5pt;font-weight:bold;border-radius:3px 3px 0 0;}
+.term-body{padding:10px 12px;}
+
+.empty{padding:28px 20px;text-align:center;color:#ccc;font-size:9pt;line-height:2.2;}
+
+@media (orientation:landscape){
+  .config-bar,.canvas-tools,.results-panel{display:none!important;}
+  .canvas-wrap{flex:1!important;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <span>&#9632; CIELORRASO — Metrado DXF</span>
+    <span class="sub">Girá para plano</span>
+  </header>
+
+  <div class="load-bar">
+    <button class="btn-red" onclick="document.getElementById('fi').click()">&#8593; DXF</button>
+    <input type="file" id="fi" accept=".dxf">
+    <select class="sel" id="units" onchange="redetect()">
+      <option value="1">m</option>
+      <option value="0.001">mm</option>
+      <option value="0.01">cm</option>
+    </select>
+    <span class="fname" id="fname">Sin archivo</span>
+    <button class="btn-green" id="btnExp" onclick="exportXLSX()" style="display:none">&#8595; Excel</button>
+  </div>
+
+  <div class="config-bar">
+    <div class="cfg-group">
+      <span class="cfg-lbl">Sep. Perfiles</span>
+      <div class="cfg-row">
+        <input class="cfg-input" type="number" id="spacing" value="60" min="20" max="120" step="5">
+        <span class="cfg-unit">cm</span>
+      </div>
+    </div>
+    <div class="cfg-group">
+      <span class="cfg-lbl">Dir. Perfiles</span>
+      <div class="cfg-row">
+        <button class="dir-btn active" id="dH" onclick="setDir('H')">&#8596; H</button>
+        <button class="dir-btn" id="dV" onclick="setDir('V')">&#8597; V</button>
+      </div>
+    </div>
+    <div class="cfg-group">
+      <span class="cfg-lbl">Refuerzo/Vela</span>
+      <div class="cfg-row">
+        <button class="dir-btn active" id="rH" onclick="setRef('H')">&#8596; H</button>
+        <button class="dir-btn" id="rV" onclick="setRef('V')">&#8597; V</button>
+      </div>
+    </div>
+    <div class="cfg-group">
+      <span class="cfg-lbl">Placa (m)</span>
+      <div class="cfg-row">
+        <input class="cfg-input" type="number" id="bw" value="1.22" step="0.01">
+        <span class="cfg-unit">×</span>
+        <input class="cfg-input" type="number" id="bh" value="2.44" step="0.01">
+      </div>
+    </div>
+    <button class="apply-btn" onclick="applyAndSave()">&#10003; Guardar</button>
+  </div>
+
+  <!-- CANVAS TOOLBAR -->
+  <div class="canvas-tools">
+    <button class="tool-btn active-tool" id="toolPan" onclick="setTool('pan')">&#9995; Mover</button>
+    <div class="tool-sep"></div>
+    <button class="tool-btn" id="toolCenefa" onclick="setTool('cenefa')">&#9998; Cenefa</button>
+    <button class="tool-btn" id="btnUndoCenefa" onclick="undoCenefaPt()" style="display:none">&#8592; Undo</button>
+    <button class="tool-btn" id="btnDoneCenefa" onclick="doneCenefa()" style="display:none;background:#217346">&#10003; OK</button>
+    <button class="tool-btn" id="btnCancelCenefa" onclick="cancelCenefa()" style="display:none">&#10005;</button>
+    <span class="canvas-status" id="canvasStatus"></span>
+  </div>
+
+  <div class="canvas-wrap" id="cwrap">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="results-panel" id="rPanel">
+    <div class="rp-top">
+      <span class="rp-title" id="rpTitle">Cargá un DXF o agregá ambiente</span>
+      <div style="display:flex;gap:5px;flex-shrink:0;">
+        <button class="btn-outline" onclick="showManual()">+ Ambiente</button>
+        <button class="btn-green" id="btnExp2" onclick="exportXLSX()" style="display:none">&#8595; Excel</button>
+      </div>
+    </div>
+
+    <!-- MANUAL FORM -->
+    <div id="manualSection" class="manual-section" style="display:none">
+      <div class="manual-card">
+        <div class="manual-title">+ Agregar ambiente manual</div>
+        <div class="manual-grid">
+          <div class="m-group" style="grid-column:span 2">
+            <span class="m-lbl">Nombre</span>
+            <input class="m-input" id="mName" type="text" placeholder="Ej: Estar-Comedor Depa 1">
+          </div>
+          <div class="m-group">
+            <span class="m-lbl">Área (m²)</span>
+            <input class="m-input" id="mArea" type="number" step="0.01" placeholder="0.00">
+          </div>
+          <div class="m-group">
+            <span class="m-lbl">Perímetro (ml)</span>
+            <input class="m-input" id="mPerim" type="number" step="0.01" placeholder="0.00">
+          </div>
+          <div class="m-group">
+            <span class="m-lbl">Cenefa (ml)</span>
+            <input class="m-input" id="mCenefa" type="number" step="0.01" placeholder="0.00">
+          </div>
+          <div class="m-group">
+            <span class="m-lbl">Dónde va la cenefa</span>
+            <input class="m-input" id="mCenefaWhere" type="text" placeholder="Ej: Perímetro sur/este">
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-grey" style="flex:1" onclick="addManual()">&#10003; Agregar</button>
+          <button class="btn-outline" onclick="hideManual()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDING -->
+    <div id="pendingSection" class="pending-section" style="display:none">
+      <div class="section-head pend-head">&#9650; Del DXF — completá cenefa y presioná Guardar</div>
+      <div id="pendingCards"></div>
+    </div>
+
+    <!-- SAVED -->
+    <div id="savedSection" class="saved-section" style="display:none">
+      <div class="section-head saved-head-lbl">Ambientes guardados</div>
+      <div id="savedCards"></div>
+    </div>
+
+    <!-- TOTALS -->
+    <div id="totals" class="totals" style="display:none">
+      <div class="tot-head">&#9632; TOTALES ACUMULADOS</div>
+      <div class="tot-body"><div class="tot-grid" id="totGrid"></div></div>
+    </div>
+
+    <!-- TERMINACION -->
+    <div id="terminacion" class="terminacion-section" style="display:none;margin-top:8px;">
+      <div class="term-head">&#9642; TERMINACIÓN — Masillado / Enduído / Cantoneras</div>
+      <div class="term-body"><div class="tot-grid" id="termGrid"></div></div>
+    </div>
+
+    <div id="emptyMsg" class="empty">
+      1. Cargá un DXF &nbsp;ó&nbsp; tocá <b>+ Ambiente</b><br>
+      2. Marcá la cenefa con <b>&#9998; Cenefa</b> en el plano<br>
+      3. Ajustá separación y dirección<br>
+      4. Tocá <b>Guardar</b> para acumular<br>
+      5. Exportá a Excel al final
+    </div>
+    <div style="height:24px"></div>
+  </div>
+</div>
+
+<script>
+// ===== DXF PARSER =====
+function parseDXF(text){
+  const lines=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
+  const P=[];
+  for(let i=0;i+1<lines.length;i+=2)P.push({code:parseInt(lines[i].trim()),value:lines[i+1].trim()});
+  const res=[];let inEnt=false,i=0;
+  while(i<P.length){
+    const{code,value}=P[i];
+    if(code===2&&value==='ENTITIES'){inEnt=true;i++;continue;}
+    if(code===2&&(value==='OBJECTS'||value==='BLOCKS'))inEnt=false;
+    if(inEnt&&code===0&&value==='LWPOLYLINE'){
+      const pl={vertices:[],closed:false,layer:'0'};i++;
+      while(i<P.length&&P[i].code!==0){const p=P[i];if(p.code===8)pl.layer=p.value;if(p.code===70)pl.closed=(parseInt(p.value)&1)===1;if(p.code===10)pl.vertices.push({x:parseFloat(p.value),y:0});if(p.code===20&&pl.vertices.length)pl.vertices[pl.vertices.length-1].y=parseFloat(p.value);i++;}
+      if(pl.vertices.length>=3)res.push(pl);continue;
+    }
+    if(inEnt&&code===0&&value==='POLYLINE'){
+      const pl={vertices:[],closed:false,layer:'0'};i++;
+      while(i<P.length){const p=P[i];if(p.code===8)pl.layer=p.value;if(p.code===70)pl.closed=(parseInt(p.value)&1)===1;if(p.code===0&&p.value==='VERTEX'){let vx=0,vy=0;i++;while(i<P.length&&P[i].code!==0){if(P[i].code===10)vx=parseFloat(P[i].value);if(P[i].code===20)vy=parseFloat(P[i].value);i++;}pl.vertices.push({x:vx,y:vy});continue;}if(p.code===0&&p.value==='SEQEND'){i++;break;}if(p.code===0)break;i++;}
+      if(pl.vertices.length>=3)res.push(pl);continue;
+    }
+    i++;
+  }
+  return res;
+}
+
+// ===== GEOMETRY =====
+function calcArea(v){let a=0,n=v.length;for(let i=0;i<n;i++){const j=(i+1)%n;a+=v[i].x*v[j].y-v[j].x*v[i].y;}return Math.abs(a)/2;}
+function calcPerim(v,c){let p=0,n=v.length;for(let i=0;i<n-1;i++){const dx=v[i+1].x-v[i].x,dy=v[i+1].y-v[i].y;p+=Math.sqrt(dx*dx+dy*dy);}if(c&&n>1){const dx=v[0].x-v[n-1].x,dy=v[0].y-v[n-1].y;p+=Math.sqrt(dx*dx+dy*dy);}return p;}
+function ptDist(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);}
+function polylineLen(pts){let l=0;for(let i=1;i<pts.length;i++)l+=ptDist(pts[i-1],pts[i]);return l;}
+function bbox(v){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const p of v){x0=Math.min(x0,p.x);y0=Math.min(y0,p.y);x1=Math.max(x1,p.x);y1=Math.max(y1,p.y);}return{x0,y0,x1,y1,w:x1-x0,h:y1-y0};}
+function pip(px,py,v){let ins=false,n=v.length;for(let i=0,j=n-1;i<n;j=i++){const xi=v[i].x,yi=v[i].y,xj=v[j].x,yj=v[j].y;if(((yi>py)!==(yj>py))&&(px<(xj-xi)*(py-yi)/(yj-yi)+xi))ins=!ins;}return ins;}
+function countBoards(v,bw,bh,b){let n=0;for(let y=b.y0;y<b.y1;y+=bh)for(let x=b.x0;x<b.x1;x+=bw){let hit=false;outer:for(let dy=0.15;dy<1;dy+=0.35)for(let dx=0.15;dx<1;dx+=0.35)if(pip(x+dx*bw,y+dy*bh,v)){hit=true;break outer;}if(hit)n++;}return n;}
+function calcML(v,b,sp,dir){
+  let tot=0;
+  if(dir==='H'){for(let y=b.y0;y<=b.y1;y+=sp){let seg=[];const n=v.length;for(let i=0,j=n-1;i<n;j=i++){const yi=v[i].y,yj=v[j].y;if((yi<=y&&yj>y)||(yj<=y&&yi>y))seg.push(v[i].x+(y-yi)/(yj-yi)*(v[j].x-v[i].x));}seg.sort((a,b)=>a-b);for(let k=0;k+1<seg.length;k+=2)tot+=seg[k+1]-seg[k];}}
+  else{for(let x=b.x0;x<=b.x1;x+=sp){let seg=[];const n=v.length;for(let i=0,j=n-1;i<n;j=i++){const xi=v[i].x,xj=v[j].x;if((xi<=x&&xj>x)||(xj<=x&&xi>x))seg.push(v[i].y+(x-xi)/(xj-xi)*(v[j].y-v[i].y));}seg.sort((a,b)=>a-b);for(let k=0;k+1<seg.length;k+=2)tot+=seg[k+1]-seg[k];}}
+  return tot;
+}
+
+// snap to nearest DXF vertex
+function snapToVertex(cx,cy){
+  let best=null,bd=Infinity;
+  for(const pl of polylines){
+    const f=uf();
+    for(const v of pl.vertices){
+      const wx=v.x*f,wy=v.y*f;
+      const sx=tx(wx),sy=ty(wy);
+      const d=Math.sqrt((sx-cx)**2+(sy-cy)**2);
+      if(d<bd){bd=d;best={x:wx,y:wy,px:sx,py:sy};}
+    }
+  }
+  return bd<30?best:null; // 30px snap radius
+}
+
+// ===== COLORS =====
+const COLORS=['#C00000','#0066CC','#217346','#E07000','#7B2D8B','#007B7B','#8B4513','#5A6A00'];
+function col(i){return COLORS[i%COLORS.length];}
+
+// ===== STATE =====
+let polylines=[],pending=[],saved=[];
+let perfDir='H',refDir='H';
+let sc=1,ox=0,oy=0,uid=0;
+
+// tool mode: 'pan' or 'cenefa'
+let toolMode='pan';
+let cenefaTarget=null; // index into pending[] being edited
+let cenefaPts=[]; // world coords being drawn
+let cursorPt=null; // mouse/touch current position (world)
+
+function uf(){return parseFloat(document.getElementById('units').value);}
+function wv(pl){const f=uf();return pl.vertices.map(v=>({x:v.x*f,y:v.y*f}));}
+function getSP(){return parseFloat(document.getElementById('spacing').value)/100;}
+function getBW(){return parseFloat(document.getElementById('bw').value);}
+function getBH(){return parseFloat(document.getElementById('bh').value);}
+function setDir(d){perfDir=d;document.getElementById('dH').className='dir-btn'+(d==='H'?' active':'');document.getElementById('dV').className='dir-btn'+(d==='V'?' active':'');}
+function setRef(d){refDir=d;document.getElementById('rH').className='dir-btn'+(d==='H'?' active':'');document.getElementById('rV').className='dir-btn'+(d==='V'?' active':'');}
+
+function calcSpace(pl,idx){
+  const v=wv(pl),sp=getSP(),bw=getBW(),bh=getBH();
+  const a=calcArea(v),p=calcPerim(v,pl.closed),b=bbox(v);
+  const boards=countBoards(v,bw,bh,b);
+  const mont=calcML(v,b,sp,perfDir);
+  const ref=calcML(v,b,sp*2,perfDir==='H'?'V':'H');
+  const waste=boards>0?((boards*bw*bh-a)/(boards*bw*bh)*100):0;
+  return{id:++uid,name:pl.layer&&pl.layer!=='0'?pl.layer:`Espacio ${idx+1}`,area:a,soleras:p,montantes:mont,refuerzos:ref,boards,bArea:bw*bh,waste,sp,bw,bh,cenefa:0,cenefaWhere:'',cenefaPts:[]};
+}
+
+function redetect(){
+  if(!polylines.length)return;
+  pending=polylines.map((pl,i)=>calcSpace(pl,i)).filter(s=>s.area>0.3);
+  renderResults();render();
+}
+
+function applyAndSave(){
+  if(!pending.length&&!polylines.length){alert('Cargá un DXF o usá + Ambiente.');return;}
+  if(polylines.length) pending=polylines.map((pl,i)=>calcSpace(pl,i)).filter(s=>s.area>0.3);
+  // read cenefa inputs
+  pending.forEach((s,i)=>{
+    const ci=document.getElementById('pc_'+s.id);
+    const wi=document.getElementById('pw_'+s.id);
+    if(ci)s.cenefa=parseFloat(ci.value)||s.cenefa;
+    if(wi)s.cenefaWhere=wi.value||s.cenefaWhere;
+  });
+  pending.forEach(s=>saved.push({...s,id:++uid}));
+  pending=[];polylines=[];cenefaTarget=null;cenefaPts=[];
+  document.getElementById('fname').textContent='Sin archivo';
+  setTool('pan');
+  renderResults();render();
+}
+
+function deleteSaved(id){saved=saved.filter(s=>s.id!==id);renderResults();}
+
+// ===== TOOL MODE =====
+function setTool(t){
+  toolMode=t;
+  document.getElementById('toolPan').className='tool-btn'+(t==='pan'?' active-tool':'');
+  document.getElementById('toolCenefa').className='tool-btn'+(t==='cenefa'?' active-tool':'');
+  const isCenefa=t==='cenefa';
+  document.getElementById('btnUndoCenefa').style.display=isCenefa?'inline-block':'none';
+  document.getElementById('btnDoneCenefa').style.display=isCenefa?'inline-block':'none';
+  document.getElementById('btnCancelCenefa').style.display=isCenefa?'inline-block':'none';
+  canvas.style.cursor=isCenefa?'crosshair':'grab';
+  if(!isCenefa){cenefaPts=[];cursorPt=null;}
+  updateCanvasStatus();
+  render();
+}
+
+function startCenefaFor(pendingId){
+  cenefaTarget=pendingId;
+  cenefaPts=[];
+  setTool('cenefa');
+  // scroll canvas into view
+  document.getElementById('cwrap').scrollIntoView({behavior:'smooth'});
+}
+
+function undoCenefaPt(){if(cenefaPts.length>0){cenefaPts.pop();updateCanvasStatus();render();}}
+
+function doneCenefa(){
+  if(cenefaPts.length<2){alert('Marcá al menos 2 puntos para definir la cenefa.');return;}
+  const ml=polylineLen(cenefaPts);
+  if(cenefaTarget!==null){
+    const s=pending.find(p=>p.id===cenefaTarget);
+    if(s){
+      s.cenefa=(s.cenefa||0)+ml;
+      s.cenefaPts=[...s.cenefaPts,...cenefaPts];
+    }
+  }
+  cenefaPts=[];cursorPt=null;
+  renderResults();render();
+  updateCanvasStatus();
+  // keep tool active so they can add more segments
+}
+
+function cancelCenefa(){cenefaPts=[];cursorPt=null;cenefaTarget=null;setTool('pan');render();}
+
+function updateCanvasStatus(){
+  if(toolMode==='cenefa'){
+    const ml=polylineLen(cenefaPts);
+    const pts=cenefaPts.length;
+    document.getElementById('canvasStatus').textContent=
+      pts===0?'Tocá para marcar inicio de cenefa':
+      pts===1?'Tocá el siguiente punto — undo para borrar':
+      `${pts} puntos — ${ml.toFixed(2)} ml — OK para guardar`;
+  } else {
+    document.getElementById('canvasStatus').textContent='';
+  }
+}
+
+// ===== MANUAL =====
+function showManual(){document.getElementById('manualSection').style.display='block';document.getElementById('mName').focus();}
+function hideManual(){document.getElementById('manualSection').style.display='none';}
+function addManual(){
+  const name=document.getElementById('mName').value.trim();
+  const area=parseFloat(document.getElementById('mArea').value)||0;
+  const perim=parseFloat(document.getElementById('mPerim').value)||0;
+  const cenefa=parseFloat(document.getElementById('mCenefa').value)||0;
+  const cenefaWhere=document.getElementById('mCenefaWhere').value.trim();
+  if(!name){alert('Poné un nombre.');return;}
+  if(!area){alert('Poné el área en m².');return;}
+  const bw=getBW(),bh=getBH(),sp=getSP();
+  const boards=Math.ceil(area/(bw*bh)*1.1);
+  const mont=area/sp;
+  const ref=area/(sp*2);
+  const waste=((boards*bw*bh-area)/(boards*bw*bh)*100);
+  saved.push({id:++uid,name,area,soleras:perim,montantes:mont,refuerzos:ref,boards,bArea:bw*bh,waste,sp,bw,bh,cenefa,cenefaWhere,cenefaPts:[],manual:true});
+  ['mName','mArea','mPerim','mCenefa','mCenefaWhere'].forEach(id=>document.getElementById(id).value='');
+  hideManual();renderResults();
+}
+
+// ===== RENDER RESULTS =====
+function renderResults(){
+  const hasSaved=saved.length>0,hasPending=pending.length>0,hasAny=hasSaved||hasPending;
+  document.getElementById('emptyMsg').style.display=hasAny?'none':'block';
+  document.getElementById('btnExp').style.display=hasSaved?'inline-block':'none';
+  document.getElementById('btnExp2').style.display=hasSaved?'inline-block':'none';
+  document.getElementById('rpTitle').textContent=
+    hasSaved?(saved.length+' amb. guardado'+(saved.length>1?'s':'')):
+    hasPending?(pending.length+' del DXF — completá y guardá'):
+    'Cargá un DXF o agregá ambiente';
+
+  // PENDING
+  document.getElementById('pendingSection').style.display=hasPending?'block':'none';
+  document.getElementById('pendingCards').innerHTML=pending.map((s,i)=>`
+    <div class="pend-item" style="border-left-color:${col(i)}">
+      <div class="pi-top">
+        <span class="pi-name" style="color:${col(i)}">${s.name}</span>
+        <button class="pi-mark-btn${cenefaTarget===s.id?' active-mark':''}" onclick="startCenefaFor(${s.id})">
+          &#9998; Marcar cenefa
+        </button>
+      </div>
+      <div class="pi-vals">${s.area.toFixed(2)} m²  ·  ${s.soleras.toFixed(1)} ml soleras  ·  ${s.boards} placas</div>
+      <div class="pi-cenefa-row">
+        <label>Cenefa:</label>
+        <input class="pi-cenefa-input" id="pc_${s.id}" type="number" step="0.01" placeholder="ml"
+          value="${s.cenefa?s.cenefa.toFixed(2):''}">
+        <input class="pi-cenefa-where" id="pw_${s.id}" type="text" placeholder="dónde va (opcional)"
+          value="${s.cenefaWhere||''}">
+      </div>
+    </div>`).join('');
+
+  // SAVED
+  document.getElementById('savedSection').style.display=hasSaved?'block':'none';
+  document.getElementById('savedCards').innerHTML=saved.map((s,i)=>`
+    <div class="saved-item" style="border-left-color:${col(i)}">
+      <div class="si-info">
+        <div class="si-name">${s.manual?'&#9998; ':''}${s.name}</div>
+        <div class="si-vals">
+          ${s.area.toFixed(2)} m²  ·  ${s.soleras.toFixed(1)} ml soleras  ·  ${s.boards} placas<br>
+          ${s.cenefa>0?`<span style="color:#c87000;font-weight:bold">Cenefa: ${s.cenefa.toFixed(2)} ml</span>${s.cenefaWhere?' — '+s.cenefaWhere:''}`:
+          '<span style="color:#ccc">Sin cenefa</span>'}
+        </div>
+      </div>
+      <button class="si-del" onclick="deleteSaved(${s.id})">&#215;</button>
+    </div>`).join('');
+
+  // TOTALS
+  if(hasSaved){
+    const tA=saved.reduce((a,s)=>a+s.area,0);
+    const tS=saved.reduce((a,s)=>a+s.soleras,0);
+    const tM=saved.reduce((a,s)=>a+s.montantes,0);
+    const tR=saved.reduce((a,s)=>a+s.refuerzos,0);
+    const tB=saved.reduce((a,s)=>a+s.boards,0);
+    const tC=saved.reduce((a,s)=>a+(s.cenefa||0),0);
+    document.getElementById('totals').style.display='block';
+    document.getElementById('totGrid').innerHTML=`
+      <div class="t-row"><span class="t-lbl">Área cielorraso</span><span class="t-val">${tA.toFixed(2)} m²</span></div>
+      <div class="t-row"><span class="t-lbl">Soleras</span><span class="t-val">${tS.toFixed(2)} ml</span></div>
+      <div class="t-row"><span class="t-lbl">Perfiles</span><span class="t-val">${tM.toFixed(1)} ml</span></div>
+      <div class="t-row"><span class="t-lbl">Refuerzos</span><span class="t-val">${tR.toFixed(1)} ml</span></div>
+      <div class="t-row"><span class="t-lbl">Placas total</span><span class="t-val">${tB} uds</span></div>
+      <div class="t-row"><span class="t-lbl">Cenefa total</span><span class="t-val t-val-orange">${tC.toFixed(2)} ml</span></div>`;
+
+    // TERMINACION
+    // Masillado / Enduído = área total (m²)
+    // Cantoneras = cenefa total (ml) — perfil tipo L o U en aristas
+    // Masillado solo en uniones = estimación 15% del área
+    document.getElementById('terminacion').style.display='block';
+    document.getElementById('termGrid').innerHTML=`
+      <div class="t-row"><span class="t-lbl">Masillado (1 capa)</span><span class="t-val-grey" style="font-size:10.5pt;font-weight:bold">${tA.toFixed(2)} m²</span></div>
+      <div class="t-row"><span class="t-lbl">Enduído (1 capa)</span><span class="t-val-grey" style="font-size:10.5pt;font-weight:bold">${tA.toFixed(2)} m²</span></div>
+      <div class="t-row"><span class="t-lbl">Cantoneras cenefa</span><span class="t-val-orange" style="font-size:10.5pt;font-weight:bold">${tC.toFixed(2)} ml</span></div>
+      <div class="t-row"><span class="t-lbl">Cinta papel juntas (est.)</span><span class="t-val-grey" style="font-size:10.5pt;font-weight:bold">${(tA*0.15).toFixed(1)} ml</span></div>`;
+  } else {
+    document.getElementById('totals').style.display='none';
+    document.getElementById('terminacion').style.display='none';
+  }
+}
+
+// ===== CANVAS =====
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+function tx(x){return ox+x*sc;}
+function ty(y){return canvas.height-(oy+y*sc);}
+function wx(px){return(px-ox)/sc;}
+function wy(py){return(canvas.height-py-oy)/sc;}
+
+function resizeCanvas(){const w=document.getElementById('cwrap');canvas.width=w.clientWidth;canvas.height=w.clientHeight;render();}
+function fitView(){
+  if(!polylines.length)return;
+  const f=uf(),allV=polylines.flatMap(p=>p.vertices.map(v=>({x:v.x*f,y:v.y*f})));
+  const b=bbox(allV),pad=26;
+  sc=Math.min((canvas.width-pad*2)/(b.w||1),(canvas.height-pad*2)/(b.h||1),800);
+  ox=pad-b.x0*sc;oy=pad-b.y0*sc;
+}
+
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // grid
+  ctx.strokeStyle='#ebebeb';ctx.lineWidth=1;
+  for(let x=0;x<canvas.width;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
+  for(let y=0;y<canvas.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
+  if(!polylines.length){ctx.fillStyle='#ccc';ctx.font='11px Arial';ctx.textAlign='center';ctx.fillText('Cargá un DXF',canvas.width/2,canvas.height/2);return;}
+
+  const sp=getSP();
+  pending.forEach((s,i)=>{
+    const pl=polylines[i];if(!pl)return;
+    const v=wv(pl),b=bbox(v),c=col(i);
+    ctx.save();
+    ctx.beginPath();v.forEach((p,j)=>j===0?ctx.moveTo(tx(p.x),ty(p.y)):ctx.lineTo(tx(p.x),ty(p.y)));
+    if(pl.closed)ctx.closePath();
+    ctx.fillStyle=c+'15';ctx.fill();ctx.clip();
+    ctx.strokeStyle=c+'66';ctx.lineWidth=0.7;ctx.setLineDash([3,3]);
+    if(perfDir==='H'){for(let y=b.y0;y<=b.y1;y+=sp){ctx.beginPath();ctx.moveTo(tx(b.x0),ty(y));ctx.lineTo(tx(b.x1),ty(y));ctx.stroke();}}
+    else{for(let x=b.x0;x<=b.x1;x+=sp){ctx.beginPath();ctx.moveTo(tx(x),ty(b.y0));ctx.lineTo(tx(x),ty(b.y1));ctx.stroke();}}
+    ctx.strokeStyle='#E0700066';ctx.lineWidth=0.9;ctx.setLineDash([5,5]);
+    if(refDir==='H'){for(let y=b.y0;y<=b.y1;y+=sp*2){ctx.beginPath();ctx.moveTo(tx(b.x0),ty(y));ctx.lineTo(tx(b.x1),ty(y));ctx.stroke();}}
+    else{for(let x=b.x0;x<=b.x1;x+=sp*2){ctx.beginPath();ctx.moveTo(tx(x),ty(b.y0));ctx.lineTo(tx(x),ty(b.y1));ctx.stroke();}}
+    ctx.setLineDash([]);ctx.restore();
+    // outline
+    ctx.beginPath();v.forEach((p,j)=>j===0?ctx.moveTo(tx(p.x),ty(p.y)):ctx.lineTo(tx(p.x),ty(p.y)));
+    if(pl.closed)ctx.closePath();
+    ctx.strokeStyle=c;ctx.lineWidth=2;ctx.stroke();
+    // label
+    const fs=Math.max(7,Math.min(11,sc*Math.min(b.w,b.h)*0.12));
+    ctx.font=`bold ${fs}px Arial`;ctx.textAlign='center';ctx.fillStyle=c;
+    ctx.fillText(s.name,tx((b.x0+b.x1)/2),ty((b.y0+b.y1)/2)+fs/3);
+    // saved cenefa paths on this space
+    if(s.cenefaPts&&s.cenefaPts.length>1){
+      ctx.strokeStyle='#E07000';ctx.lineWidth=3;ctx.setLineDash([]);
+      ctx.beginPath();s.cenefaPts.forEach((p,j)=>j===0?ctx.moveTo(tx(p.x),ty(p.y)):ctx.lineTo(tx(p.x),ty(p.y)));
+      ctx.stroke();
+    }
+  });
+
+  // DXF vertex snap indicators in cenefa mode
+  if(toolMode==='cenefa'){
+    // highlight all DXF vertices as snap hints
+    const f=uf();
+    for(const pl of polylines)for(const v of pl.vertices){
+      ctx.beginPath();ctx.arc(tx(v.x*f),ty(v.y*f),3,0,Math.PI*2);
+      ctx.fillStyle='rgba(224,112,0,0.4)';ctx.fill();
+    }
+  }
+
+  // draw cenefa in progress
+  if(cenefaPts.length>0){
+    const allPts=[...cenefaPts];
+    if(cursorPt)allPts.push(cursorPt);
+    ctx.strokeStyle='#E07000';ctx.lineWidth=3;ctx.setLineDash([6,4]);
+    ctx.beginPath();allPts.forEach((p,j)=>j===0?ctx.moveTo(tx(p.x),ty(p.y)):ctx.lineTo(tx(p.x),ty(p.y)));
+    ctx.stroke();ctx.setLineDash([]);
+    // dots at each point
+    cenefaPts.forEach(p=>{
+      ctx.beginPath();ctx.arc(tx(p.x),ty(p.y),5,0,Math.PI*2);
+      ctx.fillStyle='#E07000';ctx.fill();
+      ctx.strokeStyle='white';ctx.lineWidth=1.5;ctx.stroke();
+    });
+    // running length label
+    if(cursorPt){
+      const ml=polylineLen(allPts);
+      const lx=tx(cursorPt.x)+8,ly=ty(cursorPt.y)-8;
+      ctx.font='bold 10px Arial';ctx.fillStyle='#E07000';ctx.textAlign='left';
+      ctx.fillText(ml.toFixed(2)+' ml',lx,ly);
+    }
+  }
+
+  // scale bar
+  const tgts=[0.1,0.25,0.5,1,2,5,10,20,50];
+  let best=tgts[0];for(const t of tgts)if(Math.abs(t*sc-50)<Math.abs(best*sc-50))best=t;
+  const px=best*sc,bx=canvas.width-12-px,by=canvas.height-10;
+  ctx.strokeStyle='#bbb';ctx.fillStyle='#bbb';ctx.lineWidth=1.5;ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+px,by);ctx.moveTo(bx,by-3);ctx.lineTo(bx,by+3);ctx.moveTo(bx+px,by-3);ctx.lineTo(bx+px,by+3);ctx.stroke();
+  ctx.font='7px Arial';ctx.textAlign='center';ctx.fillText(best>=1?best+'m':(best*100)+'cm',bx+px/2,by-4);
+}
+
+// ===== CANVAS EVENTS =====
+let pan=false,lpx=0,lpy=0,lDist=0,lastTap=0;
+
+function canvasTap(cx,cy){
+  if(toolMode==='cenefa'){
+    // try snap to vertex
+    const snap=snapToVertex(cx,cy);
+    const pt=snap?{x:snap.x,y:snap.y}:{x:wx(cx),y:wy(cy)};
+    // double tap = done
+    const now=Date.now();
+    if(now-lastTap<350&&cenefaPts.length>=2){doneCenefa();lastTap=0;return;}
+    lastTap=now;
+    cenefaPts.push(pt);
+    updateCanvasStatus();render();
+  }
+}
+
+canvas.addEventListener('click',e=>{
+  if(toolMode==='cenefa'){const r=canvas.getBoundingClientRect();canvasTap(e.clientX-r.left,e.clientY-r.top);}
+});
+
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  const cx=e.clientX-r.left,cy=e.clientY-r.top;
+  if(toolMode==='cenefa'){
+    const snap=snapToVertex(cx,cy);
+    cursorPt=snap?{x:snap.x,y:snap.y}:{x:wx(cx),y:wy(cy)};
+    render();return;
+  }
+  if(pan){ox+=e.clientX-lpx;oy-=e.clientY-lpy;lpx=e.clientX;lpy=e.clientY;render();}
+});
+
+canvas.addEventListener('mousedown',e=>{if(toolMode==='pan'){pan=true;lpx=e.clientX;lpy=e.clientY;canvas.style.cursor='grabbing';}});
+['mouseup','mouseleave'].forEach(ev=>canvas.addEventListener(ev,()=>{pan=false;if(toolMode==='pan')canvas.style.cursor='grab';}));
+
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  if(e.touches.length===1){
+    lpx=e.touches[0].clientX;lpy=e.touches[0].clientY;
+    if(toolMode==='pan')pan=true;
+  }
+  if(e.touches.length===2){pan=false;const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;lDist=Math.sqrt(dx*dx+dy*dy);}
+},{passive:false});
+
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&toolMode==='pan'&&pan){ox+=e.touches[0].clientX-lpx;oy-=e.touches[0].clientY-lpy;lpx=e.touches[0].clientX;lpy=e.touches[0].clientY;render();}
+  if(e.touches.length===2){const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;const d=Math.sqrt(dx*dx+dy*dy);const f=d/lDist;lDist=d;const cx=(e.touches[0].clientX+e.touches[1].clientX)/2,cy=(e.touches[0].clientY+e.touches[1].clientY)/2;const r=canvas.getBoundingClientRect();const mx=cx-r.left,my=cy-r.top;ox=mx-(mx-ox)*f;oy=(canvas.height-my)-((canvas.height-my)-oy)*f;sc*=f;render();}
+},{passive:false});
+
+canvas.addEventListener('touchend',e=>{
+  pan=false;
+  if(toolMode==='cenefa'&&e.changedTouches.length===1){
+    const r=canvas.getBoundingClientRect();
+    canvasTap(e.changedTouches[0].clientX-r.left,e.changedTouches[0].clientY-r.top);
+  }
+});
+
+canvas.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?1.15:0.87;const r=canvas.getBoundingClientRect();const mx=e.clientX-r.left,my=e.clientY-r.top;ox=mx-(mx-ox)*f;oy=(canvas.height-my)-((canvas.height-my)-oy)*f;sc*=f;render();},{passive:false});
+
+// ===== FILE LOAD =====
+document.getElementById('fi').addEventListener('change',function(e){
+  const file=e.target.files[0];if(!file)return;
+  document.getElementById('fname').textContent=file.name;
+  const reader=new FileReader();
+  reader.onload=ev=>{polylines=parseDXF(ev.target.result);pending=polylines.map((pl,i)=>calcSpace(pl,i)).filter(s=>s.area>0.3);fitView();render();renderResults();};
+  reader.readAsText(file);
+});
+
+// ===== EXPORT =====
+function exportXLSX(){
+  if(!saved.length){alert('No hay ambientes guardados.');return;}
+  const wb=XLSX.utils.book_new();
+  // SHEET 1: Metrado
+  const rows=[
+    ['OCEANO BRAVA — MATERIALES CIELORRASO DE YESO'],
+    [`Exportado: ${new Date().toLocaleDateString('es-AR')}`],
+    [],
+    ['Ambiente','Área (m²)','Soleras (ml)','Perfiles (ml)','Refuerzos (ml)','Placas (uds)','Cenefa (ml)','Dónde cenefa','Sep. (cm)'],
+    ...saved.map(s=>[s.name,+s.area.toFixed(2),+s.soleras.toFixed(2),+s.montantes.toFixed(1),+s.refuerzos.toFixed(1),s.boards,+(s.cenefa||0).toFixed(2),s.cenefaWhere||'',(s.sp*100).toFixed(0)]),
+    [],
+    ['TOTAL',+saved.reduce((a,s)=>a+s.area,0).toFixed(2),+saved.reduce((a,s)=>a+s.soleras,0).toFixed(2),+saved.reduce((a,s)=>a+s.montantes,0).toFixed(1),+saved.reduce((a,s)=>a+s.refuerzos,0).toFixed(1),saved.reduce((a,s)=>a+s.boards,0),+saved.reduce((a,s)=>a+(s.cenefa||0),0).toFixed(2),'',''],
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:30},{wch:11},{wch:13},{wch:13},{wch:14},{wch:12},{wch:12},{wch:22},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws,'Metrado');
+  // SHEET 2: Terminación
+  const tA=saved.reduce((a,s)=>a+s.area,0);
+  const tC=saved.reduce((a,s)=>a+(s.cenefa||0),0);
+  const t2=[
+    ['TERMINACIÓN — MASILLADO / ENDUÍDO / CANTONERAS'],
+    [],
+    ['Ítem','Cantidad','Unidad','Nota'],
+    ['Masillado 1 capa',+tA.toFixed(2),'m²','Superficie cielorraso total'],
+    ['Enduído 1 capa',+tA.toFixed(2),'m²','Superficie cielorraso total'],
+    ['Cantoneras cenefa',+tC.toFixed(2),'ml','Perfil L/U en aristas de cenefa'],
+    ['Cinta papel juntas (est.)',+(tA*0.15).toFixed(1),'ml','Estimación 15% del área'],
+  ];
+  const ws2=XLSX.utils.aoa_to_sheet(t2);
+  ws2['!cols']=[{wch:30},{wch:12},{wch:10},{wch:35}];
+  XLSX.utils.book_append_sheet(wb,ws2,'Terminación');
+  XLSX.writeFile(wb,'OB_Materiales_Cielorraso.xlsx');
+}
+
+window.addEventListener('resize',()=>{resizeCanvas();fitView();render();});
+window.addEventListener('orientationchange',()=>{setTimeout(()=>{resizeCanvas();fitView();render();},200);});
+resizeCanvas();renderResults();
+</script>
+</body>
+</html>
