@@ -296,6 +296,36 @@
         }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* ===== PRINT ===== */
+        #print-content { display: none; }
+        @media print {
+            body > *:not(#print-content) { display: none !important; }
+            #print-content { display: block !important; font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; }
+            .pr-portada { padding: 32px 0 20px; border-bottom: 3px solid #C70000; margin-bottom: 28px; }
+            .pr-portada h1 { font-size: 1.8rem; font-weight: 900; margin: 0 0 4px; letter-spacing: -1px; }
+            .pr-portada h1 span { color: #C70000; }
+            .pr-portada h2 { font-size: 1.2rem; margin: 0 0 6px; font-weight: 700; }
+            .pr-portada .meta { font-size: 0.75rem; color: #888; }
+            .pr-bloque { padding: 14px 0; border-bottom: 1px solid #e8e8e8; break-inside: avoid; }
+            .pr-fecha { font-size: 0.7rem; color: #aaa; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+            .md-render { line-height: 1.7; font-size: 0.92rem; }
+            .md-render p { margin: 0 0 6px; }
+            .md-render h1 { font-size: 1.1rem; font-weight: 800; margin: 8px 0 4px; }
+            .md-render h2 { font-size: 1rem; font-weight: 700; margin: 6px 0 3px; }
+            .md-render h3 { font-size: 0.9rem; font-weight: 700; margin: 4px 0 2px; }
+            .md-render ul, .md-render ol { padding-left: 16px; margin: 0 0 6px; }
+            .md-render strong { font-weight: 800; }
+            .md-render em { font-style: italic; color: #555; }
+            .md-render code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; font-size: 0.84em; }
+            .md-render blockquote { border-left: 3px solid #C70000; padding-left: 10px; color: #555; font-style: italic; margin: 4px 0; }
+            .pr-fotos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+            .pr-fotos img { border-radius: 6px; object-fit: cover; flex: 1 1 calc(50% - 3px); max-width: calc(50% - 3px); max-height: 200px; }
+            .pr-fotos img:only-child { flex: none; width: 100%; max-width: 100%; max-height: 280px; object-fit: contain; }
+            .code-block { background: #f4f4f4 !important; border-radius: 6px; margin: 6px 0; }
+            .code-block pre { color: #1a1a1a !important; padding: 10px; font-size: 0.8rem; }
+            .btn-copy-code { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -335,6 +365,9 @@
     </div>
     <div class="bloques-timeline" id="bloques-timeline"></div>
 </div>
+
+<!-- PRINT CONTENT — oculto, visible solo en @media print -->
+<div id="print-content"></div>
 
 <!-- FAB -->
 <button class="fab" id="fab" onclick="onFab()">
@@ -925,7 +958,37 @@ function toast(msg, tipo='ok') {
     el._t=setTimeout(()=>el.classList.remove('show'),2800);
 }
 
-// ===== PWA: Service Worker =====
+// ===== EXPORTAR PDF =====
+function exportarPDF() {
+    if (proyectoIdx === null) return;
+    const p = proyectos[proyectoIdx];
+    const bloques = p.bloques || [];
+
+    const bloquesHtml = bloques.map(b => {
+        const textoHtml = b.texto ? `<div class="md-render">${md(b.texto)}</div>` : '';
+        const fotosHtml = (b.fotos||[]).length
+            ? `<div class="pr-fotos">${b.fotos.map(src=>`<img src="${src}">`).join('')}</div>`
+            : '';
+        return `<div class="pr-bloque">
+            <div class="pr-fecha">${fechaCorta(b.fecha)}${b.editado?' · editado':''}</div>
+            ${textoHtml}${fotosHtml}
+        </div>`;
+    }).join('');
+
+    const el = document.getElementById('print-content');
+    el.innerHTML = `
+        <div class="pr-portada">
+            <h1><span>Bitacora</span>app</h1>
+            <h2>${esc(p.nombre)}</h2>
+            <div class="meta">Exportado el ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})} · ${bloques.length} nota${bloques.length!==1?'s':''}</div>
+        </div>
+        ${bloquesHtml}`;
+
+    window.addEventListener('afterprint', () => { el.innerHTML = ''; }, { once: true });
+    window.print();
+}
+
+// ===== PWA =====
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
