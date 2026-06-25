@@ -57,39 +57,45 @@ body{display:flex;flex-direction:column;background:#fff;}
 #wrap{flex:1;position:relative;overflow:hidden;}
 #cv{position:absolute;top:0;left:0;}
 
-/* TOOL PANEL — 2 columnas, sin scroll */
+/* TOOL PANEL — cae verticalmente desde el botón lápiz (derecha) */
 #panel-herr{
-  position:fixed;top:var(--tb);left:0;right:0;
-  background:#fff;border-bottom:2px solid #e5e5ea;
-  z-index:150;display:none;
-  flex-direction:row;align-items:flex-start;
-  padding:12px 14px;gap:14px;
+  position:fixed;top:var(--tb);right:0;
+  background:#fff;
+  border-left:1px solid #e5e5ea;border-bottom:1px solid #e5e5ea;
+  border-radius:0 0 0 16px;
+  z-index:150;display:none;flex-direction:column;
+  padding:12px;gap:8px;
 }
 #panel-herr.open{display:flex;animation:phDown .18s ease;}
 @keyframes phDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .ph-col{display:flex;flex-direction:column;gap:6px;}
 .ph-lbl{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;}
-.ph-g3{display:grid;grid-template-columns:repeat(3,44px);gap:4px;}
-.ph-g1{display:grid;grid-template-columns:44px;gap:4px;}
-.ph-vsep{width:1px;background:#e5e5ea;align-self:stretch;}
-/* botones herramienta — fondo rojo, icono blanco */
+.ph-g3{display:grid;grid-template-columns:repeat(3,52px);gap:6px;}
+.ph-hsep{height:1px;background:#e5e5ea;margin:2px 0;}
+/* botones herramienta — rojo, icono blanco, talle dedo */
 .phb{
-  width:44px;height:44px;border-radius:8px;
+  width:52px;height:52px;border-radius:10px;
   background:var(--accent);border:none;color:#fff;cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:background .12s;
 }
-.phb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;
+.phb svg{width:27px;height:27px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 .phb.on{background:#8c0000;}
 .phb:active{background:#8c0000;}
-/* botón lápiz — redondo, destaca en bar 1 */
+/* botón lápiz — círculo rojo FAB */
 #btn-herr{width:40px!important;height:40px!important;border-radius:50%!important;
   background:var(--accent)!important;color:#fff!important;}
-/* flechas deshacer/rehacer — ícono solo, sin caja */
-.ti{background:none;border:none;padding:5px;cursor:pointer;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;color:var(--accent);}
-.ti svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+/* iconos naked de bar 1: sin caja, solo el trazo */
+.ti{background:none;border:none;padding:0;cursor:pointer;flex-shrink:0;
+  min-width:36px;min-height:36px;
+  display:flex;align-items:center;justify-content:center;}
+.ti svg{fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;width:22px;height:22px;}
+/* undo/redo — siempre rojo */
+.ti-r{color:var(--accent);}
+/* select/snap — oscuro apagado, rojo activo */
+.ti-t{color:var(--ink);}
+.ti-t.on{color:var(--accent);}
 
 /* PROP BAR */
 #propbar{
@@ -189,32 +195,25 @@ body{display:flex;flex-direction:column;background:#fff;}
 <!-- BAR 1 -->
 <div class="bar">
   <div class="bar-logo"><span>iL</span>Draw</div>
-  <button class="ti" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
-  <button class="ti" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
+  <button class="ti ti-r" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
+  <button class="ti ti-r" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <div class="tg">
     <button class="tb" data-tip="Exportar" onclick="exportPNG()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
     <button class="tb" data-tip="Nuevo" onclick="newDoc()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
   </div>
-  <div class="tg">
-    <button class="tb on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
-  </div>
-  <div class="tg">
-    <button class="tb on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
-    <select onchange="cellPx=+this.value;render()" style="background:#f2f2f7;color:var(--ink);border:1px solid #e5e5ea;border-radius:6px;padding:3px 6px;font-size:10px;font-family:var(--font)">
-      <option value="20">S</option><option value="30" selected>M</option><option value="50">L</option>
-    </select>
-  </div>
+  <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
+  <button class="ti ti-t on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+  <select onchange="cellPx=+this.value;render()" style="background:#f2f2f7;color:var(--ink);border:1px solid #e5e5ea;border-radius:6px;padding:3px 6px;font-size:10px;font-family:var(--font);flex-shrink:0">
+    <option value="20">S</option><option value="30" selected>M</option><option value="50">L</option>
+  </select>
   <div style="flex:1"></div>
-  <div class="tg" style="border-left:1px solid rgba(0,0,0,.06)">
-    <button class="tb" id="btn-herr" data-tip="Herramientas" onclick="toggleTools()">
-      <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-    </button>
-  </div>
+  <button class="tb" id="btn-herr" data-tip="Herramientas" onclick="toggleTools()" style="margin-right:6px">
+    <svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+  </button>
 </div>
 
-<!-- PANEL HERRAMIENTAS — 2 columnas verticales -->
+<!-- PANEL HERRAMIENTAS — cae vertical desde botón lápiz (derecha) -->
 <div id="panel-herr">
-  <!-- Columna izquierda: Dibujo (grid 3 col) -->
   <div class="ph-col">
     <span class="ph-lbl">Dibujo</span>
     <div class="ph-g3">
@@ -231,12 +230,10 @@ body{display:flex;flex-direction:column;background:#fff;}
       <button class="phb" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg></button>
     </div>
   </div>
-  <!-- Separador vertical -->
-  <div class="ph-vsep"></div>
-  <!-- Columna derecha: Edición (1 col) -->
+  <div class="ph-hsep"></div>
   <div class="ph-col">
     <span class="ph-lbl">Edición</span>
-    <div class="ph-g1">
+    <div class="ph-g3">
       <button class="phb" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg></button>
       <button class="phb" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg></button>
       <button class="phb" data-t="erase" onclick="ST('erase');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
@@ -1183,9 +1180,7 @@ document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr'
 function ST(t){
   tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];
   dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;dim2Drawing=false;setHint('');
-  document.querySelectorAll('.tb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  document.querySelectorAll('.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  document.getElementById('escBtn').classList.toggle('on',t==='select');
+  document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
   const btnH=document.getElementById('btn-herr');
   const srcSvg=phbActive?phbActive.querySelector('svg'):document.getElementById('escBtn').querySelector('svg');
