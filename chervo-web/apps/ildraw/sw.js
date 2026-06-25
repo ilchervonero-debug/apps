@@ -1,4 +1,4 @@
-const CACHE = 'ildraw-v3';
+const CACHE = 'ildraw-v4';
 const ASSETS = [
   '/apps/ildraw/',
   '/apps/ildraw/index.html',
@@ -23,12 +23,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if(e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then(r => {
-      const fresh = fetch(e.request).then(res => {
-        if(res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-        return res;
-      }).catch(() => {});
-      return r || fresh;
-    })
+    fetch(e.request).then(res => {
+      if(res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
