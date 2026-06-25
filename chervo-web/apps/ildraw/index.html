@@ -57,30 +57,39 @@ body{display:flex;flex-direction:column;background:#fff;}
 #wrap{flex:1;position:relative;overflow:hidden;}
 #cv{position:absolute;top:0;left:0;}
 
-/* TOOL PANEL — desplegable vertical */
+/* TOOL PANEL — 2 columnas, sin scroll */
 #panel-herr{
   position:fixed;top:var(--tb);left:0;right:0;
   background:#fff;border-bottom:2px solid #e5e5ea;
-  z-index:150;display:none;flex-direction:column;
-  padding:6px 4px 8px;gap:2px;
+  z-index:150;display:none;
+  flex-direction:row;align-items:flex-start;
+  padding:12px 14px;gap:14px;
 }
 #panel-herr.open{display:flex;animation:phDown .18s ease;}
 @keyframes phDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-#btn-herr{background:var(--accent)!important;color:#fff!important;}
-.ph-row{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;gap:2px;padding:2px 4px;}
-.ph-row::-webkit-scrollbar{display:none;}
-.ph-lbl{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.06em;
-  padding:0 6px 0 4px;flex-shrink:0;min-width:36px;}
+.ph-col{display:flex;flex-direction:column;gap:6px;}
+.ph-lbl{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;}
+.ph-g3{display:grid;grid-template-columns:repeat(3,44px);gap:4px;}
+.ph-g1{display:grid;grid-template-columns:44px;gap:4px;}
+.ph-vsep{width:1px;background:#e5e5ea;align-self:stretch;}
+/* botones herramienta — fondo rojo, icono blanco */
 .phb{
-  width:48px;height:48px;border-radius:10px;background:transparent;border:none;
-  color:var(--ink);cursor:pointer;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;transition:background .1s;
+  width:44px;height:44px;border-radius:8px;
+  background:var(--accent);border:none;color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .12s;
 }
-.phb svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;
+.phb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-.phb.on{background:var(--accent);color:#fff;}
-.phb:active{background:rgba(0,0,0,.08);}
-.ph-div{width:1px;height:32px;background:rgba(0,0,0,.07);flex-shrink:0;margin:0 4px;}
+.phb.on{background:#8c0000;}
+.phb:active{background:#8c0000;}
+/* botón lápiz — redondo, destaca en bar 1 */
+#btn-herr{width:40px!important;height:40px!important;border-radius:50%!important;
+  background:var(--accent)!important;color:#fff!important;}
+/* flechas deshacer/rehacer — ícono solo, sin caja */
+.ti{background:none;border:none;padding:5px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:var(--accent);}
+.ti svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 
 /* PROP BAR */
 #propbar{
@@ -180,10 +189,8 @@ body{display:flex;flex-direction:column;background:#fff;}
 <!-- BAR 1 -->
 <div class="bar">
   <div class="bar-logo"><span>iL</span>Draw</div>
-  <div class="tg">
-    <button class="tb" style="color:var(--accent)" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
-    <button class="tb" style="color:var(--accent)" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
-  </div>
+  <button class="ti" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
+  <button class="ti" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <div class="tg">
     <button class="tb" data-tip="Exportar" onclick="exportPNG()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
     <button class="tb" data-tip="Nuevo" onclick="newDoc()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
@@ -205,28 +212,35 @@ body{display:flex;flex-direction:column;background:#fff;}
   </div>
 </div>
 
-<!-- PANEL HERRAMIENTAS — desplegable vertical -->
+<!-- PANEL HERRAMIENTAS — 2 columnas verticales -->
 <div id="panel-herr">
-  <div class="ph-row">
+  <!-- Columna izquierda: Dibujo (grid 3 col) -->
+  <div class="ph-col">
     <span class="ph-lbl">Dibujo</span>
-    <button class="phb" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg></button>
-    <button class="phb" data-t="arc" onclick="ST('arc');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 19 Q 8 5 20 8" fill="none"/></svg></button>
-    <button class="phb" data-t="pline" onclick="ST('pline');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 18 7 6 12 14 17 8 21 14"/></svg></button>
-    <button class="phb" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
-    <button class="phb" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></button>
-    <button class="phb" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg></button>
-    <button class="phb" data-t="pen" onclick="ST('pen');closeTools()"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
-    <button class="phb" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
-    <div class="ph-div"></div>
-    <button class="phb" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg></button>
-    <button class="phb" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg></button>
-    <button class="phb" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg></button>
+    <div class="ph-g3">
+      <button class="phb" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg></button>
+      <button class="phb" data-t="arc" onclick="ST('arc');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 19 Q 8 5 20 8" fill="none"/></svg></button>
+      <button class="phb" data-t="pline" onclick="ST('pline');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 18 7 6 12 14 17 8 21 14"/></svg></button>
+      <button class="phb" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
+      <button class="phb" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></button>
+      <button class="phb" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg></button>
+      <button class="phb" data-t="pen" onclick="ST('pen');closeTools()"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+      <button class="phb" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
+      <button class="phb" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg></button>
+      <button class="phb" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg></button>
+      <button class="phb" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg></button>
+    </div>
   </div>
-  <div class="ph-row">
+  <!-- Separador vertical -->
+  <div class="ph-vsep"></div>
+  <!-- Columna derecha: Edición (1 col) -->
+  <div class="ph-col">
     <span class="ph-lbl">Edición</span>
-    <button class="phb" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg></button>
-    <button class="phb" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg></button>
-    <button class="phb" data-t="erase" onclick="ST('erase');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
+    <div class="ph-g1">
+      <button class="phb" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg></button>
+      <button class="phb" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg></button>
+      <button class="phb" data-t="erase" onclick="ST('erase');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
+    </div>
   </div>
 </div>
 
