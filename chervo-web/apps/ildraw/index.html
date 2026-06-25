@@ -13,7 +13,7 @@
 <style>
 :root{
   --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
-  --accent:#007aff;--red:#ff3b30;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
+  --accent:#C70000;--red:#C70000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
   --tb:46px;--prop:44px;
   --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
 }
@@ -30,6 +30,14 @@ body{display:flex;flex-direction:column;background:#fff;}
   scrollbar-width:none;flex-shrink:0;
 }
 .bar::-webkit-scrollbar{display:none;}
+.bar-logo{
+  position:sticky;left:0;z-index:5;background:#fff;
+  height:100%;display:flex;align-items:center;
+  padding:0 10px 0 12px;flex-shrink:0;
+  border-right:1px solid rgba(0,0,0,.06);
+  font-size:14px;font-weight:800;letter-spacing:-0.5px;color:var(--ink);
+}
+.bar-logo span{color:var(--accent);}
 .tg{display:flex;align-items:center;gap:2px;padding:0 6px;height:100%;flex-shrink:0;border-right:1px solid rgba(0,0,0,.06);}
 .tg:last-child{border-right:none;}
 
@@ -146,6 +154,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 
 <!-- BAR 1 -->
 <div class="bar">
+  <div class="bar-logo"><span>iL</span>Draw</div>
   <div class="tg">
     <button class="tb" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
     <button class="tb" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
