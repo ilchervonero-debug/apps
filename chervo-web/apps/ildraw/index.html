@@ -57,11 +57,32 @@ body{display:flex;flex-direction:column;background:#fff;}
 #wrap{flex:1;position:relative;overflow:hidden;}
 #cv{position:absolute;top:0;left:0;}
 
-/* PROP BAR (now bar 2) */
+/* BAR 2 TOOLS (toggleable) */
+#bar2-tools{
+  display:none;height:58px;background:#fff;
+  border-bottom:1px solid #e5e5ea;
+  align-items:center;overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;flex-shrink:0;gap:2px;padding:0 6px;
+}
+#bar2-tools::-webkit-scrollbar{display:none;}
+#bar2-tools.open{display:flex;animation:b2In .18s ease;}
+@keyframes b2In{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.t2b{
+  width:46px;height:46px;border-radius:10px;background:transparent;border:none;
+  color:var(--ink);cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;transition:background .1s;
+}
+.t2b svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+.t2b.on{background:var(--accent);color:#fff;}
+.t2b:active{background:rgba(0,0,0,.08);}
+.t2sep{width:1px;height:32px;background:rgba(0,0,0,.07);flex-shrink:0;margin:0 4px;}
+
+/* PROP BAR */
 #propbar{
   height:var(--prop);
   background:#fff;
-  border-bottom:1px solid #e5e5ea;
+  border-top:1px solid #e5e5ea;
   display:flex;align-items:center;padding:0 10px;gap:8px;
   overflow-x:auto;scrollbar-width:none;flex-shrink:0;
 }
@@ -181,14 +202,21 @@ body{display:flex;flex-direction:column;background:#fff;}
 <div class="bar">
   <div class="bar-logo"><span>iL</span>Draw</div>
   <div class="tg">
-    <button class="tb" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
-    <button class="tb" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
+    <button class="tb" style="color:var(--accent)" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
+    <button class="tb" style="color:var(--accent)" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   </div>
   <div class="tg">
     <button class="tb" data-tip="Exportar" onclick="exportPNG()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    <button class="tb" data-tip="Nuevo" onclick="newDoc()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
   </div>
   <div class="tg">
     <button class="tb on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
+  </div>
+  <div class="tg">
+    <button class="tb on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+    <select onchange="cellPx=+this.value;render()" style="background:#f2f2f7;color:var(--ink);border:1px solid #e5e5ea;border-radius:6px;padding:3px 6px;font-size:10px;font-family:var(--font)">
+      <option value="20">S</option><option value="30" selected>M</option><option value="50">L</option>
+    </select>
   </div>
   <div style="flex:1"></div>
   <div class="tg" style="border-left:1px solid rgba(0,0,0,.06)">
@@ -198,15 +226,32 @@ body{display:flex;flex-direction:column;background:#fff;}
   </div>
 </div>
 
-<!-- BAR 2 = propbar -->
+<!-- BAR 2: herramientas (se abre/cierra con el lápiz) -->
+<div id="bar2-tools">
+  <button class="t2b" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg></button>
+  <button class="t2b" data-t="arc" onclick="ST('arc');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 19 Q 8 5 20 8" fill="none"/></svg></button>
+  <button class="t2b" data-t="pline" onclick="ST('pline');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 18 7 6 12 14 17 8 21 14"/></svg></button>
+  <button class="t2b" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
+  <button class="t2b" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></button>
+  <button class="t2b" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg></button>
+  <button class="t2b" data-t="pen" onclick="ST('pen');closeTools()"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+  <button class="t2b" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
+  <button class="t2b" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg></button>
+  <button class="t2b" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg></button>
+  <button class="t2b" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg></button>
+  <div class="t2sep"></div>
+  <button class="t2b" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg></button>
+  <button class="t2b" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg></button>
+  <button class="t2b" data-t="erase" onclick="ST('erase');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
+</div>
+
+<div id="wrap"><canvas id="cv"></canvas></div>
+
+<!-- PROPBAR (abajo) -->
 <div id="propbar">
-  <div class="tg" style="border-right:1px solid rgba(0,0,0,.06);padding:0 8px;height:100%;gap:4px">
-    <button class="tb on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
-    <select onchange="cellPx=+this.value;render()" style="background:#f2f2f7;color:var(--ink);border:1px solid #e5e5ea;border-radius:6px;padding:3px 6px;font-size:10px;font-family:var(--font)">
-      <option value="20">S</option><option value="30" selected>M</option><option value="50">L</option>
-    </select>
-  </div>
   <button id="colorBtn" onclick="togglePalette(event)" style="background:#1c1c1e"></button>
+  <div class="pdiv"></div>
+  <span id="pbTool">Seleccionar</span>
   <div class="pdiv"></div>
   <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;opacity:.4;stroke:var(--ink);fill:none;stroke-linecap:round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="12" x2="21" y2="12" stroke-width="2.5"/><line x1="3" y1="18" x2="21" y2="18" stroke-width="5"/></svg>
   <input type="range" id="pbStroke" min="1" max="10" value="2" style="width:60px" oninput="strokeW=+this.value">
@@ -258,43 +303,6 @@ body{display:flex;flex-direction:column;background:#fff;}
   <span id="pbHint" style="display:none"></span>
   <span id="coord">0, 0</span>
 </div>
-
-<!-- TOOL PANEL -->
-<div class="panel-herr" id="panel-herr">
-  <div class="ph-sec">
-    <span class="ph-lbl">Dibujar</span>
-    <div class="ph-grid">
-      <button class="ph-btn" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg><span>Línea</span></button>
-      <button class="ph-btn" data-t="arc" onclick="ST('arc');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 19 Q 8 5 20 8" fill="none"/></svg><span>Arco</span></button>
-      <button class="ph-btn" data-t="pline" onclick="ST('pline');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 18 7 6 12 14 17 8 21 14"/></svg><span>Polilínea</span></button>
-      <button class="ph-btn" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg><span>Rect.</span></button>
-      <button class="ph-btn" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg><span>Círculo</span></button>
-      <button class="ph-btn" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg><span>Polígono</span></button>
-      <button class="ph-btn" data-t="pen" onclick="ST('pen');closeTools()"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg><span>Libre</span></button>
-      <button class="ph-btn" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg><span>Texto</span></button>
-      <button class="ph-btn" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg><span>Cota</span></button>
-      <button class="ph-btn" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg><span>Cota Dir.</span></button>
-      <button class="ph-btn" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg><span>Relleno</span></button>
-    </div>
-  </div>
-  <div class="ph-sep"></div>
-  <div class="ph-sec">
-    <span class="ph-lbl">Editar</span>
-    <div class="ph-grid">
-      <button class="ph-btn" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg><span>Goma</span></button>
-      <button class="ph-btn" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg><span>Trim</span></button>
-      <button class="ph-btn" data-t="erase" onclick="ST('erase');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg><span>Borrar</span></button>
-    </div>
-  </div>
-  <div class="ph-sep"></div>
-  <div class="ph-sec">
-    <div class="ph-grid">
-      <button class="ph-btn" onclick="newDoc();closeTools()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Nuevo</span></button>
-    </div>
-  </div>
-</div>
-
-<div id="wrap"><canvas id="cv"></canvas></div>
 
 <!-- COLOR PALETTE -->
 <div id="colorPalette">
@@ -1160,7 +1168,7 @@ function threePointArc(p1,p2,p3){
 }
 
 // COLOR
-function togglePalette(e){e.stopPropagation();const p=document.getElementById('colorPalette');if(p.classList.contains('show')){p.classList.remove('show');return;}const btn=document.getElementById('colorBtn');const r=btn.getBoundingClientRect();p.style.left=Math.min(r.left,window.innerWidth-175)+'px';p.style.top=(r.bottom+8)+'px';p.classList.add('show');}
+function togglePalette(e){e.stopPropagation();const p=document.getElementById('colorPalette');if(p.classList.contains('show')){p.classList.remove('show');return;}const btn=document.getElementById('colorBtn');const r=btn.getBoundingClientRect();p.style.left=Math.min(r.left,window.innerWidth-175)+'px';p.style.bottom=(window.innerHeight-r.top+8)+'px';p.style.top='auto';p.classList.add('show');}
 function pickColor(el){color=el.dataset.c;document.querySelectorAll('.cp').forEach(d=>d.classList.remove('on'));el.classList.add('on');document.getElementById('colorBtn').style.background=color;document.getElementById('colorPalette').classList.remove('show');}
 
 // HINT
@@ -1168,21 +1176,20 @@ function setHint(msg){const el=document.getElementById('pbHint');el.textContent=
 
 // TOOL PANEL
 let _toolsOpen=false;
-function toggleTools(){_toolsOpen=!_toolsOpen;document.getElementById('panel-herr').classList.toggle('open',_toolsOpen);document.getElementById('btn-herr').classList.toggle('on',_toolsOpen);}
-function closeTools(){_toolsOpen=false;document.getElementById('panel-herr').classList.remove('open');document.getElementById('btn-herr').classList.remove('on');}
-document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr')&&!e.target.closest('#btn-herr'))closeTools();},{passive:true});
+function toggleTools(){_toolsOpen=!_toolsOpen;document.getElementById('bar2-tools').classList.toggle('open',_toolsOpen);document.getElementById('btn-herr').classList.toggle('on',_toolsOpen);}
+function closeTools(){_toolsOpen=false;document.getElementById('bar2-tools').classList.remove('open');document.getElementById('btn-herr').classList.remove('on');}
 
 // TOOLBAR
 function ST(t){
   tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];
   dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;dim2Drawing=false;setHint('');
   document.querySelectorAll('.tb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  document.querySelectorAll('.ph-btn[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  document.querySelectorAll('.t2b[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   document.getElementById('escBtn').classList.toggle('on',t==='select');
   // update hamburger icon to active tool
-  const phBtn=document.querySelector('.ph-btn[data-t="'+t+'"]');
+  const t2Btn=document.querySelector('.t2b[data-t="'+t+'"]');
   const btnH=document.getElementById('btn-herr');
-  const srcSvg=phBtn?phBtn.querySelector('svg'):document.getElementById('escBtn').querySelector('svg');
+  const srcSvg=t2Btn?t2Btn.querySelector('svg'):document.getElementById('escBtn').querySelector('svg');
   if(srcSvg&&btnH){const old=btnH.querySelector('svg');if(old)old.replaceWith(srcSvg.cloneNode(true));}
   document.getElementById('grpLine').style.display=['line','arc','rect','pen','pline','circle','poly'].includes(t)?'flex':'none';
   document.getElementById('grpSize').style.display=['text','circle','poly'].includes(t)?'flex':'none';
