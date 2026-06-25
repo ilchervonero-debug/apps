@@ -32,6 +32,8 @@ body{display:flex;flex-direction:column;background:#fff;}
 .bar::-webkit-scrollbar{display:none;}
 .tg{display:flex;align-items:center;gap:2px;padding:0 6px;height:100%;flex-shrink:0;border-right:1px solid rgba(0,0,0,.06);}
 .tg:last-child{border-right:none;}
+.bar-logo{display:flex;align-items:center;gap:7px;padding:0 14px 0 14px;flex-shrink:0;border-right:1px solid rgba(0,0,0,.06);}
+.bar-logo .bl-draw{font-size:22px;font-weight:800;color:#3d3d3d;letter-spacing:-.5px;line-height:1;}
 
 .tb{width:36px;height:36px;border-radius:8px;background:transparent;border:none;
   color:var(--ink);cursor:pointer;flex-shrink:0;
@@ -125,6 +127,14 @@ body{display:flex;flex-direction:column;background:#fff;}
 
 <!-- BAR 1 -->
 <div class="bar">
+  <div class="bar-logo">
+    <svg viewBox="0 0 26 40" width="19" height="30" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="8" cy="6" r="6" fill="#C70000"/>
+      <rect x="4" y="14" width="9" height="26" rx="2" fill="#C70000"/>
+      <rect x="4" y="32" width="22" height="8" rx="2" fill="#C70000"/>
+    </svg>
+    <span class="bl-draw">Draw</span>
+  </div>
   <div class="tg">
     <button class="tb" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
     <button class="tb" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
