@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#C70000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -26,7 +26,6 @@
             --ink-4: hsl(38, 7%, 82%);
             --red: #C70000;
             --red-hover: #a30000;
-            --accent: #1a1a1a;
             --accent-soft: #f0f0f0;
             --code-bg: #1a1a1a;
             --code-fg: #e0e0e0;
@@ -64,9 +63,8 @@
             border-radius: 14px; padding: 14px 24px;
             font-family: 'Exo', sans-serif; font-size: 0.95rem; font-weight: 700;
             cursor: pointer; transition: all .2s; color: var(--ink);
-            box-shadow: 0 2px 8px rgba(0,0,0,.06);
         }
-        .btn-google:hover { border-color: var(--ink); box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+        .btn-google:hover { border-color: var(--red); }
         .btn-google:active { transform: scale(0.97); }
         .btn-google svg { width: 22px; height: 22px; flex-shrink: 0; }
 
@@ -79,7 +77,7 @@
         }
         .header h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; }
         .header h1 .bita { color: var(--red); }
-        .header h1 .app-word { color: var(--ink); font-weight: 800; }
+        .header h1 .app-word { color: var(--ink-2); font-weight: 800; }
 
         /* ===== ACCOUNT BUTTON ===== */
         .btn-cuenta {
@@ -88,7 +86,7 @@
             background: var(--accent-soft); display: flex; align-items: center; justify-content: center;
             transition: border-color .2s; flex-shrink: 0; padding: 0;
         }
-        .btn-cuenta:hover { border-color: var(--ink); }
+        .btn-cuenta:hover { border-color: var(--red); }
         .btn-cuenta img { width: 100%; height: 100%; object-fit: cover; }
         .btn-cuenta svg { width: 18px; height: 18px; color: var(--ink-3); }
 
@@ -106,7 +104,7 @@
             padding: 12px; border-radius: 10px; border: none;
             background: transparent; font-family: 'Exo', sans-serif;
             font-size: 0.9rem; font-weight: 600; cursor: pointer;
-            color: var(--ink); width: 100%; text-align: left; transition: background .15s;
+            color: var(--ink-2); width: 100%; text-align: left; transition: background .15s;
         }
         .btn-cuenta-accion:hover { background: var(--accent-soft); }
         .btn-cuenta-accion.danger { color: var(--red); }
@@ -127,7 +125,7 @@
             animation: cardIn .25s ease both;
         }
         @keyframes cardIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
-        .proyecto-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.1); }
+        .proyecto-card:hover { transform: translateY(-2px); }
         .proyecto-card:active { transform: scale(0.96); }
         .card-icon-wrap {
             flex: 1; display: flex; align-items: center; justify-content: center;
@@ -142,7 +140,7 @@
         .card-meta-row { display: flex; gap: 8px; margin-top: 4px; font-size: 0.7rem; color: var(--ink-3); font-weight: 500; }
         .card-del {
             position: absolute; top: 7px; right: 7px; width: 26px; height: 26px;
-            border-radius: 50%; border: 2px solid white; background: #1c1c1e;
+            border-radius: 50%; border: 2px solid white; background: var(--red);
             color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
             opacity: 0; transition: opacity .2s; z-index: 10;
         }
@@ -166,12 +164,11 @@
         .fab {
             position: fixed; bottom: 28px; right: 24px;
             width: 56px; height: 56px; border-radius: 16px;
-            background: #1c1c1e; color: white; border: none;
+            background: var(--red); color: white; border: none;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 16px rgba(0,0,0,.22); z-index: 800;
-            transition: transform .18s cubic-bezier(.34,1.5,.64,1), box-shadow .18s;
+            z-index: 800; transition: transform .18s cubic-bezier(.34,1.5,.64,1);
         }
-        .fab:hover { transform: scale(1.07); box-shadow: 0 4px 24px rgba(0,0,0,.3); }
+        .fab:hover { transform: scale(1.07); background: var(--red-hover); }
         .fab:active { transform: scale(0.91); }
         .fab svg { width: 24px; height: 24px; }
         .fab.hidden { display: none; }
@@ -188,7 +185,7 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             transition: all .2s;
         }
-        .btn-volver:hover { background: var(--ink); color: white; border-color: var(--ink); }
+        .btn-volver:hover { background: var(--red); color: white; border-color: var(--red); }
         .proyecto-header-info { flex: 1; min-width: 0; }
         .proyecto-header-info h2 { font-size: 1.2rem; font-weight: 800; }
         .proyecto-header-info .meta { font-size: 0.72rem; color: var(--ink-3); margin-top: 2px; }
@@ -198,7 +195,7 @@
             cursor: pointer; font-family: 'Exo', sans-serif; font-size: 0.78rem; font-weight: 600;
             display: flex; align-items: center; gap: 5px; transition: all .2s; white-space: nowrap;
         }
-        .btn-editar-nombre:hover { background: var(--ink); color: white; border-color: var(--ink); }
+        .btn-editar-nombre:hover { background: var(--red); color: white; border-color: var(--red); }
 
         /* ===== BLOQUES TIMELINE ===== */
         .bloques-timeline { display: flex; flex-direction: column; gap: 10px; }
@@ -208,7 +205,7 @@
             animation: bloqueFade .2s ease both;
         }
         @keyframes bloqueFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .bloque:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+        .bloque:hover { border-color: var(--ink-4); }
         .bloque-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--bg);
@@ -222,12 +219,12 @@
             transition: all .15s;
         }
         .btn-bloque svg { width: 14px; height: 14px; }
-        .btn-bloque:hover { background: var(--accent-soft); color: var(--ink); }
+        .btn-bloque:hover { background: var(--accent-soft); color: var(--ink-2); }
         .btn-bloque.eliminar:hover { background: #fee2e2; color: var(--red); }
         .bloque-contenido { padding: 14px 16px; }
         .nota-fotos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
         .nota-foto-img { border-radius: 8px; object-fit: cover; cursor: pointer; aspect-ratio: 4/3; flex: 1 1 calc(50% - 3px); max-width: calc(50% - 3px); display: block; }
-        .nota-foto-img:only-child { flex: none; width: 100%; max-width: 100%; max-height: 320px; object-fit: contain; background: #000; }
+        .nota-foto-img:only-child { flex: none; width: 100%; max-width: 100%; max-height: 320px; object-fit: contain; background: #1a1a1a; }
 
         /* ===== FOTO STRIP ===== */
         .foto-strip { display: flex; gap: 8px; padding: 8px 10px; overflow-x: auto; background: var(--bg); border: 1px solid var(--border); border-top: none; min-height: 0; }
@@ -236,7 +233,7 @@
         .foto-thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; display: block; }
         .foto-thumb-del {
             position: absolute; top: -5px; right: -5px; width: 18px; height: 18px;
-            border-radius: 50%; background: #1c1c1e; color: white; border: none;
+            border-radius: 50%; background: var(--red); color: white; border: none;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
@@ -287,7 +284,7 @@
             display: flex; align-items: center; justify-content: center; transition: all .2s;
         }
         .btn-cerrar svg { width: 14px; height: 14px; }
-        .btn-cerrar:hover { background: var(--ink); color: white; border-color: var(--ink); }
+        .btn-cerrar:hover { background: var(--red); color: white; border-color: var(--red); }
         .modal-body { padding: 0 20px 20px; }
         .modal-footer { padding: 12px 20px 20px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); }
 
@@ -304,8 +301,8 @@
             display: flex; align-items: center; justify-content: center; transition: all .15s;
         }
         .tbtn svg { width: 13px; height: 13px; }
-        .tbtn:hover { background: var(--surface); color: var(--ink); }
-        .tbtn.mic { background: var(--ink); color: white; margin-left: auto; border-radius: 8px; padding: 0 10px; gap: 4px; font-size: 0.72rem; }
+        .tbtn:hover { background: var(--surface); color: var(--ink-2); }
+        .tbtn.mic { background: var(--red); color: white; margin-left: auto; border-radius: 8px; padding: 0 10px; gap: 4px; font-size: 0.72rem; }
         .tbtn.mic:hover { opacity: 0.85; }
         .tbtn.mic.grabando { background: var(--red); animation: pulse 1.2s infinite; }
         .tbtn-sep { width: 1px; height: 16px; background: var(--border); margin: 0 2px; }
@@ -317,9 +314,9 @@
             font-size: 0.93rem; color: var(--ink); resize: vertical; background: var(--surface);
             transition: border-color .15s;
         }
-        .editor-ta:focus { outline: none; border-color: var(--ink); }
+        .editor-ta:focus { outline: none; border-color: var(--red); }
         .editor-preview-box {
-            width: 100%; min-height: 100px; padding: 14px; border: 1px solid var(--ink);
+            width: 100%; min-height: 100px; padding: 14px; border: 1px solid var(--border);
             border-top: none; border-radius: 0 0 10px 10px; background: var(--bg); display: none;
         }
         .editor-preview-box.on { display: block; }
