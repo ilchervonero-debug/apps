@@ -119,9 +119,30 @@ body{display:flex;flex-direction:column;background:#fff;}
 /* ROTATE OVERLAY */
 #rotOverlay{display:none;position:fixed;inset:0;z-index:50;touch-action:none;}
 #rotOverlay.show{display:block;}
+
+/* LANDSCAPE WARNING */
+#landscape-warn{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:#fff;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  touch-action:none;
+}
+@media (orientation:landscape){
+  #landscape-warn{display:flex;}
+}
+#landscape-warn svg{width:52px;height:52px;opacity:.35;}
+#landscape-warn p{font-size:14px;color:#666;font-family:var(--font);}
 </style>
 </head>
 <body>
+
+<!-- LANDSCAPE WARNING -->
+<div id="landscape-warn">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#1c1c1e" stroke-width="1.5" stroke-linecap="round">
+    <rect x="2" y="5" width="20" height="14" rx="2"/>
+    <path d="M12 9v6M9 12l3-3 3 3"/>
+  </svg>
+  <p>Rotá el dispositivo a vertical</p>
+</div>
 
 <!-- BAR 1 -->
 <div class="bar">
