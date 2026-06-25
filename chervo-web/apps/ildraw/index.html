@@ -57,26 +57,30 @@ body{display:flex;flex-direction:column;background:#fff;}
 #wrap{flex:1;position:relative;overflow:hidden;}
 #cv{position:absolute;top:0;left:0;}
 
-/* BAR 2 TOOLS (toggleable) */
-#bar2-tools{
-  display:none;height:58px;background:#fff;
-  border-bottom:1px solid #e5e5ea;
-  align-items:center;overflow-x:auto;overflow-y:hidden;
-  scrollbar-width:none;flex-shrink:0;gap:2px;padding:0 6px;
+/* TOOL PANEL — desplegable vertical */
+#panel-herr{
+  position:fixed;top:var(--tb);left:0;right:0;
+  background:#fff;border-bottom:2px solid #e5e5ea;
+  z-index:150;display:none;flex-direction:column;
+  padding:6px 4px 8px;gap:2px;
 }
-#bar2-tools::-webkit-scrollbar{display:none;}
-#bar2-tools.open{display:flex;animation:b2In .18s ease;}
-@keyframes b2In{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.t2b{
-  width:46px;height:46px;border-radius:10px;background:transparent;border:none;
+#panel-herr.open{display:flex;animation:phDown .18s ease;}
+@keyframes phDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+#btn-herr{background:var(--accent)!important;color:#fff!important;}
+.ph-row{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none;gap:2px;padding:2px 4px;}
+.ph-row::-webkit-scrollbar{display:none;}
+.ph-lbl{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.06em;
+  padding:0 6px 0 4px;flex-shrink:0;min-width:36px;}
+.phb{
+  width:48px;height:48px;border-radius:10px;background:transparent;border:none;
   color:var(--ink);cursor:pointer;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;transition:background .1s;
 }
-.t2b svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;
+.phb svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-.t2b.on{background:var(--accent);color:#fff;}
-.t2b:active{background:rgba(0,0,0,.08);}
-.t2sep{width:1px;height:32px;background:rgba(0,0,0,.07);flex-shrink:0;margin:0 4px;}
+.phb.on{background:var(--accent);color:#fff;}
+.phb:active{background:rgba(0,0,0,.08);}
+.ph-div{width:1px;height:32px;background:rgba(0,0,0,.07);flex-shrink:0;margin:0 4px;}
 
 /* PROP BAR */
 #propbar{
@@ -145,31 +149,6 @@ body{display:flex;flex-direction:column;background:#fff;}
   font-size:12px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:99;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* TOOL PANEL */
-.panel-herr{
-  position:fixed;
-  top:calc(var(--tb) + var(--prop));
-  right:0;width:min(228px,94vw);
-  background:#fff;border:1px solid #e5e5ea;border-top:none;
-  border-radius:0 0 0 16px;z-index:150;
-  display:none;overflow-y:auto;
-  max-height:calc(100dvh - var(--tb) - var(--prop) - 20px);
-}
-.panel-herr.open{display:block;animation:phDown .2s ease;}
-@keyframes phDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.ph-sec{padding:6px 10px 10px;}
-.ph-lbl{display:block;font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.08em;padding:4px 2px 6px;}
-.ph-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
-.ph-btn{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;padding:8px 2px;border-radius:10px;border:none;
-  background:transparent;cursor:pointer;transition:background .1s;color:var(--ink);font-family:var(--font);
-}
-.ph-btn:active,.ph-btn.on{background:var(--accent);color:#fff;}
-.ph-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-.ph-btn span{font-size:9px;font-weight:600;white-space:nowrap;}
-.ph-sep{height:1px;background:#e5e5ea;margin:0 10px;}
-
 /* ROTATE OVERLAY */
 #rotOverlay{display:none;position:fixed;inset:0;z-index:50;touch-action:none;}
 #rotOverlay.show{display:block;}
@@ -226,23 +205,29 @@ body{display:flex;flex-direction:column;background:#fff;}
   </div>
 </div>
 
-<!-- BAR 2: herramientas (se abre/cierra con el lápiz) -->
-<div id="bar2-tools">
-  <button class="t2b" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg></button>
-  <button class="t2b" data-t="arc" onclick="ST('arc');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 19 Q 8 5 20 8" fill="none"/></svg></button>
-  <button class="t2b" data-t="pline" onclick="ST('pline');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 18 7 6 12 14 17 8 21 14"/></svg></button>
-  <button class="t2b" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
-  <button class="t2b" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></button>
-  <button class="t2b" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg></button>
-  <button class="t2b" data-t="pen" onclick="ST('pen');closeTools()"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
-  <button class="t2b" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
-  <button class="t2b" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg></button>
-  <button class="t2b" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg></button>
-  <button class="t2b" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg></button>
-  <div class="t2sep"></div>
-  <button class="t2b" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg></button>
-  <button class="t2b" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg></button>
-  <button class="t2b" data-t="erase" onclick="ST('erase');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
+<!-- PANEL HERRAMIENTAS — desplegable vertical -->
+<div id="panel-herr">
+  <div class="ph-row">
+    <span class="ph-lbl">Dibujo</span>
+    <button class="phb" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg></button>
+    <button class="phb" data-t="arc" onclick="ST('arc');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 19 Q 8 5 20 8" fill="none"/></svg></button>
+    <button class="phb" data-t="pline" onclick="ST('pline');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 18 7 6 12 14 17 8 21 14"/></svg></button>
+    <button class="phb" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
+    <button class="phb" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></button>
+    <button class="phb" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg></button>
+    <button class="phb" data-t="pen" onclick="ST('pen');closeTools()"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+    <button class="phb" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
+    <div class="ph-div"></div>
+    <button class="phb" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg></button>
+    <button class="phb" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg></button>
+    <button class="phb" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg></button>
+  </div>
+  <div class="ph-row">
+    <span class="ph-lbl">Edición</span>
+    <button class="phb" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg></button>
+    <button class="phb" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg></button>
+    <button class="phb" data-t="erase" onclick="ST('erase');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
+  </div>
 </div>
 
 <div id="wrap"><canvas id="cv"></canvas></div>
@@ -1176,20 +1161,20 @@ function setHint(msg){const el=document.getElementById('pbHint');el.textContent=
 
 // TOOL PANEL
 let _toolsOpen=false;
-function toggleTools(){_toolsOpen=!_toolsOpen;document.getElementById('bar2-tools').classList.toggle('open',_toolsOpen);document.getElementById('btn-herr').classList.toggle('on',_toolsOpen);}
-function closeTools(){_toolsOpen=false;document.getElementById('bar2-tools').classList.remove('open');document.getElementById('btn-herr').classList.remove('on');}
+function toggleTools(){_toolsOpen=!_toolsOpen;document.getElementById('panel-herr').classList.toggle('open',_toolsOpen);}
+function closeTools(){_toolsOpen=false;document.getElementById('panel-herr').classList.remove('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr')&&!e.target.closest('#btn-herr'))closeTools();},{passive:true});
 
 // TOOLBAR
 function ST(t){
   tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];
   dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;dim2Drawing=false;setHint('');
   document.querySelectorAll('.tb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  document.querySelectorAll('.t2b[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  document.querySelectorAll('.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   document.getElementById('escBtn').classList.toggle('on',t==='select');
-  // update hamburger icon to active tool
-  const t2Btn=document.querySelector('.t2b[data-t="'+t+'"]');
+  const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
   const btnH=document.getElementById('btn-herr');
-  const srcSvg=t2Btn?t2Btn.querySelector('svg'):document.getElementById('escBtn').querySelector('svg');
+  const srcSvg=phbActive?phbActive.querySelector('svg'):document.getElementById('escBtn').querySelector('svg');
   if(srcSvg&&btnH){const old=btnH.querySelector('svg');if(old)old.replaceWith(srcSvg.cloneNode(true));}
   document.getElementById('grpLine').style.display=['line','arc','rect','pen','pline','circle','poly'].includes(t)?'flex':'none';
   document.getElementById('grpSize').style.display=['text','circle','poly'].includes(t)?'flex':'none';
