@@ -216,10 +216,8 @@ body{display:flex;flex-direction:column;background:#fff;}
   <select onchange="cellPx=+this.value;render()" style="background:#f2f2f7;color:var(--ink);border:1px solid #e5e5ea;border-radius:6px;padding:3px 6px;font-size:10px;font-family:var(--font);flex-shrink:0">
     <option value="15">0.5</option><option value="30" selected>1</option><option value="60">2</option><option value="150">5</option>
   </select>
-  <div style="flex:1;min-width:12px"></div>
-  <div style="height:100%;display:flex;align-items:center;padding:0 10px;border-left:2px solid rgba(0,0,0,.10);flex-shrink:0;position:sticky;right:0;background:#fff;z-index:5">
-    <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
-  </div>
+  <div style="flex:1"></div>
+  <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')" style="margin-right:8px;margin-left:14px;border-left:2px solid rgba(0,0,0,.12);padding-left:10px;border-radius:0 8px 8px 0"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
 </div>
 
 <!-- FAB HERRAMIENTAS — flota sobre canvas -->
