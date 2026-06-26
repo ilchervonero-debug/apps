@@ -155,8 +155,8 @@ canvas{display:block;touch-action:none;}
     <div class="cfg-group">
       <span class="cfg-lbl">Refuerzo/Vela</span>
       <div class="cfg-row">
-        <button class="dir-btn active" id="rH" onclick="setRef('H')">&#8596; H</button>
-        <button class="dir-btn" id="rV" onclick="setRef('V')">&#8597; V</button>
+        <button class="dir-btn" id="rH" onclick="setRef('H')">&#8596; H</button>
+        <button class="dir-btn active" id="rV" onclick="setRef('V')">&#8597; V</button>
       </div>
     </div>
     <div class="cfg-group">
@@ -324,7 +324,7 @@ function col(i){return COLORS[i%COLORS.length];}
 
 // ===== STATE =====
 let polylines=[],pending=[],saved=[];
-let perfDir='H',refDir='H';
+let perfDir='H',refDir='V';
 let sc=1,ox=0,oy=0,uid=0;
 
 // tool mode: 'pan' or 'cenefa'
@@ -338,15 +338,27 @@ function wv(pl){const f=uf();return pl.vertices.map(v=>({x:v.x*f,y:v.y*f}));}
 function getSP(){return parseFloat(document.getElementById('spacing').value)/100;}
 function getBW(){return parseFloat(document.getElementById('bw').value);}
 function getBH(){return parseFloat(document.getElementById('bh').value);}
-function setDir(d){perfDir=d;document.getElementById('dH').className='dir-btn'+(d==='H'?' active':'');document.getElementById('dV').className='dir-btn'+(d==='V'?' active':'');}
-function setRef(d){refDir=d;document.getElementById('rH').className='dir-btn'+(d==='H'?' active':'');document.getElementById('rV').className='dir-btn'+(d==='V'?' active':'');}
+function setDir(d){
+  perfDir=d;refDir=d==='H'?'V':'H';
+  document.getElementById('dH').className='dir-btn'+(d==='H'?' active':'');
+  document.getElementById('dV').className='dir-btn'+(d==='V'?' active':'');
+  document.getElementById('rH').className='dir-btn'+(refDir==='H'?' active':'');
+  document.getElementById('rV').className='dir-btn'+(refDir==='V'?' active':'');
+  render();
+}
+function setRef(d){
+  refDir=d;
+  document.getElementById('rH').className='dir-btn'+(d==='H'?' active':'');
+  document.getElementById('rV').className='dir-btn'+(d==='V'?' active':'');
+  render();
+}
 
 function calcSpace(pl,idx){
   const v=wv(pl),sp=getSP(),bw=getBW(),bh=getBH();
   const a=calcArea(v),p=calcPerim(v,pl.closed),b=bbox(v);
   const boards=countBoards(v,bw,bh,b);
   const mont=calcML(v,b,sp,perfDir);
-  const ref=calcML(v,b,sp*2,perfDir==='H'?'V':'H');
+  const ref=calcML(v,b,sp*2,refDir);
   const waste=boards>0?((boards*bw*bh-a)/(boards*bw*bh)*100):0;
   return{id:++uid,name:pl.layer&&pl.layer!=='0'?pl.layer:`Espacio ${idx+1}`,area:a,soleras:p,montantes:mont,refuerzos:ref,boards,bArea:bw*bh,waste,sp,bw,bh,cenefa:0,cenefaWhere:'',cenefaPts:[]};
 }
@@ -568,7 +580,7 @@ function render(){
     ctx.strokeStyle=c+'66';ctx.lineWidth=0.7;ctx.setLineDash([3,3]);
     if(perfDir==='H'){for(let y=b.y0;y<=b.y1;y+=sp){ctx.beginPath();ctx.moveTo(tx(b.x0),ty(y));ctx.lineTo(tx(b.x1),ty(y));ctx.stroke();}}
     else{for(let x=b.x0;x<=b.x1;x+=sp){ctx.beginPath();ctx.moveTo(tx(x),ty(b.y0));ctx.lineTo(tx(x),ty(b.y1));ctx.stroke();}}
-    ctx.strokeStyle='#E0700066';ctx.lineWidth=0.9;ctx.setLineDash([5,5]);
+    ctx.strokeStyle='#E07000BB';ctx.lineWidth=1.4;ctx.setLineDash([6,3]);
     if(refDir==='H'){for(let y=b.y0;y<=b.y1;y+=sp*2){ctx.beginPath();ctx.moveTo(tx(b.x0),ty(y));ctx.lineTo(tx(b.x1),ty(y));ctx.stroke();}}
     else{for(let x=b.x0;x<=b.x1;x+=sp*2){ctx.beginPath();ctx.moveTo(tx(x),ty(b.y0));ctx.lineTo(tx(x),ty(b.y1));ctx.stroke();}}
     ctx.setLineDash([]);ctx.restore();
