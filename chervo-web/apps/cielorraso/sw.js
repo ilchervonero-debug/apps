@@ -1,13 +1,13 @@
-const CACHE = 'ildraw-v5';
+const CACHE = 'cielorraso-v2';
 const ASSETS = [
-  '/apps/ildraw/',
-  '/apps/ildraw/index.html',
-  '/apps/ildraw/manifest.json',
-  '/apps/ildraw/icon-192.svg'
+  '/apps/cielorraso/',
+  '/apps/cielorraso/index.html',
+  '/apps/cielorraso/manifest.json',
+  '/apps/cielorraso/icon-192.png'
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(() => {}));
   self.skipWaiting();
 });
 
@@ -21,10 +21,10 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if(e.request.method !== 'GET') return;
+  if (e.request.method !== 'GET') return;
   e.respondWith(
     fetch(e.request).then(res => {
-      if(res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+      if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
       return res;
     }).catch(() => caches.match(e.request))
   );
