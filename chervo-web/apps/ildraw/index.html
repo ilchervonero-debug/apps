@@ -206,8 +206,8 @@ body{display:flex;flex-direction:column;background:#fff;}
 <!-- BAR 1 -->
 <div class="bar">
   <div class="bar-logo"><span>iL</span>Draw</div>
-  <button class="ti ti-r" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
-  <button class="ti ti-r" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
+  <button class="ti ti-t" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
+  <button class="ti ti-t" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <div class="tg">
     <button class="tb" data-tip="Exportar" onclick="exportPNG()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
     <button class="tb" data-tip="Nuevo" onclick="newDoc()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
@@ -216,8 +216,10 @@ body{display:flex;flex-direction:column;background:#fff;}
   <select onchange="cellPx=+this.value;render()" style="background:#f2f2f7;color:var(--ink);border:1px solid #e5e5ea;border-radius:6px;padding:3px 6px;font-size:10px;font-family:var(--font);flex-shrink:0">
     <option value="15">0.5</option><option value="30" selected>1</option><option value="60">2</option><option value="150">5</option>
   </select>
-  <div style="flex:1"></div>
-  <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')" style="margin-right:6px"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
+  <div style="flex:1;min-width:12px"></div>
+  <div style="height:100%;display:flex;align-items:center;padding:0 10px;border-left:2px solid rgba(0,0,0,.10);flex-shrink:0;position:sticky;right:0;background:#fff;z-index:5">
+    <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
+  </div>
 </div>
 
 <!-- FAB HERRAMIENTAS — flota sobre canvas -->
