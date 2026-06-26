@@ -152,8 +152,8 @@ body{display:flex;flex-direction:column;background:#fff;}
     <button class="tb" data-t="trim" data-tip="Trim" onclick="ST('trim')"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg></button>
     <button class="tb" data-t="erase" data-tip="Borrar objeto" onclick="ST('erase')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
   </div>
-  <div style="flex:1"></div>
-  <div style="padding:0 8px;height:100%;display:flex;align-items:center;border-left:1px solid rgba(0,0,0,.06);flex-shrink:0">
+  <div style="flex:1;min-width:16px"></div>
+  <div style="padding:0 10px;height:100%;display:flex;align-items:center;border-left:2px solid rgba(0,0,0,.10);flex-shrink:0;position:sticky;right:0;background:#fff;z-index:5">
     <button class="tb on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
   </div>
 </div>
