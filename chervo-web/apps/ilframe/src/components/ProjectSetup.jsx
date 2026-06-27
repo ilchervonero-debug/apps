@@ -2,66 +2,48 @@ import { useDrawingStore } from '../store/drawingStore'
 import { CU_NORMS, CU_SECTIONS } from '../data/profiles'
 import { LAYER_TEMPLATES } from '../data/layers'
 
-const boards = LAYER_TEMPLATES.filter((l) => l.category === 'board')
-const claddings = LAYER_TEMPLATES.filter((l) => l.category === 'sheathing')
-const insulations = LAYER_TEMPLATES.filter((l) => l.category === 'insulation')
-
-const ELEMENTS = [
-  { key: 'muro', label: 'Muros', icon: 'M3 21V8l9-5 9 5v13' },
-  { key: 'techo', label: 'Techo', icon: 'M3 12l9-7 9 7' },
-  { key: 'columnas', label: 'Columnas / Pilares', icon: 'M8 3v18M16 3v18' },
-  { key: 'cerchas', label: 'Cerchas', icon: 'M3 20h18L12 5z' },
-  { key: 'losas', label: 'Losas / Entrepisos', icon: 'M3 9h18v6H3z' },
+// catálogo agrupado para agregar capas a una cara
+const CATS = [
+  ['board', 'Placas'],
+  ['sheathing', 'Revestimiento / membrana'],
+  ['insulation', 'Aislante'],
+  ['structure', 'Estructura / alfajías'],
 ]
+const layerName = (id) => LAYER_TEMPLATES.find((l) => l.id === id)?.name || id
+
+// orden y etiquetas de los elementos
+const ELEMENTS = [
+  { key: 'muros', label: 'Muros', faces: ['interior', 'exterior'] },
+  { key: 'techo', label: 'Techo', faces: ['interior', 'exterior'] },
+  { key: 'piso', label: 'Piso', faces: ['unica'] },
+  { key: 'losas', label: 'Losas / Entrepisos', faces: ['unica'] },
+  { key: 'cerchas', label: 'Cerchas', structural: true },
+  { key: 'columnas', label: 'Columnas / Pilares', structural: true },
+]
+const FACE_LABEL = { interior: 'Cara interior', exterior: 'Cara exterior', unica: 'Capas' }
 
 export default function ProjectSetup() {
   const project = useDrawingStore((s) => s.project)
   const setProject = useDrawingStore((s) => s.setProject)
-  const setProjectElement = useDrawingStore((s) => s.setProjectElement)
+  const toggleElement = useDrawingStore((s) => s.toggleElement)
   const setAppView = useDrawingStore((s) => s.setAppView)
 
   const sections = CU_SECTIONS[project.profileNorm]?.C || CU_SECTIONS.cu_1.C
 
   return (
     <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#f7f7f8', padding: '16px 16px 90px' }}>
-      <div style={{ maxWidth: 560, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ maxWidth: 580, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-        {/* Nombre del proyecto */}
+        {/* Nombre */}
         <Card>
           <Label>Nombre del proyecto</Label>
-          <input
-            value={project.name}
-            onChange={(e) => setProject({ name: e.target.value })}
-            placeholder="Casa, Galpón, Depósito…"
-            style={inp}
-          />
+          <input value={project.name} onChange={(e) => setProject({ name: e.target.value })}
+            placeholder="Casa, Galpón, Depósito…" style={inp} />
         </Card>
 
-        {/* Elementos del proyecto */}
+        {/* Estructura de acero (global) */}
         <Card>
-          <Label>¿Qué incluye el proyecto?</Label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4 }}>
-            {ELEMENTS.map((el) => {
-              const on = !!project.elements[el.key]
-              return (
-                <button key={el.key} onClick={() => setProjectElement(el.key, !on)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 12px', borderRadius: 12, cursor: 'pointer',
-                    border: '1.5px solid', borderColor: on ? '#fe0000' : '#e0e0e0',
-                    background: on ? '#fff5f5' : '#fff', color: on ? '#fe0000' : '#666', fontWeight: 700, fontSize: 13,
-                    textAlign: 'left',
-                  }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={el.icon} /></svg>
-                  {el.label}
-                </button>
-              )
-            })}
-          </div>
-        </Card>
-
-        {/* Perfil steel framing */}
-        <Card>
-          <Label>Perfil (acero)</Label>
+          <Label>Estructura — perfil de acero</Label>
           <Sub>Norma</Sub>
           <select value={project.profileNorm} onChange={(e) => setProject({ profileNorm: e.target.value })} style={inp}>
             {CU_NORMS.map((n) => (
@@ -72,56 +54,31 @@ export default function ProjectSetup() {
           </select>
           <Sub>Montante C</Sub>
           <select value={project.profileSection} onChange={(e) => setProject({ profileSection: e.target.value })} style={inp}>
-            {sections.map((c, i) => (
-              <option key={i} value={`${c.h}_${c.t}`}>{c.h}×{c.w}×{c.t}mm — {c.kg} kg/m</option>
-            ))}
+            {sections.map((c, i) => <option key={i} value={`${c.h}_${c.t}`}>{c.h}×{c.w}×{c.t}mm — {c.kg} kg/m</option>)}
           </select>
           <Sub>Separación entre montantes</Sub>
           <div style={{ display: 'flex', gap: 8 }}>
             {[300, 400, 600].map((s) => (
               <button key={s} onClick={() => setProject({ studSpacing: s })}
-                style={{ flex: 1, padding: '10px', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13,
-                  border: '1.5px solid', borderColor: project.studSpacing === s ? '#fe0000' : '#e0e0e0',
-                  background: project.studSpacing === s ? '#fe0000' : '#fff', color: project.studSpacing === s ? '#fff' : '#666' }}>
-                {s}mm
-              </button>
+                style={pill(project.studSpacing === s)}>{s}mm</button>
             ))}
           </div>
         </Card>
 
-        {/* Placa */}
-        <Card>
-          <Label>Placa</Label>
-          <select value={project.boardId} onChange={(e) => setProject({ boardId: e.target.value })} style={inp}>
-            {boards.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
-        </Card>
-
-        {/* Revestimiento estructural */}
-        <Card>
-          <Label>Revestimiento estructural</Label>
-          <select value={project.claddingId} onChange={(e) => setProject({ claddingId: e.target.value })} style={inp}>
-            <option value="">Ninguno</option>
-            {claddings.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </Card>
-
-        {/* Aislante */}
-        <Card>
-          <Label>Aislante</Label>
-          <select value={project.insulationId} onChange={(e) => setProject({ insulationId: e.target.value })} style={inp}>
-            <option value="">Ninguno</option>
-            {insulations.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </Card>
+        {/* Elementos del proyecto */}
+        <div style={{ fontSize: 12, fontWeight: 800, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 4px 0' }}>
+          Elementos del proyecto
+        </div>
+        {ELEMENTS.map((el) => (
+          <ElementCard key={el.key} def={el} state={project.elements[el.key]} onToggle={() => toggleElement(el.key)} />
+        ))}
       </div>
 
-      {/* CTA fija */}
+      {/* CTA */}
       <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '12px 16px', background: 'linear-gradient(to top, #f7f7f8 70%, transparent)', zIndex: 20 }}>
-        <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <div style={{ maxWidth: 580, margin: '0 auto' }}>
           <button onClick={() => setAppView('draw')}
-            style={{ width: '100%', padding: 16, borderRadius: 14, border: 'none', cursor: 'pointer',
-              background: '#fe0000', color: '#fff', fontWeight: 800, fontSize: 16, boxShadow: '0 4px 16px rgba(254,0,0,0.35)' }}>
+            style={{ width: '100%', padding: 16, borderRadius: 14, border: 'none', cursor: 'pointer', background: '#fe0000', color: '#fff', fontWeight: 800, fontSize: 16, boxShadow: '0 4px 16px rgba(254,0,0,0.35)' }}>
             Ir al plano →
           </button>
         </div>
@@ -130,10 +87,117 @@ export default function ProjectSetup() {
   )
 }
 
+function ElementCard({ def, state, onToggle }) {
+  const on = !!state?.on
+  return (
+    <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', overflow: 'hidden', border: on ? '1.5px solid #fe0000' : '1.5px solid transparent' }}>
+      <button onClick={onToggle}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+        <span style={{ width: 22, height: 22, borderRadius: 6, background: on ? '#fe0000' : '#e8e8e8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14 }}>
+          {on ? '✓' : '+'}
+        </span>
+        <span style={{ fontSize: 15, fontWeight: 800, color: on ? '#222' : '#888', flex: 1 }}>{def.label}</span>
+        {on && <span style={{ fontSize: 18, color: '#bbb' }}>⌄</span>}
+      </button>
+
+      {on && (
+        <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {def.structural ? (
+            <div style={{ fontSize: 13, color: '#888', background: '#f7f7f8', borderRadius: 10, padding: 12 }}>
+              Elemento estructural — usa el <b>perfil de acero</b> elegido arriba. El detalle de armado se define en el plano.
+            </div>
+          ) : (
+            <>
+              {def.faces.map((f) => <FaceStack key={f} elKey={def.key} face={f} layers={state.faces?.[f] || []} />)}
+              <FinishBlock elKey={def.key} finish={state.finish} />
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FaceStack({ elKey, face, layers }) {
+  const addFaceLayer = useDrawingStore((s) => s.addFaceLayer)
+  const removeFaceLayer = useDrawingStore((s) => s.removeFaceLayer)
+  return (
+    <div>
+      <Sub>{FACE_LABEL[face]}</Sub>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+        {layers.length === 0 && <span style={{ fontSize: 12, color: '#bbb' }}>Sin capas</span>}
+        {layers.map((id) => (
+          <span key={id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#f0f0f0', borderRadius: 16, padding: '5px 6px 5px 11px', fontSize: 12, fontWeight: 600, color: '#444' }}>
+            {layerName(id)}
+            <button onClick={() => removeFaceLayer(elKey, face, id)} style={{ border: 'none', background: '#ddd', color: '#666', borderRadius: 10, width: 18, height: 18, cursor: 'pointer', lineHeight: 1 }}>×</button>
+          </span>
+        ))}
+      </div>
+      <select value="" onChange={(e) => { addFaceLayer(elKey, face, e.target.value); e.target.value = '' }}
+        style={{ ...inp, marginTop: 6, color: '#fe0000', fontWeight: 700 }}>
+        <option value="" disabled>+ Agregar capa…</option>
+        {CATS.map(([cat, lbl]) => (
+          <optgroup key={cat} label={lbl}>
+            {LAYER_TEMPLATES.filter((l) => l.category === cat && !layers.includes(l.id)).map((l) => (
+              <option key={l.id} value={l.id}>{l.name}</option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function FinishBlock({ elKey, finish }) {
+  const setFinish = useDrawingStore((s) => s.setFinish)
+  const coats = finish?.paintCoats ?? 2
+  const toggles = [
+    ['masilla', 'Masilla'],
+    ['enduido', 'Enduido'],
+    ['cinta', 'Cinta de juntas'],
+    ['tornillos', 'Tornillos'],
+  ]
+  return (
+    <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 10 }}>
+      <Sub>Terminación (según superficie)</Sub>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 10px' }}>
+        <span style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>Capas de pintura</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+          <Stepper onClick={() => setFinish(elKey, { paintCoats: Math.max(0, coats - 1) })}>−</Stepper>
+          <span style={{ minWidth: 18, textAlign: 'center', fontWeight: 800, color: '#222' }}>{coats}</span>
+          <Stepper onClick={() => setFinish(elKey, { paintCoats: coats + 1 })}>+</Stepper>
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+        {toggles.map(([k, lbl]) => {
+          const on = !!finish?.[k]
+          return (
+            <button key={k} onClick={() => setFinish(elKey, { [k]: !on })}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, textAlign: 'left',
+                border: '1.5px solid', borderColor: on ? '#fe0000' : '#e0e0e0', background: on ? '#fff5f5' : '#fff', color: on ? '#fe0000' : '#888' }}>
+              <span style={{ width: 16, height: 16, borderRadius: 4, background: on ? '#fe0000' : '#e8e8e8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900 }}>{on ? '✓' : ''}</span>
+              {lbl}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function Stepper({ children, onClick }) {
+  return <button onClick={onClick} style={{ width: 30, height: 30, borderRadius: 8, border: '1.5px solid #e0e0e0', background: '#fff', color: '#444', fontSize: 18, fontWeight: 800, cursor: 'pointer', lineHeight: 1 }}>{children}</button>
+}
+
 const inp = {
   width: '100%', padding: '11px 12px', fontSize: 15, color: '#222', background: '#fff',
-  border: '1.5px solid #e0e0e0', borderRadius: 10, outline: 'none', boxSizing: 'border-box', marginBottom: 2,
+  border: '1.5px solid #e0e0e0', borderRadius: 10, outline: 'none', boxSizing: 'border-box',
 }
+const pill = (on) => ({
+  flex: 1, padding: '10px', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 13,
+  border: '1.5px solid', borderColor: on ? '#fe0000' : '#e0e0e0',
+  background: on ? '#fe0000' : '#fff', color: on ? '#fff' : '#666',
+})
 
 function Card({ children }) {
   return <div style={{ background: '#fff', borderRadius: 16, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 6 }}>{children}</div>
@@ -142,5 +206,5 @@ function Label({ children }) {
   return <div style={{ fontSize: 12, fontWeight: 800, color: '#333', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{children}</div>
 }
 function Sub({ children }) {
-  return <div style={{ fontSize: 11, fontWeight: 600, color: '#999', marginTop: 6 }}>{children}</div>
+  return <div style={{ fontSize: 11, fontWeight: 700, color: '#999', marginTop: 6 }}>{children}</div>
 }

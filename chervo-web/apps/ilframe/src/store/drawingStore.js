@@ -94,6 +94,17 @@ const histPatch = (s, key, coalesce = false) => {
   return { past: [...s.past, clonePanels(s.panels)].slice(-60), future: [] }
 }
 
+// Elemento con composición por caras (muros/techo) o capa única (piso/losa)
+function defaultElement(on, twoFaces) {
+  return {
+    on,
+    faces: twoFaces
+      ? { interior: ['gyp_standard'], exterior: ['osb_11', 'mineral_wool_50'] }
+      : { unica: [] },
+    finish: { paintCoats: 2, masilla: true, enduido: true, cinta: true, tornillos: true },
+  }
+}
+
 export const useDrawingStore = create((set) => ({
   panels: [],
   past: [],
@@ -109,17 +120,41 @@ export const useDrawingStore = create((set) => ({
   appView: 'setup', // 'setup' | 'draw'
   project: {
     name: 'Proyecto sin nombre',
+    // estructura de acero (global)
     profileNorm: 'cu_1',
     profileSection: '100_0.95', // `${h}_${t}`
     studSpacing: 400,
-    boardId: 'gyp_standard',
-    claddingId: 'osb_11',
-    insulationId: 'mineral_wool_50',
-    elements: { muro: true, techo: false, columnas: false, cerchas: false, losas: false },
+    // elementos del proyecto; cada uno con su composición
+    elements: {
+      muros: defaultElement(true, true),
+      piso: defaultElement(false, false),
+      techo: defaultElement(false, true),
+      cerchas: { on: false, structural: true },
+      columnas: { on: false, structural: true },
+      losas: defaultElement(false, false),
+    },
   },
   setAppView: (v) => set({ appView: v }),
   setProject: (patch) => set((s) => ({ project: { ...s.project, ...patch } })),
-  setProjectElement: (key, on) => set((s) => ({ project: { ...s.project, elements: { ...s.project.elements, [key]: on } } })),
+  toggleElement: (key) => set((s) => ({
+    project: { ...s.project, elements: { ...s.project.elements, [key]: { ...s.project.elements[key], on: !s.project.elements[key].on } } },
+  })),
+  addFaceLayer: (key, face, layerId) => set((s) => {
+    const elx = s.project.elements[key]
+    const cur = (elx.faces?.[face] || [])
+    if (!layerId || cur.includes(layerId)) return {}
+    const faces = { ...elx.faces, [face]: [...cur, layerId] }
+    return { project: { ...s.project, elements: { ...s.project.elements, [key]: { ...elx, faces } } } }
+  }),
+  removeFaceLayer: (key, face, layerId) => set((s) => {
+    const elx = s.project.elements[key]
+    const faces = { ...elx.faces, [face]: (elx.faces?.[face] || []).filter((l) => l !== layerId) }
+    return { project: { ...s.project, elements: { ...s.project.elements, [key]: { ...elx, faces } } } }
+  }),
+  setFinish: (key, patch) => set((s) => {
+    const elx = s.project.elements[key]
+    return { project: { ...s.project, elements: { ...s.project.elements, [key]: { ...elx, finish: { ...elx.finish, ...patch } } } } }
+  }),
 
   setActiveTool: (t) => set({ activeTool: t }),
   setGrid: (mm) => set({ gridMm: mm }),

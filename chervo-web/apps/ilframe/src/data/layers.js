@@ -125,6 +125,25 @@ export const LAYER_TEMPLATES = [
     id: 'wrb', name: 'Membrana hidrófuga (Tyvek)', category: 'sheathing',
     unit: 'm2', thickness: 0, waste_pct: 5,
   },
+
+  // ── Estructura secundaria / emparrillado ──────────────────
+  {
+    id: 'furring_wood_2x1', name: 'Alfajía 2x1" madera', category: 'structure',
+    unit: 'ml', thickness: 25, waste_pct: 8,
+    spacing_mm: 400, // emparrillado cada 40cm → ml por m²
+  },
+  {
+    id: 'furring_wood_2x2', name: 'Alfajía 2x2" madera', category: 'structure',
+    unit: 'ml', thickness: 50, waste_pct: 8,
+    spacing_mm: 400,
+  },
+
+  // ── Enduido ───────────────────────────────────────────────
+  {
+    id: 'enduido', name: 'Enduido', category: 'finish',
+    unit: 'kg', thickness: 0, waste_pct: 10,
+    qty_per_m2: 1.5,
+  },
 ]
 
 // Kits predefinidos para arrancar rápido
