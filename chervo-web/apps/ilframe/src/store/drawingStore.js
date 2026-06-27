@@ -70,8 +70,34 @@ export function panelMaxHeight(p) {
 export const MAJOR = MAJOR_MM
 export const DEF_H = DEFAULT_HEIGHT
 
+// ── Historial (deshacer / rehacer) ─────────────────────────
+const clonePanels = (panels) => panels.map((p) => ({
+  ...p,
+  a: [...p.a],
+  b: [...p.b],
+  topPath: p.topPath.map((t) => [...t]),
+  openings: (p.openings || []).map((o) => ({ ...o })),
+}))
+
+let _hKey = null
+let _hTime = 0
+// Devuelve el patch {past, future} apilando el estado actual.
+// coalesce=true junta ediciones seguidas del mismo campo en 1 paso.
+const histPatch = (s, key, coalesce = false) => {
+  const now = Date.now()
+  if (coalesce && key === _hKey && now - _hTime < 700) {
+    _hTime = now
+    return { future: [] }
+  }
+  _hKey = key
+  _hTime = now
+  return { past: [...s.past, clonePanels(s.panels)].slice(-60), future: [] }
+}
+
 export const useDrawingStore = create((set) => ({
   panels: [],
+  past: [],
+  future: [],
   selectedId: null,
   selectedVertex: null, // índice de vértice del contorno en edición (alzado)
   activeTool: 'wall', // 'wall' | 'select'
@@ -103,12 +129,41 @@ export const useDrawingStore = create((set) => ({
       topPath: [[0, DEFAULT_HEIGHT], [width, DEFAULT_HEIGHT]],
       openings: [],
     }
-    return { panels: [...s.panels, panel], draft: null }
+    return { ...histPatch(s, 'draw'), panels: [...s.panels, panel], draft: null }
   }),
   cancelWall: () => set({ draft: null }),
 
   select: (id) => set({ selectedId: id, selectedVertex: null }),
   deselect: () => set({ selectedId: null, selectedVertex: null }),
+
+  // ── Historial ─────────────────────────────────────────────
+  pushHistory: (key) => set((s) => histPatch(s, key)),
+  undo: () => set((s) => {
+    if (!s.past.length) return {}
+    const prev = s.past[s.past.length - 1]
+    _hKey = null
+    return {
+      panels: clonePanels(prev),
+      past: s.past.slice(0, -1),
+      future: [clonePanels(s.panels), ...s.future].slice(0, 60),
+      selectedId: null,
+      selectedVertex: null,
+      draft: null,
+    }
+  }),
+  redo: () => set((s) => {
+    if (!s.future.length) return {}
+    const next = s.future[0]
+    _hKey = null
+    return {
+      panels: clonePanels(next),
+      future: s.future.slice(1),
+      past: [...s.past, clonePanels(s.panels)].slice(-60),
+      selectedId: null,
+      selectedVertex: null,
+      draft: null,
+    }
+  }),
 
   // ── EDICIÓN: copiar / mover ───────────────────────────────
   duplicatePanel: (id) => set((s) => {
@@ -124,21 +179,23 @@ export const useDrawingStore = create((set) => ({
       topPath: src.topPath.map((p) => [...p]),
       openings: (src.openings || []).map((o) => ({ ...o })),
     }
-    return { panels: [...s.panels, copy], selectedId: code, selectedVertex: null }
+    return { ...histPatch(s, 'dup'), panels: [...s.panels, copy], selectedId: code, selectedVertex: null }
   }),
   movePanelTo: (id, a, b) => set((s) => ({
     panels: s.panels.map((p) => (p.id === id ? { ...p, a, b } : p)),
   })),
   selectVertex: (i) => set({ selectedVertex: i }),
   remove: (id) => set((s) => ({
+    ...histPatch(s, 'remove'),
     panels: s.panels.filter((p) => p.id !== id),
     selectedId: s.selectedId === id ? null : s.selectedId,
     selectedVertex: null,
   })),
-  clearAll: () => set({ panels: [], selectedId: null, selectedVertex: null }),
+  clearAll: () => set((s) => ({ ...histPatch(s, 'clear'), panels: [], selectedId: null, selectedVertex: null })),
 
   // ── PLANTA: ancho exacto (mueve B en la dirección del trazo) ──
   setWidth: (id, mm) => set((s) => ({
+    ...histPatch(s, 'width:' + id, true),
     panels: s.panels.map((p) => {
       if (p.id !== id) return p
       const w = Math.max(100, Math.round(+mm || 0))
@@ -156,6 +213,7 @@ export const useDrawingStore = create((set) => ({
 
   // ── ALZADO: altura lado A (izq) / B (der) ─────────────────
   setHeightA: (id, mm) => set((s) => ({
+    ...histPatch(s, 'hA:' + id, true),
     panels: s.panels.map((p) => {
       if (p.id !== id) return p
       const tp = cloneTop(p.topPath)
@@ -164,6 +222,7 @@ export const useDrawingStore = create((set) => ({
     }),
   })),
   setHeightB: (id, mm) => set((s) => ({
+    ...histPatch(s, 'hB:' + id, true),
     panels: s.panels.map((p) => {
       if (p.id !== id) return p
       const tp = cloneTop(p.topPath)
@@ -174,6 +233,7 @@ export const useDrawingStore = create((set) => ({
 
   // ── ALZADO: agregar punto de contorno (X desde izq, Y altura) ──
   addContourPoint: (id, x, y) => set((s) => ({
+    ...histPatch(s, 'addpt'),
     panels: s.panels.map((p) => {
       if (p.id !== id) return p
       const px = Math.max(0, Math.min(p.width, Math.round(+x || 0)))
@@ -188,6 +248,7 @@ export const useDrawingStore = create((set) => ({
   })),
 
   updateContourPoint: (id, index, x, y) => set((s) => ({
+    ...histPatch(s, 'updpt:' + id + ':' + index, true),
     panels: s.panels.map((p) => {
       if (p.id !== id) return p
       const pts = cloneTop(p.topPath)
@@ -206,6 +267,7 @@ export const useDrawingStore = create((set) => ({
   })),
 
   removeContourPoint: (id, index) => set((s) => ({
+    ...histPatch(s, 'rmpt'),
     panels: s.panels.map((p) => {
       if (p.id !== id) return p
       if (index <= 0 || index >= p.topPath.length - 1) return p // no borrar extremos A/B

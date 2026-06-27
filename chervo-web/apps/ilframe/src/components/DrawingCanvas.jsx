@@ -41,6 +41,19 @@ export default function DrawingCanvas() {
   const elevationHeight = useDrawingStore((s) => s.elevationHeight)
   const gridMm = useDrawingStore((s) => s.gridMm)
   const setGrid = useDrawingStore((s) => s.setGrid)
+  const canUndo = useDrawingStore((s) => s.past.length > 0)
+  const canRedo = useDrawingStore((s) => s.future.length > 0)
+
+  // atajos de teclado: Ctrl/Cmd+Z deshacer, Ctrl+Shift+Z o Ctrl+Y rehacer
+  useEffect(() => {
+    const onKey = (e) => {
+      const mod = e.ctrlKey || e.metaKey
+      if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? useDrawingStore.getState().redo() : useDrawingStore.getState().undo() }
+      else if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); useDrawingStore.getState().redo() }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   // ── Render reactivo ──
   useEffect(() => {
@@ -127,7 +140,7 @@ export default function DrawingCanvas() {
     // modo mover: arrastrar el panel seleccionado
     if (moving) {
       const p = st.panels.find((x) => x.id === moving)
-      if (p) { movingRef.current = { id: moving, origA: p.a, origB: p.b, startMm: mm }; setCursor({ view: 'plan', vb }); return }
+      if (p) { st.pushHistory('move'); movingRef.current = { id: moving, origA: p.a, origB: p.b, startMm: mm }; setCursor({ view: 'plan', vb }); return }
     }
 
     try { svg.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
@@ -305,6 +318,14 @@ export default function DrawingCanvas() {
         <div className="canvas-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span>Planta — {moving ? 'arrastrá el muro a su lugar' : activeTool === 'wall' ? 'arrastrá para dibujar · mantené presionado para editar' : 'tocá un muro para editar'}</span>
           <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer"
+              style={{ border: '1px solid #ddd', background: '#fff', color: canUndo ? '#333' : '#ccc', borderRadius: 5, fontSize: 14, fontWeight: 700, padding: '2px 8px', cursor: canUndo ? 'pointer' : 'default' }}>
+              ↶
+            </button>
+            <button onClick={() => useDrawingStore.getState().redo()} disabled={!canRedo} title="Rehacer"
+              style={{ border: '1px solid #ddd', background: '#fff', color: canRedo ? '#333' : '#ccc', borderRadius: 5, fontSize: 14, fontWeight: 700, padding: '2px 8px', cursor: canRedo ? 'pointer' : 'default', marginRight: 6 }}>
+              ↷
+            </button>
             <span style={{ fontSize: 10, color: '#999' }}>Grilla</span>
             {[400, 600].map((g) => (
               <button key={g} onClick={() => setGrid(g)}
