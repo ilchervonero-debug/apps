@@ -396,7 +396,7 @@ export default function DrawingCanvas() {
         <span className="ct-hint">
           {(() => {
             const open = { door: 'puerta', window: 'ventana', opening: 'abertura' }
-            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso', tconnect: 'T-connect' }
+            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso', tconnect: 'T-connect', pilar: 'Pilar', cercha: 'Cercha' }
             if (tab === 'plan') {
               if (moving) return 'Arrastrá el muro a su lugar'
               if (activeTool === 'wall') return 'Arrastrá para dibujar · mantené presionado para editar'

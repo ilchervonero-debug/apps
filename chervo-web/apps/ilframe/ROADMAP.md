@@ -31,6 +31,20 @@ toma lo mejor de iLDraw y lo combina con las necesidades de iLFrame.
 Resultado buscado: **una sola app de dibujo** (motor compartido). iLFrame = modo
 estructural (mm + paneles + cálculo); iLDraw = modo croquis sobre el mismo motor.
 
+## 0.b Reglas: STEEL FRAMING (Uruguay), fuente SketchFramer
+
+- **Todo es steel framing**: cada herramienta y elemento tiene reglas propias del
+  sistema (montantes/soleras, separaciones, refuerzos, dinteles, jambas, etc.).
+- **La app debe analizar y poner límites** automáticamente: aberturas con
+  refuerzos y retiros, luces máximas, etc. No es dibujo libre: valida.
+- **Fuente de datos y reglas: SketchFramer** (los perfiles ya salieron de ahí —
+  `data/profiles.js`). Se reutiliza ese material para perfiles, secciones y reglas.
+- **Paleta de herramientas / elementos** (cada uno con su menú y reglas propias):
+  Muro, **Pilar**, **Cercha**, Techo, Cielorraso, Losa de piso, Puerta, Ventana,
+  Abertura, T-connect, Seleccionar.
+  - Funcionan: Muro, Seleccionar, Puerta/Ventana/Abertura (colocación + retiros).
+  - Declaradas (reglas pendientes): Pilar, Cercha, Techo, Cielorraso, Losa, T-connect.
+
 ## 1. Planta (pestaña)
 
 - Dibujar un muro: **pico inicio → arrastro → fin** (snap a grilla y a vértices).
