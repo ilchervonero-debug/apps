@@ -23,6 +23,11 @@ export default function DrawingCanvas() {
   const dragRef = useRef({ active: false, moved: false })
   const lpRef = useRef({ timer: null, fired: false, startVb: null, client: [0, 0] })
   const movingRef = useRef(null) // { id, origA, origB, startMm } durante el arrastre de mover
+  const pointersRef = useRef(new Map()) // pointerId → [vbX, vbY]
+  const gestureRef = useRef({ active: false, dist0: 0, mid0: [0, 0], view0: null })
+  const viewRef = useRef({ z: 1, tx: 0, ty: 0 }) // transform de vista (en unidades viewBox)
+  const [view, setViewState] = useState({ z: 1, tx: 0, ty: 0 })
+  const setView = (v) => { viewRef.current = v; setViewState(v) }
   const [isResizing, setIsResizing] = useState(false)
   const [cursor, setCursor] = useState(null)
   const [menu, setMenu] = useState(null) // { id, x, y } menú contextual (coords de pantalla)
@@ -39,9 +44,9 @@ export default function DrawingCanvas() {
 
   // ── Render reactivo ──
   useEffect(() => {
-    drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm)
+    drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm, view)
     drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm)
-  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm])
+  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view])
 
   // ── Divisor arrastrable ──
   const startResize = (e) => { setIsResizing(true); e.preventDefault() }
@@ -86,16 +91,38 @@ export default function DrawingCanvas() {
   const clearLongPress = () => {
     if (lpRef.current.timer) { clearTimeout(lpRef.current.timer); lpRef.current.timer = null }
   }
+  // viewBox → mundo (coords base) quitando la transform de vista
+  const worldFromVb = (vb) => {
+    const { z, tx, ty } = viewRef.current
+    return [(vb[0] - tx) / z, (vb[1] - ty) / z]
+  }
+  const startGesture = () => {
+    const pts = [...pointersRef.current.values()]
+    gestureRef.current = {
+      active: true,
+      dist0: Math.hypot(pts[0][0] - pts[1][0], pts[0][1] - pts[1][1]) || 1,
+      mid0: [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2],
+      view0: { ...viewRef.current },
+    }
+    // cancelar dibujo/long-press en curso
+    clearLongPress()
+    if (dragRef.current.active) { useDrawingStore.getState().cancelWall(); dragRef.current.active = false }
+    movingRef.current = null
+  }
 
-  // ── PLANTA: dibujar / seleccionar / mover / menú ──
+  // ── PLANTA: dibujar / seleccionar / mover / menú / gestos ──
   const planDown = (e) => {
     const svg = planRef.current
     const vb = getVb(e, svg)
-    const mm = vbToPlan(vb)
+    pointersRef.current.set(e.pointerId, vb)
+    setMenu(null)
+
+    if (pointersRef.current.size >= 2) { startGesture(); return }
+
+    const mm = vbToPlan(worldFromVb(vb))
     const st = useDrawingStore.getState()
     const cx = e.touches?.[0]?.clientX ?? e.clientX
     const cy = e.touches?.[0]?.clientY ?? e.clientY
-    setMenu(null)
 
     // modo mover: arrastrar el panel seleccionado
     if (moving) {
@@ -105,8 +132,6 @@ export default function DrawingCanvas() {
 
     try { svg.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
     lpRef.current = { timer: null, fired: false, startVb: vb, client: [cx, cy] }
-
-    // long-press: abre menú contextual sobre el muro
     lpRef.current.timer = setTimeout(() => {
       lpRef.current.fired = true
       if (dragRef.current.active) { useDrawingStore.getState().cancelWall(); dragRef.current.active = false }
@@ -122,12 +147,28 @@ export default function DrawingCanvas() {
   }
 
   const planMove = (e) => {
-    const vb = getVb(e, planRef.current)
+    const svg = planRef.current
+    const vb = getVb(e, svg)
+    if (pointersRef.current.has(e.pointerId)) pointersRef.current.set(e.pointerId, vb)
+
+    // gesto de 2 dedos: zoom + pan
+    if (gestureRef.current.active && pointersRef.current.size >= 2) {
+      const pts = [...pointersRef.current.values()]
+      const distNow = Math.hypot(pts[0][0] - pts[1][0], pts[0][1] - pts[1][1]) || 1
+      const midNow = [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2]
+      const { dist0, mid0, view0 } = gestureRef.current
+      const z = Math.max(0.25, Math.min(8, view0.z * (distNow / dist0)))
+      // punto del mundo que estaba bajo el centro inicial
+      const wx = (mid0[0] - view0.tx) / view0.z
+      const wy = (mid0[1] - view0.ty) / view0.z
+      setView({ z, tx: midNow[0] - wx * z, ty: midNow[1] - wy * z })
+      return
+    }
+
     setCursor({ view: 'plan', vb })
 
-    // mover panel
     if (movingRef.current) {
-      const mm = vbToPlan(vb)
+      const mm = vbToPlan(worldFromVb(vb))
       const g = useDrawingStore.getState().gridMm
       const { id, origA, origB, startMm } = movingRef.current
       const dx = Math.round((mm[0] - startMm[0]) / g) * g
@@ -136,30 +177,33 @@ export default function DrawingCanvas() {
       return
     }
 
-    // si el dedo se movió, cancelar el long-press (es un trazo/gesto)
     if (lpRef.current.startVb) {
       const d = Math.hypot(vb[0] - lpRef.current.startVb[0], vb[1] - lpRef.current.startVb[1])
       if (d > 6) clearLongPress()
     }
     if (dragRef.current.active) {
-      useDrawingStore.getState().dragWall(vbToPlan(vb))
+      useDrawingStore.getState().dragWall(vbToPlan(worldFromVb(vb)))
       dragRef.current.moved = true
     }
   }
 
   const planUp = (e) => {
+    pointersRef.current.delete(e.pointerId)
     clearLongPress()
-    // terminar movimiento
+
+    // saliendo de un gesto
+    if (gestureRef.current.active) {
+      if (pointersRef.current.size < 2) gestureRef.current.active = false
+      return
+    }
+
     if (movingRef.current) { movingRef.current = null; setMoving(null); return }
-    // terminar trazo
     if (dragRef.current.active) {
       useDrawingStore.getState().finishWall()
       dragRef.current.active = false
     }
-    // tap corto con herramienta seleccionar → abrir menú
     if (!lpRef.current.fired && activeTool === 'select') {
-      const vb = getVb(e, planRef.current)
-      const mm = vbToPlan(vb)
+      const mm = vbToPlan(worldFromVb(getVb(e, planRef.current)))
       const st = useDrawingStore.getState()
       const hit = pickPanel(mm, st.panels)
       const cx = e.changedTouches?.[0]?.clientX ?? e.clientX
@@ -168,6 +212,24 @@ export default function DrawingCanvas() {
       else st.deselect()
     }
   }
+
+  const planCancel = (e) => {
+    pointersRef.current.delete(e.pointerId)
+    if (pointersRef.current.size < 2) gestureRef.current.active = false
+  }
+
+  // rueda del mouse: zoom alrededor del cursor (desktop)
+  const planWheel = (e) => {
+    e.preventDefault()
+    const vb = getVb(e, planRef.current)
+    const v0 = viewRef.current
+    const z = Math.max(0.25, Math.min(8, v0.z * (e.deltaY < 0 ? 1.12 : 1 / 1.12)))
+    const wx = (vb[0] - v0.tx) / v0.z
+    const wy = (vb[1] - v0.ty) / v0.z
+    setView({ z, tx: vb[0] - wx * z, ty: vb[1] - wy * z })
+  }
+
+  const resetView = () => setView({ z: 1, tx: 0, ty: 0 })
 
   // acciones del menú contextual
   const doMove = () => { if (menu) { setMoving(menu.id); setMenu(null) } }
@@ -255,6 +317,10 @@ export default function DrawingCanvas() {
               </button>
             ))}
             <span style={{ fontSize: 10, color: '#999' }}>cm</span>
+            <button onClick={resetView} title="Reiniciar vista"
+              style={{ border: '1px solid #ddd', background: '#fff', color: '#666', borderRadius: 5, fontSize: 11, fontWeight: 700, padding: '3px 8px', cursor: 'pointer', marginLeft: 4 }}>
+              ⌖
+            </button>
           </span>
         </div>
         <svg
@@ -265,6 +331,8 @@ export default function DrawingCanvas() {
           onPointerDown={planDown}
           onPointerMove={planMove}
           onPointerUp={planUp}
+          onPointerCancel={planCancel}
+          onWheel={planWheel}
         />
       </div>
     </div>
@@ -313,11 +381,18 @@ function elevTransform(panel) {
 }
 
 // ── Dibujo PLANTA ──────────────────────────────────────────
-function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm) {
+function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, view) {
   if (!svg) return
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: 400, fill: 'white' }))
-  drawPlanGrid(svg, gridMm)
+
+  // grupo con la transform de vista (zoom/pan)
+  const g = el('g', { transform: `translate(${view.tx} ${view.ty}) scale(${view.z})` })
+  svg.appendChild(g)
+  svg = g // a partir de acá todo se dibuja dentro del grupo transformado
+  const k = 1 / view.z // factor para tamaños constantes en pantalla
+
+  drawPlanGrid(svg, gridMm, view)
 
   // muros
   panels.forEach((p) => {
@@ -325,14 +400,14 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm) {
     const sel = p.id === selectedId
     svg.appendChild(el('line', {
       x1: a[0], y1: a[1], x2: b[0], y2: b[1],
-      stroke: sel ? '#fe0000' : '#333', 'stroke-width': sel ? 4 : 2.5, 'stroke-linecap': 'round',
+      stroke: sel ? '#fe0000' : '#333', 'stroke-width': (sel ? 4 : 2.5) * k, 'stroke-linecap': 'round',
     }))
-    ;[a, b].forEach((pt) => svg.appendChild(el('circle', { cx: pt[0], cy: pt[1], r: sel ? 4 : 3, fill: sel ? '#fe0000' : '#666' })))
+    ;[a, b].forEach((pt) => svg.appendChild(el('circle', { cx: pt[0], cy: pt[1], r: (sel ? 4 : 3) * k, fill: sel ? '#fe0000' : '#666' })))
     const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
-    const code = el('text', { x: mid[0], y: mid[1] - 10, 'font-size': 15, 'font-weight': 'bold', fill: sel ? '#fe0000' : '#333', 'text-anchor': 'middle' })
+    const code = el('text', { x: mid[0], y: mid[1] - 10 * k, 'font-size': 15 * k, 'font-weight': 'bold', fill: sel ? '#fe0000' : '#333', 'text-anchor': 'middle' })
     code.textContent = p.id
     svg.appendChild(code)
-    const len = el('text', { x: mid[0], y: mid[1] + 16, 'font-size': 11, fill: '#888', 'text-anchor': 'middle' })
+    const len = el('text', { x: mid[0], y: mid[1] + 16 * k, 'font-size': 11 * k, fill: '#888', 'text-anchor': 'middle' })
     len.textContent = `${(p.width / 1000).toFixed(2)} m`
     svg.appendChild(len)
   })
@@ -340,10 +415,10 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm) {
   // trazo en curso
   if (draft) {
     const a = planToVb(draft.a), b = planToVb(draft.b)
-    svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#fe0000', 'stroke-width': 2, 'stroke-dasharray': '5 4' }))
+    svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#fe0000', 'stroke-width': 2 * k, 'stroke-dasharray': `${5 * k} ${4 * k}` }))
     const w = Math.round(Math.hypot(draft.b[0] - draft.a[0], draft.b[1] - draft.a[1]))
     if (w > 0) {
-      const t = el('text', { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 - 8, 'font-size': 13, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
+      const t = el('text', { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 - 8 * k, 'font-size': 13 * k, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
       t.textContent = `${w} mm`
       svg.appendChild(t)
     }
@@ -351,32 +426,47 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm) {
 
   // indicador de snap: verde si engancha a un vértice, rojo si a la grilla
   if (cursor?.view === 'plan' && activeTool === 'wall') {
-    const mm = vbToPlan(cursor.vb)
+    const mm = vbToPlan(worldFromVbView(cursor.vb, view))
     const sp = snapPoint(mm, gridMm, panels)
     const onVertex = nearestVertex(mm, panels, gridMm * VERT_RADIUS) != null
     const v = planToVb(sp)
     if (onVertex) {
-      svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 7, fill: 'none', stroke: '#16a34a', 'stroke-width': 2 }))
-      svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 2.5, fill: '#16a34a' }))
+      svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 7 * k, fill: 'none', stroke: '#16a34a', 'stroke-width': 2 * k }))
+      svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 2.5 * k, fill: '#16a34a' }))
     } else {
-      svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 5, fill: 'none', stroke: '#fe0000', 'stroke-width': 1.5 }))
+      svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 5 * k, fill: 'none', stroke: '#fe0000', 'stroke-width': 1.5 * k }))
     }
   }
 }
 
-function drawPlanGrid(svg, gridMm) {
+function worldFromVbView(vb, view) {
+  return [(vb[0] - view.tx) / view.z, (vb[1] - view.ty) / view.z]
+}
+
+function drawPlanGrid(svg, gridMm, view) {
   const g = el('g', {})
-  for (let mm = 0; mm <= 24000; mm += gridMm) {
+  // rango visible en coords base (viewBox) según zoom/pan
+  const x0 = (0 - view.tx) / view.z
+  const x1 = (1000 - view.tx) / view.z
+  const y0 = (0 - view.ty) / view.z
+  const y1 = (400 - view.ty) / view.z
+  // convertir a mm y alinear a la grilla
+  const mmX0 = Math.floor(vbToPlan([Math.min(x0, x1), 0])[0] / gridMm) * gridMm
+  const mmX1 = Math.ceil(vbToPlan([Math.max(x0, x1), 0])[0] / gridMm) * gridMm
+  const mmYtop = vbToPlan([0, Math.min(y0, y1)])[1] // mayor (arriba)
+  const mmYbot = vbToPlan([0, Math.max(y0, y1)])[1] // menor (abajo)
+  const mmY0 = Math.floor(mmYbot / gridMm) * gridMm
+  const mmY1 = Math.ceil(mmYtop / gridMm) * gridMm
+  const lw = (major) => (major ? 1 : 0.5) / view.z // grosor constante en pantalla
+  for (let mm = mmX0; mm <= mmX1; mm += gridMm) {
     const v = planToVb([mm, 0])[0]
-    if (v > 1000) break
-    const major = mm % MAJOR === 0
-    g.appendChild(el('line', { x1: v, y1: 0, x2: v, y2: 400, stroke: major ? '#cfcfcf' : '#eee', 'stroke-width': major ? 1 : 0.5 }))
+    const major = Math.round(mm) % MAJOR === 0
+    g.appendChild(el('line', { x1: v, y1: planToVb([0, mmY1])[1], x2: v, y2: planToVb([0, mmY0])[1], stroke: major ? '#cfcfcf' : '#eee', 'stroke-width': lw(major) }))
   }
-  for (let mm = 0; mm <= 9000; mm += gridMm) {
+  for (let mm = mmY0; mm <= mmY1; mm += gridMm) {
     const v = planToVb([0, mm])[1]
-    if (v < 0) break
-    const major = mm % MAJOR === 0
-    g.appendChild(el('line', { x1: 0, y1: v, x2: 1000, y2: v, stroke: major ? '#cfcfcf' : '#eee', 'stroke-width': major ? 1 : 0.5 }))
+    const major = Math.round(mm) % MAJOR === 0
+    g.appendChild(el('line', { x1: planToVb([mmX0, 0])[0], y1: v, x2: planToVb([mmX1, 0])[0], y2: v, stroke: major ? '#cfcfcf' : '#eee', 'stroke-width': lw(major) }))
   }
   svg.appendChild(g)
 }
