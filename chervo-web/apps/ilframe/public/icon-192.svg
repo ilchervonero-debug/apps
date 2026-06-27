@@ -1,7 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-  <rect x="4" y="4" width="184" height="184" rx="44" fill="#F2F2F0"/>
-  <rect x="46" y="50" width="100" height="16" rx="5" fill="#1C1C1C"/>
-  <rect x="46" y="50" width="16" height="96" rx="5" fill="#1C1C1C"/>
-  <rect x="130" y="50" width="16" height="96" rx="5" fill="#1C1C1C"/>
-  <line x1="62" y1="142" x2="130" y2="66" stroke="#FF3333" stroke-width="13" stroke-linecap="round"/>
+  <rect x="4" y="4" width="184" height="184" rx="44" fill="#ffffff" stroke="#e5e5e5" stroke-width="2"/>
+  <text x="96" y="92" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="62" fill="#fe0000">iL</text>
+  <text x="96" y="156" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="56" fill="#888888">Frm</text>
 </svg>
