@@ -7,10 +7,12 @@ import { create } from 'zustand'
 //   El ancho está bloqueado (viene de planta). El contorno superior se
 //   edita con números exactos: altura lado A, altura lado B y puntos X/Y.
 
-const GRID_MM = 100
+const DEFAULT_GRID = 400 // mm — separación de montantes (40 cm)
+const MAJOR_MM = 1200 // mm — línea grande de grilla (1.20 m)
 const DEFAULT_HEIGHT = 3000
 
-const snap = (mm) => Math.round(mm / GRID_MM) * GRID_MM
+const snap1 = (mm, g) => Math.round(mm / g) * g
+const snapPt = (pt, g) => [snap1(pt[0], g), snap1(pt[1], g)]
 const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1])
 
 const nextCode = (panels) => {
@@ -41,7 +43,7 @@ export function panelMaxHeight(p) {
   return Math.max(DEFAULT_HEIGHT, ...p.topPath.map((pt) => pt[1]))
 }
 
-export const GRID = GRID_MM
+export const MAJOR = MAJOR_MM
 export const DEF_H = DEFAULT_HEIGHT
 
 export const useDrawingStore = create((set) => ({
@@ -49,20 +51,22 @@ export const useDrawingStore = create((set) => ({
   selectedId: null,
   selectedVertex: null, // índice de vértice del contorno en edición (alzado)
   activeTool: 'wall', // 'wall' | 'select'
+  gridMm: DEFAULT_GRID, // 400 o 600
   elevationHeight: 50, // % de alto del canvas superior
   draft: null, // { a:[mm,mm], b:[mm,mm] } mientras se arrastra en planta
 
   setActiveTool: (t) => set({ activeTool: t }),
+  setGrid: (mm) => set({ gridMm: mm }),
   setElevationHeight: (h) => set({ elevationHeight: Math.max(20, Math.min(80, h)) }),
 
   // ── PLANTA: dibujar muro ──────────────────────────────────
-  startWall: (pt) => set({ draft: { a: [snap(pt[0]), snap(pt[1])], b: [snap(pt[0]), snap(pt[1])] } }),
-  dragWall: (pt) => set((s) => (s.draft ? { draft: { ...s.draft, b: [snap(pt[0]), snap(pt[1])] } } : {})),
+  startWall: (pt) => set((s) => ({ draft: { a: snapPt(pt, s.gridMm), b: snapPt(pt, s.gridMm) } })),
+  dragWall: (pt) => set((s) => (s.draft ? { draft: { ...s.draft, b: snapPt(pt, s.gridMm) } } : {})),
   finishWall: () => set((s) => {
     if (!s.draft) return {}
     const { a, b } = s.draft
     const width = Math.round(dist(a, b))
-    if (width < GRID_MM) return { draft: null }
+    if (width < s.gridMm) return { draft: null }
     const id = nextCode(s.panels)
     const panel = {
       id,
@@ -90,7 +94,7 @@ export const useDrawingStore = create((set) => ({
   setWidth: (id, mm) => set((s) => ({
     panels: s.panels.map((p) => {
       if (p.id !== id) return p
-      const w = Math.max(GRID_MM, Math.round(+mm || 0))
+      const w = Math.max(100, Math.round(+mm || 0))
       const d = dist(p.a, p.b) || 1
       const ux = (p.b[0] - p.a[0]) / d
       const uy = (p.b[1] - p.a[1]) / d

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import { useDrawingStore, panelPolygon, panelMaxHeight, GRID } from '../store/drawingStore'
+import { useDrawingStore, panelPolygon, panelMaxHeight, MAJOR } from '../store/drawingStore'
 import '../styles/DrawingCanvas.css'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -30,12 +30,14 @@ export default function DrawingCanvas() {
   const activeTool = useDrawingStore((s) => s.activeTool)
   const draft = useDrawingStore((s) => s.draft)
   const elevationHeight = useDrawingStore((s) => s.elevationHeight)
+  const gridMm = useDrawingStore((s) => s.gridMm)
+  const setGrid = useDrawingStore((s) => s.setGrid)
 
   // ── Render reactivo ──
   useEffect(() => {
-    drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool)
-    drawElevation(elevRef.current, panels, selectedId, selectedVertex)
-  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool])
+    drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm)
+    drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm)
+  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm])
 
   // ── Divisor arrastrable ──
   const startResize = (e) => { setIsResizing(true); e.preventDefault() }
@@ -140,7 +142,23 @@ export default function DrawingCanvas() {
       </div>
 
       <div className="canvas-section" style={{ height: `${100 - elevationHeight}%` }}>
-        <div className="canvas-header">Planta — {activeTool === 'wall' ? 'arrastrá para dibujar un muro' : 'tocá un muro para seleccionar'}</div>
+        <div className="canvas-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span>Planta — {activeTool === 'wall' ? 'arrastrá para dibujar un muro' : 'tocá un muro para seleccionar'}</span>
+          <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 10, color: '#999' }}>Grilla</span>
+            {[400, 600].map((g) => (
+              <button key={g} onClick={() => setGrid(g)}
+                style={{
+                  border: '1px solid', borderColor: gridMm === g ? '#fe0000' : '#ddd',
+                  background: gridMm === g ? '#fe0000' : '#fff', color: gridMm === g ? '#fff' : '#666',
+                  borderRadius: 5, fontSize: 11, fontWeight: 700, padding: '3px 9px', cursor: 'pointer',
+                }}>
+                {g === 400 ? '40' : '60'}
+              </button>
+            ))}
+            <span style={{ fontSize: 10, color: '#999' }}>cm</span>
+          </span>
+        </div>
         <svg
           ref={planRef}
           className="canvas-svg"
@@ -185,11 +203,11 @@ function elevTransform(panel) {
 }
 
 // ── Dibujo PLANTA ──────────────────────────────────────────
-function drawPlan(svg, panels, selectedId, draft, cursor, activeTool) {
+function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm) {
   if (!svg) return
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: 400, fill: 'white' }))
-  drawPlanGrid(svg)
+  drawPlanGrid(svg, gridMm)
 
   // muros
   panels.forEach((p) => {
@@ -224,30 +242,30 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool) {
   // indicador de snap
   if (cursor?.view === 'plan' && activeTool === 'wall') {
     const mm = vbToPlan(cursor.vb)
-    const s = planToVb([Math.round(mm[0] / GRID) * GRID, Math.round(mm[1] / GRID) * GRID])
+    const s = planToVb([Math.round(mm[0] / gridMm) * gridMm, Math.round(mm[1] / gridMm) * gridMm])
     svg.appendChild(el('circle', { cx: s[0], cy: s[1], r: 5, fill: 'none', stroke: '#fe0000', 'stroke-width': 1.5 }))
   }
 }
 
-function drawPlanGrid(svg) {
+function drawPlanGrid(svg, gridMm) {
   const g = el('g', {})
-  for (let mm = 0; mm <= 19000; mm += 1000) {
+  for (let mm = 0; mm <= 24000; mm += gridMm) {
     const v = planToVb([mm, 0])[0]
     if (v > 1000) break
-    const major = mm % 5000 === 0
-    g.appendChild(el('line', { x1: v, y1: 0, x2: v, y2: 400, stroke: major ? '#d8d8d8' : '#ededed', 'stroke-width': major ? 0.8 : 0.5 }))
+    const major = mm % MAJOR === 0
+    g.appendChild(el('line', { x1: v, y1: 0, x2: v, y2: 400, stroke: major ? '#cfcfcf' : '#eee', 'stroke-width': major ? 1 : 0.5 }))
   }
-  for (let mm = 0; mm <= 7000; mm += 1000) {
+  for (let mm = 0; mm <= 9000; mm += gridMm) {
     const v = planToVb([0, mm])[1]
     if (v < 0) break
-    const major = mm % 5000 === 0
-    g.appendChild(el('line', { x1: 0, y1: v, x2: 1000, y2: v, stroke: major ? '#d8d8d8' : '#ededed', 'stroke-width': major ? 0.8 : 0.5 }))
+    const major = mm % MAJOR === 0
+    g.appendChild(el('line', { x1: 0, y1: v, x2: 1000, y2: v, stroke: major ? '#cfcfcf' : '#eee', 'stroke-width': major ? 1 : 0.5 }))
   }
   svg.appendChild(g)
 }
 
 // ── Dibujo ALZADO ──────────────────────────────────────────
-function drawElevation(svg, panels, selectedId, selectedVertex) {
+function drawElevation(svg, panels, selectedId, selectedVertex, gridMm) {
   if (!svg) return
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: 400, fill: 'white' }))
@@ -262,16 +280,16 @@ function drawElevation(svg, panels, selectedId, selectedVertex) {
 
   const tf = elevTransform(panel)
 
-  // grilla del alzado (cada 500mm)
+  // grilla del alzado (cada gridMm, mayor cada 1.20m)
   const maxH = panelMaxHeight(panel)
   const g = el('g', {})
-  for (let x = 0; x <= panel.width; x += 500) {
+  for (let x = 0; x <= panel.width; x += gridMm) {
     const a = tf.toVb([x, 0]), b = tf.toVb([x, maxH])
-    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: x % 1000 === 0 ? '#e2e2e2' : '#f0f0f0', 'stroke-width': 0.5 }))
+    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: x % MAJOR === 0 ? '#d4d4d4' : '#efefef', 'stroke-width': x % MAJOR === 0 ? 0.9 : 0.5 }))
   }
-  for (let y = 0; y <= maxH; y += 500) {
+  for (let y = 0; y <= maxH; y += gridMm) {
     const a = tf.toVb([0, y]), b = tf.toVb([panel.width, y])
-    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: y % 1000 === 0 ? '#e2e2e2' : '#f0f0f0', 'stroke-width': 0.5 }))
+    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: y % MAJOR === 0 ? '#d4d4d4' : '#efefef', 'stroke-width': y % MAJOR === 0 ? 0.9 : 0.5 }))
   }
   svg.appendChild(g)
 
