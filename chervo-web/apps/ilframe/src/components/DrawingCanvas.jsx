@@ -230,11 +230,13 @@ export default function DrawingCanvas() {
       dragRef.current.active = false
     }
     // tap corto = solo seleccionar (el menú mover/borrar sale con long-press)
-    if (!lpRef.current.fired && (activeTool === 'select' || activeTool === 'wall')) {
-      if (!dragRef.current.moved) {
-        const mm = vbToPlan(worldFromVb(getVb(e, planRef.current)))
-        const st = useDrawingStore.getState()
-        const hit = pickPanel(mm, st.panels)
+    if (!lpRef.current.fired && !dragRef.current.moved) {
+      const mm = vbToPlan(worldFromVb(getVb(e, planRef.current)))
+      const st = useDrawingStore.getState()
+      const hit = pickPanel(mm, st.panels)
+      if (['door', 'window', 'opening'].includes(activeTool)) {
+        if (hit) { st.select(hit); st.addOpening(hit, activeTool); st.setTab('elev') }
+      } else if (activeTool === 'select' || activeTool === 'wall') {
         if (hit) st.select(hit)
         else if (activeTool === 'select') st.deselect()
       }
@@ -291,6 +293,12 @@ export default function DrawingCanvas() {
       return
     }
     try { elevRef.current.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
+    // herramienta de abertura → coloca en la X tocada (sobre la cara)
+    if (['door', 'window', 'opening'].includes(st.activeTool)) {
+      const [lx] = elevLocal(vb, panel)
+      st.addOpening(panel.id, st.activeTool, Math.round(lx))
+      return
+    }
     // ¿tocó un vértice? (en coords de pantalla, considerando la vista)
     const tf = elevTransform(panel)
     let best = null, bestD = 26
@@ -386,9 +394,20 @@ export default function DrawingCanvas() {
       {/* Barra de acciones de la pestaña */}
       <div className="canvas-toolbar">
         <span className="ct-hint">
-          {tab === 'plan'
-            ? (moving ? 'Arrastrá el muro a su lugar' : activeTool === 'wall' ? 'Arrastrá para dibujar · mantené presionado para editar' : 'Tocá un muro para editar')
-            : (selectedId ? `Cara de ${selectedId} · base = ancho (planta)` : 'Seleccioná un muro en la pestaña Planta')}
+          {(() => {
+            const open = { door: 'puerta', window: 'ventana', opening: 'abertura' }
+            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso', tconnect: 'T-connect' }
+            if (tab === 'plan') {
+              if (moving) return 'Arrastrá el muro a su lugar'
+              if (activeTool === 'wall') return 'Arrastrá para dibujar · mantené presionado para editar'
+              if (open[activeTool]) return `Tocá un muro para agregarle ${open[activeTool]}`
+              if (soon[activeTool]) return `${soon[activeTool]}: reglas próximamente`
+              return 'Tocá un muro para editar'
+            }
+            if (!selectedId) return 'Seleccioná un muro en la pestaña Planta'
+            if (open[activeTool]) return `Tocá la cara para ubicar ${open[activeTool]}`
+            return `Cara de ${selectedId} · arrastrá vértices · base bloqueada`
+          })()}
         </span>
         <span className="ct-actions">
           <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer" className="ct-btn">↶</button>
@@ -664,7 +683,7 @@ function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView
     svg.appendChild(el('polygon', { points: c.map((v) => `${v[0]},${v[1]}`).join(' '), fill: '#fff', stroke: '#0a84ff', 'stroke-width': 2 }))
     const cx = (c[0][0] + c[2][0]) / 2, cy = (c[0][1] + c[2][1]) / 2
     const t1 = el('text', { x: cx, y: cy, 'font-size': 16, 'font-weight': 'bold', fill: '#0a84ff', 'text-anchor': 'middle' })
-    t1.textContent = op.kind === 'door' ? 'P' : 'V'
+    t1.textContent = op.kind === 'door' ? 'P' : op.kind === 'window' ? 'V' : 'A'
     svg.appendChild(t1)
     const t2 = el('text', { x: cx, y: cy + 16, 'font-size': 10, fill: '#0a84ff', 'text-anchor': 'middle' })
     t2.textContent = `${(op.width / 1000).toFixed(2)}×${(op.height / 1000).toFixed(2)}`

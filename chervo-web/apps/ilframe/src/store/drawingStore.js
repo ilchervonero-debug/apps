@@ -228,12 +228,15 @@ export const useDrawingStore = create((set) => ({
   })),
 
   // ── Aberturas (puertas / ventanas) sobre la cara ──────────
-  addOpening: (panelId, kind) => set((s) => {
+  addOpening: (panelId, kind, offset) => set((s) => {
     const panel = s.panels.find((p) => p.id === panelId)
     if (!panel) return {}
-    const def = kind === 'door' ? { width: 900, height: 2050, sill: 0 } : { width: 1000, height: 1100, sill: 900 }
+    const def = kind === 'door' ? { width: 900, height: 2050, sill: 0 }
+      : kind === 'window' ? { width: 1000, height: 1100, sill: 900 }
+        : { width: 800, height: 800, sill: 1000 } // abertura genérica
     const mc = minClearFor(panel, s.project)
-    const op = clampOpening(panel, { id: 'o' + Date.now().toString(36), kind, offset: mc, ...def }, s.project)
+    const off = offset != null ? offset - def.width / 2 : mc
+    const op = clampOpening(panel, { id: 'o' + Date.now().toString(36), kind, offset: off, ...def }, s.project)
     return { ...histPatch(s, 'addop'), panels: s.panels.map((p) => (p.id === panelId ? { ...p, openings: [...(p.openings || []), op] } : p)) }
   }),
   updateOpening: (panelId, openId, patch) => set((s) => {
