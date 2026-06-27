@@ -59,7 +59,7 @@ export const useDrawingStore = create((set) => ({
   setGrid: (mm) => set({ gridMm: mm }),
   setElevationHeight: (h) => set({ elevationHeight: Math.max(20, Math.min(80, h)) }),
 
-  // ── PLANTA: dibujar muro ──────────────────────────────────
+  // ── PLANTA: dibujar con arrastre (snap a la grilla) ───────
   startWall: (pt) => set((s) => ({ draft: { a: snapPt(pt, s.gridMm), b: snapPt(pt, s.gridMm) } })),
   dragWall: (pt) => set((s) => (s.draft ? { draft: { ...s.draft, b: snapPt(pt, s.gridMm) } } : {})),
   finishWall: () => set((s) => {
@@ -76,7 +76,7 @@ export const useDrawingStore = create((set) => ({
       topPath: [[0, DEFAULT_HEIGHT], [width, DEFAULT_HEIGHT]],
       openings: [],
     }
-    return { panels: [...s.panels, panel], draft: null, selectedId: id, selectedVertex: null }
+    return { panels: [...s.panels, panel], draft: null }
   }),
   cancelWall: () => set({ draft: null }),
 

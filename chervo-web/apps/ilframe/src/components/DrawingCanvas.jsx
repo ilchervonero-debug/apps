@@ -61,11 +61,21 @@ export default function DrawingCanvas() {
     }
   }, [isResizing])
 
+  // Conversión exacta pantalla → viewBox usando la matriz del SVG.
+  // (Evita el error de snap cuando el SVG no llena exacto su viewBox.)
   const getVb = (e, svg) => {
-    const r = svg.getBoundingClientRect()
     const t = e.touches?.[0] || e.changedTouches?.[0]
     const cx = t ? t.clientX : e.clientX
     const cy = t ? t.clientY : e.clientY
+    const ctm = svg.getScreenCTM()
+    if (ctm) {
+      const pt = svg.createSVGPoint()
+      pt.x = cx
+      pt.y = cy
+      const p = pt.matrixTransform(ctm.inverse())
+      return [p.x, p.y]
+    }
+    const r = svg.getBoundingClientRect()
     return [(cx - r.left) / (r.width / 1000), (cy - r.top) / (r.height / 400)]
   }
 
