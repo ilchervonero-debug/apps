@@ -72,6 +72,11 @@ perfil × kg/m, placas por m², y materiales de sistema por m²/ml × multiplica
 `plans_options` (85 claves) define el render de **planos** (vista frente, cotas,
 bulones, colores, tamaños) para generar láminas.
 
+## Convención de UI (IMPORTANTE)
+
+- **NADA de emojis** en ninguna app. Usar siempre **icon flats** (SVG de línea,
+  `stroke=currentColor`). Vale para iLFrame y el resto de las apps de la familia.
+
 ## 1. Planta (pestaña)
 
 - Dibujar un muro: **pico inicio → arrastro → fin** (snap a grilla y a vértices).

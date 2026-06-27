@@ -98,6 +98,10 @@ export default function ProjectSetup() {
   )
 }
 
+function Chk({ size = 14 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 6" /></svg>
+}
+
 function WallTypeCard({ type, profileSection, canDelete }) {
   const updateWallType = useDrawingStore((s) => s.updateWallType)
   const removeWallType = useDrawingStore((s) => s.removeWallType)
@@ -158,8 +162,8 @@ function ElementCard({ def, state, onToggle }) {
     <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', overflow: 'hidden', border: on ? '1.5px solid #fe0000' : '1.5px solid transparent' }}>
       <button onClick={onToggle}
         style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
-        <span style={{ width: 22, height: 22, borderRadius: 6, background: on ? '#fe0000' : '#e8e8e8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 14 }}>
-          {on ? '✓' : '+'}
+        <span style={{ width: 22, height: 22, borderRadius: 6, background: on ? '#fe0000' : '#e8e8e8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 16 }}>
+          {on ? <Chk /> : '+'}
         </span>
         <span style={{ fontSize: 15, fontWeight: 800, color: on ? '#222' : '#888', flex: 1 }}>{def.label}</span>
         {on && <span style={{ fontSize: 18, color: '#bbb' }}>⌄</span>}
@@ -240,7 +244,7 @@ function FinishBlock({ elKey, finish }) {
             <button key={k} onClick={() => setFinish(elKey, { [k]: !on })}
               style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 10px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, textAlign: 'left',
                 border: '1.5px solid', borderColor: on ? '#fe0000' : '#e0e0e0', background: on ? '#fff5f5' : '#fff', color: on ? '#fe0000' : '#888' }}>
-              <span style={{ width: 16, height: 16, borderRadius: 4, background: on ? '#fe0000' : '#e8e8e8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900 }}>{on ? '✓' : ''}</span>
+              <span style={{ width: 16, height: 16, borderRadius: 4, background: on ? '#fe0000' : '#e8e8e8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{on ? <Chk size={11} /> : null}</span>
               {lbl}
             </button>
           )

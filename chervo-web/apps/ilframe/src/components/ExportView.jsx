@@ -111,21 +111,30 @@ export default function ExportView() {
           Salida — {project.name}
         </div>
         {!has && <div style={{ color: '#bbb', marginBottom: 12 }}>Dibujá muros para habilitar las salidas.</div>}
-        <ExpCard has={has} title="↓ Excel · Lista de materiales" desc="Cómputo total de materiales (acero, placas, aislante, tornillos, pintura…)." color="#217346" onClick={() => xlsx('materiales')} />
-        <ExpCard has={has} title="↓ Excel · Lista de partes" desc="Detalle por panel: perfil, ml, kg, placas y tornillos." color="#217346" onClick={() => xlsx('partes')} />
-        <ExpCard has={has} title="↓ Excel · Completo" desc="Materiales + lista de partes en un solo archivo." color="#1b5e20" onClick={() => xlsx('completo')} />
-        <ExpCard has={has} title="🖨 Planos / Gráficos (PDF)" desc="Planta + cada cara en verdadera magnitud + lista de materiales. Imprimí o guardá como PDF." color="#c00000" onClick={printPlanos} />
+        <ExpCard has={has} icon="xls" title="Excel · Lista de materiales" desc="Cómputo total de materiales (acero, placas, aislante, tornillos, pintura…)." color="#217346" onClick={() => xlsx('materiales')} />
+        <ExpCard has={has} icon="xls" title="Excel · Lista de partes" desc="Detalle por panel: perfil, ml, kg, placas y tornillos." color="#217346" onClick={() => xlsx('partes')} />
+        <ExpCard has={has} icon="xls" title="Excel · Completo" desc="Materiales + lista de partes en un solo archivo." color="#1b5e20" onClick={() => xlsx('completo')} />
+        <ExpCard has={has} icon="print" title="Planos / Gráficos (PDF)" desc="Planta + cada cara en verdadera magnitud + lista de materiales. Imprimí o guardá como PDF." color="#c00000" onClick={printPlanos} />
       </div>
     </div>
   )
 }
 
-function ExpCard({ has, title, desc, color, onClick }) {
+function OutIcon({ type, color }) {
+  const c = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  if (type === 'print') return <svg {...c}><path d="M6 9V3h12v6" /><rect x="6" y="14" width="12" height="7" /><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2" /></svg>
+  return <svg {...c}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M9 13l2 3 2-3" /><path d="M11 16v-3" /></svg>
+}
+
+function ExpCard({ has, title, desc, color, onClick, icon }) {
   return (
     <button onClick={onClick} disabled={!has}
-      style={{ display: 'block', width: '100%', textAlign: 'left', background: '#fff', border: '1px solid #ececec', borderLeft: `4px solid ${color}`, borderRadius: 12, padding: '16px 18px', marginBottom: 12, cursor: has ? 'pointer' : 'default', opacity: has ? 1 : 0.5, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-      <div style={{ fontSize: 15, fontWeight: 800, color: '#222' }}>{title}</div>
-      <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>{desc}</div>
+      style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', background: '#fff', border: '1px solid #ececec', borderLeft: `4px solid ${color}`, borderRadius: 12, padding: '16px 18px', marginBottom: 12, cursor: has ? 'pointer' : 'default', opacity: has ? 1 : 0.5, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+      <OutIcon type={icon} color={color} />
+      <span>
+        <div style={{ fontSize: 15, fontWeight: 800, color: '#222' }}>{title}</div>
+        <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>{desc}</div>
+      </span>
     </button>
   )
 }

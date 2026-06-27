@@ -70,8 +70,9 @@ export default function Iso3D() {
                   border: '1px solid', borderColor: on ? '#0a84ff' : '#ddd',
                   background: on ? '#eaf3ff' : '#f3f3f3', color: on ? '#0a84ff' : '#bbb',
                   borderRadius: 14, fontSize: 12, fontWeight: 700, padding: '5px 11px', cursor: 'pointer', whiteSpace: 'nowrap',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
                 }}>
-                {on ? '👁 ' : '∅ '}{p.id}
+                <EyeIcon on={on} />{p.id}
               </button>
             )
           })}
@@ -79,6 +80,13 @@ export default function Iso3D() {
       )}
     </div>
   )
+}
+
+function EyeIcon({ on }) {
+  const c = { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  return on
+    ? <svg {...c}><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" /><circle cx="12" cy="12" r="3" /></svg>
+    : <svg {...c}><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" /><line x1="3" y1="3" x2="21" y2="21" /></svg>
 }
 
 // proyección axonométrica para una esquina (az) + pitch
