@@ -235,6 +235,12 @@ export const useDrawingStore = create((set) => ({
   movePanelTo: (id, a, b) => set((s) => ({
     panels: s.panels.map((p) => (p.id === id ? { ...p, a, b } : p)),
   })),
+  // Voltear: ver la cara desde el otro lado (exterior/interior).
+  // Solo espeja la vista; el ancho (verdadera magnitud) no cambia.
+  flipPanel: (id) => set((s) => ({
+    ...histPatch(s, 'flip'),
+    panels: s.panels.map((p) => (p.id === id ? { ...p, flip: !p.flip } : p)),
+  })),
   selectVertex: (i) => set({ selectedVertex: i }),
   remove: (id) => set((s) => ({
     ...histPatch(s, 'remove'),

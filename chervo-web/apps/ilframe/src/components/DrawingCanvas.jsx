@@ -398,7 +398,8 @@ function elevTransform(panel) {
   const s = Math.min((1000 - margin * 2) / w, (400 - margin * 2) / maxH)
   const ox = (1000 - w * s) / 2
   const oy = 400 - margin
-  return { s, ox, oy, toVb: ([x, y]) => [ox + x * s, oy - y * s] }
+  // flip = ver desde el otro lado: espeja en X (el ancho real no cambia)
+  return { s, ox, oy, toVb: ([x, y]) => [ox + (panel.flip ? (w - x) : x) * s, oy - y * s] }
 }
 
 // ── Dibujo PLANTA ──────────────────────────────────────────
@@ -532,10 +533,15 @@ function drawElevation(svg, panels, selectedId, selectedVertex, gridMm) {
   const baseA = tf.toVb([0, 0]), baseB = tf.toVb([panel.width, 0])
   svg.appendChild(el('line', { x1: baseA[0], y1: baseA[1], x2: baseB[0], y2: baseB[1], stroke: '#555', 'stroke-width': 4, 'stroke-linecap': 'round' }))
 
-  // cota de ancho (bloqueado)
+  // cota de ancho (bloqueado, verdadera magnitud)
   const wt = el('text', { x: (baseA[0] + baseB[0]) / 2, y: baseA[1] + 22, 'font-size': 12, 'font-weight': 'bold', fill: '#555', 'text-anchor': 'middle' })
-  wt.textContent = `ancho ${(panel.width / 1000).toFixed(2)} m (planta)`
+  wt.textContent = `ancho ${(panel.width / 1000).toFixed(2)} m · verdadera magnitud`
   svg.appendChild(wt)
+
+  // nota de vista
+  const vn = el('text', { x: 500, y: 22, 'font-size': 11, 'font-weight': 'bold', fill: '#999', 'text-anchor': 'middle' })
+  vn.textContent = `Vista exterior${panel.flip ? ' (volteada)' : ''}`
+  svg.appendChild(vn)
 
   // vértices del contorno con etiqueta de altura
   panel.topPath.forEach((pt, i) => {

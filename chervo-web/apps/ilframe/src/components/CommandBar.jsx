@@ -46,6 +46,7 @@ export default function CommandBar() {
   const addContourPoint = useDrawingStore((s) => s.addContourPoint)
   const updateContourPoint = useDrawingStore((s) => s.updateContourPoint)
   const removeContourPoint = useDrawingStore((s) => s.removeContourPoint)
+  const flipPanel = useDrawingStore((s) => s.flipPanel)
 
   const [npX, setNpX] = useState('')
   const [npY, setNpY] = useState('')
@@ -105,7 +106,13 @@ export default function CommandBar() {
 
         {/* ALZADO: alturas de extremos */}
         <div className="editor-section">
-          <div className="editor-sublabel">Alzado — contorno</div>
+          <div className="editor-sublabel" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>Alzado — contorno{panel.flip ? ' (vista volteada)' : ''}</span>
+            <button onClick={() => flipPanel(panel.id)}
+              style={{ marginLeft: 'auto', border: '1px solid #ddd', background: '#fff', color: '#555', borderRadius: 6, fontSize: 11, fontWeight: 700, padding: '3px 9px', cursor: 'pointer' }}>
+              ⇄ Ver del otro lado
+            </button>
+          </div>
           <label>
             <span className="editor-label">Altura lado A (mm):</span>
             <NumInput value={heightA} onCommit={(v) => setHeightA(panel.id, v)} />
