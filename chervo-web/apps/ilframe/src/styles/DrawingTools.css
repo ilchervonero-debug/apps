@@ -33,7 +33,7 @@
   bottom: 60px;
   right: 0;
   display: grid;
-  grid-template-columns: repeat(2, 86px);
+  grid-template-columns: repeat(2, 92px);
   gap: 8px;
   padding: 10px;
   background: #fff;
@@ -50,31 +50,38 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* estilo limpio + ícono grande (referencia), conservando el rojo de iLFrame */
 .tool-btn {
-  width: 86px;
-  height: 64px;
-  border: none;
-  border-radius: 10px;
-  background: #fe0000;
-  color: white;
+  width: 92px;
+  height: 80px;
+  border: 1px solid #ededed;
+  border-radius: 12px;
+  background: #fff;
+  color: #555;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  transition: background 0.15s;
+  gap: 7px;
+  transition: all 0.15s;
 }
 
-.tool-btn:hover { background: #e60000; }
-.tool-btn.active { background: #b40000; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5); }
+.tool-btn:hover { background: #fafafa; }
+.tool-btn.active {
+  background: #fe0000;
+  color: #fff;
+  border-color: #fe0000;
+}
 
 .tool-icon {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #fe0000;
 }
-.tool-icon svg { width: 22px; height: 22px; }
+.tool-btn.active .tool-icon { color: #fff; }
+.tool-icon svg { width: 34px; height: 34px; }
 
 .tool-label {
   font-size: 11px;
