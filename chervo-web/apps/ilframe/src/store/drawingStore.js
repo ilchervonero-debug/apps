@@ -109,6 +109,26 @@ export const useDrawingStore = create((set) => ({
 
   select: (id) => set({ selectedId: id, selectedVertex: null }),
   deselect: () => set({ selectedId: null, selectedVertex: null }),
+
+  // ── EDICIÓN: copiar / mover ───────────────────────────────
+  duplicatePanel: (id) => set((s) => {
+    const src = s.panels.find((p) => p.id === id)
+    if (!src) return {}
+    const code = nextCode(s.panels)
+    const off = s.gridMm
+    const copy = {
+      ...src,
+      id: code,
+      a: [src.a[0] + off, src.a[1] - off],
+      b: [src.b[0] + off, src.b[1] - off],
+      topPath: src.topPath.map((p) => [...p]),
+      openings: (src.openings || []).map((o) => ({ ...o })),
+    }
+    return { panels: [...s.panels, copy], selectedId: code, selectedVertex: null }
+  }),
+  movePanelTo: (id, a, b) => set((s) => ({
+    panels: s.panels.map((p) => (p.id === id ? { ...p, a, b } : p)),
+  })),
   selectVertex: (i) => set({ selectedVertex: i }),
   remove: (id) => set((s) => ({
     panels: s.panels.filter((p) => p.id !== id),

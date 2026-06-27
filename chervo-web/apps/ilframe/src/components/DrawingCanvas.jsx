@@ -21,8 +21,12 @@ export default function DrawingCanvas() {
   const planRef = useRef(null)
   const dividerRef = useRef(null)
   const dragRef = useRef({ active: false, moved: false })
+  const lpRef = useRef({ timer: null, fired: false, startVb: null, client: [0, 0] })
+  const movingRef = useRef(null) // { id, origA, origB, startMm } durante el arrastre de mover
   const [isResizing, setIsResizing] = useState(false)
   const [cursor, setCursor] = useState(null)
+  const [menu, setMenu] = useState(null) // { id, x, y } menú contextual (coords de pantalla)
+  const [moving, setMoving] = useState(null) // id del panel en modo mover
 
   const panels = useDrawingStore((s) => s.panels)
   const selectedId = useDrawingStore((s) => s.selectedId)
@@ -79,38 +83,96 @@ export default function DrawingCanvas() {
     return [(cx - r.left) / (r.width / 1000), (cy - r.top) / (r.height / 400)]
   }
 
-  // ── PLANTA: dibujar / seleccionar ──
+  const clearLongPress = () => {
+    if (lpRef.current.timer) { clearTimeout(lpRef.current.timer); lpRef.current.timer = null }
+  }
+
+  // ── PLANTA: dibujar / seleccionar / mover / menú ──
   const planDown = (e) => {
     const svg = planRef.current
     const vb = getVb(e, svg)
     const mm = vbToPlan(vb)
     const st = useDrawingStore.getState()
+    const cx = e.touches?.[0]?.clientX ?? e.clientX
+    const cy = e.touches?.[0]?.clientY ?? e.clientY
+    setMenu(null)
+
+    // modo mover: arrastrar el panel seleccionado
+    if (moving) {
+      const p = st.panels.find((x) => x.id === moving)
+      if (p) { movingRef.current = { id: moving, origA: p.a, origB: p.b, startMm: mm }; setCursor({ view: 'plan', vb }); return }
+    }
+
+    try { svg.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
+    lpRef.current = { timer: null, fired: false, startVb: vb, client: [cx, cy] }
+
+    // long-press: abre menú contextual sobre el muro
+    lpRef.current.timer = setTimeout(() => {
+      lpRef.current.fired = true
+      if (dragRef.current.active) { useDrawingStore.getState().cancelWall(); dragRef.current.active = false }
+      const hit = pickPanel(mm, useDrawingStore.getState().panels)
+      if (hit) { useDrawingStore.getState().select(hit); setMenu({ id: hit, x: lpRef.current.client[0], y: lpRef.current.client[1] }) }
+    }, 480)
+
     if (activeTool === 'wall') {
-      try { svg.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
       dragRef.current = { active: true, moved: false }
       st.startWall(mm)
-    } else {
-      // seleccionar muro cercano
-      const hit = pickPanel(mm, st.panels)
-      if (hit) st.select(hit)
-      else st.deselect()
     }
     setCursor({ view: 'plan', vb })
   }
+
   const planMove = (e) => {
     const vb = getVb(e, planRef.current)
     setCursor({ view: 'plan', vb })
+
+    // mover panel
+    if (movingRef.current) {
+      const mm = vbToPlan(vb)
+      const g = useDrawingStore.getState().gridMm
+      const { id, origA, origB, startMm } = movingRef.current
+      const dx = Math.round((mm[0] - startMm[0]) / g) * g
+      const dy = Math.round((mm[1] - startMm[1]) / g) * g
+      useDrawingStore.getState().movePanelTo(id, [origA[0] + dx, origA[1] + dy], [origB[0] + dx, origB[1] + dy])
+      return
+    }
+
+    // si el dedo se movió, cancelar el long-press (es un trazo/gesto)
+    if (lpRef.current.startVb) {
+      const d = Math.hypot(vb[0] - lpRef.current.startVb[0], vb[1] - lpRef.current.startVb[1])
+      if (d > 6) clearLongPress()
+    }
     if (dragRef.current.active) {
       useDrawingStore.getState().dragWall(vbToPlan(vb))
       dragRef.current.moved = true
     }
   }
-  const planUp = () => {
+
+  const planUp = (e) => {
+    clearLongPress()
+    // terminar movimiento
+    if (movingRef.current) { movingRef.current = null; setMoving(null); return }
+    // terminar trazo
     if (dragRef.current.active) {
       useDrawingStore.getState().finishWall()
       dragRef.current.active = false
     }
+    // tap corto con herramienta seleccionar → abrir menú
+    if (!lpRef.current.fired && activeTool === 'select') {
+      const vb = getVb(e, planRef.current)
+      const mm = vbToPlan(vb)
+      const st = useDrawingStore.getState()
+      const hit = pickPanel(mm, st.panels)
+      const cx = e.changedTouches?.[0]?.clientX ?? e.clientX
+      const cy = e.changedTouches?.[0]?.clientY ?? e.clientY
+      if (hit) { st.select(hit); setMenu({ id: hit, x: cx, y: cy }) }
+      else st.deselect()
+    }
   }
+
+  // acciones del menú contextual
+  const doMove = () => { if (menu) { setMoving(menu.id); setMenu(null) } }
+  const doCopy = () => { if (menu) { useDrawingStore.getState().duplicatePanel(menu.id); setMenu(null) } }
+  const doDelete = () => { if (menu) { useDrawingStore.getState().remove(menu.id); setMenu(null) } }
 
   // ── ALZADO: seleccionar vértice del panel activo ──
   const elevDown = (e) => {
@@ -131,6 +193,32 @@ export default function DrawingCanvas() {
 
   return (
     <div className="drawing-canvas">
+      {/* Banner modo mover */}
+      {moving && (
+        <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#fe0000', color: '#fff', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, boxShadow: '0 2px 8px rgba(0,0,0,0.25)', display: 'flex', gap: 10, alignItems: 'center' }}>
+          Moviendo {moving} — arrastralo a su lugar
+          <button onClick={() => setMoving(null)} style={{ background: 'rgba(255,255,255,0.25)', border: 'none', color: '#fff', borderRadius: 12, padding: '2px 10px', fontWeight: 700, cursor: 'pointer' }}>Listo</button>
+        </div>
+      )}
+
+      {/* Menú contextual */}
+      {menu && (
+        <>
+          <div onClick={() => setMenu(null)} onPointerDown={() => setMenu(null)}
+            style={{ position: 'fixed', inset: 0, zIndex: 90 }} />
+          <div style={{
+            position: 'fixed', left: Math.min(menu.x, window.innerWidth - 150), top: Math.min(menu.y, window.innerHeight - 160),
+            zIndex: 91, background: '#fff', border: '1px solid #e0e0e0', borderRadius: 12,
+            boxShadow: '0 6px 24px rgba(0,0,0,0.18)', overflow: 'hidden', minWidth: 140,
+          }}>
+            <div style={{ padding: '8px 14px', fontSize: 11, fontWeight: 800, color: '#fe0000', borderBottom: '1px solid #f0f0f0' }}>{menu.id}</div>
+            <CtxItem label="Mover" onClick={doMove} />
+            <CtxItem label="Copiar" onClick={doCopy} />
+            <CtxItem label="Borrar" danger onClick={doDelete} />
+          </div>
+        </>
+      )}
+
       <div className="canvas-section" style={{ height: `${elevationHeight}%` }}>
         <div className="canvas-header">Alzado — cara del panel {selectedId ? `(${selectedId})` : ''}</div>
         <svg
@@ -153,7 +241,7 @@ export default function DrawingCanvas() {
 
       <div className="canvas-section" style={{ height: `${100 - elevationHeight}%` }}>
         <div className="canvas-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span>Planta — {activeTool === 'wall' ? 'arrastrá para dibujar un muro' : 'tocá un muro para seleccionar'}</span>
+          <span>Planta — {moving ? 'arrastrá el muro a su lugar' : activeTool === 'wall' ? 'arrastrá para dibujar · mantené presionado para editar' : 'tocá un muro para editar'}</span>
           <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
             <span style={{ fontSize: 10, color: '#999' }}>Grilla</span>
             {[400, 600].map((g) => (
@@ -180,6 +268,18 @@ export default function DrawingCanvas() {
         />
       </div>
     </div>
+  )
+}
+
+function CtxItem({ label, onClick, danger }) {
+  return (
+    <button onClick={onClick} style={{
+      display: 'block', width: '100%', textAlign: 'left', padding: '11px 14px',
+      background: '#fff', border: 'none', borderBottom: '1px solid #f5f5f5',
+      fontSize: 14, fontWeight: 600, color: danger ? '#fe0000' : '#333', cursor: 'pointer',
+    }}>
+      {label}
+    </button>
   )
 }
 
