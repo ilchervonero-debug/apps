@@ -149,7 +149,7 @@ export default function DrawingCanvas() {
       lpRef.current.fired = true
       if (dragRef.current.active) { useDrawingStore.getState().cancelWall(); dragRef.current.active = false }
       const hit = pickPanel(mm, useDrawingStore.getState().panels)
-      if (hit) { useDrawingStore.getState().select(hit); setMenu({ id: hit, x: lpRef.current.client[0], y: lpRef.current.client[1] }) }
+      if (hit) { useDrawingStore.getState().select(hit); setMenu({ id: hit, x: lpRef.current.client[0], y: lpRef.current.client[1], t: Date.now() }) }
     }, 480)
 
     if (activeTool === 'wall') {
@@ -221,7 +221,7 @@ export default function DrawingCanvas() {
       const hit = pickPanel(mm, st.panels)
       const cx = e.changedTouches?.[0]?.clientX ?? e.clientX
       const cy = e.changedTouches?.[0]?.clientY ?? e.clientY
-      if (hit) { st.select(hit); setMenu({ id: hit, x: cx, y: cy }) }
+      if (hit) { st.select(hit); setMenu({ id: hit, x: cx, y: cy, t: Date.now() }) }
       else st.deselect()
     }
   }
@@ -279,7 +279,7 @@ export default function DrawingCanvas() {
       {/* Menú contextual */}
       {menu && (
         <>
-          <div onClick={() => setMenu(null)} onPointerDown={() => setMenu(null)}
+          <div onClick={() => { if (Date.now() - (menu.t || 0) > 350) setMenu(null) }}
             style={{ position: 'fixed', inset: 0, zIndex: 90 }} />
           <div style={{
             position: 'fixed', left: Math.min(menu.x, window.innerWidth - 150), top: Math.min(menu.y, window.innerHeight - 160),
@@ -437,6 +437,8 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, vi
   if (draft) {
     const a = planToVb(draft.a), b = planToVb(draft.b)
     svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#fe0000', 'stroke-width': 2 * k, 'stroke-dasharray': `${5 * k} ${4 * k}` }))
+    // marca del inicio (sobre la intersección de grilla)
+    svg.appendChild(el('circle', { cx: a[0], cy: a[1], r: 4 * k, fill: '#fe0000' }))
     const w = Math.round(Math.hypot(draft.b[0] - draft.a[0], draft.b[1] - draft.a[1]))
     if (w > 0) {
       const t = el('text', { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 - 8 * k, 'font-size': 13 * k, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
