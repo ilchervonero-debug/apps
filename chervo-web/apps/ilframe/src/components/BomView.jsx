@@ -15,21 +15,6 @@ export default function BomView() {
 
   const { rows, total, materials } = projectBOM(panels, project)
 
-  const exportXlsx = async () => {
-    const XLSX = await import('xlsx')
-    const wb = XLSX.utils.book_new()
-    const panelRows = [
-      ['Panel', 'Perfil', 'm² neto', 'Montantes', 'Soleras ml', 'Refuerzos ml', 'Acero ml', 'Acero kg', 'Placas', 'Torn. estr.', 'Torn. placa'],
-      ...rows.map((r) => [r.id, r.perfil, r.netM2, r.studs, r.solerasMl, r.refuerzosMl, r.aceroMl, r.aceroKg, r.placas, r.tornillosEst, r.tornillosPlaca]),
-      [],
-      ['TOTAL', '', total.netM2, '', '', '', total.aceroMl, total.aceroKg, total.placas, '', total.tornillos],
-    ]
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(panelRows), 'Paneles')
-    const matRows = [['Material', 'Cantidad', 'Unidad'], ...materials.map((m) => [m.name, m.qty, m.unit])]
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(matRows), 'Materiales')
-    XLSX.writeFile(wb, `${(project.name || 'proyecto').replace(/\s+/g, '_')}_computo.xlsx`)
-  }
-
   const th = { textAlign: 'right', padding: '8px 10px', fontSize: 11, color: '#888', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }
   const td = { textAlign: 'right', padding: '8px 10px', fontSize: 13, color: '#333', whiteSpace: 'nowrap' }
   const card = { background: '#fff', borderRadius: 12, overflow: 'auto', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: 16 }
@@ -37,14 +22,8 @@ export default function BomView() {
   return (
     <div style={{ flex: 1, minHeight: 0, overflow: 'auto', background: '#fafafa', padding: 14 }}>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-          <span style={{ fontSize: 12, fontWeight: 800, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Cómputo — {project.name}
-          </span>
-          <button onClick={exportXlsx}
-            style={{ marginLeft: 'auto', border: 'none', background: '#217346', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 800, padding: '8px 14px', cursor: 'pointer' }}>
-            ↓ Excel
-          </button>
+        <div style={{ fontSize: 12, fontWeight: 800, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+          Cómputo — {project.name} <span style={{ color: '#bbb', fontWeight: 600 }}>· exportá en la pestaña Salida</span>
         </div>
 
         {/* Resumen por panel */}

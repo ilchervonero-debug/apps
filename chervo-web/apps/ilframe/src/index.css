@@ -3,3 +3,11 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Exo', system-ui, sans-serif; background: #f5f5f5; color: #111; }
 #root { min-height: 100vh; }
+
+/* Impresión de planos / reportes */
+#ilf-print { display: none; }
+@media print {
+  body > #root { display: none !important; }
+  #ilf-print { display: block !important; }
+  @page { margin: 12mm; }
+}

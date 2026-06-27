@@ -4,6 +4,7 @@ import DrawingTools from './components/DrawingTools'
 import ProjectSetup from './components/ProjectSetup'
 import Iso3D from './components/Iso3D'
 import BomView from './components/BomView'
+import ExportView from './components/ExportView'
 import { useDrawingStore } from './store/drawingStore'
 
 export default function App() {
@@ -48,14 +49,14 @@ export default function App() {
       ) : (
         <>
           {/* Pestañas — grandes y legibles */}
-          <div style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid #e0e0e0', background: '#fff' }}>
-            {[['plan', 'PLANTA'], ['elev', 'ALZADO'], ['3d', '3D'], ['bom', 'CÓMPUTO']].map(([id, label]) => {
+          <div style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid #e0e0e0', background: '#fff', overflowX: 'auto' }}>
+            {[['plan', 'PLANTA'], ['elev', 'ALZADO'], ['3d', '3D'], ['bom', 'CÓMPUTO'], ['out', 'SALIDA']].map(([id, label]) => {
               const on = tab === id
               return (
                 <button key={id} onClick={() => setTab(id)}
                   style={{
-                    flex: 1, padding: '14px 2px', border: 'none', cursor: 'pointer', background: 'none',
-                    fontSize: 14, fontWeight: 800, letterSpacing: '0.02em',
+                    flex: '1 0 auto', minWidth: 74, padding: '14px 10px', border: 'none', cursor: 'pointer', background: 'none',
+                    fontSize: 13, fontWeight: 800, letterSpacing: '0.02em', whiteSpace: 'nowrap',
                     color: on ? '#fe0000' : '#999',
                     borderBottom: on ? '3px solid #fe0000' : '3px solid transparent',
                   }}>
@@ -70,6 +71,8 @@ export default function App() {
               <Iso3D />
             ) : tab === 'bom' ? (
               <BomView />
+            ) : tab === 'out' ? (
+              <ExportView />
             ) : (
               <>
                 <DrawingCanvas />
