@@ -5,8 +5,9 @@ import '../styles/DrawingCanvas.css'
 const SVG = 'http://www.w3.org/2000/svg'
 
 // ── Transformaciones de coordenadas ────────────────────────
-// PLANTA: mm → viewBox (1000x400), origen abajo-izquierda, Y hacia arriba
-const PLAN = { ox: 60, oy: 350, s: 0.05 } // s = vb por mm (1000mm = 50vb → ~18m visibles)
+// PLANTA: mm → viewBox (ancho 1000, alto según pantalla), Y hacia arriba.
+// PLAN.h y PLAN.oy se actualizan según el tamaño real del canvas (sin bandas blancas).
+const PLAN = { ox: 60, oy: 350, s: 0.05, h: 400 }
 const planToVb = ([x, y]) => [PLAN.ox + x * PLAN.s, PLAN.oy - y * PLAN.s]
 const vbToPlan = ([vx, vy]) => [(vx - PLAN.ox) / PLAN.s, (PLAN.oy - vy) / PLAN.s]
 
@@ -32,6 +33,24 @@ export default function DrawingCanvas() {
   const [cursor, setCursor] = useState(null)
   const [menu, setMenu] = useState(null) // { id, x, y } menú contextual (coords de pantalla)
   const [moving, setMoving] = useState(null) // id del panel en modo mover
+  const [planH, setPlanH] = useState(400) // alto del viewBox del plano (según pantalla)
+
+  // viewBox del plano se ajusta al aspecto real del elemento → sin bandas blancas
+  useEffect(() => {
+    const svg = planRef.current
+    if (!svg || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => {
+      const r = svg.getBoundingClientRect()
+      if (r.width > 0 && r.height > 0) {
+        const h = Math.round(1000 * (r.height / r.width))
+        PLAN.h = h
+        PLAN.oy = h - 50
+        setPlanH(h)
+      }
+    })
+    ro.observe(svg)
+    return () => ro.disconnect()
+  }, [])
 
   const panels = useDrawingStore((s) => s.panels)
   const selectedId = useDrawingStore((s) => s.selectedId)
@@ -59,7 +78,7 @@ export default function DrawingCanvas() {
   useEffect(() => {
     drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm, view)
     drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm)
-  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view])
+  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH])
 
   // ── Divisor arrastrable ──
   const startResize = (e) => { setIsResizing(true); e.preventDefault() }
@@ -347,7 +366,8 @@ export default function DrawingCanvas() {
         <svg
           ref={planRef}
           className="canvas-svg"
-          viewBox="0 0 1000 400"
+          viewBox={`0 0 1000 ${planH}`}
+          preserveAspectRatio="none"
           style={{ touchAction: 'none' }}
           onPointerDown={planDown}
           onPointerMove={planMove}
@@ -406,7 +426,7 @@ function elevTransform(panel) {
 function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, view) {
   if (!svg) return
   svg.innerHTML = ''
-  svg.appendChild(el('rect', { width: 1000, height: 400, fill: 'white' }))
+  svg.appendChild(el('rect', { width: 1000, height: PLAN.h, fill: 'white' }))
 
   // grupo con la transform de vista (zoom/pan)
   const g = el('g', { transform: `translate(${view.tx} ${view.ty}) scale(${view.z})` })
@@ -492,7 +512,7 @@ function drawPlanGrid(svg, gridMm, view) {
   const x0 = (0 - view.tx) / view.z
   const x1 = (1000 - view.tx) / view.z
   const y0 = (0 - view.ty) / view.z
-  const y1 = (400 - view.ty) / view.z
+  const y1 = (PLAN.h - view.ty) / view.z
   // convertir a mm y alinear a la grilla
   const mmX0 = Math.floor(vbToPlan([Math.min(x0, x1), 0])[0] / gridMm) * gridMm
   const mmX1 = Math.ceil(vbToPlan([Math.max(x0, x1), 0])[0] / gridMm) * gridMm

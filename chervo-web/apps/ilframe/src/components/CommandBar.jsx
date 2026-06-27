@@ -50,44 +50,42 @@ export default function CommandBar() {
 
   const [npX, setNpX] = useState('')
   const [npY, setNpY] = useState('')
+  const [open, setOpen] = useState(false)
 
   const panel = panels.find((p) => p.id === selectedId)
+  const totalArea = panels.reduce((a, p) => a + polygonArea(panelPolygon(p)) / 1e6, 0)
+  const area = panel ? polygonArea(panelPolygon(panel)) / 1e6 : 0
+  const summary = panel ? `${panel.id} · ${area.toFixed(2)} m²` : `Paneles: ${panels.length}`
 
-  // ── Sin selección: lista de paneles + totales ──
+  // contenido del cajón
+  let content
   if (!panel) {
-    const totalArea = panels.reduce((a, p) => a + polygonArea(panelPolygon(p)) / 1e6, 0)
-    return (
-      <div className="command-bar">
-        <div className="cmd-elements-list">
-          <div className="list-header">
-            Paneles: {panels.length}
-            {panels.length > 0 && <span style={{ float: 'right', color: '#888' }}>{totalArea.toFixed(2)} m² total</span>}
-          </div>
-          {panels.length === 0 ? (
-            <div className="list-empty">Dibujá muros en la planta (cada uno es un panel)</div>
-          ) : (
-            <div className="list-items">
-              {panels.map((p) => (
-                <div key={p.id} className="list-item" onClick={() => select(p.id)}>
-                  <span className="item-id">{p.id}</span>
-                  <span className="item-props">{(p.width / 1000).toFixed(2)} m ancho</span>
-                  <span className="item-props">{(polygonArea(panelPolygon(p)) / 1e6).toFixed(2)} m²</span>
-                </div>
-              ))}
-            </div>
-          )}
+    content = (
+      <div className="cmd-elements-list">
+        <div className="list-header">
+          Paneles: {panels.length}
+          {panels.length > 0 && <span style={{ float: 'right', color: '#888' }}>{totalArea.toFixed(2)} m² total</span>}
         </div>
+        {panels.length === 0 ? (
+          <div className="list-empty">Dibujá muros en la planta (cada uno es un panel)</div>
+        ) : (
+          <div className="list-items">
+            {panels.map((p) => (
+              <div key={p.id} className="list-item" onClick={() => select(p.id)}>
+                <span className="item-id">{p.id}</span>
+                <span className="item-props">{(p.width / 1000).toFixed(2)} m ancho</span>
+                <span className="item-props">{(polygonArea(panelPolygon(p)) / 1e6).toFixed(2)} m²</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     )
-  }
-
-  const heightA = panel.topPath[0][1]
-  const heightB = panel.topPath[panel.topPath.length - 1][1]
-  const mids = panel.topPath.slice(1, -1) // puntos intermedios del contorno
-  const area = polygonArea(panelPolygon(panel)) / 1e6
-
-  return (
-    <div className="command-bar">
+  } else {
+    const heightA = panel.topPath[0][1]
+    const heightB = panel.topPath[panel.topPath.length - 1][1]
+    const mids = panel.topPath.slice(1, -1)
+    content = (
       <div className="cmd-editor">
         <div className="editor-header">
           <span className="editor-id">{panel.id}</span>
@@ -154,6 +152,30 @@ export default function CommandBar() {
         </div>
 
         <button className="btn-delete-panel" onClick={() => remove(panel.id)}>Eliminar panel {panel.id}</button>
+      </div>
+    )
+  }
+
+  // ── Cajón desplegable ──
+  return (
+    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 30, pointerEvents: 'none' }}>
+      <div style={{ pointerEvents: 'auto', background: '#fff', borderTop: '1px solid #e0e0e0', borderRadius: '14px 14px 0 0', boxShadow: open ? '0 -6px 24px rgba(0,0,0,0.16)' : '0 -2px 8px rgba(0,0,0,0.08)' }}>
+        <button
+          onClick={() => setOpen((o) => !o)}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
+            background: 'none', border: 'none', cursor: 'pointer', borderRadius: '14px 14px 0 0',
+          }}
+        >
+          <span style={{ width: 36, height: 4, borderRadius: 2, background: '#ddd', position: 'absolute', left: '50%', top: 5, transform: 'translateX(-50%)' }} />
+          <span style={{ fontSize: 13, fontWeight: 800, color: panel ? '#fe0000' : '#666' }}>{summary}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 12, color: '#999', fontWeight: 700 }}>{open ? 'cerrar ▾' : 'editar ▴'}</span>
+        </button>
+        {open && (
+          <div style={{ maxHeight: '46vh', overflowY: 'auto', padding: '0 16px 16px' }}>
+            {content}
+          </div>
+        )}
       </div>
     </div>
   )

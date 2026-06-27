@@ -42,12 +42,10 @@ export default function App() {
       {appView === 'setup' ? (
         <ProjectSetup />
       ) : (
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <DrawingCanvas />
-            <CommandBar />
-          </div>
+        <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+          <DrawingCanvas />
           <DrawingTools />
+          <CommandBar />
         </div>
       )}
     </div>
