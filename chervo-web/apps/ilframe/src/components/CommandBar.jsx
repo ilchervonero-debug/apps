@@ -8,6 +8,7 @@ export default function CommandBar() {
   const selectElement = useDrawingStore((state) => state.selectElement)
   const deselectElement = useDrawingStore((state) => state.deselectElement)
   const updateElement = useDrawingStore((state) => state.updateElement)
+  const setElementLength = useDrawingStore((state) => state.setElementLength)
   const finishDrawing = useDrawingStore((state) => state.finishDrawing)
   const cancelDrawing = useDrawingStore((state) => state.cancelDrawing)
 
@@ -43,9 +44,7 @@ export default function CommandBar() {
               <input
                 type="number"
                 value={selectedElement.properties?.length || 0}
-                onChange={(e) => updateElement(selectedElement.id, {
-                  properties: { ...selectedElement.properties, length: parseInt(e.target.value) }
-                })}
+                onChange={(e) => setElementLength(selectedElement.id, e.target.value)}
               />
             </label>
 

@@ -22,7 +22,6 @@ export default function DrawingCanvas() {
   const addPoint = useDrawingStore((state) => state.addPoint)
   const finishDrawing = useDrawingStore((state) => state.finishDrawing)
   const cancelDrawing = useDrawingStore((state) => state.cancelDrawing)
-  const selectElement = useDrawingStore((state) => state.selectElement)
   const [drawingView, setDrawingView] = useState(null)
 
   useEffect(() => {
@@ -95,21 +94,55 @@ export default function DrawingCanvas() {
     ]
   }
 
-  const handleCanvasClick = (e, view) => {
-    const svg = view === 'elevation' ? elevationRef.current : planRef.current
-    if (!svg) return
-    const [svgX, svgY] = getSvgCoords(e, svg)
-    if (activeTool && ['line', 'polyline', 'door', 'window'].includes(activeTool)) {
-      setDrawingView(view)
-      addPoint([svgX, svgY])
-    }
-  }
+  const dragRef = useRef({ active: false, moved: false, start: [0, 0] })
+  const TAP_TOOLS = ['polyline', 'door', 'window']
 
-  const handleCanvasMouseMove = (e, view) => {
+  const handlePointerDown = (e, view) => {
     const svg = view === 'elevation' ? elevationRef.current : planRef.current
     if (!svg) return
     const [x, y] = getSvgCoords(e, svg)
     setMousePos([x, y])
+    if (activeTool === 'line') {
+      // arrastrar para dibujar: marcamos el punto de inicio
+      try { svg.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
+      dragRef.current = { active: true, moved: false, start: [x, y] }
+      setDrawingView(view)
+      addPoint([x, y])
+    }
+  }
+
+  const handlePointerMove = (e, view) => {
+    const svg = view === 'elevation' ? elevationRef.current : planRef.current
+    if (!svg) return
+    const [x, y] = getSvgCoords(e, svg)
+    setMousePos([x, y])
+    if (dragRef.current.active) {
+      const dx = x - dragRef.current.start[0]
+      const dy = y - dragRef.current.start[1]
+      if (Math.sqrt(dx * dx + dy * dy) > 8) dragRef.current.moved = true
+    }
+  }
+
+  const handlePointerUp = (e, view) => {
+    const svg = view === 'elevation' ? elevationRef.current : planRef.current
+    if (!svg) return
+    const [x, y] = getSvgCoords(e, svg)
+    if (activeTool === 'line' && dragRef.current.active) {
+      if (dragRef.current.moved) {
+        addPoint([x, y])
+        finishDrawing(view) // crea la línea y la auto-selecciona
+      } else {
+        cancelDrawing() // fue un toque sin arrastre: descartamos
+      }
+      dragRef.current.active = false
+      setDrawingView(null)
+      return
+    }
+    // herramientas por toque: agregan punto a punto
+    if (TAP_TOOLS.includes(activeTool)) {
+      setDrawingView(view)
+      addPoint([x, y])
+    }
   }
 
   return (
@@ -120,10 +153,10 @@ export default function DrawingCanvas() {
           ref={elevationRef}
           className="canvas-svg"
           viewBox="0 0 1000 400"
-          onClick={(e) => handleCanvasClick(e, 'elevation')}
-          onTouchEnd={(e) => { e.preventDefault(); handleCanvasClick(e, 'elevation') }}
-          onMouseMove={(e) => handleCanvasMouseMove(e, 'elevation')}
-          onTouchMove={(e) => handleCanvasMouseMove(e, 'elevation')}
+          style={{ touchAction: 'none' }}
+          onPointerDown={(e) => handlePointerDown(e, 'elevation')}
+          onPointerMove={(e) => handlePointerMove(e, 'elevation')}
+          onPointerUp={(e) => handlePointerUp(e, 'elevation')}
         />
       </div>
 
@@ -142,10 +175,10 @@ export default function DrawingCanvas() {
           ref={planRef}
           className="canvas-svg"
           viewBox="0 0 1000 400"
-          onClick={(e) => handleCanvasClick(e, 'plan')}
-          onTouchEnd={(e) => { e.preventDefault(); handleCanvasClick(e, 'plan') }}
-          onMouseMove={(e) => handleCanvasMouseMove(e, 'plan')}
-          onTouchMove={(e) => handleCanvasMouseMove(e, 'plan')}
+          style={{ touchAction: 'none' }}
+          onPointerDown={(e) => handlePointerDown(e, 'plan')}
+          onPointerMove={(e) => handlePointerMove(e, 'plan')}
+          onPointerUp={(e) => handlePointerUp(e, 'plan')}
         />
       </div>
     </div>
@@ -212,6 +245,23 @@ function drawView(svgElement, view, elements, selectedId, currentPoints, mousePo
       line.setAttribute('stroke-dasharray', '2')
       line.setAttribute('opacity', '0.5')
       svgElement.appendChild(line)
+
+      // largo en vivo mientras se arrastra
+      const dx = snapped[0] - lastPoint[0]
+      const dy = snapped[1] - lastPoint[1]
+      const dist = Math.round(Math.sqrt(dx * dx + dy * dy))
+      if (dist > 0) {
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+        txt.setAttribute('x', (lastPoint[0] + snapped[0]) / 2)
+        txt.setAttribute('y', (lastPoint[1] + snapped[1]) / 2 - 8)
+        txt.setAttribute('font-size', '12')
+        txt.setAttribute('font-weight', 'bold')
+        txt.setAttribute('fill', '#fe0000')
+        txt.setAttribute('text-anchor', 'middle')
+        txt.setAttribute('pointer-events', 'none')
+        txt.textContent = `${dist}mm`
+        svgElement.appendChild(txt)
+      }
     }
   }
 

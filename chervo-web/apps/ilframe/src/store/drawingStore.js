@@ -73,6 +73,32 @@ export const useDrawingStore = create((set, get) => ({
       elements: [...updatedElements, newElement],
       currentPoints: [],
       drawingMode: false,
+      // auto-seleccionar para poder darle dimensión real en la barra
+      selectedId: newElement.id,
+      selectedElement: newElement,
+    }
+  }),
+
+  // Fija el largo real (mm): mueve el extremo manteniendo la dirección del trazo
+  setElementLength: (id, mm) => set((state) => {
+    const len = parseFloat(mm)
+    if (!len || len <= 0) return state
+    return {
+      elements: state.elements.map((el) => {
+        if (el.id !== id || !el.points || el.points.length < 2) return el
+        const a = el.points[0]
+        const b = el.points[el.points.length - 1]
+        const dx = b[0] - a[0], dy = b[1] - a[1]
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1
+        // el largo se mide como la distancia entre puntos: reescalamos el extremo
+        const nb = [a[0] + (dx / dist) * len, a[1] + (dy / dist) * len]
+        const pts = [...el.points]
+        pts[pts.length - 1] = nb
+        return { ...el, points: pts, properties: { ...el.properties, length: Math.round(len) } }
+      }),
+      selectedElement: state.selectedId === id
+        ? { ...state.selectedElement, properties: { ...state.selectedElement.properties, length: Math.round(len) } }
+        : state.selectedElement,
     }
   }),
 
