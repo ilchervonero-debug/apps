@@ -1,11 +1,29 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useDrawingStore } from '../store/drawingStore'
 import '../styles/DrawingTools.css'
 
 export default function DrawingTools() {
   const [expanded, setExpanded] = useState(false)
+  const [bottom, setBottom] = useState(16) // posición vertical del FAB (px desde abajo)
+  const dragRef = useRef({ active: false, moved: false, startY: 0, startBottom: 16 })
   const activeTool = useDrawingStore((state) => state.activeTool)
   const setActiveTool = useDrawingStore((state) => state.setActiveTool)
+
+  const togDown = (e) => {
+    dragRef.current = { active: true, moved: false, startY: e.clientY, startBottom: bottom }
+    try { e.currentTarget.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
+  }
+  const togMove = (e) => {
+    if (!dragRef.current.active) return
+    const d = dragRef.current.startY - e.clientY // subir el dedo => sube el FAB
+    if (Math.abs(d) > 4) dragRef.current.moved = true
+    const max = Math.max(40, window.innerHeight - 200)
+    setBottom(Math.max(8, Math.min(max, dragRef.current.startBottom + d)))
+  }
+  const togUp = () => {
+    if (dragRef.current.active && !dragRef.current.moved) setExpanded((v) => !v)
+    dragRef.current.active = false
+  }
 
   const tools = [
     { id: 'wall', label: 'Muro', icon: 'wall' },
@@ -28,11 +46,14 @@ export default function DrawingTools() {
   }
 
   return (
-    <div className="drawing-tools-container">
+    <div className="drawing-tools-container" style={{ bottom }}>
       <button
         className="tools-toggle"
-        onClick={() => setExpanded(!expanded)}
-        title={expanded ? 'Contraer' : 'Herramientas'}
+        onPointerDown={togDown}
+        onPointerMove={togMove}
+        onPointerUp={togUp}
+        style={{ touchAction: 'none' }}
+        title={expanded ? 'Contraer' : 'Herramientas · arrastrá para mover'}
       >
         {expanded ? '×' : '≡'}
       </button>
