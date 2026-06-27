@@ -15,6 +15,30 @@ const snap1 = (mm, g) => Math.round(mm / g) * g
 const snapPt = (pt, g) => [snap1(pt[0], g), snap1(pt[1], g)]
 const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1])
 
+const VERT_FRAC = 0.6 // radio de enganche a vértices = fracción de celda
+
+// Vértice (inicio/fin de muro) más cercano dentro de maxD; null si ninguno
+export function nearestVertex(pt, panels, maxD, ignoreId) {
+  let best = null
+  let bestD = maxD
+  for (const p of panels) {
+    if (ignoreId && p.id === ignoreId) continue
+    for (const v of [p.a, p.b]) {
+      const d = Math.hypot(pt[0] - v[0], pt[1] - v[1])
+      if (d < bestD) { bestD = d; best = v }
+    }
+  }
+  return best
+}
+
+// Snap con prioridad: 1) vértice de muro cercano  2) intersección de grilla
+export function snapPoint(pt, g, panels) {
+  const v = nearestVertex(pt, panels, g * VERT_FRAC)
+  return v ? [v[0], v[1]] : snapPt(pt, g)
+}
+
+export const VERT_RADIUS = VERT_FRAC
+
 const nextCode = (panels) => {
   const used = new Set(panels.map((p) => p.id))
   let n = 1
@@ -59,9 +83,12 @@ export const useDrawingStore = create((set) => ({
   setGrid: (mm) => set({ gridMm: mm }),
   setElevationHeight: (h) => set({ elevationHeight: Math.max(20, Math.min(80, h)) }),
 
-  // ── PLANTA: dibujar con arrastre (snap a la grilla) ───────
-  startWall: (pt) => set((s) => ({ draft: { a: snapPt(pt, s.gridMm), b: snapPt(pt, s.gridMm) } })),
-  dragWall: (pt) => set((s) => (s.draft ? { draft: { ...s.draft, b: snapPt(pt, s.gridMm) } } : {})),
+  // ── PLANTA: dibujar con arrastre (snap a vértice / grilla) ─
+  startWall: (pt) => set((s) => {
+    const p = snapPoint(pt, s.gridMm, s.panels)
+    return { draft: { a: p, b: p } }
+  }),
+  dragWall: (pt) => set((s) => (s.draft ? { draft: { ...s.draft, b: snapPoint(pt, s.gridMm, s.panels) } } : {})),
   finishWall: () => set((s) => {
     if (!s.draft) return {}
     const { a, b } = s.draft

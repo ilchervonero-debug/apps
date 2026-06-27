@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import { useDrawingStore, panelPolygon, panelMaxHeight, MAJOR } from '../store/drawingStore'
+import { useDrawingStore, panelPolygon, panelMaxHeight, MAJOR, snapPoint, nearestVertex, VERT_RADIUS } from '../store/drawingStore'
 import '../styles/DrawingCanvas.css'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -249,11 +249,18 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm) {
     }
   }
 
-  // indicador de snap
+  // indicador de snap: verde si engancha a un vértice, rojo si a la grilla
   if (cursor?.view === 'plan' && activeTool === 'wall') {
     const mm = vbToPlan(cursor.vb)
-    const s = planToVb([Math.round(mm[0] / gridMm) * gridMm, Math.round(mm[1] / gridMm) * gridMm])
-    svg.appendChild(el('circle', { cx: s[0], cy: s[1], r: 5, fill: 'none', stroke: '#fe0000', 'stroke-width': 1.5 }))
+    const sp = snapPoint(mm, gridMm, panels)
+    const onVertex = nearestVertex(mm, panels, gridMm * VERT_RADIUS) != null
+    const v = planToVb(sp)
+    if (onVertex) {
+      svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 7, fill: 'none', stroke: '#16a34a', 'stroke-width': 2 }))
+      svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 2.5, fill: '#16a34a' }))
+    } else {
+      svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 5, fill: 'none', stroke: '#fe0000', 'stroke-width': 1.5 }))
+    }
   }
 }
 
