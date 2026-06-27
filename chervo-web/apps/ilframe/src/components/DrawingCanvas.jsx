@@ -4,6 +4,7 @@ import '../styles/DrawingCanvas.css'
 
 const SCALE = 0.5 // 1 mm en canvas = 0.5 píxeles
 const GRID_SIZE = 100
+const snapToGrid = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE
 
 export default function DrawingCanvas() {
   const elevationRef = useRef(null)
@@ -25,9 +26,9 @@ export default function DrawingCanvas() {
   const [drawingView, setDrawingView] = useState(null)
 
   useEffect(() => {
-    drawView(elevationRef.current, 'elevation', elements, selectedId, currentPoints, mousePos)
-    drawView(planRef.current, 'plan', elements, selectedId, currentPoints, mousePos)
-  }, [elements, selectedId, currentPoints, mousePos])
+    drawView(elevationRef.current, 'elevation', elements, selectedId, currentPoints, mousePos, activeTool)
+    drawView(planRef.current, 'plan', elements, selectedId, currentPoints, mousePos, activeTool)
+  }, [elements, selectedId, currentPoints, mousePos, activeTool])
 
   const getClientY = (e) => e.touches ? e.touches[0].clientY : e.clientY
 
@@ -151,7 +152,7 @@ export default function DrawingCanvas() {
   )
 }
 
-function drawView(svgElement, view, elements, selectedId, currentPoints, mousePos) {
+function drawView(svgElement, view, elements, selectedId, currentPoints, mousePos, activeTool) {
   if (!svgElement) return
   svgElement.innerHTML = ''
 
@@ -200,11 +201,12 @@ function drawView(svgElement, view, elements, selectedId, currentPoints, mousePo
 
     if (currentPoints.length > 0) {
       const lastPoint = currentPoints[currentPoints.length - 1]
+      const snapped = [snapToGrid(mousePos[0]), snapToGrid(mousePos[1])]
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
       line.setAttribute('x1', lastPoint[0])
       line.setAttribute('y1', lastPoint[1])
-      line.setAttribute('x2', mousePos[0])
-      line.setAttribute('y2', mousePos[1])
+      line.setAttribute('x2', snapped[0])
+      line.setAttribute('y2', snapped[1])
       line.setAttribute('stroke', '#fe0000')
       line.setAttribute('stroke-width', '1')
       line.setAttribute('stroke-dasharray', '2')
@@ -212,28 +214,54 @@ function drawView(svgElement, view, elements, selectedId, currentPoints, mousePo
       svgElement.appendChild(line)
     }
   }
+
+  // Indicador de snap: muestra dónde caerá el próximo punto
+  const drawTools = ['line', 'polyline', 'door', 'window']
+  if (activeTool && drawTools.includes(activeTool) && mousePos) {
+    const sx = snapToGrid(mousePos[0])
+    const sy = snapToGrid(mousePos[1])
+    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    ring.setAttribute('cx', sx)
+    ring.setAttribute('cy', sy)
+    ring.setAttribute('r', '5')
+    ring.setAttribute('fill', 'none')
+    ring.setAttribute('stroke', '#fe0000')
+    ring.setAttribute('stroke-width', '1.5')
+    ring.setAttribute('pointer-events', 'none')
+    svgElement.appendChild(ring)
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+    dot.setAttribute('cx', sx)
+    dot.setAttribute('cy', sy)
+    dot.setAttribute('r', '1.5')
+    dot.setAttribute('fill', '#fe0000')
+    dot.setAttribute('pointer-events', 'none')
+    svgElement.appendChild(dot)
+  }
 }
 
 function drawGrid(svgElement, gridSize) {
   const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+  // mismas celdas en X e Y para que la grilla coincida con el snap
   for (let x = 0; x <= 1000; x += gridSize) {
+    const major = (x % (gridSize * 5)) === 0
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
     line.setAttribute('x1', x)
     line.setAttribute('y1', '0')
     line.setAttribute('x2', x)
     line.setAttribute('y2', '400')
-    line.setAttribute('stroke', '#f5f5f5')
-    line.setAttribute('stroke-width', '0.5')
+    line.setAttribute('stroke', major ? '#d8d8d8' : '#ececec')
+    line.setAttribute('stroke-width', major ? '0.8' : '0.5')
     g.appendChild(line)
   }
-  for (let y = 0; y <= 400; y += gridSize / 2.5) {
+  for (let y = 0; y <= 400; y += gridSize) {
+    const major = (y % (gridSize * 5)) === 0
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
     line.setAttribute('x1', '0')
     line.setAttribute('y1', y)
     line.setAttribute('x2', '1000')
     line.setAttribute('y2', y)
-    line.setAttribute('stroke', '#f5f5f5')
-    line.setAttribute('stroke-width', '0.5')
+    line.setAttribute('stroke', major ? '#d8d8d8' : '#ececec')
+    line.setAttribute('stroke-width', major ? '0.8' : '0.5')
     g.appendChild(line)
   }
   svgElement.appendChild(g)
