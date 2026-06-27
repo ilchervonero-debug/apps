@@ -2,6 +2,37 @@ import { useState } from 'react'
 import { useDrawingStore, panelPolygon, polygonArea } from '../store/drawingStore'
 import '../styles/CommandBar.css'
 
+// Input numérico con buffer local: te deja vaciar el campo y escribir
+// tu medida sin que salte al mínimo en cada tecla.
+function NumInput({ value, onCommit, className, step = 100 }) {
+  const [text, setText] = useState(String(value ?? ''))
+  const [focused, setFocused] = useState(false)
+  const [prev, setPrev] = useState(value)
+  // sincroniza desde el store solo si cambió por fuera y no estás editando
+  if (!focused && value !== prev) {
+    setPrev(value)
+    setText(String(value ?? ''))
+  }
+  return (
+    <input
+      type="number"
+      step={step}
+      className={className}
+      value={text}
+      onFocus={(e) => { setFocused(true); e.target.select() }}
+      onChange={(e) => {
+        setText(e.target.value)
+        if (e.target.value !== '' && !isNaN(+e.target.value)) onCommit(e.target.value)
+      }}
+      onBlur={() => {
+        setFocused(false)
+        if (text === '' || isNaN(+text)) setText(String(value ?? ''))
+        else onCommit(text)
+      }}
+    />
+  )
+}
+
 export default function CommandBar() {
   const panels = useDrawingStore((s) => s.panels)
   const selectedId = useDrawingStore((s) => s.selectedId)
@@ -68,8 +99,7 @@ export default function CommandBar() {
           <div className="editor-sublabel">Planta</div>
           <label>
             <span className="editor-label">Ancho (mm):</span>
-            <input type="number" step="100" value={panel.width}
-              onChange={(e) => setWidth(panel.id, e.target.value)} />
+            <NumInput value={panel.width} onCommit={(v) => setWidth(panel.id, v)} />
           </label>
         </div>
 
@@ -78,13 +108,11 @@ export default function CommandBar() {
           <div className="editor-sublabel">Alzado — contorno</div>
           <label>
             <span className="editor-label">Altura lado A (mm):</span>
-            <input type="number" step="100" value={heightA}
-              onChange={(e) => setHeightA(panel.id, e.target.value)} />
+            <NumInput value={heightA} onCommit={(v) => setHeightA(panel.id, v)} />
           </label>
           <label>
             <span className="editor-label">Altura lado B (mm):</span>
-            <input type="number" step="100" value={heightB}
-              onChange={(e) => setHeightB(panel.id, e.target.value)} />
+            <NumInput value={heightB} onCommit={(v) => setHeightB(panel.id, v)} />
           </label>
         </div>
 
@@ -97,11 +125,9 @@ export default function CommandBar() {
             const selV = idx === selectedVertex
             return (
               <div key={idx} className={`contour-row ${selV ? 'sel' : ''}`}>
-                <input type="number" step="100" value={pt[0]}
-                  onChange={(e) => updateContourPoint(panel.id, idx, e.target.value, pt[1])} />
+                <NumInput value={pt[0]} onCommit={(v) => updateContourPoint(panel.id, idx, v, pt[1])} />
                 <span className="contour-x">×</span>
-                <input type="number" step="100" value={pt[1]}
-                  onChange={(e) => updateContourPoint(panel.id, idx, pt[0], e.target.value)} />
+                <NumInput value={pt[1]} onCommit={(v) => updateContourPoint(panel.id, idx, pt[0], v)} />
                 <button className="contour-del" onClick={() => removeContourPoint(panel.id, idx)}>×</button>
               </div>
             )
