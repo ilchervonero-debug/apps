@@ -4,6 +4,33 @@
 > Magnitudes siempre reales (mm). Objetivo final: una sola app de dibujo
 > (motor compartido con iLDraw) + contabilidad de placas/soleras/montantes.
 
+## 0. Motor de dibujo — fusión limpia iLDraw + iLFrame (principio rector)
+
+El canvas NO se sigue parchando: se rehace en limpio como un **mash-up** que
+toma lo mejor de iLDraw y lo combina con las necesidades de iLFrame.
+
+**De iLDraw se trae (cómo funciona + mejoras):**
+- Un **solo lienzo en Canvas 2D** y **coordenadas de mundo continuas** con una
+  única transformación `vpX/vpY/vpZ` (paneo/zoom). Render por frame
+  (clear → grilla → objetos → preview): fluido.
+- **Gestos:** 1 dedo dibuja, 2 dedos = pan + pinch, rueda = zoom.
+- **Snap fuerte:** extremos + puntos medios + intersecciones + centro + grilla,
+  con marcador visual y umbral en px reales (`/vpZ`).
+- **Modelo de objetos uniforme** `{type, pts[], ...}` con `hitTest`, `getSegs`,
+  historial por snapshots, mover/copiar/borrar/trim/rotar/escala, polilínea
+  continua, texto y **cotas (acotado)**.
+
+**De iLFrame se conserva (necesidades propias):**
+- **Magnitudes reales (mm)**: `cellPx` pasa a ser mm por celda, no px.
+- Modelo de **panel** (muro), **ancho bloqueado desde planta**.
+- **Pestañas** Planta / Alzado (no split).
+- **Alzado con 0,0 local** y dibujo de silueta por polilínea desde la base.
+- **Tipo de muro** + composición por cara → espesor y materiales.
+- **Aberturas** con reglas de retiro, **T-connect** con descuentos, **contabilidad**.
+
+Resultado buscado: **una sola app de dibujo** (motor compartido). iLFrame = modo
+estructural (mm + paneles + cálculo); iLDraw = modo croquis sobre el mismo motor.
+
 ## 1. Planta (pestaña)
 
 - Dibujar un muro: **pico inicio → arrastro → fin** (snap a grilla y a vértices).
@@ -32,13 +59,30 @@
 - Permite puntos exactos. Ej: **cumbrera** a **X=4.00 m, Y=3.50 m** → se genera
   el punto y se une con **polilínea**.
 
-## 5. Aberturas (puertas / ventanas) referidas al 0,0 local
+## 5. Tipo de muro y espesor (derivado del proyecto)
+
+- Cada panel tiene la propiedad **tipo de muro**: define **qué muro es** y su
+  composición por cara. Ej:
+  - **interior/interior** (entre dos ambientes interiores),
+  - **interior/exterior** (muro exterior),
+  - y los materiales que se le pusieron a cada cara: doble OSB, yeso simple,
+    chapa, siding, etc.
+- El **espesor de pared** NO es un dato suelto: se **calcula** desde ese tipo =
+  **núcleo (alto del montante/perfil)** + **capas de cada cara** (las elegidas en
+  la config del proyecto).
+- Ese espesor alimenta: el **retiro de aberturas al filo**, los **descuentos de
+  conexión (T-connect)** y la **contabilidad** (qué material lleva cada cara).
+- En la **config del proyecto** se definen los **tipos de muro** (Exterior,
+  Interior, etc.) con su composición; al dibujar, **el panel elige un tipo**.
+
+## 6. Aberturas (puertas / ventanas) referidas al 0,0 local
 
 - Se colocan sobre la cara, en verdadera magnitud.
 - Piden **medidas** (ancho, alto, antepecho) y **ubicación** (retiro desde un lado / desde el 0,0).
-- **Reglas (muros exteriores):**
+- **Reglas:**
   - Retiro **nunca menor a 10 cm** desde el borde (puede ser mayor).
-  - **No puede llegar al filo final**: debe quedar a **10 cm (espesor de pared)** del extremo.
+  - **No puede llegar al filo final**: debe quedar a una distancia igual al
+    **espesor de pared** (que sale del tipo de muro, p. ej. ~10 cm) del extremo.
 - De cada abertura salen: **dintel, jambas y refuerzos** (montantes/soleras extra).
 
 ## 6. Conexiones / T-connect (para descuentos)
@@ -61,9 +105,10 @@
 - [x] Planta: dibujo por arrastre, snap grilla+vértice, largo editable, etiquetas, mover/copiar/borrar, deshacer/rehacer, zoom/pan.
 - [x] Alzado (versión split actual): silueta por números, ancho bloqueado, voltear cara.
 - [x] Config de proyecto (Etapa 2): elementos, capas por cara, terminación.
+- [ ] **(BASE) Motor fusionado iLDraw+iLFrame** (Canvas 2D + coordenadas de mundo en mm, snap fuerte, gestos). Es el cimiento; lo demás se monta encima.
+- [ ] **Tipos de muro** en la config + asignar tipo al panel (deriva espesor/materiales).
 - [ ] **Pestañas** Planta / Alzado (reemplazar el split).
 - [ ] Alzado con **0,0 local** + dibujo desde la base (polilínea de silueta).
-- [ ] **Aberturas** con reglas de retiro (10 cm / espesor de pared).
+- [ ] **Aberturas** con reglas de retiro (mín. 10 cm / espesor de pared del tipo).
 - [ ] **Conexiones / T-connect** + descuentos.
 - [ ] **Contabilidad** completa + exportar.
-- [ ] (Base) Motor unificado estilo iLDraw (Canvas + coordenadas de mundo en mm).
