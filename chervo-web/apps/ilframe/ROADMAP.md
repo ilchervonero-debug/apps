@@ -44,6 +44,10 @@ estructural (mm + paneles + cálculo); iLDraw = modo croquis sobre el mismo moto
   Ventana, Abertura, T-connect, Seleccionar.
   - Funcionan: Muro, Seleccionar, Puerta/Ventana/Abertura (colocación + retiros).
   - Declaradas (reglas pendientes): Pilar, Viga, Cercha, Techo, Cielorraso, Losa, T-connect.
+- **Cercha = Trusses (SketchFramer).** Subsistema propio: tipos de cercha
+  (dos aguas, mono-pendiente, tijera, etc.), cordones sup/inf, montantes y
+  diagonales de alma, luz y separación entre cerchas. Menú y reglas propias
+  (pendiente de datos SketchFramer). Igual idea de submenú para Pilar y Viga.
 - **Refuerzos de aberturas = automáticos.** NO son herramienta: al colocar una
   puerta/ventana/abertura, la app **suma sola** los perfiles de refuerzo
   (dintel, jambas, montantes de carga / jack & king, antepecho) según reglas
