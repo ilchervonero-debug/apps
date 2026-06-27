@@ -118,6 +118,7 @@ export const useDrawingStore = create((set) => ({
 
   // ── Configuración del proyecto (Etapa 2) ──────────────────
   appView: 'setup', // 'setup' | 'draw'
+  tab: 'plan', // 'plan' | 'elev' — pestaña activa del dibujo
   project: {
     name: 'Proyecto sin nombre',
     // estructura de acero (global)
@@ -135,6 +136,7 @@ export const useDrawingStore = create((set) => ({
     },
   },
   setAppView: (v) => set({ appView: v }),
+  setTab: (t) => set({ tab: t }),
   setProject: (patch) => set((s) => ({ project: { ...s.project, ...patch } })),
   toggleElement: (key) => set((s) => ({
     project: { ...s.project, elements: { ...s.project.elements, [key]: { ...s.project.elements[key], on: !s.project.elements[key].on } } },

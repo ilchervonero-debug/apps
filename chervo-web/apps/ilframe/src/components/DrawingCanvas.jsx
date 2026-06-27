@@ -8,6 +8,7 @@ const SVG = 'http://www.w3.org/2000/svg'
 // PLANTA: mm → viewBox (ancho 1000, alto según pantalla), Y hacia arriba.
 // PLAN.h y PLAN.oy se actualizan según el tamaño real del canvas (sin bandas blancas).
 const PLAN = { ox: 60, oy: 350, s: 0.05, h: 400 }
+const ELEV = { h: 500 } // alto del viewBox del alzado (responsivo)
 const planToVb = ([x, y]) => [PLAN.ox + x * PLAN.s, PLAN.oy - y * PLAN.s]
 const vbToPlan = ([vx, vy]) => [(vx - PLAN.ox) / PLAN.s, (PLAN.oy - vy) / PLAN.s]
 
@@ -20,48 +21,52 @@ function el(tag, attrs) {
 export default function DrawingCanvas() {
   const elevRef = useRef(null)
   const planRef = useRef(null)
-  const dividerRef = useRef(null)
   const dragRef = useRef({ active: false, moved: false })
   const lpRef = useRef({ timer: null, fired: false, startVb: null, client: [0, 0] })
   const movingRef = useRef(null) // { id, origA, origB, startMm } durante el arrastre de mover
   const pointersRef = useRef(new Map()) // pointerId → [vbX, vbY]
   const gestureRef = useRef({ active: false, dist0: 0, mid0: [0, 0], view0: null })
+  const elevDragRef = useRef(null) // { index } arrastrando un vértice del contorno en alzado
   const viewRef = useRef({ z: 1, tx: 0, ty: 0 }) // transform de vista (en unidades viewBox)
   const [view, setViewState] = useState({ z: 1, tx: 0, ty: 0 })
   const setView = (v) => { viewRef.current = v; setViewState(v) }
-  const [isResizing, setIsResizing] = useState(false)
   const [cursor, setCursor] = useState(null)
   const [menu, setMenu] = useState(null) // { id, x, y } menú contextual (coords de pantalla)
   const [moving, setMoving] = useState(null) // id del panel en modo mover
   const [planH, setPlanH] = useState(400) // alto del viewBox del plano (según pantalla)
-
-  // viewBox del plano se ajusta al aspecto real del elemento → sin bandas blancas
-  useEffect(() => {
-    const svg = planRef.current
-    if (!svg || typeof ResizeObserver === 'undefined') return
-    const ro = new ResizeObserver(() => {
-      const r = svg.getBoundingClientRect()
-      if (r.width > 0 && r.height > 0) {
-        const h = Math.round(1000 * (r.height / r.width))
-        PLAN.h = h
-        PLAN.oy = h - 50
-        setPlanH(h)
-      }
-    })
-    ro.observe(svg)
-    return () => ro.disconnect()
-  }, [])
+  const [elevH, setElevH] = useState(500) // alto del viewBox del alzado
 
   const panels = useDrawingStore((s) => s.panels)
+  const tab = useDrawingStore((s) => s.tab)
   const selectedId = useDrawingStore((s) => s.selectedId)
   const selectedVertex = useDrawingStore((s) => s.selectedVertex)
   const activeTool = useDrawingStore((s) => s.activeTool)
   const draft = useDrawingStore((s) => s.draft)
-  const elevationHeight = useDrawingStore((s) => s.elevationHeight)
   const gridMm = useDrawingStore((s) => s.gridMm)
   const setGrid = useDrawingStore((s) => s.setGrid)
   const canUndo = useDrawingStore((s) => s.past.length > 0)
   const canRedo = useDrawingStore((s) => s.future.length > 0)
+
+  // viewBox responsivo (sin bandas blancas) para cada lienzo
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined') return
+    const mk = (svg, set, target) => {
+      if (!svg) return null
+      const ro = new ResizeObserver(() => {
+        const r = svg.getBoundingClientRect()
+        if (r.width > 0 && r.height > 0) {
+          const h = Math.round(1000 * (r.height / r.width))
+          if (target === 'plan') { PLAN.h = h; PLAN.oy = h - 50 } else { ELEV.h = h }
+          set(h)
+        }
+      })
+      ro.observe(svg)
+      return ro
+    }
+    const r1 = mk(planRef.current, setPlanH, 'plan')
+    const r2 = mk(elevRef.current, setElevH, 'elev')
+    return () => { r1 && r1.disconnect(); r2 && r2.disconnect() }
+  }, [])
 
   // atajos de teclado: Ctrl/Cmd+Z deshacer, Ctrl+Shift+Z o Ctrl+Y rehacer
   useEffect(() => {
@@ -78,29 +83,7 @@ export default function DrawingCanvas() {
   useEffect(() => {
     drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm, view)
     drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm)
-  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH])
-
-  // ── Divisor arrastrable ──
-  const startResize = (e) => { setIsResizing(true); e.preventDefault() }
-  useEffect(() => {
-    if (!isResizing) return
-    const move = (e) => {
-      const rect = dividerRef.current.parentElement.getBoundingClientRect()
-      const cy = e.touches ? e.touches[0].clientY : e.clientY
-      useDrawingStore.getState().setElevationHeight(((cy - rect.top) / rect.height) * 100)
-    }
-    const up = () => setIsResizing(false)
-    window.addEventListener('mousemove', move)
-    window.addEventListener('mouseup', up)
-    window.addEventListener('touchmove', move, { passive: false })
-    window.addEventListener('touchend', up)
-    return () => {
-      window.removeEventListener('mousemove', move)
-      window.removeEventListener('mouseup', up)
-      window.removeEventListener('touchmove', move)
-      window.removeEventListener('touchend', up)
-    }
-  }, [isResizing])
+  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab])
 
   // Conversión exacta pantalla → viewBox usando la matriz del SVG.
   // (Evita el error de snap cuando el SVG no llena exacto su viewBox.)
@@ -273,17 +256,37 @@ export default function DrawingCanvas() {
     const st = useDrawingStore.getState()
     const panel = st.panels.find((p) => p.id === st.selectedId)
     if (!panel) return
+    try { elevRef.current.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
     const vb = getVb(e, elevRef.current)
     const tf = elevTransform(panel)
-    // buscar vértice más cercano del contorno (topPath)
-    let best = null, bestD = 28
+    // buscar vértice más cercano del contorno (topPath) para arrastrarlo
+    let best = null, bestD = 30
     panel.topPath.forEach((pt, i) => {
       const v = tf.toVb(pt)
       const d = Math.hypot(v[0] - vb[0], v[1] - vb[1])
       if (d < bestD) { bestD = d; best = i }
     })
     st.selectVertex(best)
+    elevDragRef.current = best != null ? { index: best } : null
   }
+
+  const elevMove = (e) => {
+    if (!elevDragRef.current) return
+    const st = useDrawingStore.getState()
+    const panel = st.panels.find((p) => p.id === st.selectedId)
+    if (!panel) return
+    const tf = elevTransform(panel)
+    const [lx, ly] = tf.fromVb(getVb(e, elevRef.current))
+    const g = st.gridMm
+    const sx = Math.round(lx / g) * g
+    const sy = Math.max(0, Math.round(ly / g) * g)
+    const i = elevDragRef.current.index
+    if (i === 0) st.setHeightA(panel.id, sy)
+    else if (i === panel.topPath.length - 1) st.setHeightB(panel.id, sy)
+    else st.updateContourPoint(panel.id, i, Math.max(0, Math.min(panel.width, sx)), sy)
+  }
+
+  const elevUp = () => { elevDragRef.current = null }
 
   return (
     <div className="drawing-canvas">
@@ -313,56 +316,30 @@ export default function DrawingCanvas() {
         </>
       )}
 
-      <div className="canvas-section" style={{ height: `${elevationHeight}%` }}>
-        <div className="canvas-header">Alzado — cara del panel {selectedId ? `(${selectedId})` : ''}</div>
-        <svg
-          ref={elevRef}
-          className="canvas-svg"
-          viewBox="0 0 1000 400"
-          style={{ touchAction: 'none' }}
-          onPointerDown={elevDown}
-        />
-      </div>
-
-      <div
-        ref={dividerRef}
-        className={`canvas-divider ${isResizing ? 'dragging' : ''}`}
-        onMouseDown={startResize}
-        onTouchStart={startResize}
-      >
-        <div className="divider-handle"></div>
-      </div>
-
-      <div className="canvas-section" style={{ height: `${100 - elevationHeight}%` }}>
-        <div className="canvas-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span>Planta — {moving ? 'arrastrá el muro a su lugar' : activeTool === 'wall' ? 'arrastrá para dibujar · mantené presionado para editar' : 'tocá un muro para editar'}</span>
-          <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer"
-              style={{ border: '1px solid #ddd', background: '#fff', color: canUndo ? '#333' : '#ccc', borderRadius: 5, fontSize: 14, fontWeight: 700, padding: '2px 8px', cursor: canUndo ? 'pointer' : 'default' }}>
-              ↶
-            </button>
-            <button onClick={() => useDrawingStore.getState().redo()} disabled={!canRedo} title="Rehacer"
-              style={{ border: '1px solid #ddd', background: '#fff', color: canRedo ? '#333' : '#ccc', borderRadius: 5, fontSize: 14, fontWeight: 700, padding: '2px 8px', cursor: canRedo ? 'pointer' : 'default', marginRight: 6 }}>
-              ↷
-            </button>
-            <span style={{ fontSize: 10, color: '#999' }}>Grilla</span>
+      {/* Barra de acciones de la pestaña */}
+      <div className="canvas-toolbar">
+        <span className="ct-hint">
+          {tab === 'plan'
+            ? (moving ? 'Arrastrá el muro a su lugar' : activeTool === 'wall' ? 'Arrastrá para dibujar · mantené presionado para editar' : 'Tocá un muro para editar')
+            : (selectedId ? `Cara de ${selectedId} · base = ancho (planta)` : 'Seleccioná un muro en la pestaña Planta')}
+        </span>
+        <span className="ct-actions">
+          <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer" className="ct-btn">↶</button>
+          <button onClick={() => useDrawingStore.getState().redo()} disabled={!canRedo} title="Rehacer" className="ct-btn">↷</button>
+          {tab === 'plan' && <>
+            <span className="ct-sep" />
+            <span className="ct-lbl">Grilla</span>
             {[400, 600].map((g) => (
-              <button key={g} onClick={() => setGrid(g)}
-                style={{
-                  border: '1px solid', borderColor: gridMm === g ? '#fe0000' : '#ddd',
-                  background: gridMm === g ? '#fe0000' : '#fff', color: gridMm === g ? '#fff' : '#666',
-                  borderRadius: 5, fontSize: 11, fontWeight: 700, padding: '3px 9px', cursor: 'pointer',
-                }}>
-                {g === 400 ? '40' : '60'}
-              </button>
+              <button key={g} onClick={() => setGrid(g)} className={`ct-btn ${gridMm === g ? 'on' : ''}`}>{g === 400 ? '40' : '60'}</button>
             ))}
-            <span style={{ fontSize: 10, color: '#999' }}>cm</span>
-            <button onClick={resetView} title="Reiniciar vista"
-              style={{ border: '1px solid #ddd', background: '#fff', color: '#666', borderRadius: 5, fontSize: 11, fontWeight: 700, padding: '3px 8px', cursor: 'pointer', marginLeft: 4 }}>
-              ⌖
-            </button>
-          </span>
-        </div>
+            <span className="ct-lbl">cm</span>
+            <button onClick={resetView} title="Reiniciar vista" className="ct-btn">⌖</button>
+          </>}
+        </span>
+      </div>
+
+      {/* PLANTA */}
+      <div className="canvas-section" style={{ flex: 1, minHeight: 0, display: tab === 'plan' ? 'flex' : 'none' }}>
         <svg
           ref={planRef}
           className="canvas-svg"
@@ -374,6 +351,20 @@ export default function DrawingCanvas() {
           onPointerUp={planUp}
           onPointerCancel={planCancel}
           onWheel={planWheel}
+        />
+      </div>
+
+      {/* ALZADO */}
+      <div className="canvas-section" style={{ flex: 1, minHeight: 0, display: tab === 'elev' ? 'flex' : 'none' }}>
+        <svg
+          ref={elevRef}
+          className="canvas-svg"
+          viewBox={`0 0 1000 ${elevH}`}
+          preserveAspectRatio="none"
+          style={{ touchAction: 'none' }}
+          onPointerDown={elevDown}
+          onPointerMove={elevMove}
+          onPointerUp={elevUp}
         />
       </div>
     </div>
@@ -411,15 +402,20 @@ function distPointSeg(p, a, b) {
 }
 
 // ── Transformación del alzado (ajusta el panel al canvas) ──
+// Alzado con 0,0 LOCAL = esquina inferior izquierda de la base.
 function elevTransform(panel) {
   const maxH = panelMaxHeight(panel)
   const w = panel.width || 1000
-  const margin = 70
-  const s = Math.min((1000 - margin * 2) / w, (400 - margin * 2) / maxH)
-  const ox = (1000 - w * s) / 2
-  const oy = 400 - margin
+  const marginX = 64, marginTop = 56, marginBot = 64
+  const s = Math.min((1000 - marginX * 2) / w, (ELEV.h - marginTop - marginBot) / maxH)
+  const ox = marginX // x=0 (lado A) a la izquierda
+  const oy = ELEV.h - marginBot // y=0 (base) abajo
   // flip = ver desde el otro lado: espeja en X (el ancho real no cambia)
-  return { s, ox, oy, toVb: ([x, y]) => [ox + (panel.flip ? (w - x) : x) * s, oy - y * s] }
+  return {
+    s, ox, oy,
+    toVb: ([x, y]) => [ox + (panel.flip ? (w - x) : x) * s, oy - y * s],
+    fromVb: ([vx, vy]) => [panel.flip ? (w - (vx - ox) / s) : (vx - ox) / s, (oy - vy) / s],
+  }
 }
 
 // ── Dibujo PLANTA ──────────────────────────────────────────
@@ -534,62 +530,69 @@ function drawPlanGrid(svg, gridMm, view) {
   svg.appendChild(g)
 }
 
-// ── Dibujo ALZADO ──────────────────────────────────────────
+// ── Dibujo ALZADO (0,0 local en la base izquierda) ─────────
 function drawElevation(svg, panels, selectedId, selectedVertex, gridMm) {
   if (!svg) return
   svg.innerHTML = ''
-  svg.appendChild(el('rect', { width: 1000, height: 400, fill: 'white' }))
+  svg.appendChild(el('rect', { width: 1000, height: ELEV.h, fill: 'white' }))
 
   const panel = panels.find((p) => p.id === selectedId)
   if (!panel) {
-    const t = el('text', { x: 500, y: 200, 'font-size': 15, fill: '#bbb', 'text-anchor': 'middle' })
-    t.textContent = 'Seleccioná un muro en la planta para editar su cara'
+    const t = el('text', { x: 500, y: ELEV.h / 2, 'font-size': 18, fill: '#bbb', 'text-anchor': 'middle' })
+    t.textContent = 'Seleccioná un muro en la pestaña Planta'
     svg.appendChild(t)
     return
   }
 
   const tf = elevTransform(panel)
-
-  // grilla del alzado (cada gridMm, mayor cada 1.20m)
   const maxH = panelMaxHeight(panel)
+
+  // grilla (cada gridMm, mayor cada 1.20m)
   const g = el('g', {})
-  for (let x = 0; x <= panel.width; x += gridMm) {
-    const a = tf.toVb([x, 0]), b = tf.toVb([x, maxH])
-    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: x % MAJOR === 0 ? '#d4d4d4' : '#efefef', 'stroke-width': x % MAJOR === 0 ? 0.9 : 0.5 }))
+  for (let x = 0; x <= panel.width + 1; x += gridMm) {
+    const a = tf.toVb([Math.min(x, panel.width), 0]), b = tf.toVb([Math.min(x, panel.width), maxH])
+    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: x % MAJOR === 0 ? '#d8d8d8' : '#efefef', 'stroke-width': x % MAJOR === 0 ? 0.9 : 0.5 }))
   }
-  for (let y = 0; y <= maxH; y += gridMm) {
-    const a = tf.toVb([0, y]), b = tf.toVb([panel.width, y])
-    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: y % MAJOR === 0 ? '#d4d4d4' : '#efefef', 'stroke-width': y % MAJOR === 0 ? 0.9 : 0.5 }))
+  for (let y = 0; y <= maxH + 1; y += gridMm) {
+    const a = tf.toVb([0, Math.min(y, maxH)]), b = tf.toVb([panel.width, Math.min(y, maxH)])
+    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: y % MAJOR === 0 ? '#d8d8d8' : '#efefef', 'stroke-width': y % MAJOR === 0 ? 0.9 : 0.5 }))
   }
   svg.appendChild(g)
 
+  // ejes 0,0 local (origen abajo-izquierda)
+  const o = tf.toVb([0, 0])
+  const xEnd = tf.toVb([panel.width, 0]), yEnd = tf.toVb([0, maxH])
+  svg.appendChild(el('line', { x1: o[0], y1: o[1], x2: xEnd[0], y2: o[1], stroke: '#0a84ff', 'stroke-width': 1, opacity: 0.5 }))
+  svg.appendChild(el('line', { x1: o[0], y1: o[1], x2: o[0], y2: yEnd[1], stroke: '#0a84ff', 'stroke-width': 1, opacity: 0.5 }))
+  const ot = el('text', { x: o[0] - 6, y: o[1] + 16, 'font-size': 11, 'font-weight': 'bold', fill: '#0a84ff', 'text-anchor': 'end' })
+  ot.textContent = '0,0'
+  svg.appendChild(ot)
+
   // polígono de la cara
   const poly = panelPolygon(panel).map(tf.toVb)
-  const pts = poly.map((v) => `${v[0]},${v[1]}`).join(' ')
-  svg.appendChild(el('polygon', { points: pts, fill: 'rgba(254,0,0,0.07)', stroke: '#fe0000', 'stroke-width': 2, 'stroke-linejoin': 'round' }))
+  svg.appendChild(el('polygon', { points: poly.map((v) => `${v[0]},${v[1]}`).join(' '), fill: 'rgba(254,0,0,0.07)', stroke: '#fe0000', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }))
 
-  // base bloqueada (ancho de planta) — más gruesa y gris
+  // base bloqueada (ancho de planta)
   const baseA = tf.toVb([0, 0]), baseB = tf.toVb([panel.width, 0])
-  svg.appendChild(el('line', { x1: baseA[0], y1: baseA[1], x2: baseB[0], y2: baseB[1], stroke: '#555', 'stroke-width': 4, 'stroke-linecap': 'round' }))
-
-  // cota de ancho (bloqueado, verdadera magnitud)
-  const wt = el('text', { x: (baseA[0] + baseB[0]) / 2, y: baseA[1] + 22, 'font-size': 12, 'font-weight': 'bold', fill: '#555', 'text-anchor': 'middle' })
-  wt.textContent = `ancho ${(panel.width / 1000).toFixed(2)} m · verdadera magnitud`
+  svg.appendChild(el('line', { x1: baseA[0], y1: baseA[1], x2: baseB[0], y2: baseB[1], stroke: '#555', 'stroke-width': 5, 'stroke-linecap': 'round' }))
+  const wt = el('text', { x: (baseA[0] + baseB[0]) / 2, y: baseA[1] + 24, 'font-size': 13, 'font-weight': 'bold', fill: '#555', 'text-anchor': 'middle' })
+  wt.textContent = `base ${(panel.width / 1000).toFixed(2)} m · bloqueada (planta)`
   svg.appendChild(wt)
 
-  // nota de vista
-  const vn = el('text', { x: 500, y: 22, 'font-size': 11, 'font-weight': 'bold', fill: '#999', 'text-anchor': 'middle' })
-  vn.textContent = `Vista exterior${panel.flip ? ' (volteada)' : ''}`
+  const vn = el('text', { x: 500, y: 26, 'font-size': 13, 'font-weight': 'bold', fill: '#999', 'text-anchor': 'middle' })
+  vn.textContent = `${panel.id} · vista exterior${panel.flip ? ' (volteada)' : ''}`
   svg.appendChild(vn)
 
-  // vértices del contorno con etiqueta de altura
+  // vértices del contorno con coordenadas locales (X desde A, Y altura)
   panel.topPath.forEach((pt, i) => {
     const v = tf.toVb(pt)
     const isEnd = i === 0 || i === panel.topPath.length - 1
     const selV = i === selectedVertex
-    svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: selV ? 7 : 5, fill: selV ? '#fe0000' : '#fff', stroke: '#fe0000', 'stroke-width': 2 }))
-    const lbl = el('text', { x: v[0], y: v[1] - 12, 'font-size': 11, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
-    lbl.textContent = isEnd ? `${i === 0 ? 'A' : 'B'} ${pt[1]}mm` : `${pt[1]}mm`
+    svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: selV ? 9 : 6, fill: selV ? '#fe0000' : '#fff', stroke: '#fe0000', 'stroke-width': 2.5 }))
+    const lbl = el('text', { x: v[0], y: v[1] - 14, 'font-size': 12, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
+    lbl.textContent = isEnd
+      ? `${i === 0 ? 'A' : 'B'} ${(pt[1] / 1000).toFixed(2)}m`
+      : `${(pt[0] / 1000).toFixed(2)} ; ${(pt[1] / 1000).toFixed(2)}`
     svg.appendChild(lbl)
   })
 }
