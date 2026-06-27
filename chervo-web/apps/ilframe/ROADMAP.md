@@ -54,6 +54,24 @@ estructural (mm + paneles + cálculo); iLDraw = modo croquis sobre el mismo moto
   de SketchFramer. Igual criterio para refuerzos de pilares/vigas/cerchas donde
   corresponda. Se reflejan en la contabilidad, no se dibujan a mano.
 
+## 0.c Datos de SketchFramer (cargados)
+
+- `src/data/profiles.js` — **todos** los perfiles CU (10 normas) y CC (12 normas)
+  con secciones (h/w/lip/t) y kg/m. Generado de `2025_11_13_profiles.json`.
+- `src/data/systems.js` — **sistemas** de revestimiento/terminación (EIFS, DEFS,
+  SIDING, MADERA, CHAPA, DRYWALL) con **componentes, basis (m²/ml), multiplicador**
+  y materiales (rendimiento `yield` + `waste_pct`). Base directa del **BOM**.
+- `sketchframer/` (referencia, no se bundlea): JSON crudos + `plans_options.json`.
+
+**Modelo de panel SketchFramer (de la obra de ejemplo):** cada muro =
+`base_lines` + `openings_lines` + `profiles` (cada perfil = polígono `points` +
+`profile_type`: 0 = montante, 1 = solera; los **refuerzos de abertura son
+montantes/soleras extra**, no un tipo aparte) + `bolt_holes` + `opening_labels`
+(nombre `anchoxalto` mm) + `auto_dimensions`. → El BOM cuenta ml por tipo de
+perfil × kg/m, placas por m², y materiales de sistema por m²/ml × multiplicador.
+`plans_options` (85 claves) define el render de **planos** (vista frente, cotas,
+bulones, colores, tamaños) para generar láminas.
+
 ## 1. Planta (pestaña)
 
 - Dibujar un muro: **pico inicio → arrastro → fin** (snap a grilla y a vértices).
