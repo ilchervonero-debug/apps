@@ -105,6 +105,22 @@ export const useDrawingStore = create((set) => ({
   elevationHeight: 50, // % de alto del canvas superior
   draft: null, // { a:[mm,mm], b:[mm,mm] } mientras se arrastra en planta
 
+  // ── Configuración del proyecto (Etapa 2) ──────────────────
+  appView: 'setup', // 'setup' | 'draw'
+  project: {
+    name: 'Proyecto sin nombre',
+    profileNorm: 'cu_1',
+    profileSection: '100_0.95', // `${h}_${t}`
+    studSpacing: 400,
+    boardId: 'gyp_standard',
+    claddingId: 'osb_11',
+    insulationId: 'mineral_wool_50',
+    elements: { muro: true, techo: false, columnas: false, cerchas: false, losas: false },
+  },
+  setAppView: (v) => set({ appView: v }),
+  setProject: (patch) => set((s) => ({ project: { ...s.project, ...patch } })),
+  setProjectElement: (key, on) => set((s) => ({ project: { ...s.project, elements: { ...s.project.elements, [key]: on } } })),
+
   setActiveTool: (t) => set({ activeTool: t }),
   setGrid: (mm) => set({ gridMm: mm }),
   setElevationHeight: (h) => set({ elevationHeight: Math.max(20, Math.min(80, h)) }),
