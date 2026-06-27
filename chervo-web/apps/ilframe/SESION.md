@@ -2,7 +2,7 @@
 
 > Bitácora de lo hecho y lo pendiente. Todo está publicado (push a master → Vercel).
 
-## ✅ Hecho esta sesión
+## Hecho esta sesión
 
 ### iLDraw
 - Restaurada versión correcta (accent rojo `#C70000`, sin logo inventado).
@@ -48,7 +48,7 @@
 - **Icono/favicon** alineados a la familia (cuadro redondeado, rojo `#FF3333`).
 - Documentos: `ROADMAP.md` (visión y reglas) y este `SESION.md`.
 
-## ⏳ Pendiente
+## Pendiente
 
 ### Reglas steel framing (esperando datos de SketchFramer)
 - Cargar JSON/tablas del plugin SketchFramer (perfiles ya están; faltan **reglas**).

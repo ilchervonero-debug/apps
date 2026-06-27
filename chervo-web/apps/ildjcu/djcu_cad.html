@@ -40,7 +40,7 @@ canvas{background:#fff;cursor:crosshair;touch-action:none;box-shadow:0 2px 12px 
 </div>
 
 <div class="toolbar">
-  <button class="tool-btn active" id="btn_lapiz" onclick="setTool('lapiz')">✏ Lápiz</button>
+  <button class="tool-btn active" id="btn_lapiz" onclick="setTool('lapiz')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Lápiz</button>
   <button class="tool-btn" id="btn_linea" onclick="setTool('linea')">╱ Línea</button>
   <button class="tool-btn" id="btn_rect" onclick="setTool('rect')">▭ Rectángulo</button>
   <button class="tool-btn" id="btn_texto" onclick="setTool('texto')">T Texto</button>
@@ -56,7 +56,7 @@ canvas{background:#fff;cursor:crosshair;touch-action:none;box-shadow:0 2px 12px 
   <span id="grosor_lbl" style="font-size:11px;color:#fff;min-width:18px">2</span>
   <div class="sep"></div>
   <button class="tool-btn" onclick="deshacer()">↩ Deshacer</button>
-  <button class="tool-btn" onclick="limpiarCanvas()">🗑 Limpiar</button>
+  <button class="tool-btn" onclick="limpiarCanvas()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Limpiar</button>
   <div class="sep"></div>
   <button class="tool-btn" style="background:#2d7a4f" onclick="exportarPNG()">⬇ Exportar PNG</button>
 </div>

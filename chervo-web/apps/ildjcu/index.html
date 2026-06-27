@@ -95,15 +95,15 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
 <!-- PANTALLA DE BIENVENIDA Y PERMISOS -->
 <div class="bienvenida-overlay" id="bienvenida_overlay">
   <div class="bienvenida-box">
-    <div style="font-size:22px;margin-bottom:6px">👋</div>
+    <div style="margin-bottom:6px;color:#2d7bc4"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
     <div style="font-size:16px;font-weight:700;color:#1e4d8c;margin-bottom:4px">Bienvenido</div>
     <div id="bienvenida_nombre" style="font-size:13px;color:#888;margin-bottom:20px"></div>
     <div style="font-size:12px;color:#666;margin-bottom:14px;text-align:left">Para usar cámara y micrófono en el relevamiento, habilitá los permisos:</div>
     <button id="btn_perm_cam" class="perm-btn pendiente" onclick="pedirPermiso('camara')">
-      <span>📷</span><span>Habilitar cámara</span>
+      <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Habilitar cámara</span>
     </button>
     <button id="btn_perm_mic" class="perm-btn pendiente" onclick="pedirPermiso('microfono')">
-      <span>🎤</span><span>Habilitar micrófono</span>
+      <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Habilitar micrófono</span>
     </button>
     <div style="font-size:10px;color:#aaa;margin:10px 0 14px">Podés saltear esto y habilitarlos después desde el navegador.</div>
     <button onclick="entrarApp()" style="width:100%;padding:13px;background:#2d7bc4;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">
@@ -156,12 +156,12 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
 <!-- VISOR INLINE PARA iOS -->
 <div class="visor-overlay" id="visor_overlay">
   <div class="visor-toolbar">
-    <span>📄 Vista previa — Imprimí o compartí desde acá</span>
+    <span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Vista previa — Imprimí o compartí desde acá</span>
     <button onclick="cerrarVisor()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Cerrar</button>
   </div>
   <div style="background:#1e4d8c;padding:8px 14px;flex-shrink:0;display:flex;gap:8px">
-    <button onclick="imprimirVisor()" style="flex:1;background:#2d7bc4;border:none;color:#fff;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">🖨 Imprimir / PDF</button>
-    <button onclick="compartirVisor()" style="flex:1;background:#63b3ed;border:none;color:#fff;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">📤 Compartir</button>
+    <button onclick="imprimirVisor()" style="flex:1;background:#2d7bc4;border:none;color:#fff;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir / PDF</button>
+    <button onclick="compartirVisor()" style="flex:1;background:#63b3ed;border:none;color:#fff;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Compartir</button>
   </div>
   <iframe class="visor-iframe" id="visor_iframe"></iframe>
 </div>
@@ -179,9 +179,9 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
     <button class="tab" onclick="goTab(4)">Fotos</button>
     <button class="tab" onclick="goTab(5)">Económico</button>
     <button class="tab" onclick="goTab(6)">Resumen</button>
-    <button class="tab" onclick="goTab(7)">📁 Archivos</button>
-    <button class="tab" onclick="goTab(8)">👤 Mi cuenta</button>
-    <button class="tab" id="tab_admin_btn" style="display:none" onclick="goTab(9)">⚙ Admin</button>
+    <button class="tab" onclick="goTab(7)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Archivos</button>
+    <button class="tab" onclick="goTab(8)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Mi cuenta</button>
+    <button class="tab" id="tab_admin_btn" style="display:none" onclick="goTab(9)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Admin</button>
   </div>
   <div class="body">
 
@@ -275,14 +275,14 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
           <div class="field"><label>Nº expediente DNC</label><input id="nro_expediente" type="text" placeholder="000000000000"></div>
         </div>
         <div style="text-align:center;margin:10px 0">
-          <button class="btn btn-dark btn-full" onclick="geolocate()">📍 Capturar coordenadas GPS</button>
+          <button class="btn btn-dark btn-full" onclick="geolocate()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Capturar coordenadas GPS</button>
           <div id="gps_result" style="font-size:11px;color:#666;margin-top:5px"></div>
         </div>
         <div class="links-box">
           <div class="lbl">Consultas Catastro DNC</div>
-          <a href="http://visor.catastro.gub.uy/visordnc/" target="_blank">🗺 Visor de mapa — Catastro DNC</a>
-          <a href="https://www.snig.gub.uy/ConsultaPadrones" target="_blank">🔍 Buscar padrón por ubicación (SNIG)</a>
-          <a href="http://sede.catastro.gub.uy/Sede/" target="_blank">🏛 Sede Electrónica DNC — trámites</a>
+          <a href="http://visor.catastro.gub.uy/visordnc/" target="_blank"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg> Visor de mapa — Catastro DNC</a>
+          <a href="https://www.snig.gub.uy/ConsultaPadrones" target="_blank"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar padrón por ubicación (SNIG)</a>
+          <a href="http://sede.catastro.gub.uy/Sede/" target="_blank"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><line x1="3" y1="21" x2="21" y2="21"/><path d="M4 21V10l8-5 8 5v11"/><line x1="8" y1="21" x2="8" y2="12"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="16" y1="21" x2="16" y2="12"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Sede Electrónica DNC — trámites</a>
         </div>
       </div>
       <div class="card">
@@ -398,14 +398,14 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
     <div id="tab4" style="display:none">
       <div class="card">
         <div class="card-title">Registro fotográfico <span style="background:#f0f0f0;color:#888;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:400">RELEVAMIENTO</span></div>
-        <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px;margin-bottom:12px" onclick="document.getElementById('file_input').click()">📷 Tomar foto / Seleccionar</button>
+        <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px;margin-bottom:12px" onclick="document.getElementById('file_input').click()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Tomar foto / Seleccionar</button>
         <input id="file_input" type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="addFotos(event)">
         <div id="fotos_container"></div>
         <div id="fotos_count" style="font-size:12px;color:#888;text-align:right">0 fotos</div>
       </div>
       <div class="card">
         <div class="card-title">Observaciones generales</div>
-        <button id="btn_obs_gen" class="rec-btn parado" onclick="toggleVoz('obs_gen','btn_obs_gen','ind_obs_gen')">🎤 Dictar observaciones generales</button>
+        <button id="btn_obs_gen" class="rec-btn parado" onclick="toggleVoz('obs_gen','btn_obs_gen','ind_obs_gen')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar observaciones generales</button>
         <div id="ind_obs_gen" class="grabando-ind"></div>
         <textarea id="obs_gen" rows="5" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;margin-top:8px;font-family:Arial" placeholder="Descripción general del inmueble, estado, particularidades..."></textarea>
       </div>
@@ -449,11 +449,11 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
         <div class="card-title">Imprimir</div>
         <div style="margin-bottom:10px">
           <div style="font-size:11px;color:#555;margin-bottom:5px">Declaración oficial 2 hojas A4 — firmas, propietario, profesional <span style="background:#dbeeff;color:#1e4d8c;font-size:9px;padding:1px 5px;border-radius:8px">DNC</span></div>
-          <button class="btn btn-red btn-full" style="padding:12px;font-size:14px" onclick="exportar()">🖨 Imprimir declaración DJCU</button>
+          <button class="btn btn-red btn-full" style="padding:12px;font-size:14px" onclick="exportar()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir declaración DJCU</button>
         </div>
         <div>
           <div style="font-size:11px;color:#555;margin-bottom:5px">Presupuesto, honorarios y gastos <span style="background:#f0f0f0;color:#888;font-size:9px;padding:1px 5px;border-radius:8px">INTERNO</span></div>
-          <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px" onclick="exportarPresupuesto()">🖨 Imprimir presupuesto y gastos</button>
+          <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px" onclick="exportarPresupuesto()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir presupuesto y gastos</button>
         </div>
       </div>
 
@@ -462,20 +462,20 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
         <div class="card-title">Enviar a Catastro DNC</div>
         <div style="margin-bottom:10px">
           <div style="font-size:11px;color:#555;margin-bottom:5px">Genera archivos .DBF para importar en el programa DJCU.exe (C:\catastro)</div>
-          <button class="btn btn-dark btn-full" style="padding:12px" onclick="exportarDBF()">📦 Exportar para DJCU.exe</button>
+          <button class="btn btn-dark btn-full" style="padding:12px" onclick="exportarDBF()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Exportar para DJCU.exe</button>
         </div>
         <div style="margin-bottom:10px">
           <div style="font-size:11px;color:#555;margin-bottom:5px">Copia los datos para pegar en la Sede Electrónica DNC</div>
-          <button class="btn btn-green btn-full" style="padding:12px" onclick="copiarSedeWeb()">📋 Copiar datos para Sede DNC</button>
+          <button class="btn btn-green btn-full" style="padding:12px" onclick="copiarSedeWeb()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Copiar datos para Sede DNC</button>
         </div>
-        <a href="http://sede.catastro.gub.uy/Sede/" target="_blank" style="display:block;text-align:center;font-size:12px;color:#2d7bc4;font-weight:700;text-decoration:none;padding:6px 0">🏛 Abrir Sede Electrónica DNC →</a>
+        <a href="http://sede.catastro.gub.uy/Sede/" target="_blank" style="display:block;text-align:center;font-size:12px;color:#2d7bc4;font-weight:700;text-decoration:none;padding:6px 0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><line x1="3" y1="21" x2="21" y2="21"/><path d="M4 21V10l8-5 8 5v11"/><line x1="8" y1="21" x2="8" y2="12"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="16" y1="21" x2="16" y2="12"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Abrir Sede Electrónica DNC →</a>
       </div>
 
       <!-- CROQUIS -->
       <div class="card">
         <div class="card-title">Croquis del inmueble</div>
         <div style="font-size:12px;color:#555;margin-bottom:10px">Dibujá el croquis en iLDraw, exportá como PNG y cargalo acá. Se incluye automáticamente en la declaración impresa.</div>
-        <a href="/apps/ildraw/" target="_blank" style="display:block;background:#1e4d8c;color:#fff;text-align:center;padding:12px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;touch-action:manipulation">✏ Abrir iLDraw →</a>
+        <a href="/apps/ildraw/" target="_blank" style="display:block;background:#1e4d8c;color:#fff;text-align:center;padding:12px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Abrir iLDraw →</a>
         <div class="field">
           <label>Cargar PNG del croquis</label>
           <input type="file" id="croquis_file" accept="image/png,image/jpeg,image/*" onchange="cargarCroquis(event)" style="padding:6px;font-size:12px">
@@ -613,7 +613,7 @@ async function cargarUsuariosAdmin() {
           '<br><span style="font-size:11px;color:#aaa">PIN: '+u.pin+'</span>'+
         '</div>'+
         '<div style="display:flex;gap:6px">'+
-          (!esAdmin?'<button onclick="adminToggle('+u.id+','+u.activo+')" style="padding:5px 10px;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:'+(u.activo?'#fff3cd':'#e8f8f0')+';color:'+(u.activo?'#856404':'#2d7a4f')+';">'+(u.activo?'🔒 Bloquear':'🔓 Activar')+'</button>':'')+
+          (!esAdmin?'<button onclick="adminToggle('+u.id+','+u.activo+')" style="padding:5px 10px;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:'+(u.activo?'#fff3cd':'#e8f8f0')+';color:'+(u.activo?'#856404':'#2d7a4f')+';">'+(u.activo?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Bloquear':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Activar')+'</button>':'')+
           (!esAdmin?'<button onclick="adminBorrar('+u.id+',\''+u.nombre+'\')" style="padding:5px 10px;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;background:#fff0f0;color:#c0392b;">✕</button>':'')+
         '</div>'+
       '</div>';
@@ -674,13 +674,13 @@ async function pedirPermiso(tipo) {
     stream.getTracks().forEach(function(t){ t.stop(); });
     btn.className = 'perm-btn ok';
     btn.innerHTML = tipo === 'camara'
-      ? '<span>📷</span><span>Cámara habilitada ✓</span>'
-      : '<span>🎤</span><span>Micrófono habilitado ✓</span>';
+      ? '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Cámara habilitada ✓</span>'
+      : '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Micrófono habilitado ✓</span>';
   } catch(e) {
     btn.className = 'perm-btn bloqueado';
     btn.innerHTML = tipo === 'camara'
-      ? '<span>📷</span><span>Cámara bloqueada</span>'
-      : '<span>🎤</span><span>Micrófono bloqueado</span>';
+      ? '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Cámara bloqueada</span>'
+      : '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Micrófono bloqueado</span>';
   }
 }
 
@@ -801,7 +801,7 @@ function geolocate() {
   el.textContent='Obteniendo ubicación...';
   navigator.geolocation.getCurrentPosition(function(pos){
     var lat=pos.coords.latitude.toFixed(6), lng=pos.coords.longitude.toFixed(6);
-    el.innerHTML='📍 Lat: '+lat+' | Lng: '+lng+' <a href="https://www.google.com/maps?q='+lat+','+lng+'" target="_blank" style="color:#2d7bc4;font-size:11px">ver en mapa</a>';
+    el.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Lat: '+lat+' | Lng: '+lng+' <a href="https://www.google.com/maps?q='+lat+','+lng+'" target="_blank" style="color:#2d7bc4;font-size:11px">ver en mapa</a>';
     el.setAttribute('data-lat',lat); el.setAttribute('data-lng',lng);
   }, function(){ el.textContent='No se pudo obtener la ubicación.'; });
 }
@@ -966,7 +966,7 @@ function renderFotos(){
         '<div class="foto-side">'+
           '<div style="font-size:11px;color:#666;margin-bottom:3px">Descripción foto '+(i+1)+'</div>'+
           '<textarea rows="3" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:5px;font-size:12px;background:#fafafa;resize:vertical;font-family:Arial" placeholder="Dictá o escribí..." onchange="updFoto(\''+f.id+'\',this.value)" id="ta_'+f.id+'">'+f.caption+'</textarea>'+
-          '<button id="btnf_'+f.id+'" class="rec-btn parado" onclick="toggleVoz(\'ta_'+f.id+'\',\'btnf_'+f.id+'\',\'indf_'+f.id+'\',\''+f.id+'\')">🎤 Dictar descripción</button>'+
+          '<button id="btnf_'+f.id+'" class="rec-btn parado" onclick="toggleVoz(\'ta_'+f.id+'\',\'btnf_'+f.id+'\',\'indf_'+f.id+'\',\''+f.id+'\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar descripción</button>'+
           '<div id="indf_'+f.id+'" class="grabando-ind"></div>'+
         '</div>'+
       '</div>';
@@ -984,7 +984,7 @@ function toggleVoz(targetId,btnId,indId,fotoId){
     recInstances[btnId].stop(); delete recInstances[btnId];
     var btn=document.getElementById(btnId);
     btn.classList.remove('grabando'); btn.classList.add('parado');
-    btn.textContent=fotoId?'🎤 Dictar descripción':'🎤 Dictar observaciones generales';
+    btn.innerHTML=fotoId?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar descripción':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar observaciones generales';
     document.getElementById(indId).textContent='';
     return;
   }
@@ -998,13 +998,13 @@ function toggleVoz(targetId,btnId,indId,fotoId){
   };
   r.onend=function(){
     var btn=document.getElementById(btnId);
-    if(btn){ btn.classList.remove('grabando'); btn.classList.add('parado'); btn.textContent=fotoId?'🎤 Dictar descripción':'🎤 Dictar observaciones generales'; }
+    if(btn){ btn.classList.remove('grabando'); btn.classList.add('parado'); btn.innerHTML=fotoId?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar descripción':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar observaciones generales'; }
     var ind=document.getElementById(indId); if(ind) ind.textContent='';
     delete recInstances[btnId];
   };
   r.start(); recInstances[btnId]=r;
   var btn=document.getElementById(btnId);
-  btn.classList.remove('parado'); btn.classList.add('grabando'); btn.textContent='⏹ Detener dictado';
+  btn.classList.remove('parado'); btn.classList.add('grabando'); btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><rect x="5" y="5" width="14" height="14" rx="2"/></svg> Detener dictado';
   document.getElementById(indId).textContent='● Grabando...';
 }
 
@@ -1352,7 +1352,7 @@ async function guardarEnNube(fecha, total_edific, total_honor) {
     if (!res.ok) throw new Error();
     showToast('✓ Reporte descargado y guardado en la nube');
   } catch(e) {
-    showToast('⚠ No se pudo guardar en la nube');
+    showToast('No se pudo guardar en la nube');
   }
 }
 
@@ -1383,11 +1383,11 @@ async function cargarArchivos() {
           '</div>'+
           '<span style="font-size:10px;color:#aaa">'+fecha+' '+hora+'</span>'+
         '</div>'+
-        '<div style="font-size:12px;color:#444;margin-bottom:2px">📍 '+dir+'</div>'+
-        '<div style="font-size:12px;color:#444;margin-bottom:2px">👤 '+cliente+'</div>'+
+        '<div style="font-size:12px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> '+dir+'</div>'+
+        '<div style="font-size:12px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> '+cliente+'</div>'+
         '<div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center">'+
           '<span style="font-size:11px;color:#2d7bc4">▪ '+area+' &nbsp;·&nbsp; '+exp.usuario+'</span>'+
-          '<button onclick="editarExpediente(\''+exp.id+'\')" style="background:#2d7bc4;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✏ Editar</button>'+
+          '<button onclick="editarExpediente(\''+exp.id+'\')" style="background:#2d7bc4;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Editar</button>'+
           ' <button onclick="borrarExpediente(\''+exp.id+'\')" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Borrar</button>'+
         '</div>'+
       '</div>';
@@ -1561,10 +1561,10 @@ function exportarPresupuesto() {
     + '.pie{font-size:8pt;color:#aaa;margin-top:20px;border-top:1px solid #eee;padding-top:8px;text-align:center}'
     + '.btn-imp{margin:0 0 16px;padding:10px 20px;background:#1e4d8c;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial}'
     + '</style></head><body>'
-    + '<button class="btn-imp no-print" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>'
+    + '<button class="btn-imp no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir / Guardar PDF</button>'
     + '<div class="cab"><div class="tit">Presupuesto y Honorarios Profesionales</div>'
     + '<div class="sub">DJCU — Declaración Jurada de Caracterización Urbana</div></div>'
-    + '<div class="aviso">⚠ DOCUMENTO INTERNO — No presentar a DNC. Archivo profesional exclusivo.</div>'
+    + '<div class="aviso"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> DOCUMENTO INTERNO — No presentar a DNC. Archivo profesional exclusivo.</div>'
     + '<div class="stit">Datos del expediente</div>'
     + fila('Fecha de emisión', fecha)
     + fila('Cliente / Proyecto', cliente)
@@ -1593,12 +1593,12 @@ function exportarPresupuesto() {
 
 // EXPORT DBF — para DJCU.exe
 function exportarDBF() {
-  showToast('📦 Próximamente — pendiente confirmación del campo Obra');
+  showToast('Próximamente — pendiente confirmación del campo Obra');
 }
 
 // COPIAR PARA SEDE DNC
 function copiarSedeWeb() {
-  showToast('📋 Próximamente — esperando screenshots de la Sede DNC');
+  showToast('Próximamente — esperando screenshots de la Sede DNC');
 }
 
 if('serviceWorker' in navigator){
