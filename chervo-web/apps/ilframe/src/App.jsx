@@ -2,6 +2,7 @@
 import CommandBar from './components/CommandBar'
 import DrawingTools from './components/DrawingTools'
 import ProjectSetup from './components/ProjectSetup'
+import Iso3D from './components/Iso3D'
 import { useDrawingStore } from './store/drawingStore'
 
 export default function App() {
@@ -47,7 +48,7 @@ export default function App() {
         <>
           {/* Pestañas — grandes y legibles */}
           <div style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid #e0e0e0', background: '#fff' }}>
-            {[['plan', 'PLANTA'], ['elev', 'ALZADO']].map(([id, label]) => {
+            {[['plan', 'PLANTA'], ['elev', 'ALZADO'], ['3d', '3D']].map(([id, label]) => {
               const on = tab === id
               return (
                 <button key={id} onClick={() => setTab(id)}
@@ -63,10 +64,16 @@ export default function App() {
             })}
           </div>
 
-          <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden' }}>
-            <DrawingCanvas />
-            <DrawingTools />
-            <CommandBar />
+          <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', display: 'flex' }}>
+            {tab === '3d' ? (
+              <Iso3D />
+            ) : (
+              <>
+                <DrawingCanvas />
+                <DrawingTools />
+                <CommandBar />
+              </>
+            )}
           </div>
         </>
       )}
