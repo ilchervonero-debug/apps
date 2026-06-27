@@ -40,10 +40,15 @@ estructural (mm + paneles + cálculo); iLDraw = modo croquis sobre el mismo moto
 - **Fuente de datos y reglas: SketchFramer** (los perfiles ya salieron de ahí —
   `data/profiles.js`). Se reutiliza ese material para perfiles, secciones y reglas.
 - **Paleta de herramientas / elementos** (cada uno con su menú y reglas propias):
-  Muro, **Pilar**, **Cercha**, Techo, Cielorraso, Losa de piso, Puerta, Ventana,
-  Abertura, T-connect, Seleccionar.
+  Muro, **Pilar**, **Viga**, **Cercha**, Techo, Cielorraso, Losa de piso, Puerta,
+  Ventana, Abertura, T-connect, Seleccionar.
   - Funcionan: Muro, Seleccionar, Puerta/Ventana/Abertura (colocación + retiros).
-  - Declaradas (reglas pendientes): Pilar, Cercha, Techo, Cielorraso, Losa, T-connect.
+  - Declaradas (reglas pendientes): Pilar, Viga, Cercha, Techo, Cielorraso, Losa, T-connect.
+- **Refuerzos de aberturas = automáticos.** NO son herramienta: al colocar una
+  puerta/ventana/abertura, la app **suma sola** los perfiles de refuerzo
+  (dintel, jambas, montantes de carga / jack & king, antepecho) según reglas
+  de SketchFramer. Igual criterio para refuerzos de pilares/vigas/cerchas donde
+  corresponda. Se reflejan en la contabilidad, no se dibujan a mano.
 
 ## 1. Planta (pestaña)
 

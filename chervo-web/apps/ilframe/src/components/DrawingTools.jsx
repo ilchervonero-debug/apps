@@ -10,6 +10,7 @@ export default function DrawingTools() {
   const tools = [
     { id: 'wall', label: 'Muro', icon: 'wall' },
     { id: 'pilar', label: 'Pilar', icon: 'pilar' },
+    { id: 'viga', label: 'Viga', icon: 'viga' },
     { id: 'cercha', label: 'Cercha', icon: 'cercha' },
     { id: 'roof', label: 'Techo', icon: 'roof' },
     { id: 'ceiling', label: 'Cielorraso', icon: 'ceiling' },
@@ -63,6 +64,7 @@ function ToolIcon({ type }) {
     ceiling: <svg {...iconProps}><line x1="4" y1="6" x2="20" y2="6" /><line x1="7" y1="6" x2="7" y2="10" /><line x1="12" y1="6" x2="12" y2="10" /><line x1="17" y1="6" x2="17" y2="10" /></svg>,
     slab: <svg {...iconProps}><rect x="3" y="9" width="18" height="6" rx="1" /></svg>,
     pilar: <svg {...iconProps}><rect x="9" y="3" width="6" height="18" rx="1" /></svg>,
+    viga: <svg {...iconProps}><rect x="3" y="9" width="18" height="6" rx="1" /><line x1="3" y1="12" x2="21" y2="12" /></svg>,
     cercha: <svg {...iconProps}><path d="M3 20h18L12 5z" /><line x1="12" y1="5" x2="12" y2="20" /><line x1="7.5" y1="20" x2="12" y2="12.5" /><line x1="16.5" y1="20" x2="12" y2="12.5" /></svg>,
     door: <svg {...iconProps}><rect x="6" y="3" width="12" height="18" rx="1" /><circle cx="14" cy="12" r="1" fill="currentColor" /></svg>,
     window: <svg {...iconProps}><rect x="4" y="5" width="16" height="14" rx="1" /><line x1="12" y1="5" x2="12" y2="19" /><line x1="4" y1="12" x2="20" y2="12" /></svg>,
