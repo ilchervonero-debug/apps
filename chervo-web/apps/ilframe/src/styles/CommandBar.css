@@ -4,9 +4,105 @@
   padding: 12px 16px;
   flex-shrink: 0;
   overflow-y: auto;
-  max-height: 140px;
+  max-height: 42vh;
   min-height: 48px;
   font-size: 12px;
+}
+
+.editor-sublabel {
+  font-weight: 800;
+  color: #fe0000;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 2px;
+}
+
+.editor-section .editor-label {
+  min-width: 130px;
+}
+
+/* filas de contorno (X × Y) */
+.contour-row,
+.contour-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.contour-row.sel input {
+  border-color: #fe0000;
+  background: #fff6f6;
+}
+
+.contour-row input,
+.contour-add input {
+  width: 72px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.contour-row input:focus,
+.contour-add input:focus {
+  outline: none;
+  border-color: #fe0000;
+}
+
+.contour-x {
+  color: #aaa;
+  font-weight: 700;
+}
+
+.contour-del {
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  color: #999;
+  border-radius: 4px;
+  width: 24px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.contour-del:hover {
+  color: #fe0000;
+  border-color: #fe0000;
+}
+
+.contour-addbtn {
+  background: #fe0000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.contour-addbtn:hover {
+  background: #e60000;
+}
+
+.btn-delete-panel {
+  background: #fff;
+  color: #fe0000;
+  border: 1px solid #ffd0d0;
+  border-radius: 6px;
+  padding: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.btn-delete-panel:hover {
+  background: #fff6f6;
 }
 
 /* Controles de dibujo */

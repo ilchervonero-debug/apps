@@ -1,450 +1,302 @@
 import { useRef, useEffect, useState } from 'react'
-import { useDrawingStore } from '../store/drawingStore'
+import { useDrawingStore, panelPolygon, panelMaxHeight, GRID } from '../store/drawingStore'
 import '../styles/DrawingCanvas.css'
 
-const SCALE = 0.5 // 1 mm en canvas = 0.5 píxeles
-const GRID_SIZE = 100
-const snapToGrid = (v) => Math.round(v / GRID_SIZE) * GRID_SIZE
+const SVG = 'http://www.w3.org/2000/svg'
+
+// ── Transformaciones de coordenadas ────────────────────────
+// PLANTA: mm → viewBox (1000x400), origen abajo-izquierda, Y hacia arriba
+const PLAN = { ox: 60, oy: 350, s: 0.05 } // s = vb por mm (1000mm = 50vb → ~18m visibles)
+const planToVb = ([x, y]) => [PLAN.ox + x * PLAN.s, PLAN.oy - y * PLAN.s]
+const vbToPlan = ([vx, vy]) => [(vx - PLAN.ox) / PLAN.s, (PLAN.oy - vy) / PLAN.s]
+
+function el(tag, attrs) {
+  const n = document.createElementNS(SVG, tag)
+  for (const k in attrs) n.setAttribute(k, attrs[k])
+  return n
+}
 
 export default function DrawingCanvas() {
-  const elevationRef = useRef(null)
+  const elevRef = useRef(null)
   const planRef = useRef(null)
   const dividerRef = useRef(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [mousePos, setMousePos] = useState([0, 0])
+  const dragRef = useRef({ active: false, moved: false })
+  const [isResizing, setIsResizing] = useState(false)
+  const [cursor, setCursor] = useState(null)
 
-  const elements = useDrawingStore((state) => state.elements)
-  const selectedId = useDrawingStore((state) => state.selectedId)
-  const elevationHeight = useDrawingStore((state) => state.elevationHeight)
-  const setElevationHeight = useDrawingStore((state) => state.setElevationHeight)
-  const activeTool = useDrawingStore((state) => state.activeTool)
-  const currentPoints = useDrawingStore((state) => state.currentPoints)
-  const addPoint = useDrawingStore((state) => state.addPoint)
-  const finishDrawing = useDrawingStore((state) => state.finishDrawing)
-  const cancelDrawing = useDrawingStore((state) => state.cancelDrawing)
-  const [drawingView, setDrawingView] = useState(null)
+  const panels = useDrawingStore((s) => s.panels)
+  const selectedId = useDrawingStore((s) => s.selectedId)
+  const selectedVertex = useDrawingStore((s) => s.selectedVertex)
+  const activeTool = useDrawingStore((s) => s.activeTool)
+  const draft = useDrawingStore((s) => s.draft)
+  const elevationHeight = useDrawingStore((s) => s.elevationHeight)
 
+  // ── Render reactivo ──
   useEffect(() => {
-    drawView(elevationRef.current, 'elevation', elements, selectedId, currentPoints, mousePos, activeTool)
-    drawView(planRef.current, 'plan', elements, selectedId, currentPoints, mousePos, activeTool)
-  }, [elements, selectedId, currentPoints, mousePos, activeTool])
+    drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool)
+    drawElevation(elevRef.current, panels, selectedId, selectedVertex)
+  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool])
 
-  const getClientY = (e) => e.touches ? e.touches[0].clientY : e.clientY
-
-  const handleDividerStart = (e) => {
-    setIsDragging(true)
-    e.preventDefault()
-  }
-
+  // ── Divisor arrastrable ──
+  const startResize = (e) => { setIsResizing(true); e.preventDefault() }
   useEffect(() => {
-    if (!isDragging) return
-    const handleMove = (e) => {
-      const container = dividerRef.current.parentElement
-      const rect = container.getBoundingClientRect()
-      const clientY = getClientY(e)
-      const newHeight = Math.min(80, Math.max(20, ((clientY - rect.top) / rect.height) * 100))
-      setElevationHeight(newHeight)
+    if (!isResizing) return
+    const move = (e) => {
+      const rect = dividerRef.current.parentElement.getBoundingClientRect()
+      const cy = e.touches ? e.touches[0].clientY : e.clientY
+      useDrawingStore.getState().setElevationHeight(((cy - rect.top) / rect.height) * 100)
     }
-    const handleUp = () => setIsDragging(false)
-    window.addEventListener('mousemove', handleMove)
-    window.addEventListener('mouseup', handleUp)
-    window.addEventListener('touchmove', handleMove, { passive: false })
-    window.addEventListener('touchend', handleUp)
+    const up = () => setIsResizing(false)
+    window.addEventListener('mousemove', move)
+    window.addEventListener('mouseup', up)
+    window.addEventListener('touchmove', move, { passive: false })
+    window.addEventListener('touchend', up)
     return () => {
-      window.removeEventListener('mousemove', handleMove)
-      window.removeEventListener('mouseup', handleUp)
-      window.removeEventListener('touchmove', handleMove)
-      window.removeEventListener('touchend', handleUp)
+      window.removeEventListener('mousemove', move)
+      window.removeEventListener('mouseup', up)
+      window.removeEventListener('touchmove', move)
+      window.removeEventListener('touchend', up)
     }
-  }, [isDragging])
+  }, [isResizing])
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        const state = useDrawingStore.getState()
-        if (state.currentPoints.length >= 2) {
-          state.finishDrawing(drawingView || 'plan')
-        } else {
-          state.cancelDrawing()
-        }
-        setDrawingView(null)
-      }
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        const state = useDrawingStore.getState()
-        if (state.currentPoints.length >= 2) {
-          state.finishDrawing(drawingView || 'plan')
-          setDrawingView(null)
-        }
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [drawingView])
-
-  const getSvgCoords = (e, svg) => {
-    const rect = svg.getBoundingClientRect()
-    const touch = e.changedTouches?.[0] || e.touches?.[0]
-    const clientX = touch ? touch.clientX : e.clientX
-    const clientY = touch ? touch.clientY : e.clientY
-    return [
-      (clientX - rect.left) / (rect.width / 1000) * SCALE,
-      (clientY - rect.top) / (rect.height / 400) * SCALE,
-    ]
+  const getVb = (e, svg) => {
+    const r = svg.getBoundingClientRect()
+    const t = e.touches?.[0] || e.changedTouches?.[0]
+    const cx = t ? t.clientX : e.clientX
+    const cy = t ? t.clientY : e.clientY
+    return [(cx - r.left) / (r.width / 1000), (cy - r.top) / (r.height / 400)]
   }
 
-  const dragRef = useRef({ active: false, moved: false, start: [0, 0] })
-  const TAP_TOOLS = ['polyline', 'door', 'window']
-
-  const handlePointerDown = (e, view) => {
-    const svg = view === 'elevation' ? elevationRef.current : planRef.current
-    if (!svg) return
-    const [x, y] = getSvgCoords(e, svg)
-    setMousePos([x, y])
-    if (activeTool === 'line') {
-      // arrastrar para dibujar: marcamos el punto de inicio
+  // ── PLANTA: dibujar / seleccionar ──
+  const planDown = (e) => {
+    const svg = planRef.current
+    const vb = getVb(e, svg)
+    const mm = vbToPlan(vb)
+    const st = useDrawingStore.getState()
+    if (activeTool === 'wall') {
       try { svg.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
-      dragRef.current = { active: true, moved: false, start: [x, y] }
-      setDrawingView(view)
-      addPoint([x, y])
+      dragRef.current = { active: true, moved: false }
+      st.startWall(mm)
+    } else {
+      // seleccionar muro cercano
+      const hit = pickPanel(mm, st.panels)
+      if (hit) st.select(hit)
+      else st.deselect()
     }
+    setCursor({ view: 'plan', vb })
   }
-
-  const handlePointerMove = (e, view) => {
-    const svg = view === 'elevation' ? elevationRef.current : planRef.current
-    if (!svg) return
-    const [x, y] = getSvgCoords(e, svg)
-    setMousePos([x, y])
+  const planMove = (e) => {
+    const vb = getVb(e, planRef.current)
+    setCursor({ view: 'plan', vb })
     if (dragRef.current.active) {
-      const dx = x - dragRef.current.start[0]
-      const dy = y - dragRef.current.start[1]
-      if (Math.sqrt(dx * dx + dy * dy) > 8) dragRef.current.moved = true
+      useDrawingStore.getState().dragWall(vbToPlan(vb))
+      dragRef.current.moved = true
+    }
+  }
+  const planUp = () => {
+    if (dragRef.current.active) {
+      useDrawingStore.getState().finishWall()
+      dragRef.current.active = false
     }
   }
 
-  const handlePointerUp = (e, view) => {
-    const svg = view === 'elevation' ? elevationRef.current : planRef.current
-    if (!svg) return
-    const [x, y] = getSvgCoords(e, svg)
-    if (activeTool === 'line' && dragRef.current.active) {
-      if (dragRef.current.moved) {
-        addPoint([x, y])
-        finishDrawing(view) // crea la línea y la auto-selecciona
-      } else {
-        cancelDrawing() // fue un toque sin arrastre: descartamos
-      }
-      dragRef.current.active = false
-      setDrawingView(null)
-      return
-    }
-    // herramientas por toque: agregan punto a punto
-    if (TAP_TOOLS.includes(activeTool)) {
-      setDrawingView(view)
-      addPoint([x, y])
-    }
+  // ── ALZADO: seleccionar vértice del panel activo ──
+  const elevDown = (e) => {
+    const st = useDrawingStore.getState()
+    const panel = st.panels.find((p) => p.id === st.selectedId)
+    if (!panel) return
+    const vb = getVb(e, elevRef.current)
+    const tf = elevTransform(panel)
+    // buscar vértice más cercano del contorno (topPath)
+    let best = null, bestD = 28
+    panel.topPath.forEach((pt, i) => {
+      const v = tf.toVb(pt)
+      const d = Math.hypot(v[0] - vb[0], v[1] - vb[1])
+      if (d < bestD) { bestD = d; best = i }
+    })
+    st.selectVertex(best)
   }
 
   return (
     <div className="drawing-canvas">
       <div className="canvas-section" style={{ height: `${elevationHeight}%` }}>
-        <div className="canvas-header">Elevación (A)</div>
+        <div className="canvas-header">Alzado — cara del panel {selectedId ? `(${selectedId})` : ''}</div>
         <svg
-          ref={elevationRef}
+          ref={elevRef}
           className="canvas-svg"
           viewBox="0 0 1000 400"
           style={{ touchAction: 'none' }}
-          onPointerDown={(e) => handlePointerDown(e, 'elevation')}
-          onPointerMove={(e) => handlePointerMove(e, 'elevation')}
-          onPointerUp={(e) => handlePointerUp(e, 'elevation')}
+          onPointerDown={elevDown}
         />
       </div>
 
       <div
         ref={dividerRef}
-        className={`canvas-divider ${isDragging ? 'dragging' : ''}`}
-        onMouseDown={handleDividerStart}
-        onTouchStart={handleDividerStart}
+        className={`canvas-divider ${isResizing ? 'dragging' : ''}`}
+        onMouseDown={startResize}
+        onTouchStart={startResize}
       >
         <div className="divider-handle"></div>
       </div>
 
       <div className="canvas-section" style={{ height: `${100 - elevationHeight}%` }}>
-        <div className="canvas-header">Planta (P)</div>
+        <div className="canvas-header">Planta — {activeTool === 'wall' ? 'arrastrá para dibujar un muro' : 'tocá un muro para seleccionar'}</div>
         <svg
           ref={planRef}
           className="canvas-svg"
           viewBox="0 0 1000 400"
           style={{ touchAction: 'none' }}
-          onPointerDown={(e) => handlePointerDown(e, 'plan')}
-          onPointerMove={(e) => handlePointerMove(e, 'plan')}
-          onPointerUp={(e) => handlePointerUp(e, 'plan')}
+          onPointerDown={planDown}
+          onPointerMove={planMove}
+          onPointerUp={planUp}
         />
       </div>
     </div>
   )
 }
 
-function drawView(svgElement, view, elements, selectedId, currentPoints, mousePos, activeTool) {
-  if (!svgElement) return
-  svgElement.innerHTML = ''
+// ── Selección de muro por cercanía (mm) ────────────────────
+function pickPanel(mm, panels) {
+  let best = null, bestD = 600 // tolerancia 600mm
+  for (const p of panels) {
+    const d = distPointSeg(mm, p.a, p.b)
+    if (d < bestD) { bestD = d; best = p.id }
+  }
+  return best
+}
+function distPointSeg(p, a, b) {
+  const dx = b[0] - a[0], dy = b[1] - a[1]
+  const l2 = dx * dx + dy * dy
+  if (l2 === 0) return Math.hypot(p[0] - a[0], p[1] - a[1])
+  let t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l2
+  t = Math.max(0, Math.min(1, t))
+  return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy))
+}
 
-  // Fondo blanco
-  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
-  bg.setAttribute('width', '1000')
-  bg.setAttribute('height', '400')
-  bg.setAttribute('fill', 'white')
-  svgElement.appendChild(bg)
+// ── Transformación del alzado (ajusta el panel al canvas) ──
+function elevTransform(panel) {
+  const maxH = panelMaxHeight(panel)
+  const w = panel.width || 1000
+  const margin = 70
+  const s = Math.min((1000 - margin * 2) / w, (400 - margin * 2) / maxH)
+  const ox = (1000 - w * s) / 2
+  const oy = 400 - margin
+  return { s, ox, oy, toVb: ([x, y]) => [ox + x * s, oy - y * s] }
+}
 
-  // Grilla
-  drawGrid(svgElement, GRID_SIZE)
+// ── Dibujo PLANTA ──────────────────────────────────────────
+function drawPlan(svg, panels, selectedId, draft, cursor, activeTool) {
+  if (!svg) return
+  svg.innerHTML = ''
+  svg.appendChild(el('rect', { width: 1000, height: 400, fill: 'white' }))
+  drawPlanGrid(svg)
 
-  // Ejes
-  drawAxes(svgElement, view)
-
-  // Elementos dibujados
-  elements.forEach((el) => {
-    if (el.type === 'line' || el.type === 'polyline') {
-      drawPolyline(svgElement, el, selectedId, view)
-    }
+  // muros
+  panels.forEach((p) => {
+    const a = planToVb(p.a), b = planToVb(p.b)
+    const sel = p.id === selectedId
+    svg.appendChild(el('line', {
+      x1: a[0], y1: a[1], x2: b[0], y2: b[1],
+      stroke: sel ? '#fe0000' : '#333', 'stroke-width': sel ? 4 : 2.5, 'stroke-linecap': 'round',
+    }))
+    ;[a, b].forEach((pt) => svg.appendChild(el('circle', { cx: pt[0], cy: pt[1], r: sel ? 4 : 3, fill: sel ? '#fe0000' : '#666' })))
+    const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+    const code = el('text', { x: mid[0], y: mid[1] - 10, 'font-size': 15, 'font-weight': 'bold', fill: sel ? '#fe0000' : '#333', 'text-anchor': 'middle' })
+    code.textContent = p.id
+    svg.appendChild(code)
+    const len = el('text', { x: mid[0], y: mid[1] + 16, 'font-size': 11, fill: '#888', 'text-anchor': 'middle' })
+    len.textContent = `${(p.width / 1000).toFixed(2)} m`
+    svg.appendChild(len)
   })
 
-  // Línea temporal mientras se dibuja
-  if (currentPoints.length > 0) {
-    currentPoints.forEach((p, i) => {
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-      circle.setAttribute('cx', p[0])
-      circle.setAttribute('cy', p[1])
-      circle.setAttribute('r', '4')
-      circle.setAttribute('fill', '#fe0000')
-      svgElement.appendChild(circle)
-
-      if (i > 0) {
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-        line.setAttribute('x1', currentPoints[i - 1][0])
-        line.setAttribute('y1', currentPoints[i - 1][1])
-        line.setAttribute('x2', p[0])
-        line.setAttribute('y2', p[1])
-        line.setAttribute('stroke', '#fe0000')
-        line.setAttribute('stroke-width', '2')
-        line.setAttribute('stroke-dasharray', '4')
-        svgElement.appendChild(line)
-      }
-    })
-
-    if (currentPoints.length > 0) {
-      const lastPoint = currentPoints[currentPoints.length - 1]
-      const snapped = [snapToGrid(mousePos[0]), snapToGrid(mousePos[1])]
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-      line.setAttribute('x1', lastPoint[0])
-      line.setAttribute('y1', lastPoint[1])
-      line.setAttribute('x2', snapped[0])
-      line.setAttribute('y2', snapped[1])
-      line.setAttribute('stroke', '#fe0000')
-      line.setAttribute('stroke-width', '1')
-      line.setAttribute('stroke-dasharray', '2')
-      line.setAttribute('opacity', '0.5')
-      svgElement.appendChild(line)
-
-      // largo en vivo mientras se arrastra
-      const dx = snapped[0] - lastPoint[0]
-      const dy = snapped[1] - lastPoint[1]
-      const dist = Math.round(Math.sqrt(dx * dx + dy * dy))
-      if (dist > 0) {
-        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-        txt.setAttribute('x', (lastPoint[0] + snapped[0]) / 2)
-        txt.setAttribute('y', (lastPoint[1] + snapped[1]) / 2 - 8)
-        txt.setAttribute('font-size', '12')
-        txt.setAttribute('font-weight', 'bold')
-        txt.setAttribute('fill', '#fe0000')
-        txt.setAttribute('text-anchor', 'middle')
-        txt.setAttribute('pointer-events', 'none')
-        txt.textContent = `${dist}mm`
-        svgElement.appendChild(txt)
-      }
+  // trazo en curso
+  if (draft) {
+    const a = planToVb(draft.a), b = planToVb(draft.b)
+    svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#fe0000', 'stroke-width': 2, 'stroke-dasharray': '5 4' }))
+    const w = Math.round(Math.hypot(draft.b[0] - draft.a[0], draft.b[1] - draft.a[1]))
+    if (w > 0) {
+      const t = el('text', { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 - 8, 'font-size': 13, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
+      t.textContent = `${w} mm`
+      svg.appendChild(t)
     }
   }
 
-  // Indicador de snap: muestra dónde caerá el próximo punto
-  const drawTools = ['line', 'polyline', 'door', 'window']
-  if (activeTool && drawTools.includes(activeTool) && mousePos) {
-    const sx = snapToGrid(mousePos[0])
-    const sy = snapToGrid(mousePos[1])
-    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-    ring.setAttribute('cx', sx)
-    ring.setAttribute('cy', sy)
-    ring.setAttribute('r', '5')
-    ring.setAttribute('fill', 'none')
-    ring.setAttribute('stroke', '#fe0000')
-    ring.setAttribute('stroke-width', '1.5')
-    ring.setAttribute('pointer-events', 'none')
-    svgElement.appendChild(ring)
-    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-    dot.setAttribute('cx', sx)
-    dot.setAttribute('cy', sy)
-    dot.setAttribute('r', '1.5')
-    dot.setAttribute('fill', '#fe0000')
-    dot.setAttribute('pointer-events', 'none')
-    svgElement.appendChild(dot)
+  // indicador de snap
+  if (cursor?.view === 'plan' && activeTool === 'wall') {
+    const mm = vbToPlan(cursor.vb)
+    const s = planToVb([Math.round(mm[0] / GRID) * GRID, Math.round(mm[1] / GRID) * GRID])
+    svg.appendChild(el('circle', { cx: s[0], cy: s[1], r: 5, fill: 'none', stroke: '#fe0000', 'stroke-width': 1.5 }))
   }
 }
 
-function drawGrid(svgElement, gridSize) {
-  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-  // mismas celdas en X e Y para que la grilla coincida con el snap
-  for (let x = 0; x <= 1000; x += gridSize) {
-    const major = (x % (gridSize * 5)) === 0
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-    line.setAttribute('x1', x)
-    line.setAttribute('y1', '0')
-    line.setAttribute('x2', x)
-    line.setAttribute('y2', '400')
-    line.setAttribute('stroke', major ? '#d8d8d8' : '#ececec')
-    line.setAttribute('stroke-width', major ? '0.8' : '0.5')
-    g.appendChild(line)
+function drawPlanGrid(svg) {
+  const g = el('g', {})
+  for (let mm = 0; mm <= 19000; mm += 1000) {
+    const v = planToVb([mm, 0])[0]
+    if (v > 1000) break
+    const major = mm % 5000 === 0
+    g.appendChild(el('line', { x1: v, y1: 0, x2: v, y2: 400, stroke: major ? '#d8d8d8' : '#ededed', 'stroke-width': major ? 0.8 : 0.5 }))
   }
-  for (let y = 0; y <= 400; y += gridSize) {
-    const major = (y % (gridSize * 5)) === 0
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-    line.setAttribute('x1', '0')
-    line.setAttribute('y1', y)
-    line.setAttribute('x2', '1000')
-    line.setAttribute('y2', y)
-    line.setAttribute('stroke', major ? '#d8d8d8' : '#ececec')
-    line.setAttribute('stroke-width', major ? '0.8' : '0.5')
-    g.appendChild(line)
+  for (let mm = 0; mm <= 7000; mm += 1000) {
+    const v = planToVb([0, mm])[1]
+    if (v < 0) break
+    const major = mm % 5000 === 0
+    g.appendChild(el('line', { x1: 0, y1: v, x2: 1000, y2: v, stroke: major ? '#d8d8d8' : '#ededed', 'stroke-width': major ? 0.8 : 0.5 }))
   }
-  svgElement.appendChild(g)
+  svg.appendChild(g)
 }
 
-function drawAxes(svgElement, view) {
-  const axisX = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-  axisX.setAttribute('x1', '50')
-  axisX.setAttribute('y1', '350')
-  axisX.setAttribute('x2', '950')
-  axisX.setAttribute('y2', '350')
-  axisX.setAttribute('stroke', '#fe0000')
-  axisX.setAttribute('stroke-width', '1')
-  axisX.setAttribute('opacity', '0.3')
-  svgElement.appendChild(axisX)
+// ── Dibujo ALZADO ──────────────────────────────────────────
+function drawElevation(svg, panels, selectedId, selectedVertex) {
+  if (!svg) return
+  svg.innerHTML = ''
+  svg.appendChild(el('rect', { width: 1000, height: 400, fill: 'white' }))
 
-  const axisY = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-  axisY.setAttribute('x1', '50')
-  axisY.setAttribute('y1', '350')
-  axisY.setAttribute('x2', '50')
-  axisY.setAttribute('y2', '50')
-  axisY.setAttribute('stroke', '#fe0000')
-  axisY.setAttribute('stroke-width', '1')
-  axisY.setAttribute('opacity', '0.3')
-  svgElement.appendChild(axisY)
-
-  const labelX = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-  labelX.setAttribute('x', '960')
-  labelX.setAttribute('y', '368')
-  labelX.setAttribute('font-size', '10')
-  labelX.setAttribute('fill', '#fe0000')
-  labelX.setAttribute('opacity', '0.5')
-  labelX.textContent = 'X'
-  svgElement.appendChild(labelX)
-
-  const labelY = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-  labelY.setAttribute('x', '25')
-  labelY.setAttribute('y', '45')
-  labelY.setAttribute('font-size', '10')
-  labelY.setAttribute('fill', '#fe0000')
-  labelY.setAttribute('opacity', '0.5')
-  labelY.textContent = view === 'elevation' ? 'Z' : 'Y'
-  svgElement.appendChild(labelY)
-}
-
-function drawPolyline(svgElement, el, selectedId, view) {
-  if (el.points.length < 2) return
-
-  if (view === 'plan') {
-    // PLANTA: Dibuja línea
-    drawLine(svgElement, el, selectedId)
-  } else {
-    // ELEVACIÓN: Dibuja rectángulo basado en puntos de planta
-    drawRectangle(svgElement, el, selectedId)
+  const panel = panels.find((p) => p.id === selectedId)
+  if (!panel) {
+    const t = el('text', { x: 500, y: 200, 'font-size': 15, fill: '#bbb', 'text-anchor': 'middle' })
+    t.textContent = 'Seleccioná un muro en la planta para editar su cara'
+    svg.appendChild(t)
+    return
   }
-}
 
-function drawLine(svgElement, el, selectedId) {
-  const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline')
-  const points = el.points.map((p) => `${p[0]},${p[1]}`).join(' ')
-  polyline.setAttribute('points', points)
-  polyline.setAttribute('fill', 'none')
-  polyline.setAttribute('stroke', el.id === selectedId ? '#fe0000' : '#333')
-  polyline.setAttribute('stroke-width', el.id === selectedId ? '3' : '2')
-  polyline.setAttribute('data-id', el.id)
-  polyline.setAttribute('cursor', 'pointer')
-  svgElement.appendChild(polyline)
+  const tf = elevTransform(panel)
 
-  // Puntos
-  el.points.forEach((p) => {
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
-    circle.setAttribute('cx', p[0])
-    circle.setAttribute('cy', p[1])
-    circle.setAttribute('r', el.id === selectedId ? '3' : '2')
-    circle.setAttribute('fill', el.id === selectedId ? '#fe0000' : '#666')
-    circle.setAttribute('pointer-events', 'none')
-    svgElement.appendChild(circle)
-  })
+  // grilla del alzado (cada 500mm)
+  const maxH = panelMaxHeight(panel)
+  const g = el('g', {})
+  for (let x = 0; x <= panel.width; x += 500) {
+    const a = tf.toVb([x, 0]), b = tf.toVb([x, maxH])
+    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: x % 1000 === 0 ? '#e2e2e2' : '#f0f0f0', 'stroke-width': 0.5 }))
+  }
+  for (let y = 0; y <= maxH; y += 500) {
+    const a = tf.toVb([0, y]), b = tf.toVb([panel.width, y])
+    g.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: y % 1000 === 0 ? '#e2e2e2' : '#f0f0f0', 'stroke-width': 0.5 }))
+  }
+  svg.appendChild(g)
 
-  // Label con longitud
-  const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-  const midPoint = [
-    (el.points[0][0] + el.points[el.points.length - 1][0]) / 2,
-    (el.points[0][1] + el.points[el.points.length - 1][1]) / 2,
-  ]
-  label.setAttribute('x', midPoint[0])
-  label.setAttribute('y', midPoint[1] - 8)
-  label.setAttribute('font-size', '10')
-  label.setAttribute('font-weight', 'bold')
-  label.setAttribute('fill', el.id === selectedId ? '#fe0000' : '#666')
-  label.setAttribute('pointer-events', 'none')
-  label.setAttribute('text-anchor', 'middle')
-  label.textContent = `${el.id} ${el.properties?.length || 0}mm`
-  svgElement.appendChild(label)
+  // polígono de la cara
+  const poly = panelPolygon(panel).map(tf.toVb)
+  const pts = poly.map((v) => `${v[0]},${v[1]}`).join(' ')
+  svg.appendChild(el('polygon', { points: pts, fill: 'rgba(254,0,0,0.07)', stroke: '#fe0000', 'stroke-width': 2, 'stroke-linejoin': 'round' }))
 
-  polyline.addEventListener('click', (e) => {
-    e.stopPropagation()
-    useDrawingStore.getState().selectElement(el.id)
-  })
-}
+  // base bloqueada (ancho de planta) — más gruesa y gris
+  const baseA = tf.toVb([0, 0]), baseB = tf.toVb([panel.width, 0])
+  svg.appendChild(el('line', { x1: baseA[0], y1: baseA[1], x2: baseB[0], y2: baseB[1], stroke: '#555', 'stroke-width': 4, 'stroke-linecap': 'round' }))
 
-function drawRectangle(svgElement, el, selectedId) {
-  const length = el.properties?.length || 0
-  const height = el.properties?.height || 3000
-  const x = el.points[0][0]
-  const y = 200 - (height / 3000) * 150 // Escala altura a visual
+  // cota de ancho (bloqueado)
+  const wt = el('text', { x: (baseA[0] + baseB[0]) / 2, y: baseA[1] + 22, 'font-size': 12, 'font-weight': 'bold', fill: '#555', 'text-anchor': 'middle' })
+  wt.textContent = `ancho ${(panel.width / 1000).toFixed(2)} m (planta)`
+  svg.appendChild(wt)
 
-  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
-  rect.setAttribute('x', x)
-  rect.setAttribute('y', y)
-  rect.setAttribute('width', Math.max(length / 10, 20))
-  rect.setAttribute('height', (height / 3000) * 150)
-  rect.setAttribute('fill', el.id === selectedId ? 'rgba(254, 0, 0, 0.2)' : 'rgba(51, 51, 51, 0.1)')
-  rect.setAttribute('stroke', el.id === selectedId ? '#fe0000' : '#333')
-  rect.setAttribute('stroke-width', el.id === selectedId ? '3' : '2')
-  rect.setAttribute('data-id', el.id)
-  rect.setAttribute('cursor', 'pointer')
-  svgElement.appendChild(rect)
-
-  // Label
-  const label = document.createElementNS('http://www.w3.org/2000/svg', 'text')
-  label.setAttribute('x', x + (Math.max(length / 10, 20) / 2))
-  label.setAttribute('y', y - 8)
-  label.setAttribute('font-size', '10')
-  label.setAttribute('font-weight', 'bold')
-  label.setAttribute('fill', el.id === selectedId ? '#fe0000' : '#666')
-  label.setAttribute('pointer-events', 'none')
-  label.setAttribute('text-anchor', 'middle')
-  label.textContent = `${el.id} ${height}mm`
-  svgElement.appendChild(label)
-
-  rect.addEventListener('click', (e) => {
-    e.stopPropagation()
-    useDrawingStore.getState().selectElement(el.id)
+  // vértices del contorno con etiqueta de altura
+  panel.topPath.forEach((pt, i) => {
+    const v = tf.toVb(pt)
+    const isEnd = i === 0 || i === panel.topPath.length - 1
+    const selV = i === selectedVertex
+    svg.appendChild(el('circle', { cx: v[0], cy: v[1], r: selV ? 7 : 5, fill: selV ? '#fe0000' : '#fff', stroke: '#fe0000', 'stroke-width': 2 }))
+    const lbl = el('text', { x: v[0], y: v[1] - 12, 'font-size': 11, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
+    lbl.textContent = isEnd ? `${i === 0 ? 'A' : 'B'} ${pt[1]}mm` : `${pt[1]}mm`
+    svg.appendChild(lbl)
   })
 }

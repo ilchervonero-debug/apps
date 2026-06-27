@@ -1,206 +1,164 @@
 import { create } from 'zustand'
 
-const GRID_SIZE = 100 // mm por celda de grilla
-const DEFAULT_ELEVATION_HEIGHT = 3000 // 3m por defecto
+// ── Modelo iLFrame ──────────────────────────────────────────
+// Planta: cada muro dibujado es un PANEL (código M1, M2…).
+//   La longitud de la línea = ANCHO del panel (se edita SOLO en planta).
+// Alzado: el panel es un POLÍGONO. Arranca como rectángulo de 3 m.
+//   El ancho está bloqueado (viene de planta). El contorno superior se
+//   edita con números exactos: altura lado A, altura lado B y puntos X/Y.
 
-const snapToGrid = (value) => Math.round(value / GRID_SIZE) * GRID_SIZE
+const GRID_MM = 100
+const DEFAULT_HEIGHT = 3000
 
-const calculateDistance = (p1, p2) => {
-  const dx = p2[0] - p1[0]
-  const dy = p2[1] - p1[1]
-  return Math.sqrt(dx * dx + dy * dy)
+const snap = (mm) => Math.round(mm / GRID_MM) * GRID_MM
+const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1])
+
+const nextCode = (panels) => {
+  const used = new Set(panels.map((p) => p.id))
+  let n = 1
+  while (used.has('M' + n)) n++
+  return 'M' + n
 }
 
-const arePointsConnected = (p1, p2, tolerance = 5) => {
-  return calculateDistance(p1, p2) <= tolerance
+const cloneTop = (tp) => tp.map((a) => [...a])
+
+// Polígono local (mm, y hacia arriba): base + contorno superior izq→der
+export function panelPolygon(p) {
+  return [[0, 0], ...p.topPath, [p.width, 0]]
 }
 
-const generateElementId = (type, elements) => {
-  const prefix = { line: 'L', polyline: 'P', door: 'D', window: 'V', opening: 'A' }[type] || 'E'
-  const count = elements.filter((el) => el.type === type).length
-  return `${prefix}${count + 1}`
+export function polygonArea(poly) {
+  let a = 0
+  for (let i = 0; i < poly.length; i++) {
+    const [x1, y1] = poly[i]
+    const [x2, y2] = poly[(i + 1) % poly.length]
+    a += x1 * y2 - x2 * y1
+  }
+  return Math.abs(a) / 2 // mm²
 }
 
-export const useDrawingStore = create((set, get) => ({
-  elements: [],
+export function panelMaxHeight(p) {
+  return Math.max(DEFAULT_HEIGHT, ...p.topPath.map((pt) => pt[1]))
+}
+
+export const GRID = GRID_MM
+export const DEF_H = DEFAULT_HEIGHT
+
+export const useDrawingStore = create((set) => ({
+  panels: [],
   selectedId: null,
-  activeTool: 'line',
-  selectedElement: null,
-  elevationHeight: 50,
-  gridSize: GRID_SIZE,
-  drawingMode: false,
-  currentPoints: [],
+  selectedVertex: null, // índice de vértice del contorno en edición (alzado)
+  activeTool: 'wall', // 'wall' | 'select'
+  elevationHeight: 50, // % de alto del canvas superior
+  draft: null, // { a:[mm,mm], b:[mm,mm] } mientras se arrastra en planta
 
-  config: {
-    tipo: 'wall',
-    perfil: 'CU 100x40x0.95',
-    props: { largo: 5000, alto: 2400, angulo: 0 },
-    avanzado: { btb: false, blocking: false, stiffener: false },
-  },
+  setActiveTool: (t) => set({ activeTool: t }),
+  setElevationHeight: (h) => set({ elevationHeight: Math.max(20, Math.min(80, h)) }),
 
-  addPoint: (point) => set((state) => {
-    const snappedPoint = [snapToGrid(point[0]), snapToGrid(point[1])]
-    return { currentPoints: [...state.currentPoints, snappedPoint] }
-  }),
-
-  finishDrawing: (view = 'plan') => set((state) => {
-    if (!state.currentPoints || state.currentPoints.length < 2) return state
-
-    const points = state.currentPoints
-    const length = calculateDistance(points[0], points[points.length - 1])
-    const toolType = state.activeTool || 'polyline'
-
-    const newElement = {
-      id: generateElementId(toolType, state.elements),
-      type: toolType,
-      view,
-      points,
-      properties: {
-        length: Math.round(length),
-        height: DEFAULT_ELEVATION_HEIGHT,
-        angle: 0,
-      },
-      connections: [],
+  // ── PLANTA: dibujar muro ──────────────────────────────────
+  startWall: (pt) => set({ draft: { a: [snap(pt[0]), snap(pt[1])], b: [snap(pt[0]), snap(pt[1])] } }),
+  dragWall: (pt) => set((s) => (s.draft ? { draft: { ...s.draft, b: [snap(pt[0]), snap(pt[1])] } } : {})),
+  finishWall: () => set((s) => {
+    if (!s.draft) return {}
+    const { a, b } = s.draft
+    const width = Math.round(dist(a, b))
+    if (width < GRID_MM) return { draft: null }
+    const id = nextCode(s.panels)
+    const panel = {
+      id,
+      a,
+      b,
+      width,
+      topPath: [[0, DEFAULT_HEIGHT], [width, DEFAULT_HEIGHT]],
+      openings: [],
     }
-
-    const updatedElements = state.elements.map((el) => {
-      if (!el.points) return el
-      const connected = points.some((p) => el.points.some((ep) => arePointsConnected(p, ep)))
-      return connected ? { ...el, connections: [...new Set([...el.connections, newElement.id])] } : el
-    })
-
-    return {
-      elements: [...updatedElements, newElement],
-      currentPoints: [],
-      drawingMode: false,
-      // auto-seleccionar para poder darle dimensión real en la barra
-      selectedId: newElement.id,
-      selectedElement: newElement,
-    }
+    return { panels: [...s.panels, panel], draft: null, selectedId: id, selectedVertex: null }
   }),
+  cancelWall: () => set({ draft: null }),
 
-  // Fija el largo real (mm): mueve el extremo manteniendo la dirección del trazo
-  setElementLength: (id, mm) => set((state) => {
-    const len = parseFloat(mm)
-    if (!len || len <= 0) return state
-    return {
-      elements: state.elements.map((el) => {
-        if (el.id !== id || !el.points || el.points.length < 2) return el
-        const a = el.points[0]
-        const b = el.points[el.points.length - 1]
-        const dx = b[0] - a[0], dy = b[1] - a[1]
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1
-        // el largo se mide como la distancia entre puntos: reescalamos el extremo
-        const nb = [a[0] + (dx / dist) * len, a[1] + (dy / dist) * len]
-        const pts = [...el.points]
-        pts[pts.length - 1] = nb
-        return { ...el, points: pts, properties: { ...el.properties, length: Math.round(len) } }
-      }),
-      selectedElement: state.selectedId === id
-        ? { ...state.selectedElement, properties: { ...state.selectedElement.properties, length: Math.round(len) } }
-        : state.selectedElement,
-    }
-  }),
+  select: (id) => set({ selectedId: id, selectedVertex: null }),
+  deselect: () => set({ selectedId: null, selectedVertex: null }),
+  selectVertex: (i) => set({ selectedVertex: i }),
+  remove: (id) => set((s) => ({
+    panels: s.panels.filter((p) => p.id !== id),
+    selectedId: s.selectedId === id ? null : s.selectedId,
+    selectedVertex: null,
+  })),
+  clearAll: () => set({ panels: [], selectedId: null, selectedVertex: null }),
 
-  cancelDrawing: () => set({ currentPoints: [], drawingMode: false }),
+  // ── PLANTA: ancho exacto (mueve B en la dirección del trazo) ──
+  setWidth: (id, mm) => set((s) => ({
+    panels: s.panels.map((p) => {
+      if (p.id !== id) return p
+      const w = Math.max(GRID_MM, Math.round(+mm || 0))
+      const d = dist(p.a, p.b) || 1
+      const ux = (p.b[0] - p.a[0]) / d
+      const uy = (p.b[1] - p.a[1]) / d
+      const nb = [p.a[0] + ux * w, p.a[1] + uy * w]
+      const sx = w / (p.width || w)
+      const topPath = cloneTop(p.topPath).map(([x, y]) => [x * sx, y])
+      topPath[0][0] = 0
+      topPath[topPath.length - 1][0] = w
+      return { ...p, b: nb, width: w, topPath }
+    }),
+  })),
 
-  addElement: (element) => {
-    const state = get()
-    const newElement = { ...element, id: generateElementId(element.type, state.elements) }
-    set({ elements: [...state.elements, newElement] })
-    return newElement.id
-  },
+  // ── ALZADO: altura lado A (izq) / B (der) ─────────────────
+  setHeightA: (id, mm) => set((s) => ({
+    panels: s.panels.map((p) => {
+      if (p.id !== id) return p
+      const tp = cloneTop(p.topPath)
+      tp[0][1] = Math.max(0, Math.round(+mm || 0))
+      return { ...p, topPath: tp }
+    }),
+  })),
+  setHeightB: (id, mm) => set((s) => ({
+    panels: s.panels.map((p) => {
+      if (p.id !== id) return p
+      const tp = cloneTop(p.topPath)
+      tp[tp.length - 1][1] = Math.max(0, Math.round(+mm || 0))
+      return { ...p, topPath: tp }
+    }),
+  })),
 
-  updateElement: (id, updates) => {
-    const state = get()
-    set({
-      elements: state.elements.map((el) => (el.id === id ? { ...el, ...updates } : el)),
-    })
-  },
+  // ── ALZADO: agregar punto de contorno (X desde izq, Y altura) ──
+  addContourPoint: (id, x, y) => set((s) => ({
+    panels: s.panels.map((p) => {
+      if (p.id !== id) return p
+      const px = Math.max(0, Math.min(p.width, Math.round(+x || 0)))
+      const py = Math.max(0, Math.round(+y || 0))
+      const pts = cloneTop(p.topPath)
+      const ends = [pts[0], pts[pts.length - 1]]
+      const mids = pts.slice(1, -1)
+      mids.push([px, py])
+      mids.sort((m, n) => m[0] - n[0])
+      return { ...p, topPath: [ends[0], ...mids, ends[1]] }
+    }),
+  })),
 
-  deleteElement: (id) => {
-    const state = get()
-    set({
-      elements: state.elements.filter((el) => el.id !== id),
-      selectedId: state.selectedId === id ? null : state.selectedId,
-    })
-  },
+  updateContourPoint: (id, index, x, y) => set((s) => ({
+    panels: s.panels.map((p) => {
+      if (p.id !== id) return p
+      const pts = cloneTop(p.topPath)
+      if (!pts[index]) return p
+      if (index === 0) {
+        pts[0][1] = Math.max(0, Math.round(+y || 0))
+      } else if (index === pts.length - 1) {
+        pts[index][1] = Math.max(0, Math.round(+y || 0))
+      } else {
+        pts[index] = [Math.max(0, Math.min(p.width, Math.round(+x || 0))), Math.max(0, Math.round(+y || 0))]
+      }
+      const ends = [pts[0], pts[pts.length - 1]]
+      const mids = pts.slice(1, -1).sort((m, n) => m[0] - n[0])
+      return { ...p, topPath: [ends[0], ...mids, ends[1]] }
+    }),
+  })),
 
-  selectElement: (id) => {
-    const state = get()
-    const element = state.elements.find((el) => el.id === id)
-    set({
-      selectedId: id,
-      selectedElement: element,
-    })
-  },
-
-  deselectElement: () => {
-    set({
-      selectedId: null,
-      selectedElement: null,
-    })
-  },
-
-  setActiveTool: (tool) => {
-    set({ activeTool: tool })
-  },
-
-  updateConfig: (key, value) => {
-    const state = get()
-    set({
-      config: { ...state.config, [key]: value },
-    })
-  },
-
-  updateProps: (props) => {
-    const state = get()
-    set({
-      config: {
-        ...state.config,
-        props: { ...state.config.props, ...props },
-      },
-    })
-  },
-
-  updateAdvanced: (key, value) => {
-    const state = get()
-    set({
-      config: {
-        ...state.config,
-        avanzado: { ...state.config.avanzado, [key]: value },
-      },
-    })
-  },
-
-  applyConfig: () => {
-    const state = get()
-    if (!state.selectedId) return
-
-    set({
-      elements: state.elements.map((el) =>
-        el.id === state.selectedId
-          ? {
-              ...el,
-              tipo: state.config.tipo,
-              perfil: state.config.perfil,
-              props: state.config.props,
-              avanzado: state.config.avanzado,
-            }
-          : el
-      ),
-    })
-  },
-
-  setElevationHeight: (height) => {
-    set({ elevationHeight: Math.max(20, Math.min(80, height)) })
-  },
-
-  clearAll: () => {
-    set({
-      elements: [],
-      selectedId: null,
-      selectedElement: null,
-    })
-  },
+  removeContourPoint: (id, index) => set((s) => ({
+    panels: s.panels.map((p) => {
+      if (p.id !== id) return p
+      if (index <= 0 || index >= p.topPath.length - 1) return p // no borrar extremos A/B
+      return { ...p, topPath: p.topPath.filter((_, i) => i !== index) }
+    }),
+  })),
 }))
