@@ -432,6 +432,25 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, vi
     const len = el('text', { x: mid[0], y: mid[1] + 16 * k, 'font-size': 11 * k, fill: '#888', 'text-anchor': 'middle' })
     len.textContent = `${(p.width / 1000).toFixed(2)} m`
     svg.appendChild(len)
+
+    // flecha de lado exterior (solo en el panel seleccionado)
+    if (sel) {
+      const dx = b[0] - a[0], dy = b[1] - a[1]
+      const L = Math.hypot(dx, dy) || 1
+      const ux = dx / L, uy = dy / L // dirección del muro
+      const nx = (p.flip ? uy : -uy), ny = (p.flip ? -ux : ux) // normal hacia el exterior
+      const len2 = 26 * k
+      const tip = [mid[0] + nx * len2, mid[1] + ny * len2]
+      svg.appendChild(el('line', { x1: mid[0], y1: mid[1], x2: tip[0], y2: tip[1], stroke: '#0a84ff', 'stroke-width': 2 * k }))
+      // punta de flecha
+      const hb = 8 * k, hw = 4 * k
+      const p1 = [tip[0] - nx * hb + ux * hw, tip[1] - ny * hb + uy * hw]
+      const p2 = [tip[0] - nx * hb - ux * hw, tip[1] - ny * hb - uy * hw]
+      svg.appendChild(el('polygon', { points: `${tip[0]},${tip[1]} ${p1[0]},${p1[1]} ${p2[0]},${p2[1]}`, fill: '#0a84ff' }))
+      const et = el('text', { x: tip[0] + nx * 8 * k, y: tip[1] + ny * 8 * k + 3 * k, 'font-size': 9 * k, 'font-weight': 'bold', fill: '#0a84ff', 'text-anchor': 'middle' })
+      et.textContent = 'ext'
+      svg.appendChild(et)
+    }
   })
 
   // trazo en curso
