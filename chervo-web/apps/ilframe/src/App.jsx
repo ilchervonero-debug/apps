@@ -3,6 +3,7 @@ import CommandBar from './components/CommandBar'
 import DrawingTools from './components/DrawingTools'
 import ProjectSetup from './components/ProjectSetup'
 import Iso3D from './components/Iso3D'
+import BomView from './components/BomView'
 import { useDrawingStore } from './store/drawingStore'
 
 export default function App() {
@@ -48,13 +49,13 @@ export default function App() {
         <>
           {/* Pestañas — grandes y legibles */}
           <div style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid #e0e0e0', background: '#fff' }}>
-            {[['plan', 'PLANTA'], ['elev', 'ALZADO'], ['3d', '3D']].map(([id, label]) => {
+            {[['plan', 'PLANTA'], ['elev', 'ALZADO'], ['3d', '3D'], ['bom', 'CÓMPUTO']].map(([id, label]) => {
               const on = tab === id
               return (
                 <button key={id} onClick={() => setTab(id)}
                   style={{
-                    flex: 1, padding: '14px 0', border: 'none', cursor: 'pointer', background: 'none',
-                    fontSize: 16, fontWeight: 800, letterSpacing: '0.05em',
+                    flex: 1, padding: '14px 2px', border: 'none', cursor: 'pointer', background: 'none',
+                    fontSize: 14, fontWeight: 800, letterSpacing: '0.02em',
                     color: on ? '#fe0000' : '#999',
                     borderBottom: on ? '3px solid #fe0000' : '3px solid transparent',
                   }}>
@@ -67,6 +68,8 @@ export default function App() {
           <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', display: 'flex' }}>
             {tab === '3d' ? (
               <Iso3D />
+            ) : tab === 'bom' ? (
+              <BomView />
             ) : (
               <>
                 <DrawingCanvas />
