@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useDrawingStore, panelPolygon, polygonArea } from '../store/drawingStore'
+import { useDrawingStore, panelPolygon, polygonArea, wallThickness } from '../store/drawingStore'
 import '../styles/CommandBar.css'
 
 // Input numérico con buffer local: te deja vaciar el campo y escribir
@@ -47,6 +47,9 @@ export default function CommandBar() {
   const updateContourPoint = useDrawingStore((s) => s.updateContourPoint)
   const removeContourPoint = useDrawingStore((s) => s.removeContourPoint)
   const flipPanel = useDrawingStore((s) => s.flipPanel)
+  const setPanelType = useDrawingStore((s) => s.setPanelType)
+  const wallTypes = useDrawingStore((s) => s.project.wallTypes)
+  const profileSection = useDrawingStore((s) => s.project.profileSection)
 
   const [npX, setNpX] = useState('')
   const [npY, setNpY] = useState('')
@@ -100,6 +103,19 @@ export default function CommandBar() {
             <span className="editor-label">Ancho (mm):</span>
             <NumInput value={panel.width} onCommit={(v) => setWidth(panel.id, v)} />
           </label>
+          <label>
+            <span className="editor-label">Tipo de muro:</span>
+            <select value={panel.typeId || (wallTypes[0] && wallTypes[0].id)}
+              onChange={(e) => setPanelType(panel.id, e.target.value)}
+              style={{ flex: 1, padding: '6px 8px', border: '1px solid #ddd', borderRadius: 4, fontSize: 12 }}>
+              {wallTypes.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </label>
+          {(() => {
+            const t = wallTypes.find((x) => x.id === (panel.typeId || wallTypes[0]?.id))
+            const th = wallThickness(t, profileSection)
+            return <div style={{ fontSize: 11, color: '#0a84ff', fontWeight: 700 }}>Espesor ≈ {(th / 10).toFixed(1)} cm</div>
+          })()}
         </div>
 
         {/* ALZADO: alturas de extremos */}

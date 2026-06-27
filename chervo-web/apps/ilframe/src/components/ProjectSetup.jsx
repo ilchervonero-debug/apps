@@ -1,4 +1,4 @@
-import { useDrawingStore } from '../store/drawingStore'
+import { useDrawingStore, wallThickness } from '../store/drawingStore'
 import { CU_NORMS, CU_SECTIONS } from '../data/profiles'
 import { LAYER_TEMPLATES } from '../data/layers'
 
@@ -13,7 +13,6 @@ const layerName = (id) => LAYER_TEMPLATES.find((l) => l.id === id)?.name || id
 
 // orden y etiquetas de los elementos
 const ELEMENTS = [
-  { key: 'muros', label: 'Muros', faces: ['interior', 'exterior'] },
   { key: 'techo', label: 'Techo', faces: ['interior', 'exterior'] },
   { key: 'piso', label: 'Piso', faces: ['unica'] },
   { key: 'losas', label: 'Losas / Entrepisos', faces: ['unica'] },
@@ -65,9 +64,21 @@ export default function ProjectSetup() {
           </div>
         </Card>
 
+        {/* Tipos de muro */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '4px 4px 0' }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tipos de muro</span>
+          <button onClick={() => useDrawingStore.getState().addWallType()}
+            style={{ marginLeft: 'auto', border: 'none', background: '#fe0000', color: '#fff', borderRadius: 8, fontSize: 12, fontWeight: 800, padding: '5px 12px', cursor: 'pointer' }}>
+            + Tipo
+          </button>
+        </div>
+        {project.wallTypes.map((t) => (
+          <WallTypeCard key={t.id} type={t} profileSection={project.profileSection} canDelete={project.wallTypes.length > 1} />
+        ))}
+
         {/* Elementos del proyecto */}
-        <div style={{ fontSize: 12, fontWeight: 800, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 4px 0' }}>
-          Elementos del proyecto
+        <div style={{ fontSize: 12, fontWeight: 800, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '8px 4px 0' }}>
+          Otros elementos
         </div>
         {ELEMENTS.map((el) => (
           <ElementCard key={el.key} def={el} state={project.elements[el.key]} onToggle={() => toggleElement(el.key)} />
@@ -83,6 +94,60 @@ export default function ProjectSetup() {
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+function WallTypeCard({ type, profileSection, canDelete }) {
+  const updateWallType = useDrawingStore((s) => s.updateWallType)
+  const removeWallType = useDrawingStore((s) => s.removeWallType)
+  const th = wallThickness(type, profileSection)
+  return (
+    <div style={{ background: '#fff', borderRadius: 16, padding: 14, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <input value={type.name} onChange={(e) => updateWallType(type.id, { name: e.target.value })}
+          style={{ ...inp, fontWeight: 800, flex: 1 }} />
+        {canDelete && <button onClick={() => removeWallType(type.id)}
+          style={{ border: '1px solid #ffd0d0', background: '#fff', color: '#fe0000', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontWeight: 700 }}>×</button>}
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {[['exterior', 'Exterior'], ['interior', 'Interior']].map(([k, lbl]) => (
+          <button key={k} onClick={() => updateWallType(type.id, { kind: k })} style={pill(type.kind === k)}>{lbl}</button>
+        ))}
+        <span style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: 12, fontWeight: 800, color: '#0a84ff' }}>espesor ≈ {(th / 10).toFixed(1)} cm</span>
+      </div>
+      <TypeFaceStack typeId={type.id} face="interior" layers={type.faces?.interior || []} label="Cara interior" />
+      <TypeFaceStack typeId={type.id} face="exterior" layers={type.faces?.exterior || []} label={type.kind === 'exterior' ? 'Cara exterior' : 'Otra cara'} />
+    </div>
+  )
+}
+
+function TypeFaceStack({ typeId, face, layers, label }) {
+  const addTypeLayer = useDrawingStore((s) => s.addTypeLayer)
+  const removeTypeLayer = useDrawingStore((s) => s.removeTypeLayer)
+  return (
+    <div>
+      <Sub>{label}</Sub>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+        {layers.length === 0 && <span style={{ fontSize: 12, color: '#bbb' }}>Sin capas</span>}
+        {layers.map((id) => (
+          <span key={id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#f0f0f0', borderRadius: 16, padding: '5px 6px 5px 11px', fontSize: 12, fontWeight: 600, color: '#444' }}>
+            {layerName(id)}
+            <button onClick={() => removeTypeLayer(typeId, face, id)} style={{ border: 'none', background: '#ddd', color: '#666', borderRadius: 10, width: 18, height: 18, cursor: 'pointer', lineHeight: 1 }}>×</button>
+          </span>
+        ))}
+      </div>
+      <select value="" onChange={(e) => { addTypeLayer(typeId, face, e.target.value); e.target.value = '' }}
+        style={{ ...inp, marginTop: 6, color: '#fe0000', fontWeight: 700 }}>
+        <option value="" disabled>+ Agregar capa…</option>
+        {CATS.map(([cat, lbl]) => (
+          <optgroup key={cat} label={lbl}>
+            {LAYER_TEMPLATES.filter((l) => l.category === cat && !layers.includes(l.id)).map((l) => (
+              <option key={l.id} value={l.id}>{l.name}</option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
     </div>
   )
 }

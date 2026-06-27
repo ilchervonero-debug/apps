@@ -1,4 +1,14 @@
 import { create } from 'zustand'
+import { LAYER_TEMPLATES } from '../data/layers'
+
+// Espesor de pared (mm) = núcleo (alto del montante) + capas de ambas caras
+export function wallThickness(type, profileSection) {
+  if (!type) return 100
+  const core = parseInt((profileSection || '100_0.95').split('_')[0], 10) || 100
+  const th = (id) => LAYER_TEMPLATES.find((l) => l.id === id)?.thickness || 0
+  const sum = (arr) => (arr || []).reduce((a, id) => a + th(id), 0)
+  return Math.round(core + sum(type.faces?.interior) + sum(type.faces?.exterior))
+}
 
 // ── Modelo iLFrame ──────────────────────────────────────────
 // Planta: cada muro dibujado es un PANEL (código M1, M2…).
@@ -125,6 +135,11 @@ export const useDrawingStore = create((set) => ({
     profileNorm: 'cu_1',
     profileSection: '100_0.95', // `${h}_${t}`
     studSpacing: 400,
+    // tipos de muro: cada panel referencia uno → define espesor y materiales
+    wallTypes: [
+      { id: 'ext', name: 'Muro exterior', kind: 'exterior', faces: { interior: ['gyp_standard'], exterior: ['osb_11', 'mineral_wool_50'] } },
+      { id: 'int', name: 'Muro interior', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } },
+    ],
     // elementos del proyecto; cada uno con su composición
     elements: {
       muros: defaultElement(true, true),
@@ -158,6 +173,43 @@ export const useDrawingStore = create((set) => ({
     return { project: { ...s.project, elements: { ...s.project.elements, [key]: { ...elx, finish: { ...elx.finish, ...patch } } } } }
   }),
 
+  // ── Tipos de muro ─────────────────────────────────────────
+  addWallType: () => set((s) => {
+    const id = 't' + Date.now().toString(36)
+    const wt = { id, name: 'Muro nuevo', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } }
+    return { project: { ...s.project, wallTypes: [...s.project.wallTypes, wt] } }
+  }),
+  updateWallType: (id, patch) => set((s) => ({
+    project: { ...s.project, wallTypes: s.project.wallTypes.map((t) => (t.id === id ? { ...t, ...patch } : t)) },
+  })),
+  removeWallType: (id) => set((s) => {
+    if (s.project.wallTypes.length <= 1) return {}
+    return { project: { ...s.project, wallTypes: s.project.wallTypes.filter((t) => t.id !== id) } }
+  }),
+  addTypeLayer: (id, face, layerId) => set((s) => ({
+    project: {
+      ...s.project,
+      wallTypes: s.project.wallTypes.map((t) => {
+        if (t.id !== id) return t
+        const cur = t.faces[face] || []
+        if (!layerId || cur.includes(layerId)) return t
+        return { ...t, faces: { ...t.faces, [face]: [...cur, layerId] } }
+      }),
+    },
+  })),
+  removeTypeLayer: (id, face, layerId) => set((s) => ({
+    project: {
+      ...s.project,
+      wallTypes: s.project.wallTypes.map((t) => (t.id === id
+        ? { ...t, faces: { ...t.faces, [face]: (t.faces[face] || []).filter((l) => l !== layerId) } }
+        : t)),
+    },
+  })),
+  setPanelType: (panelId, typeId) => set((s) => ({
+    ...histPatch(s, 'ptype'),
+    panels: s.panels.map((p) => (p.id === panelId ? { ...p, typeId } : p)),
+  })),
+
   setActiveTool: (t) => set({ activeTool: t }),
   setGrid: (mm) => set({ gridMm: mm }),
   setElevationHeight: (h) => set({ elevationHeight: Math.max(20, Math.min(80, h)) }),
@@ -179,6 +231,7 @@ export const useDrawingStore = create((set) => ({
       a,
       b,
       width,
+      typeId: s.project.wallTypes[0]?.id || 'ext',
       topPath: [[0, DEFAULT_HEIGHT], [width, DEFAULT_HEIGHT]],
       openings: [],
     }
