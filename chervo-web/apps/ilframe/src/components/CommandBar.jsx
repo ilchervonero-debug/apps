@@ -37,7 +37,7 @@ function OpField({ label, value, onCommit }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <span style={{ fontSize: 10, color: '#999', fontWeight: 600 }}>{label}</span>
-      <NumInput value={value} onCommit={onCommit} />
+      <NumInput value={value} step={0.01} onCommit={onCommit} />
     </label>
   )
 }
@@ -112,8 +112,8 @@ export default function CommandBar() {
         <div className="editor-section">
           <div className="editor-sublabel">Planta</div>
           <label>
-            <span className="editor-label">Ancho (mm):</span>
-            <NumInput value={panel.width} onCommit={(v) => setWidth(panel.id, v)} />
+            <span className="editor-label">Ancho (m):</span>
+            <NumInput value={+(panel.width / 1000).toFixed(3)} step={0.01} onCommit={(v) => setWidth(panel.id, Math.round(+v * 1000))} />
           </label>
           <label>
             <span className="editor-label">Tipo de muro:</span>
@@ -140,40 +140,40 @@ export default function CommandBar() {
             </button>
           </div>
           <label>
-            <span className="editor-label">Altura lado A (mm):</span>
-            <NumInput value={heightA} onCommit={(v) => setHeightA(panel.id, v)} />
+            <span className="editor-label">Altura lado A (m):</span>
+            <NumInput value={+(heightA / 1000).toFixed(3)} step={0.01} onCommit={(v) => setHeightA(panel.id, Math.round(+v * 1000))} />
           </label>
           <label>
-            <span className="editor-label">Altura lado B (mm):</span>
-            <NumInput value={heightB} onCommit={(v) => setHeightB(panel.id, v)} />
+            <span className="editor-label">Altura lado B (m):</span>
+            <NumInput value={+(heightB / 1000).toFixed(3)} step={0.01} onCommit={(v) => setHeightB(panel.id, Math.round(+v * 1000))} />
           </label>
         </div>
 
         {/* Puntos intermedios del contorno */}
         <div className="editor-section">
-          <div className="editor-sublabel">Puntos del contorno (X desde A, Y altura)</div>
+          <div className="editor-sublabel">Puntos del contorno (X desde A, Y altura) en m</div>
           {mids.length === 0 && <div className="list-empty" style={{ padding: '6px 0' }}>Sin puntos intermedios</div>}
           {mids.map((pt, i) => {
             const idx = i + 1 // índice real en topPath
             const selV = idx === selectedVertex
             return (
               <div key={idx} className={`contour-row ${selV ? 'sel' : ''}`}>
-                <NumInput value={pt[0]} onCommit={(v) => updateContourPoint(panel.id, idx, v, pt[1])} />
+                <NumInput value={+(pt[0] / 1000).toFixed(3)} step={0.01} onCommit={(v) => updateContourPoint(panel.id, idx, Math.round(+v * 1000), pt[1])} />
                 <span className="contour-x">×</span>
-                <NumInput value={pt[1]} onCommit={(v) => updateContourPoint(panel.id, idx, pt[0], v)} />
+                <NumInput value={+(pt[1] / 1000).toFixed(3)} step={0.01} onCommit={(v) => updateContourPoint(panel.id, idx, pt[0], Math.round(+v * 1000))} />
                 <button className="contour-del" onClick={() => removeContourPoint(panel.id, idx)}>×</button>
               </div>
             )
           })}
 
-          {/* agregar punto exacto */}
+          {/* agregar punto exacto (m) */}
           <div className="contour-add">
-            <input type="number" step="100" placeholder="X" value={npX} onChange={(e) => setNpX(e.target.value)} />
+            <input type="number" step="0.01" placeholder="X m" value={npX} onChange={(e) => setNpX(e.target.value)} />
             <span className="contour-x">×</span>
-            <input type="number" step="100" placeholder="Y" value={npY} onChange={(e) => setNpY(e.target.value)} />
+            <input type="number" step="0.01" placeholder="Y m" value={npY} onChange={(e) => setNpY(e.target.value)} />
             <button className="contour-addbtn" onClick={() => {
               if (npX === '' || npY === '') return
-              addContourPoint(panel.id, npX, npY)
+              addContourPoint(panel.id, Math.round(+npX * 1000), Math.round(+npY * 1000))
               setNpX(''); setNpY('')
             }}>+ Punto</button>
           </div>
@@ -194,10 +194,10 @@ export default function CommandBar() {
                 <button className="contour-del" style={{ marginLeft: 'auto' }} onClick={() => removeOpening(panel.id, op.id)}>×</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                <OpField label="Retiro A (mm)" value={op.offset} onCommit={(v) => updateOpening(panel.id, op.id, { offset: +v })} />
-                <OpField label="Ancho (mm)" value={op.width} onCommit={(v) => updateOpening(panel.id, op.id, { width: +v })} />
-                <OpField label="Alto (mm)" value={op.height} onCommit={(v) => updateOpening(panel.id, op.id, { height: +v })} />
-                {op.kind === 'window' && <OpField label="Antepecho (mm)" value={op.sill} onCommit={(v) => updateOpening(panel.id, op.id, { sill: +v })} />}
+                <OpField label="Retiro A (m)" value={+(op.offset / 1000).toFixed(3)} onCommit={(v) => updateOpening(panel.id, op.id, { offset: Math.round(+v * 1000) })} />
+                <OpField label="Ancho (m)" value={+(op.width / 1000).toFixed(3)} onCommit={(v) => updateOpening(panel.id, op.id, { width: Math.round(+v * 1000) })} />
+                <OpField label="Alto (m)" value={+(op.height / 1000).toFixed(3)} onCommit={(v) => updateOpening(panel.id, op.id, { height: Math.round(+v * 1000) })} />
+                {op.kind === 'window' && <OpField label="Antepecho (m)" value={+(op.sill / 1000).toFixed(3)} onCommit={(v) => updateOpening(panel.id, op.id, { sill: Math.round(+v * 1000) })} />}
               </div>
             </div>
           ))}

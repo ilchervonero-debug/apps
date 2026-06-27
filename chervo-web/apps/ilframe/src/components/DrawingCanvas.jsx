@@ -204,13 +204,13 @@ export default function DrawingCanvas() {
       return
     }
 
-    if (lpRef.current.startVb) {
-      const d = Math.hypot(vb[0] - lpRef.current.startVb[0], vb[1] - lpRef.current.startVb[1])
-      if (d > 6) clearLongPress()
-    }
+    const moved = lpRef.current.startVb
+      ? Math.hypot(vb[0] - lpRef.current.startVb[0], vb[1] - lpRef.current.startVb[1]) > 6
+      : false
+    if (moved) clearLongPress()
     if (dragRef.current.active) {
       useDrawingStore.getState().dragWall(vbToPlan(worldFromVb(vb)))
-      dragRef.current.moved = true
+      if (moved) dragRef.current.moved = true // solo arrastre real, no micro-movimiento
     }
   }
 
@@ -530,28 +530,35 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, vi
     }))
     ;[a, b].forEach((pt) => svg.appendChild(el('circle', { cx: pt[0], cy: pt[1], r: (sel ? 4 : 3) * k, fill: sel ? '#fe0000' : '#666' })))
     const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
-    const code = el('text', { x: mid[0], y: mid[1] - 10 * k, 'font-size': 15 * k, 'font-weight': 'bold', fill: sel ? '#fe0000' : '#333', 'text-anchor': 'middle' })
+    const dx = b[0] - a[0], dy = b[1] - a[1]
+    const L = Math.hypot(dx, dy) || 1
+    const ux = dx / L, uy = dy / L
+    const nx = (p.flip ? uy : -uy), ny = (p.flip ? -ux : ux) // normal exterior
+
+    // etiquetas: si está seleccionado van al lado INTERIOR (-normal) para no chocar con la flecha
+    const lo = sel ? -1 : 0 // dirección de offset (interior) cuando hay flecha
+    const cBase = sel ? [mid[0] + nx * lo * 14 * k, mid[1] + ny * lo * 14 * k] : [mid[0], mid[1] - 10 * k]
+    const lBase = sel ? [mid[0] + nx * lo * 28 * k, mid[1] + ny * lo * 28 * k] : [mid[0], mid[1] + 16 * k]
+    const code = el('text', { x: cBase[0], y: cBase[1], 'font-size': 15 * k, 'font-weight': 'bold', fill: sel ? '#fe0000' : '#333', 'text-anchor': 'middle', 'dominant-baseline': 'middle' })
     code.textContent = p.id
     svg.appendChild(code)
-    const len = el('text', { x: mid[0], y: mid[1] + 16 * k, 'font-size': 11 * k, fill: '#888', 'text-anchor': 'middle' })
+    const len = el('text', { x: lBase[0], y: lBase[1], 'font-size': 11 * k, fill: '#888', 'text-anchor': 'middle', 'dominant-baseline': 'middle' })
     len.textContent = `${(p.width / 1000).toFixed(2)} m`
     svg.appendChild(len)
 
-    // flecha de lado exterior (solo en el panel seleccionado)
+    // indicador de lado exterior (solo seleccionado): línea paralela + flecha al EXTERIOR
     if (sel) {
-      const dx = b[0] - a[0], dy = b[1] - a[1]
-      const L = Math.hypot(dx, dy) || 1
-      const ux = dx / L, uy = dy / L // dirección del muro
-      const nx = (p.flip ? uy : -uy), ny = (p.flip ? -ux : ux) // normal hacia el exterior
-      const len2 = 26 * k
-      const tip = [mid[0] + nx * len2, mid[1] + ny * len2]
-      svg.appendChild(el('line', { x1: mid[0], y1: mid[1], x2: tip[0], y2: tip[1], stroke: '#0a84ff', 'stroke-width': 2 * k }))
-      // punta de flecha
-      const hb = 8 * k, hw = 4 * k
+      const off = 13 * k
+      const la = [a[0] + nx * off, a[1] + ny * off], lb = [b[0] + nx * off, b[1] + ny * off]
+      svg.appendChild(el('line', { x1: la[0], y1: la[1], x2: lb[0], y2: lb[1], stroke: '#0a84ff', 'stroke-width': 2 * k }))
+      const len2 = 14 * k
+      const tip = [mid[0] + nx * (off + len2), mid[1] + ny * (off + len2)]
+      svg.appendChild(el('line', { x1: mid[0] + nx * off, y1: mid[1] + ny * off, x2: tip[0], y2: tip[1], stroke: '#0a84ff', 'stroke-width': 2 * k }))
+      const hb = 7 * k, hw = 4 * k
       const p1 = [tip[0] - nx * hb + ux * hw, tip[1] - ny * hb + uy * hw]
       const p2 = [tip[0] - nx * hb - ux * hw, tip[1] - ny * hb - uy * hw]
       svg.appendChild(el('polygon', { points: `${tip[0]},${tip[1]} ${p1[0]},${p1[1]} ${p2[0]},${p2[1]}`, fill: '#0a84ff' }))
-      const et = el('text', { x: tip[0] + nx * 8 * k, y: tip[1] + ny * 8 * k + 3 * k, 'font-size': 9 * k, 'font-weight': 'bold', fill: '#0a84ff', 'text-anchor': 'middle' })
+      const et = el('text', { x: tip[0] + nx * 7 * k, y: tip[1] + ny * 7 * k, 'font-size': 9 * k, 'font-weight': 'bold', fill: '#0a84ff', 'text-anchor': 'middle', 'dominant-baseline': 'middle' })
       et.textContent = 'ext'
       svg.appendChild(et)
     }
@@ -566,7 +573,7 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, vi
     const w = Math.round(Math.hypot(draft.b[0] - draft.a[0], draft.b[1] - draft.a[1]))
     if (w > 0) {
       const t = el('text', { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 - 8 * k, 'font-size': 13 * k, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
-      t.textContent = `${w} mm`
+      t.textContent = `${(w / 1000).toFixed(2)} m`
       svg.appendChild(t)
     }
   }
