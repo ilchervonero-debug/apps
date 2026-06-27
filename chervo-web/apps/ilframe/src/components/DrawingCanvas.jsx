@@ -27,9 +27,15 @@ export default function DrawingCanvas() {
   const pointersRef = useRef(new Map()) // pointerId → [vbX, vbY]
   const gestureRef = useRef({ active: false, dist0: 0, mid0: [0, 0], view0: null })
   const elevDragRef = useRef(null) // { index } arrastrando un vértice del contorno en alzado
+  const elevPointersRef = useRef(new Map())
+  const elevGestureRef = useRef({ active: false, dist0: 0, mid0: [0, 0], view0: null })
+  const elevPanRef = useRef(null) // { startVb, view0 } paneo con un dedo en alzado
   const viewRef = useRef({ z: 1, tx: 0, ty: 0 }) // transform de vista (en unidades viewBox)
   const [view, setViewState] = useState({ z: 1, tx: 0, ty: 0 })
   const setView = (v) => { viewRef.current = v; setViewState(v) }
+  const elevViewRef = useRef({ z: 1, tx: 0, ty: 0 })
+  const [elevView, setElevViewState] = useState({ z: 1, tx: 0, ty: 0 })
+  const setElevView = (v) => { elevViewRef.current = v; setElevViewState(v) }
   const [cursor, setCursor] = useState(null)
   const [menu, setMenu] = useState(null) // { id, x, y } menú contextual (coords de pantalla)
   const [moving, setMoving] = useState(null) // id del panel en modo mover
@@ -82,8 +88,14 @@ export default function DrawingCanvas() {
   // ── Render reactivo ──
   useEffect(() => {
     drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm, view)
-    drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm)
-  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab])
+    drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm, elevView)
+  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab, elevView])
+
+  // al cambiar de panel, reinicia la vista del alzado (encaja la cara)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setElevView({ z: 1, tx: 0, ty: 0 })
+  }, [selectedId])
 
   // Conversión exacta pantalla → viewBox usando la matriz del SVG.
   // (Evita el error de snap cuando el SVG no llena exacto su viewBox.)
@@ -217,14 +229,15 @@ export default function DrawingCanvas() {
       useDrawingStore.getState().finishWall()
       dragRef.current.active = false
     }
-    if (!lpRef.current.fired && activeTool === 'select') {
-      const mm = vbToPlan(worldFromVb(getVb(e, planRef.current)))
-      const st = useDrawingStore.getState()
-      const hit = pickPanel(mm, st.panels)
-      const cx = e.changedTouches?.[0]?.clientX ?? e.clientX
-      const cy = e.changedTouches?.[0]?.clientY ?? e.clientY
-      if (hit) { st.select(hit); setMenu({ id: hit, x: cx, y: cy, t: Date.now() }) }
-      else st.deselect()
+    // tap corto = solo seleccionar (el menú mover/borrar sale con long-press)
+    if (!lpRef.current.fired && (activeTool === 'select' || activeTool === 'wall')) {
+      if (!dragRef.current.moved) {
+        const mm = vbToPlan(worldFromVb(getVb(e, planRef.current)))
+        const st = useDrawingStore.getState()
+        const hit = pickPanel(mm, st.panels)
+        if (hit) st.select(hit)
+        else if (activeTool === 'select') st.deselect()
+      }
     }
   }
 
@@ -252,31 +265,70 @@ export default function DrawingCanvas() {
   const doDelete = () => { if (menu) { useDrawingStore.getState().remove(menu.id); setMenu(null) } }
 
   // ── ALZADO: seleccionar vértice del panel activo ──
+  // viewBox del alzado → coords base (quita la vista) → local mm
+  const elevLocal = (vb, panel) => {
+    const v = elevViewRef.current
+    const base = [(vb[0] - v.tx) / v.z, (vb[1] - v.ty) / v.z]
+    return elevTransform(panel).fromVb(base)
+  }
+
   const elevDown = (e) => {
     const st = useDrawingStore.getState()
     const panel = st.panels.find((p) => p.id === st.selectedId)
     if (!panel) return
-    try { elevRef.current.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
     const vb = getVb(e, elevRef.current)
+    elevPointersRef.current.set(e.pointerId, vb)
+    if (elevPointersRef.current.size >= 2) {
+      const pts = [...elevPointersRef.current.values()]
+      elevGestureRef.current = {
+        active: true,
+        dist0: Math.hypot(pts[0][0] - pts[1][0], pts[0][1] - pts[1][1]) || 1,
+        mid0: [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2],
+        view0: { ...elevViewRef.current },
+      }
+      elevDragRef.current = null
+      elevPanRef.current = null
+      return
+    }
+    try { elevRef.current.setPointerCapture?.(e.pointerId) } catch { /* no-op */ }
+    // ¿tocó un vértice? (en coords de pantalla, considerando la vista)
     const tf = elevTransform(panel)
-    // buscar vértice más cercano del contorno (topPath) para arrastrarlo
-    let best = null, bestD = 30
+    let best = null, bestD = 26
     panel.topPath.forEach((pt, i) => {
-      const v = tf.toVb(pt)
+      const base = tf.toVb(pt)
+      const v = [base[0] * elevViewRef.current.z + elevViewRef.current.tx, base[1] * elevViewRef.current.z + elevViewRef.current.ty]
       const d = Math.hypot(v[0] - vb[0], v[1] - vb[1])
       if (d < bestD) { bestD = d; best = i }
     })
-    st.selectVertex(best)
-    elevDragRef.current = best != null ? { index: best } : null
+    if (best != null) { st.selectVertex(best); elevDragRef.current = { index: best } }
+    else { elevPanRef.current = { startVb: vb, view0: { ...elevViewRef.current } } }
   }
 
   const elevMove = (e) => {
+    const vb = getVb(e, elevRef.current)
+    if (elevPointersRef.current.has(e.pointerId)) elevPointersRef.current.set(e.pointerId, vb)
+
+    if (elevGestureRef.current.active && elevPointersRef.current.size >= 2) {
+      const pts = [...elevPointersRef.current.values()]
+      const distNow = Math.hypot(pts[0][0] - pts[1][0], pts[0][1] - pts[1][1]) || 1
+      const midNow = [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2]
+      const { dist0, mid0, view0 } = elevGestureRef.current
+      const z = Math.max(0.25, Math.min(8, view0.z * (distNow / dist0)))
+      const wx = (mid0[0] - view0.tx) / view0.z
+      const wy = (mid0[1] - view0.ty) / view0.z
+      setElevView({ z, tx: midNow[0] - wx * z, ty: midNow[1] - wy * z })
+      return
+    }
+    if (elevPanRef.current) {
+      const { startVb, view0 } = elevPanRef.current
+      setElevView({ z: view0.z, tx: view0.tx + (vb[0] - startVb[0]), ty: view0.ty + (vb[1] - startVb[1]) })
+      return
+    }
     if (!elevDragRef.current) return
     const st = useDrawingStore.getState()
     const panel = st.panels.find((p) => p.id === st.selectedId)
     if (!panel) return
-    const tf = elevTransform(panel)
-    const [lx, ly] = tf.fromVb(getVb(e, elevRef.current))
+    const [lx, ly] = elevLocal(vb, panel)
     const g = st.gridMm
     const sx = Math.round(lx / g) * g
     const sy = Math.max(0, Math.round(ly / g) * g)
@@ -286,7 +338,22 @@ export default function DrawingCanvas() {
     else st.updateContourPoint(panel.id, i, Math.max(0, Math.min(panel.width, sx)), sy)
   }
 
-  const elevUp = () => { elevDragRef.current = null }
+  const elevUp = (e) => {
+    elevPointersRef.current.delete(e.pointerId)
+    if (elevPointersRef.current.size < 2) elevGestureRef.current.active = false
+    elevDragRef.current = null
+    elevPanRef.current = null
+  }
+
+  const elevWheel = (e) => {
+    e.preventDefault()
+    const vb = getVb(e, elevRef.current)
+    const v0 = elevViewRef.current
+    const z = Math.max(0.25, Math.min(8, v0.z * (e.deltaY < 0 ? 1.12 : 1 / 1.12)))
+    const wx = (vb[0] - v0.tx) / v0.z
+    const wy = (vb[1] - v0.ty) / v0.z
+    setElevView({ z, tx: vb[0] - wx * z, ty: vb[1] - wy * z })
+  }
 
   return (
     <div className="drawing-canvas">
@@ -365,6 +432,8 @@ export default function DrawingCanvas() {
           onPointerDown={elevDown}
           onPointerMove={elevMove}
           onPointerUp={elevUp}
+          onPointerCancel={elevUp}
+          onWheel={elevWheel}
         />
       </div>
     </div>
@@ -531,7 +600,7 @@ function drawPlanGrid(svg, gridMm, view) {
 }
 
 // ── Dibujo ALZADO (0,0 local en la base izquierda) ─────────
-function drawElevation(svg, panels, selectedId, selectedVertex, gridMm) {
+function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView) {
   if (!svg) return
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: ELEV.h, fill: 'white' }))
@@ -543,6 +612,11 @@ function drawElevation(svg, panels, selectedId, selectedVertex, gridMm) {
     svg.appendChild(t)
     return
   }
+
+  const ev = elevView || { z: 1, tx: 0, ty: 0 }
+  const vg = el('g', { transform: `translate(${ev.tx} ${ev.ty}) scale(${ev.z})` })
+  svg.appendChild(vg)
+  svg = vg // todo el alzado se dibuja dentro del grupo con zoom/pan
 
   const tf = elevTransform(panel)
   const maxH = panelMaxHeight(panel)
