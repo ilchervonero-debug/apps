@@ -10,6 +10,23 @@ export function wallThickness(type, profileSection) {
   return Math.round(core + sum(type.faces?.interior) + sum(type.faces?.exterior))
 }
 
+// Retiro mínimo a cada extremo = espesor de pared, nunca menor a 100mm
+export function minClearFor(panel, project) {
+  const t = project.wallTypes.find((x) => x.id === (panel.typeId || project.wallTypes[0]?.id))
+  return Math.max(100, wallThickness(t, project.profileSection))
+}
+
+// Ajusta una abertura a las reglas (no pega al filo, retiro mínimo)
+function clampOpening(panel, op, project) {
+  const mc = minClearFor(panel, project)
+  const maxW = Math.max(100, panel.width - 2 * mc)
+  const w = Math.min(Math.max(100, Math.round(op.width || 0)), maxW)
+  const minOff = mc
+  const maxOff = Math.max(minOff, panel.width - mc - w)
+  const offset = Math.min(Math.max(minOff, Math.round(op.offset || 0)), maxOff)
+  return { ...op, width: w, offset, height: Math.max(100, Math.round(op.height || 0)), sill: Math.max(0, Math.round(op.sill || 0)) }
+}
+
 // ── Modelo iLFrame ──────────────────────────────────────────
 // Planta: cada muro dibujado es un PANEL (código M1, M2…).
 //   La longitud de la línea = ANCHO del panel (se edita SOLO en planta).
@@ -208,6 +225,30 @@ export const useDrawingStore = create((set) => ({
   setPanelType: (panelId, typeId) => set((s) => ({
     ...histPatch(s, 'ptype'),
     panels: s.panels.map((p) => (p.id === panelId ? { ...p, typeId } : p)),
+  })),
+
+  // ── Aberturas (puertas / ventanas) sobre la cara ──────────
+  addOpening: (panelId, kind) => set((s) => {
+    const panel = s.panels.find((p) => p.id === panelId)
+    if (!panel) return {}
+    const def = kind === 'door' ? { width: 900, height: 2050, sill: 0 } : { width: 1000, height: 1100, sill: 900 }
+    const mc = minClearFor(panel, s.project)
+    const op = clampOpening(panel, { id: 'o' + Date.now().toString(36), kind, offset: mc, ...def }, s.project)
+    return { ...histPatch(s, 'addop'), panels: s.panels.map((p) => (p.id === panelId ? { ...p, openings: [...(p.openings || []), op] } : p)) }
+  }),
+  updateOpening: (panelId, openId, patch) => set((s) => {
+    const panel = s.panels.find((p) => p.id === panelId)
+    if (!panel) return {}
+    return {
+      ...histPatch(s, 'updop:' + openId, true),
+      panels: s.panels.map((p) => (p.id === panelId
+        ? { ...p, openings: (p.openings || []).map((o) => (o.id === openId ? clampOpening(panel, { ...o, ...patch }, s.project) : o)) }
+        : p)),
+    }
+  }),
+  removeOpening: (panelId, openId) => set((s) => ({
+    ...histPatch(s, 'rmop'),
+    panels: s.panels.map((p) => (p.id === panelId ? { ...p, openings: (p.openings || []).filter((o) => o.id !== openId) } : p)),
   })),
 
   setActiveTool: (t) => set({ activeTool: t }),

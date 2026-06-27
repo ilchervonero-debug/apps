@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useDrawingStore, panelPolygon, polygonArea, wallThickness } from '../store/drawingStore'
+import { useDrawingStore, panelPolygon, polygonArea, wallThickness, minClearFor } from '../store/drawingStore'
 import '../styles/CommandBar.css'
 
 // Input numérico con buffer local: te deja vaciar el campo y escribir
@@ -33,6 +33,15 @@ function NumInput({ value, onCommit, className, step = 100 }) {
   )
 }
 
+function OpField({ label, value, onCommit }) {
+  return (
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <span style={{ fontSize: 10, color: '#999', fontWeight: 600 }}>{label}</span>
+      <NumInput value={value} onCommit={onCommit} />
+    </label>
+  )
+}
+
 export default function CommandBar() {
   const panels = useDrawingStore((s) => s.panels)
   const selectedId = useDrawingStore((s) => s.selectedId)
@@ -50,6 +59,9 @@ export default function CommandBar() {
   const setPanelType = useDrawingStore((s) => s.setPanelType)
   const wallTypes = useDrawingStore((s) => s.project.wallTypes)
   const profileSection = useDrawingStore((s) => s.project.profileSection)
+  const addOpening = useDrawingStore((s) => s.addOpening)
+  const updateOpening = useDrawingStore((s) => s.updateOpening)
+  const removeOpening = useDrawingStore((s) => s.removeOpening)
 
   const [npX, setNpX] = useState('')
   const [npY, setNpY] = useState('')
@@ -164,6 +176,33 @@ export default function CommandBar() {
               addContourPoint(panel.id, npX, npY)
               setNpX(''); setNpY('')
             }}>+ Punto</button>
+          </div>
+        </div>
+
+        {/* Aberturas */}
+        <div className="editor-section">
+          <div className="editor-sublabel" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span>Aberturas</span>
+            <button className="contour-addbtn" style={{ marginLeft: 'auto' }} onClick={() => addOpening(panel.id, 'door')}>+ Puerta</button>
+            <button className="contour-addbtn" onClick={() => addOpening(panel.id, 'window')}>+ Ventana</button>
+          </div>
+          {(panel.openings || []).length === 0 && <div className="list-empty" style={{ padding: '6px 0' }}>Sin aberturas</div>}
+          {(panel.openings || []).map((op) => (
+            <div key={op.id} style={{ border: '1px solid #eee', borderRadius: 8, padding: 8, marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                <span style={{ fontWeight: 800, color: '#0a84ff' }}>{op.kind === 'door' ? 'Puerta' : 'Ventana'}</span>
+                <button className="contour-del" style={{ marginLeft: 'auto' }} onClick={() => removeOpening(panel.id, op.id)}>×</button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                <OpField label="Retiro A (mm)" value={op.offset} onCommit={(v) => updateOpening(panel.id, op.id, { offset: +v })} />
+                <OpField label="Ancho (mm)" value={op.width} onCommit={(v) => updateOpening(panel.id, op.id, { width: +v })} />
+                <OpField label="Alto (mm)" value={op.height} onCommit={(v) => updateOpening(panel.id, op.id, { height: +v })} />
+                {op.kind === 'window' && <OpField label="Antepecho (mm)" value={op.sill} onCommit={(v) => updateOpening(panel.id, op.id, { sill: +v })} />}
+              </div>
+            </div>
+          ))}
+          <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>
+            Retiro mínimo {(minClearFor(panel, { wallTypes, profileSection }) / 10).toFixed(0)} cm (espesor de pared) · no llega al filo.
           </div>
         </div>
 

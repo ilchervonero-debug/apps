@@ -583,6 +583,20 @@ function drawElevation(svg, panels, selectedId, selectedVertex, gridMm) {
   vn.textContent = `${panel.id} · vista exterior${panel.flip ? ' (volteada)' : ''}`
   svg.appendChild(vn)
 
+  // aberturas (puertas / ventanas)
+  ;(panel.openings || []).forEach((op) => {
+    const x0 = op.offset, x1 = op.offset + op.width, y0 = op.sill, y1 = op.sill + op.height
+    const c = [tf.toVb([x0, y0]), tf.toVb([x1, y0]), tf.toVb([x1, y1]), tf.toVb([x0, y1])]
+    svg.appendChild(el('polygon', { points: c.map((v) => `${v[0]},${v[1]}`).join(' '), fill: '#fff', stroke: '#0a84ff', 'stroke-width': 2 }))
+    const cx = (c[0][0] + c[2][0]) / 2, cy = (c[0][1] + c[2][1]) / 2
+    const t1 = el('text', { x: cx, y: cy, 'font-size': 16, 'font-weight': 'bold', fill: '#0a84ff', 'text-anchor': 'middle' })
+    t1.textContent = op.kind === 'door' ? 'P' : 'V'
+    svg.appendChild(t1)
+    const t2 = el('text', { x: cx, y: cy + 16, 'font-size': 10, fill: '#0a84ff', 'text-anchor': 'middle' })
+    t2.textContent = `${(op.width / 1000).toFixed(2)}×${(op.height / 1000).toFixed(2)}`
+    svg.appendChild(t2)
+  })
+
   // vértices del contorno con coordenadas locales (X desde A, Y altura)
   panel.topPath.forEach((pt, i) => {
     const v = tf.toVb(pt)
