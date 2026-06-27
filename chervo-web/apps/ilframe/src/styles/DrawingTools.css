@@ -33,10 +33,16 @@
 }
 
 .tools-grid {
-  display: flex;
-  flex-direction: column-reverse;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   order: 1;
+  max-height: 72vh;
+  overflow-y: auto;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
   animation: slideIn 0.2s ease-out;
 }
 
@@ -50,18 +56,27 @@
 }
 
 .tool-btn {
-  width: 56px;
-  height: 56px;
+  width: 84px;
+  height: 62px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fe0000;
   color: white;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  gap: 3px;
+  transition: all 0.15s;
   box-shadow: 0 2px 8px rgba(254, 0, 0, 0.25);
+}
+
+.tool-label {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .tool-btn:hover {
@@ -82,7 +97,8 @@
   height: 100%;
 }
 
+.tool-icon { flex: none; }
 .tool-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
 }

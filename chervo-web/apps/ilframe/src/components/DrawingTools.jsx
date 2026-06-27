@@ -47,6 +47,7 @@ export default function DrawingTools() {
               title={tool.label}
             >
               <ToolIcon type={tool.icon} />
+              <span className="tool-label">{tool.label}</span>
             </button>
           ))}
         </div>
