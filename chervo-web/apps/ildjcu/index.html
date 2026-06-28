@@ -14,12 +14,14 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
 .app{max-width:640px;margin:0 auto;background:#f0f0f0;min-height:100vh}
-.header{background:#383838;color:#fff;padding:14px 16px;border-bottom:3px solid #FE0000}
-.header-sub{font-size:13px;color:#cccccc;letter-spacing:2px;text-transform:uppercase}
-.header-title{font-size:17px;font-weight:700;margin-top:2px}
-.tabs{display:flex;background:#fff;overflow-x:auto;border-bottom:2px solid #ececec}
-.tab{flex:0 0 auto;padding:9px 10px;background:transparent;color:#555555;border:none;border-bottom:3px solid transparent;font-size:13px;cursor:pointer;font-weight:400;letter-spacing:.5px;font-family:Arial,sans-serif;white-space:nowrap;margin-bottom:-2px}
-.tab.active{background:#FE0000;color:#fff;font-weight:700;border-bottom:3px solid #FE0000;border-radius:6px 6px 0 0}
+.header{background:#fff;color:#2b2b2b;padding:14px 16px;border-bottom:1px solid #ececec;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.header-sub{font-size:13px;color:#999;letter-spacing:2px;text-transform:uppercase}
+.header-title{font-size:17px;font-weight:700;margin-top:2px;color:#2b2b2b}
+.header-title .acc{color:#FE0000}
+.header-user{font-size:13px;font-weight:700;color:#555;background:#f4f4f4;border:1px solid #ececec;border-radius:20px;padding:7px 13px;cursor:pointer;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.tabs{display:flex;background:#f4f4f4;overflow-x:auto;border-bottom:1px solid #e0e0e0}
+.tab{flex:0 0 auto;padding:10px 12px;background:transparent;color:#777;border:none;border-bottom:3px solid transparent;font-size:13px;cursor:pointer;font-weight:600;letter-spacing:.3px;font-family:Arial,sans-serif;white-space:nowrap;margin-bottom:-1px}
+.tab.active{background:#fff;color:#FE0000;font-weight:700;border-bottom:3px solid #FE0000;border-radius:8px 8px 0 0}
 .body{padding:14px}
 .card{background:#fff;border-radius:8px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .card-title{font-weight:700;font-size:14px;color:#FE0000;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid #f0f0f0;padding-bottom:5px}
@@ -168,8 +170,11 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
 
 <div class="app">
   <div class="header">
-    <div class="header-sub">Relevamiento de Campo</div>
-    <div class="header-title" onclick="ilsxOpen()" style="cursor:pointer">DJCU Uruguay <span style="font-size:13px;font-weight:400;color:#aaa">v3</span></div>
+    <div>
+      <div class="header-sub">Relevamiento de Campo</div>
+      <div class="header-title" onclick="ilsxOpen()" style="cursor:pointer"><span class="acc">DJCU</span> Uruguay <span style="font-size:13px;font-weight:400;color:#aaa">v3</span></div>
+    </div>
+    <div class="header-user" id="header_user" onclick="goTab(8)" title="Mi cuenta">—</div>
   </div>
   <div class="tabs" id="tabs">
     <button class="tab active" onclick="goTab(0)">Expediente</button>
@@ -738,7 +743,7 @@ async function verificarPin(pin) {
     if (!Array.isArray(data) || data.length === 0) throw new Error('invalid');
     usuarioActivo = data[0].nombre;
     document.getElementById('pin_overlay').style.display = 'none';
-    document.querySelector('.header-sub').textContent = 'Usuario: ' + usuarioActivo;
+    document.getElementById('header_user').textContent = usuarioActivo;
     if(usuarioActivo === ADMIN_USER) document.getElementById('tab_admin_btn').style.display = 'flex';
     mostrarBienvenida();
   } catch(e) {
