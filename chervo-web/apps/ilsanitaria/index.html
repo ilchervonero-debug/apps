@@ -398,6 +398,7 @@ function calcular(){
     out.push({sale:prof,caida,llega,profDestino,salto:profDestino-llega,dia:fila.d,udAc,
               pmin:PMIN[fila.d],cumple:(+t.p||0)>=PMIN[fila.d],desborde:udAc>1400,
               tipoCam:tipoCamara(profDestino),
+              saltoReq:profDestino>0.90,
               lejos:(+t.L||0)>25, lejosWC:red==='prim'&&wcUp&&(+t.L||0)>15});
     prof=profDestino+(red==='prim'?SALTO_CAMARA:0); // salto interno de cámara
   });
@@ -424,8 +425,8 @@ function render(){
         <div><label>UD extra</label><input type="number" inputmode="numeric" value="${t.ud}" data-i="${i}" data-k="ud"></div>
       </div>
       <button class="art-btn ${t.open?'on':''}" data-i="${i}" data-a="arts">⌂ Artefactos en ${NODO()}${i+1} (${t.arts.reduce((a,b)=>a+b,0)}) · ${udArts(t.arts)} UD</button>
-      ${t.open?`<div class="art-panel">${ARTEFACTOS.map((a,j)=>`
-        <div class="art-row"><div><div class="nom">${a.n}</div><div class="det mono">${a.ud} UD${a.wc?' · primaria':''}</div></div>
+      ${t.open?`<div class="art-panel">${ARTEFACTOS.map((a,j)=> (red==='sec'&&a.wc)?'':`
+        <div class="art-row"><div><div class="nom">${a.n}</div><div class="det mono">Ø${a.dmin} mín · ${a.ud} UD${a.wc?' · primaria':''}</div></div>
         <div class="ctr"><button data-i="${i}" data-j="${j}" data-o="-1">−</button><span class="qty mono">${t.arts[j]}</span><button data-i="${i}" data-j="${j}" data-o="1">+</button></div></div>`).join('')}</div>`:''}
       ${red==='prim'&&!wcArts(t.arts)?`<div class="wc"><input type="checkbox" ${t.wc?'checked':''} data-i="${i}" data-k="wc" id="wc${i}"><label for="wc${i}">Inodoro aguas arriba (manual)</label></div>`:''}
       <div class="t-res">
@@ -442,7 +443,8 @@ function render(){
       <span class="prof">m</span>
       ${t.fix!==null?'<span class="fixt">fijada</span>':''}
       ${r.salto>0.005?`<span class="salto">salto ${fmt(r.salto*100,0)} cm</span>`:''}
-      ${red==='prim'?`<span style="font-size:10px;color:var(--gris);font-family:'Geist Mono',monospace;margin-left:6px">cám. ${r.tipoCam}</span>`:''}</div>`;
+      ${red==='prim'?`<span style="font-size:10px;color:var(--gris);font-family:'Geist Mono',monospace;margin-left:6px">cám. ${r.tipoCam}</span>`:''}
+      ${red==='prim'&&r.saltoReq?`<span style="font-size:10px;color:var(--rojo);font-weight:600;font-family:'Geist Mono',monospace;margin-left:6px">&gt;90 cm: cámara de inspección con salto</span>`:''}</div>`;
   });
   cadena.innerHTML=h;
   renderTotales(R);renderPerfil(R);
@@ -488,7 +490,7 @@ function renderPerfil(R){
 document.getElementById('add').onclick=()=>{tramos.push({L:5,p:2,ud:0,wc:false,contar:true,fix:null,arts:nuevoArts(),open:false});render();};
 document.getElementById('bPrim').onclick=()=>{red='prim';profInicial=0.45;
   bPrim.classList.add('on');bSec.classList.remove('on');render();};
-document.getElementById('bSec').onclick=()=>{red='sec';profInicial=0.25;tramos.forEach(t=>t.wc=false);
+document.getElementById('bSec').onclick=()=>{red='sec';profInicial=0.25;tramos.forEach(t=>{t.wc=false;t.arts[0]=0;});
   bSec.classList.add('on');bPrim.classList.remove('on');render();};
 cadena.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
