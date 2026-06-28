@@ -1,4 +1,4 @@
-const CACHE = 'ilcalc-v1';
+const CACHE = 'ilcalc-v2';
 const ASSETS = [
   '/apps/ilcalc/',
   '/apps/ilcalc/index.html',
