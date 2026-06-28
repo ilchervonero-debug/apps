@@ -161,7 +161,7 @@ h1 span{color:var(--rojo)}
 
 <!-- ================= 01 DESAGÜES ================= -->
 <div class="vista" id="vDes">
-  <div class="v-tit"><span class="m-n">01</span>Desagües por tramos</div>
+  <div class="v-tit"><span class="m-n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="18" r="2.5"/><line x1="6.6" y1="7.6" x2="17.4" y2="16.4"/></svg></span>Desagües por tramos</div>
   <div class="modo">
     <button id="bPrim" class="on">Primaria · cámaras</button>
     <button id="bSec">Secundaria · interior</button>
@@ -175,7 +175,7 @@ h1 span{color:var(--rojo)}
 
 <!-- ================= 02 PLUVIALES ================= -->
 <div class="vista" id="vPlu">
-  <div class="v-tit"><span class="m-n">02</span>Pluviales</div>
+  <div class="v-tit"><span class="m-n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15a4 4 0 0 1 .5-7.97 5 5 0 0 1 9.5 1.47A3.5 3.5 0 0 1 17 15Z"/><line x1="9" y1="18" x2="8" y2="20.5"/><line x1="13" y1="18" x2="12" y2="20.5"/><line x1="17" y1="18" x2="16" y2="20.5"/></svg></span>Pluviales</div>
   <div class="campo"><label>Intensidad de lluvia de diseño (mm/h)</label><input type="number" inputmode="numeric" id="uInt" value="150"></div>
   <div id="bajadas"></div>
   <button class="add" id="addBaj">+ Agregar bajada</button>
@@ -189,7 +189,7 @@ h1 span{color:var(--rojo)}
 
 <!-- ================= 03 PENDIENTE ================= -->
 <div class="vista" id="vPen">
-  <div class="v-tit"><span class="m-n">03</span>Pendiente rápida</div>
+  <div class="v-tit"><span class="m-n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16L4 7Z"/></svg></span>Pendiente rápida</div>
   <div class="modo">
     <button class="pm on" data-m="caida">Calcular caída</button>
     <button class="pm" data-m="pend">Calcular pendiente</button>
@@ -211,7 +211,7 @@ h1 span{color:var(--rojo)}
 
 <!-- ================= 04 RESERVA ================= -->
 <div class="vista" id="vRes">
-  <div class="v-tit"><span class="m-n">04</span>Reserva de agua</div>
+  <div class="v-tit"><span class="m-n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="3"/><path d="M6.5 12c1.4 1.4 3.6 1.4 5 0s3.6-1.4 5 0"/></svg></span>Reserva de agua</div>
   <div class="campo"><label>Personas</label><input type="number" inputmode="numeric" id="rPer" value="4"></div>
   <div class="campo"><label>Dotación (L / persona / día)</label><input type="number" inputmode="numeric" id="rDot" value="200"></div>
   <div class="campo"><label>Días de reserva</label><input type="number" inputmode="decimal" step="0.5" id="rDias" value="1"></div>
@@ -226,7 +226,7 @@ h1 span{color:var(--rojo)}
 
 <!-- ================= 05 PRESIÓN ================= -->
 <div class="vista" id="vPre">
-  <div class="v-tit"><span class="m-n">05</span>Presión por gravedad</div>
+  <div class="v-tit"><span class="m-n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17a8 8 0 1 1 16 0"/><line x1="12" y1="17" x2="16.5" y2="12"/></svg></span>Presión por gravedad</div>
   <div class="campo"><label>Altura: fondo de tanque sobre el artefacto (m)</label><input type="number" inputmode="decimal" step="0.1" id="gAlt" placeholder="0.0"></div>
   <div class="campo"><label>Pérdida estimada por fricción (m.c.a.)</label><input type="number" inputmode="decimal" step="0.1" id="gPer" value="0.5"></div>
   <div class="campo"><label>Artefacto a verificar</label><select id="gArt"></select></div>
@@ -240,7 +240,7 @@ h1 span{color:var(--rojo)}
 
 <!-- ================= 06 GEOMETRÍA ================= -->
 <div class="vista" id="vGeo">
-  <div class="v-tit"><span class="m-n">06</span>Geometría y volúmenes</div>
+  <div class="v-tit"><span class="m-n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5"/><polyline points="4 7.5 12 12 20 7.5"/><line x1="12" y1="12" x2="12" y2="21"/></svg></span>Geometría y volúmenes</div>
   <div class="modo">
     <button class="gm on" data-g="gRect">Tanque rect.</button>
     <button class="gm" data-g="gCil">Tanque cilíndrico</button>
@@ -294,7 +294,7 @@ h1 span{color:var(--rojo)}
 
 <!-- ================= 07 pH y SALINIDAD ================= -->
 <div class="vista" id="vAgua">
-  <div class="v-tit"><span class="m-n">07</span>pH y salinidad</div>
+  <div class="v-tit"><span class="m-n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v5l-5 9.2A1.4 1.4 0 0 0 6.3 19h11.4a1.4 1.4 0 0 0 1.3-1.8L14 8V3"/><line x1="8" y1="14.5" x2="16" y2="14.5"/></svg></span>pH y salinidad</div>
   <div class="modo">
     <button class="am on" data-a="aPH">Escala de pH</button>
     <button class="am" data-a="aSal">Salinidad</button>
@@ -326,7 +326,7 @@ h1 span{color:var(--rojo)}
 
 <!-- ================= 08 CALCULADORA ================= -->
 <div class="vista" id="vCalc">
-  <div class="v-tit"><span class="m-n">08</span>Calculadora</div>
+  <div class="v-tit"><span class="m-n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><rect x="8" y="6" width="8" height="3" rx="0.5"/><line x1="8.5" y1="13" x2="8.51" y2="13"/><line x1="12" y1="13" x2="12.01" y2="13"/><line x1="15.5" y1="13" x2="15.51" y2="13"/><line x1="8.5" y1="17" x2="8.51" y2="17"/><line x1="12" y1="17" x2="12.01" y2="17"/><line x1="15.5" y1="17" x2="15.51" y2="17"/></svg></span>Calculadora</div>
   <div class="calc-disp" id="cd">0</div>
   <div class="calc-grid">
     <button class="ck fn" data-k="C">C</button>
