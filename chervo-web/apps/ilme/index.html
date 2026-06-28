@@ -1161,10 +1161,16 @@ function actualizarAuthUI(){
   const userNom=document.getElementById('userNom');
   const chip=document.getElementById('authChip');
   if(sesion){
-    const nom=(sesion.user.email||'').split('@')[0];
+    const nom=sesion.user.displayName||(sesion.user.email||'').split('@')[0];
     mLogin.style.display='none'; mLogout.style.display=''; mSync.style.display='';
     userNom.textContent=nom;
-    if(chip){ chip.textContent='● '+nom; chip.style.display=''; }
+    if(chip){
+      if(sesion.user.photo){
+        chip.innerHTML='<img src="'+sesion.user.photo+'" alt="" referrerpolicy="no-referrer" style="width:26px;height:26px;border-radius:50%;display:block;object-fit:cover">';
+        chip.style.padding='0'; chip.style.background='none'; chip.style.maxWidth='none';
+      } else { chip.textContent='● '+nom; chip.style.padding=''; chip.style.background=''; }
+      chip.style.display='';
+    }
   } else {
     mLogin.style.display=''; mLogout.style.display='none'; mSync.style.display='none';
     if(chip) chip.style.display='none';
@@ -1172,7 +1178,7 @@ function actualizarAuthUI(){
 }
 
 fbAuth.onAuthStateChanged(user=>{
-  sesion = user ? {user:{id:user.uid,email:user.email||'',displayName:user.displayName||''}} : null;
+  sesion = user ? {user:{id:user.uid,email:user.email||'',displayName:user.displayName||'',photo:user.photoURL||''}} : null;
   actualizarAuthUI();
   if(sesion) sincronizar();
 });
