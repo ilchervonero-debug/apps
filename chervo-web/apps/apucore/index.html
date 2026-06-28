@@ -165,7 +165,7 @@ body{font-family:'Exo 2',sans-serif;background:var(--g1);color:var(--g5);font-si
 
 <!-- HDR -->
 <div class="hdr">
-  <div class="hdr-logo">
+  <div class="hdr-logo" onclick="showTab('lista')" style="cursor:pointer" title="Inicio">
     <svg viewBox="0 0 28 28" fill="none">
       <rect x="2" y="18" width="24" height="7" rx="1" fill="#FE0000"/>
       <rect x="5" y="7" width="3" height="11" rx="1" fill="#424242"/>
@@ -204,6 +204,12 @@ body{font-family:'Exo 2',sans-serif;background:var(--g1);color:var(--g5);font-si
 
 <!-- VIEW: PRECIOS / CONFIG -->
 <div class="view" id="view-config-precios">
+  <div style="padding:12px 14px 0;">
+    <button class="btn btn-r btn-sm" onclick="showTab('lista')" style="display:inline-flex;align-items:center;gap:6px;">
+      <svg viewBox="0 0 12 12" fill="none" width="12" height="12"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </button>
+  </div>
   <div class="nav2">
     <button class="nav2-btn active" id="tab2-precios" onclick="switchTab2('precios')">Precios</button>
     <button class="nav2-btn" id="tab2-config" onclick="switchTab2('config')">Configuración</button>

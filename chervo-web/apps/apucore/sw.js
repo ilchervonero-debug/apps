@@ -1,4 +1,4 @@
-const CACHE = 'apucore-v1';
+const CACHE = 'apucore-v2';
 const ASSETS = [
   '/apps/apucore/',
   '/apps/apucore/index.html',
