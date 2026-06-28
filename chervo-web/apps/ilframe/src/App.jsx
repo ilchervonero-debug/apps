@@ -5,6 +5,7 @@ import ProjectSetup from './components/ProjectSetup'
 import Iso3D from './components/Iso3D'
 import BomView from './components/BomView'
 import ExportView from './components/ExportView'
+import { useState } from 'react'
 import { useDrawingStore } from './store/drawingStore'
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
   const projectName = useDrawingStore((s) => s.project.name)
   const tab = useDrawingStore((s) => s.tab)
   const setTab = useDrawingStore((s) => s.setTab)
+  const [info, setInfo] = useState(false)
 
   return (
     <div
@@ -30,7 +32,7 @@ export default function App() {
             ‹
           </button>
         ) : null}
-        <div style={{ paddingLeft: appView === 'draw' ? 0 : 6 }}>
+        <div style={{ paddingLeft: appView === 'draw' ? 0 : 6, cursor: 'pointer' }} onClick={() => setInfo(true)}>
           <div style={{ fontSize: 22, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.5px' }}>
             <span style={{ color: '#fe0000' }}>iL</span><span style={{ color: '#888' }}>Frame</span>
           </div>
@@ -82,6 +84,25 @@ export default function App() {
             )}
           </div>
         </>
+      )}
+
+      {/* ── Panel iLStorage (version + volver al hub) ── */}
+      {info && (
+        <div onClick={(e) => { if (e.target === e.currentTarget) setInfo(false) }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,20,0.45)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 99999 }}>
+          <div style={{ background: '#fff', width: '100%', maxWidth: 600, borderRadius: '22px 22px 0 0', padding: '8px 0 24px', boxShadow: '0 -8px 40px rgba(0,0,0,0.18)' }}>
+            <div style={{ width: 38, height: 4, borderRadius: 2, background: '#e2e2e2', margin: '6px auto 14px' }} />
+            <div style={{ fontSize: 20, fontWeight: 700, color: '#2b2b2b', padding: '0 22px', letterSpacing: '-0.3px' }}>
+              <span style={{ color: '#fe0000', fontWeight: 800 }}>iL</span>Frame
+            </div>
+            <div style={{ fontSize: 12, color: '#8a8a8a', padding: '3px 22px 12px', fontWeight: 300 }}>versión 1.0</div>
+            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 13, borderTop: '1px solid #f0f0f0', padding: '16px 22px', fontSize: 15, fontWeight: 600, color: '#2b2b2b', textDecoration: 'none' }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8a8a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+              Volver a iLStorage
+            </a>
+            <div style={{ textAlign: 'center', fontSize: 11, color: '#c4c4c4', fontWeight: 800, letterSpacing: '0.14em', padding: '16px 0 2px' }}>iLStorage</div>
+          </div>
+        </div>
       )}
     </div>
   )
