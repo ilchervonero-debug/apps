@@ -1,4 +1,4 @@
-const CACHE = 'ildjcu-v1';
+const CACHE = 'ildjcu-v2';
 const ASSETS = [
   '/apps/ildjcu/',
   '/apps/ildjcu/index.html',
