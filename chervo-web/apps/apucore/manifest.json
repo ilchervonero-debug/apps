@@ -1,0 +1,15 @@
+{
+  "name": "APU CORE — Hormigón armado",
+  "short_name": "APU CORE",
+  "description": "Cálculo de hormigón armado: materiales, encofrado, acero y mano de obra",
+  "start_url": "/apps/apucore/",
+  "scope": "/apps/apucore/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F4F4",
+  "theme_color": "#FE0000",
+  "icons": [
+    { "src": "./icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon-192.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="es-UY">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APU CORE</title>
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--b:#FFF;--g1:#F4F4F4;--g2:#E0E0E0;--g3:#9E9E9E;--g4:#444444;--g5:#1A1A1A;--r:#FE0000;--rd:#C70000;--rl:#FFF1EE;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Exo 2',sans-serif;background:var(--g1);color:var(--g5);font-size:14px;overflow-x:hidden;}
+
+/* HDR */
+.hdr{background:var(--b);border-bottom:3px solid var(--r);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;}
+.hdr-logo svg{width:28px;height:28px;flex-shrink:0;}
+.hdr h1{font-size:18px;font-weight:800;color:var(--g5);letter-spacing:-0.5px;flex:1;}
+.hdr h1 span{color:var(--r);}
+.hdr-sub{font-size:10px;color:var(--g3);}
+
+/* VIEWS */
+.view{display:none;min-height:calc(100vh - 60px);}
+.view.active{display:block;}
+
+/* LANDING */
+.landing{padding:14px;}
+.proyecto-box{background:var(--b);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.proyecto-box input{flex:1;border:none;font-family:'Exo 2',sans-serif;font-size:16px;font-weight:700;color:var(--g5);outline:none;background:none;}
+.proyecto-box input::placeholder{color:var(--g2);font-weight:400;}
+
+/* GRUPOS */
+.grupo{background:var(--b);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.grupo-hdr{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--g1);gap:10px;}
+.grupo-icono{width:34px;height:34px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--r);}
+.grupo-icono svg{width:30px;height:30px;}
+.grupo-titulo{font-size:13px;font-weight:800;color:var(--g5);text-transform:uppercase;letter-spacing:0.5px;flex:1;}
+.grupo-count{font-size:11px;font-weight:700;color:var(--g3);background:var(--g1);padding:2px 8px;border-radius:10px;}
+.btn-add{width:32px;height:32px;border-radius:6px;border:1.5px dashed var(--r);background:none;color:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+.btn-add:hover{background:var(--rl);}
+.btn-add svg{width:14px;height:14px;}
+
+/* QUICK ADD FORM */
+.quick-add{padding:12px 14px;background:var(--rl);border-bottom:1px solid var(--g2);display:none;}
+.quick-add.visible{display:block;}
+.qa-grid{display:grid;grid-template-columns:1fr 80px;gap:8px;margin-bottom:8px;}
+.qa-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.qa-input{padding:9px 10px;border:1.5px solid var(--g2);border-radius:6px;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;background:var(--b);color:var(--g5);width:100%;outline:none;}
+.qa-input:focus{border-color:var(--r);}
+.qa-actions{display:flex;gap:6px;}
+
+/* ITEM LIST */
+.item-list{padding:6px 10px 10px;}
+.item-empty{text-align:center;padding:16px;font-size:12px;color:var(--g3);}
+.item-row{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid var(--g1);cursor:pointer;transition:background 0.1s;border-radius:6px;}
+.item-row:hover{background:var(--rl);}
+.item-row:last-child{border-bottom:none;}
+.item-status{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.status-vacio{background:var(--g2);}
+.status-definido{background:#9E9E9E;}
+.status-calculado{background:var(--r);}
+.item-nombre{font-size:14px;font-weight:700;color:var(--g5);min-width:48px;}
+.item-tipo{font-size:11px;color:var(--g3);font-weight:600;}
+.item-dims{font-size:11px;color:var(--g4);margin-top:1px;}
+.item-qty{font-size:12px;font-weight:800;color:var(--g4);background:var(--g1);padding:2px 8px;border-radius:4px;white-space:nowrap;}
+.item-costo{font-size:12px;font-weight:800;color:var(--r);white-space:nowrap;}
+.item-arrow{color:var(--r);flex-shrink:0;opacity:0.6;}
+.item-info{flex:1;min-width:0;}
+
+/* RESUMEN OBRA */
+.resumen-obra{background:var(--b);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+.resumen-titulo{font-size:12px;font-weight:800;color:var(--r);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+.res-tot-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--g1);font-size:13px;}
+.res-tot-row:last-child{border-bottom:none;font-weight:800;font-size:15px;color:var(--r);}
+
+/* DETALLE PANEL (overlay) */
+.detalle-panel{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--g1);z-index:300;overflow-y:auto;transform:translateX(100%);transition:transform 0.25s ease;}
+.detalle-panel.open{transform:translateX(0);}
+.det-hdr{background:var(--b);border-bottom:3px solid var(--r);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+.det-back{display:flex;align-items:center;gap:6px;background:none;border:none;font-family:'Exo 2',sans-serif;font-size:12px;font-weight:700;color:var(--r);cursor:pointer;padding:6px 10px;border-radius:6px;border:1.5px solid var(--r);}
+.det-back svg{width:12px;height:12px;}
+.det-title{flex:1;font-size:15px;font-weight:800;color:var(--g5);}
+.det-title span{color:var(--r);}
+.det-body{padding:14px;}
+
+/* FORM */
+.card{background:var(--b);border-radius:10px;padding:16px;margin-bottom:12px;overflow:hidden;}
+.card-title{font-size:14px;font-weight:700;color:var(--g5);margin-bottom:14px;}
+.card-title span{color:var(--r);}
+.sec-div{display:flex;align-items:center;margin:16px 0 12px;}
+.sec-div::before,.sec-div::after{content:'';flex:1;height:1px;background:var(--g2);}
+.sec-div span{padding:0 12px;font-size:10px;font-weight:800;color:var(--r);text-transform:uppercase;letter-spacing:1px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:0.4px;}
+.fg input,.fg select{padding:9px 10px;border:1.5px solid var(--g2);border-radius:6px;font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;color:var(--g5);background:var(--b);}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--r);}
+.fg .hint{font-size:10px;color:var(--g3);}
+.rec-info{background:var(--rl);border-left:3px solid var(--r);padding:7px 10px;border-radius:4px;font-size:11px;margin-bottom:10px;}
+
+/* PRESET */
+.preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;margin-bottom:10px;}
+.preset-card{border:1.5px solid var(--g2);border-radius:7px;background:var(--b);cursor:pointer;padding:5px 3px;text-align:center;transition:all 0.15s;overflow:hidden;}
+.preset-card:hover,.preset-card.sel{border-color:var(--r);background:var(--rl);}
+.preset-card .p-sub{font-size:9px;color:var(--r);font-weight:700;line-height:1.2;}
+.preview-box{background:var(--g1);border-radius:8px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:10px;}
+.preview-lbl{font-size:10px;font-weight:700;color:var(--r);text-transform:uppercase;}
+
+/* ARM BOX */
+.arm-box{background:var(--g1);border-radius:8px;padding:14px;}
+.arm-title{font-size:10px;font-weight:800;color:var(--r);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
+
+/* CHECKS */
+.check-box{background:var(--g1);border-radius:8px;padding:12px;margin-bottom:8px;}
+.check-row{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;}
+.check-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--r);}
+.check-opts{margin-top:10px;}
+
+/* ETAPA */
+.etapa-sel{display:flex;gap:8px;margin-bottom:10px;}
+.etapa-opt{flex:1;padding:10px 8px;border:1.5px solid var(--g2);border-radius:7px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.etapa-opt.sel{border-color:var(--r);background:var(--rl);}
+.etapa-opt .e-pct{font-size:16px;font-weight:800;color:var(--r);}
+.etapa-opt .e-desc{font-size:9px;color:var(--g4);margin-top:2px;line-height:1.3;}
+
+/* BTNS */
+.btn{padding:14px 22px;border:none;border-radius:9px;font-family:'Exo 2',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.4px;display:inline-flex;align-items:center;gap:6px;}
+.btn-r{background:var(--r);color:#fff;}.btn-r:hover{background:var(--rd);}
+.btn-g{background:var(--g2);color:var(--g4);}.btn-g:hover{background:var(--g3);color:#fff;}
+.btn-sm{padding:10px 16px;font-size:13px;}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* RESULTADOS */
+.res-panel{background:var(--g1);border-radius:10px;padding:16px;margin-top:14px;}
+.res-title{font-size:13px;font-weight:800;color:var(--g5);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--g2);}
+.res-sec{font-size:10px;font-weight:800;color:var(--r);text-transform:uppercase;letter-spacing:0.8px;margin:12px 0 6px;}
+.res-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--g2);}
+.res-row:last-child{border-bottom:none;}
+.res-row-l{font-size:12px;color:var(--g4);}
+.res-row-v{font-size:13px;font-weight:700;color:var(--g5);}
+.res-total{background:var(--r);border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:12px;}
+.res-total-l{font-size:12px;font-weight:700;color:rgba(255,255,255,0.8);}
+.res-total-v{font-size:20px;font-weight:800;color:#fff;}
+.res-usd{text-align:right;font-size:11px;color:var(--g4);font-weight:700;margin-top:5px;}
+
+/* PRECIOS / CONFIG */
+.nav2{display:flex;background:var(--b);border-bottom:1px solid var(--g2);}
+.nav2-btn{flex:1;padding:11px 6px;border:none;background:none;font-family:'Exo 2',sans-serif;font-size:11px;font-weight:700;color:var(--g3);cursor:pointer;border-bottom:3px solid transparent;text-transform:uppercase;letter-spacing:0.4px;}
+.nav2-btn.active{color:var(--r);border-bottom-color:var(--r);}
+.tab-view{display:none;padding:14px;}.tab-view.active{display:block;}
+.precio-sec{background:var(--b);border-radius:10px;padding:14px;margin-bottom:10px;}
+.precio-sec h4{font-size:11px;font-weight:800;color:var(--r);text-transform:uppercase;margin-bottom:10px;}
+.p-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--g1);}
+.p-row:last-child{border-bottom:none;}
+.p-row label{font-size:12px;color:var(--g4);}
+.p-row input{width:90px;padding:5px 7px;border:1px solid var(--g2);border-radius:4px;font-family:'Exo 2',sans-serif;font-size:12px;font-weight:600;text-align:right;}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<!-- HDR -->
+<div class="hdr">
+  <div class="hdr-logo">
+    <svg viewBox="0 0 28 28" fill="none">
+      <rect x="2" y="18" width="24" height="7" rx="1" fill="#FE0000"/>
+      <rect x="5" y="7" width="3" height="11" rx="1" fill="#424242"/>
+      <rect x="20" y="7" width="3" height="11" rx="1" fill="#424242"/>
+      <rect x="4" y="5" width="20" height="3" rx="1" fill="#9E9E9E"/>
+      <rect x="8" y="9" width="12" height="7" rx="1" stroke="#9E9E9E" stroke-width="1.2" fill="none"/>
+    </svg>
+  </div>
+  <div style="flex:1;">
+    <h1 onclick="ilsxOpen()" style="cursor:pointer">APU <span>CORE</span> <span style="font-size:11px;font-weight:400;color:var(--g3);">v2</span></h1>
+  </div>
+  <div style="display:flex;gap:6px;">
+    <button class="btn btn-g btn-sm" onclick="showTab('precios')" style="font-size:10px;">Precios</button>
+    <button class="btn btn-g btn-sm" onclick="showTab('config')" style="font-size:10px;">Config</button>
+    <button class="btn btn-g btn-sm" onclick="exportarCSV()" style="font-size:10px;">CSV</button>
+  </div>
+</div>
+
+<!-- VIEW: LISTA (landing) -->
+<div class="view active" id="view-lista">
+
+  <!-- Nombre proyecto -->
+  <div class="landing">
+    <div class="proyecto-box">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="2" stroke="var(--r)" stroke-width="1.5"/><path d="M5 9h8M5 6h5M5 12h6" stroke="var(--r)" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <input id="proj-nombre" type="text" placeholder="Nombre del proyecto…" oninput="saveProyecto()">
+    </div>
+
+    <!-- GRUPOS -->
+    <div id="grupos-container"></div>
+
+    <!-- RESUMEN -->
+    <div id="resumen-container"></div>
+  </div>
+</div>
+
+<!-- VIEW: PRECIOS / CONFIG -->
+<div class="view" id="view-config-precios">
+  <div class="nav2">
+    <button class="nav2-btn active" id="tab2-precios" onclick="switchTab2('precios')">Precios</button>
+    <button class="nav2-btn" id="tab2-config" onclick="switchTab2('config')">Configuración</button>
+  </div>
+  <div class="tab-view active" id="tv-precios">
+    <div id="precios-container"></div>
+    <div style="padding:0 0 14px;"><button class="btn btn-r" onclick="guardarPrecios()">Guardar precios</button></div>
+  </div>
+  <div class="tab-view" id="tv-config">
+    <div class="precio-sec">
+      <h4>General</h4>
+      <div class="p-row"><label>TC UYU/USD</label><input type="number" id="cfg-tc" value="42.50" step="0.01"></div>
+      <div class="p-row"><label>Desperdicio enc. (%)</label><input type="number" id="cfg-des" value="10"></div>
+      <div class="p-row"><label>Empalme acero (%)</label><input type="number" id="cfg-anc" value="10"></div>
+      <div class="p-row"><label>Alambre atar (%)</label><input type="number" id="cfg-alat" value="2"></div>
+    </div>
+    <div class="precio-sec">
+      <h4>Cargas Sociales</h4>
+      <div class="p-row"><label>BPS Ley 17.738 (%)</label><input type="number" id="cfg-bps" value="4.0" step="0.1"></div>
+      <div class="p-row"><label>SAU (%)</label><input type="number" id="cfg-sau" value="1.0" step="0.1"></div>
+      <div class="p-row"><label>FRL (%)</label><input type="number" id="cfg-frl" value="0.375" step="0.001"></div>
+    </div>
+    <div class="precio-sec">
+      <h4>Cuadrilla SUNCA — Grupo 9 Sub 1</h4>
+      <div class="p-row"><label>Oficial Cat. VIII (UYU/día)</label><input type="number" id="cfg-of" value="1940"></div>
+      <div class="p-row"><label>Semi-oficial Cat. VI</label><input type="number" id="cfg-se" value="1760"></div>
+      <div class="p-row"><label>Peón Cat. III</label><input type="number" id="cfg-pe" value="1665"></div>
+    </div>
+    <div class="precio-sec">
+      <h4>Rendimientos SAU</h4>
+      <div class="p-row"><label>Zapata (m³/día)</label><input type="number" id="cfg-rz" value="2.5" step="0.1"></div>
+      <div class="p-row"><label>Muro/Viga cim. (m²/día)</label><input type="number" id="cfg-rm" value="8"></div>
+      <div class="p-row"><label>Columna (m³/día)</label><input type="number" id="cfg-rc" value="3"></div>
+      <div class="p-row"><label>Viga (m³/día)</label><input type="number" id="cfg-rv" value="4"></div>
+      <div class="p-row"><label>Losa (m²/día)</label><input type="number" id="cfg-rl" value="12"></div>
+      <div class="p-row"><label>Carpeta (m²/día)</label><input type="number" id="cfg-rca" value="20"></div>
+      <div class="p-row"><label>Encofrado (m²/día)</label><input type="number" id="cfg-ren" value="18"></div>
+      <div class="p-row"><label>Desencofrado (m²/día)</label><input type="number" id="cfg-rde" value="30"></div>
+    </div>
+    <button class="btn btn-r" onclick="guardarConfig()">Guardar config</button>
+  </div>
+</div>
+
+<!-- DETALLE PANEL (overlay) -->
+<div class="detalle-panel" id="detalle-panel">
+  <div class="det-hdr">
+    <button class="det-back" onclick="cerrarDetalle()">
+      <svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Lista
+    </button>
+    <div class="det-title" id="det-title">Definir <span>Elemento</span></div>
+    <button class="btn btn-g btn-sm" onclick="eliminarItemActual()" style="font-size:10px;">Eliminar</button>
+  </div>
+  <div class="det-body">
+    <div id="det-form"></div>
+    <div class="btn-group" style="margin-top:16px;">
+      <button class="btn btn-r" onclick="calcularElemento()">Calcular</button>
+      <button class="btn btn-g" onclick="guardarElemento()">Guardar</button>
+    </div>
+    <div id="det-resultados"></div>
+  </div>
+</div>
+
+<script>
+// ══ DATOS ══
+const HORMIGON={C15:{cem:200,arena:0.72,piedra:0.95,agua:200},C20:{cem:250,arena:0.66,piedra:0.88,agua:190},C25:{cem:300,arena:0.60,piedra:0.80,agua:180},C30:{cem:350,arena:0.55,piedra:0.75,agua:175},C35:{cem:390,arena:0.50,piedra:0.70,agua:170},C40:{cem:430,arena:0.45,piedra:0.65,agua:165}};
+const DIAMS=[8,10,12,16,20,25], DIAMS_EST=[4,6,8,10];
+const PL={4:0.099,6:0.222,8:0.395,10:0.617,12:0.888,16:1.578,20:2.466,25:3.853};
+const REC={zapata:4,viga_cim:4,muro_cim:4,platea:4,dado:4,columna:2.5,viga_carga:2.5,viga_fachada:2.5,viga_trabe:2.5,losa:2,carpeta:0};
+const TW=0.15,TL=3.00,TA=TW*TL;
+
+const GRUPOS_DEF=[
+  {id:'cimentacion',label:'Cimentación',color:'#FE0000',tipos:[
+    {v:'zapata',l:'Zapata',pfx:'Z'},
+    {v:'viga_cim',l:'Viga Fundación',pfx:'VC'},
+    {v:'muro_cim',l:'Muro Fundación',pfx:'MC'},
+    {v:'platea',l:'Platea',pfx:'PL'},
+    {v:'dado',l:'Dado Hormigón',pfx:'D'},
+  ]},
+  {id:'columnas',label:'Columnas / Pilares',color:'#FE0000',tipos:[
+    {v:'columna',l:'Columna',pfx:'C'},
+  ]},
+  {id:'vigas',label:'Vigas',color:'#FE0000',tipos:[
+    {v:'viga_carga',l:'Viga de Carga',pfx:'V'},
+    {v:'viga_fachada',l:'Viga de Fachada',pfx:'VF'},
+    {v:'viga_trabe',l:'Viga Trabe',pfx:'VT'},
+  ]},
+  {id:'losas',label:'Losas / Carpetas',color:'#FE0000',tipos:[
+    {v:'losa',l:'Losa',pfx:'L'},
+    {v:'carpeta',l:'Carpeta',pfx:'CAR'},
+  ]},
+];
+
+// iconos flat (rojo, sin fondo) — uno distinto por grupo
+const _ic=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICONOS={
+  cimentacion:_ic('<path d="M4 21h16"/><path d="M6.5 21l1.6-5.5h7.8L17.5 21"/><rect x="10" y="3" width="4" height="12.5"/>'),
+  columnas:_ic('<rect x="9" y="4.5" width="6" height="15"/><line x1="6" y1="4.5" x2="18" y2="4.5"/><line x1="6" y1="19.5" x2="18" y2="19.5"/>'),
+  vigas:_ic('<rect x="3" y="9" width="18" height="6" rx="1"/><line x1="7" y1="15" x2="7" y2="20"/><line x1="17" y1="15" x2="17" y2="20"/>'),
+  losas:_ic('<rect x="3" y="6.5" width="18" height="5" rx="1"/><line x1="5" y1="16" x2="19" y2="16"/><line x1="5" y1="19.5" x2="14" y2="19.5"/>'),
+};
+const PRESETS_COL=[
+  {id:'c2020-4',sec:'cuad',sub:'4\u03A612',a:0.20,e:0.20,cant:4,diam:12,estD:6,estE:0.20},
+  {id:'c2020-6',sec:'cuad',sub:'6\u03A612',a:0.20,e:0.20,cant:6,diam:12,estD:6,estE:0.20},
+  {id:'c2525-8',sec:'cuad',sub:'8\u03A612',a:0.25,e:0.25,cant:8,diam:12,estD:6,estE:0.20},
+  {id:'c3030-8',sec:'cuad',sub:'8\u03A616',a:0.30,e:0.30,cant:8,diam:16,estD:6,estE:0.15},
+  {id:'c3040-8',sec:'cuad',sub:'8\u03A616',a:0.30,e:0.40,cant:8,diam:16,estD:8,estE:0.15},
+  {id:'c4040-12',sec:'cuad',sub:'12\u03A620',a:0.40,e:0.40,cant:12,diam:20,estD:8,estE:0.15},
+  {id:'circ25-6',sec:'circ',sub:'6\u03A612',a:0.25,e:0.25,cant:6,diam:12,estD:6,estE:0.20},
+  {id:'circ30-8',sec:'circ',sub:'8\u03A616',a:0.30,e:0.30,cant:8,diam:16,estD:8,estE:0.15},
+];
+const PRESETS_VIG=[
+  {id:'v1520',sub:'2+2\u03A610',a:0.15,h:0.20,infC:2,infD:10,supC:2,supD:10,estD:6,estE:0.15},
+  {id:'v2030',sub:'2+2\u03A612',a:0.20,h:0.30,infC:2,infD:12,supC:2,supD:10,estD:6,estE:0.15},
+  {id:'v2040',sub:'3+2\u03A616',a:0.20,h:0.40,infC:3,infD:16,supC:2,supD:12,estD:6,estE:0.15},
+  {id:'v2540',sub:'4+2\u03A616',a:0.25,h:0.40,infC:4,infD:16,supC:2,supD:12,estD:8,estE:0.15},
+  {id:'v3050',sub:'4+2\u03A620',a:0.30,h:0.50,infC:4,infD:20,supC:2,supD:16,estD:8,estE:0.10},
+];
+
+const LABELS_TIPO={zapata:'Zapata',viga_cim:'Viga Fund.',muro_cim:'Muro Fund.',platea:'Platea',dado:'Dado',columna:'Columna',viga_carga:'Viga Carga',viga_fachada:'Viga Fachada',viga_trabe:'Viga Trabe',losa:'Losa',carpeta:'Carpeta'};
+const PRECIOS_DEF={cemento:229,arena:1102,piedra:691,acero_8:0,acero_10:309,acero_12:0,acero_16:0,acero_20:0,malla_35:0,malla_42:0,tabla:0,clavos:0,alambre:0,nylon_200:0,nylon_300:0};
+
+// ══ ESTADO ══
+let obra={nombre:'',grupos:{cimentacion:[],columnas:[],vigas:[],losas:[]}};
+let activeItem=null; // {grupoId, itemIdx}
+let currentResult=null;
+
+// ══ PROYECTO ══
+function saveProyecto(){obra.nombre=document.getElementById('proj-nombre').value;}
+
+// ══ VISTAS ══
+function showTab(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  if(id==='lista'){document.getElementById('view-lista').classList.add('active');return;}
+  document.getElementById('view-config-precios').classList.add('active');
+  switchTab2(id);
+}
+function switchTab2(id){
+  document.querySelectorAll('.nav2-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-view').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab2-'+id).classList.add('active');
+  document.getElementById('tv-'+id).classList.add('active');
+  if(id==='precios')renderPrecios();
+}
+
+// ══ RENDER LISTA ══
+function renderLista(){
+  const gc=document.getElementById('grupos-container');
+  gc.innerHTML=GRUPOS_DEF.map(g=>{
+    const items=obra.grupos[g.id]||[];
+    const count=items.length;
+    let itemsHTML=items.length===0
+      ?`<div class="item-empty">Sin elementos — tocá + para agregar</div>`
+      :items.map((item,i)=>{
+        const statusClass=item.resultado?'status-calculado':item.definido?'status-definido':'status-vacio';
+        const costo=item.resultado?'$'+fmt(item.resultado.totalObra):'';
+        const dims=item.dims?dimStr(item.dims,item.tipo):'';
+        return `<div class="item-row" onclick="abrirDetalle('${g.id}',${i})">
+          <div class="item-status ${statusClass}"></div>
+          <div class="item-info">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="item-nombre">${item.nombre}</span>
+              <span class="item-tipo">${LABELS_TIPO[item.tipo]||item.tipo}</span>
+              <span class="item-qty">×${item.qty}</span>
+            </div>
+            ${dims?`<div class="item-dims">${dims}${item.hormigon?' · '+item.hormigon:''}</div>`:''}
+          </div>
+          ${costo?`<span class="item-costo">${costo}</span>`:''}
+          <svg class="item-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>`;
+      }).join('');
+    return `<div class="grupo">
+      <div class="grupo-hdr">
+        <div class="grupo-icono">${ICONOS[g.id]||''}</div>
+        <span class="grupo-titulo">${g.label}</span>
+        ${count?`<span class="grupo-count">${count}</span>`:''}
+        <button class="btn-add" onclick="toggleQuickAdd('${g.id}')">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="quick-add" id="qa-${g.id}">
+        <div class="qa-grid">
+          <input class="qa-input" type="text" id="qa-nombre-${g.id}" placeholder="Nombre (ej: ${g.tipos[0].pfx}-1)">
+          <input class="qa-input" type="number" id="qa-qty-${g.id}" placeholder="Cant." min="1" value="1">
+        </div>
+        <select class="qa-input" id="qa-tipo-${g.id}" style="margin-bottom:8px;width:100%;">
+          ${g.tipos.map(t=>`<option value="${t.v}">${t.l}</option>`).join('')}
+        </select>
+        <div class="qa-actions">
+          <button class="btn btn-r btn-sm" onclick="agregarItem('${g.id}')">Agregar</button>
+          <button class="btn btn-g btn-sm" onclick="toggleQuickAdd('${g.id}')">Cancelar</button>
+        </div>
+      </div>
+      <div class="item-list">${itemsHTML}</div>
+    </div>`;
+  }).join('');
+
+  // Resumen
+  renderResumen();
+}
+
+function dimStr(dims,tipo){
+  const d=dims;
+  if(tipo==='columna') return d.a&&d.h?`${d.a}×${d.e||d.a}m · h${d.h}m`:'';
+  if(['viga_carga','viga_fachada','viga_trabe','viga_cim'].includes(tipo)) return d.l&&d.a?`${d.l}×${d.a}×${d.h}m`:'';
+  if(['zapata','platea','losa','carpeta'].includes(tipo)) return d.l&&d.a?`${d.l}×${d.a}×${d.h}m`:'';
+  if(['muro_cim'].includes(tipo)) return d.l&&d.h?`${d.l}×${d.h}×${d.e}m`:'';
+  return '';
+}
+
+function renderResumen(){
+  const rc=document.getElementById('resumen-container');
+  const todos=Object.values(obra.grupos).flat().filter(i=>i.resultado);
+  if(!todos.length){rc.innerHTML='';return;}
+  let mat=0,enc=0,mo=0;
+  todos.forEach(i=>{mat+=i.resultado.subtotalMat;enc+=i.resultado.subtotalEncTotal;mo+=i.resultado.moCompleta;});
+  const total=mat+enc+mo;
+  const cfg=getConfig();
+  rc.innerHTML=`<div class="resumen-obra">
+    <div class="resumen-titulo">Resumen Obra</div>
+    <div class="res-tot-row"><span>Materiales</span><span>$${fmt(mat)}</span></div>
+    <div class="res-tot-row"><span>Encofrado</span><span>$${fmt(enc)}</span></div>
+    <div class="res-tot-row"><span>Mano de Obra</span><span>$${fmt(mo)}</span></div>
+    <div class="res-tot-row"><span>TOTAL OBRA</span><span>$${fmt(total)} UYU</span></div>
+    <div style="text-align:right;font-size:11px;color:var(--g4);font-weight:700;margin-top:4px;">USD: $${fmt(total/cfg.tc)}</div>
+  </div>`;
+}
+
+// ══ QUICK ADD ══
+function toggleQuickAdd(gid){
+  const el=document.getElementById('qa-'+gid);
+  el.classList.toggle('visible');
+  if(el.classList.contains('visible'))document.getElementById('qa-nombre-'+gid).focus();
+}
+
+function agregarItem(gid){
+  const nombre=document.getElementById('qa-nombre-'+gid).value.trim();
+  const qty=+document.getElementById('qa-qty-'+gid).value||1;
+  const tipo=document.getElementById('qa-tipo-'+gid).value;
+  if(!nombre){alert('Ponele un nombre al elemento');return;}
+  obra.grupos[gid].push({nombre,tipo,qty,dims:{},arm:{},hormigon:'C25',definido:false,resultado:null});
+  document.getElementById('qa-nombre-'+gid).value='';
+  document.getElementById('qa-qty-'+gid).value=1;
+  toggleQuickAdd(gid);
+  renderLista();
+}
+
+// ══ DETALLE ══
+function abrirDetalle(gid,idx){
+  activeItem={gid,idx};
+  currentResult=null;
+  const item=obra.grupos[gid][idx];
+  document.getElementById('det-title').innerHTML=`${item.nombre} <span>— ${LABELS_TIPO[item.tipo]||item.tipo}</span>`;
+  renderDetForm(item);
+  if(item.resultado){currentResult=item.resultado;renderResultados(item.resultado);}
+  document.getElementById('detalle-panel').classList.add('open');
+  document.getElementById('detalle-panel').scrollTop=0;
+}
+
+function cerrarDetalle(){
+  document.getElementById('detalle-panel').classList.remove('open');
+  renderLista();
+  activeItem=null; currentResult=null;
+}
+
+function eliminarItemActual(){
+  if(!activeItem||!confirm('Eliminar este elemento?'))return;
+  obra.grupos[activeItem.gid].splice(activeItem.idx,1);
+  cerrarDetalle();
+}
+
+// ══ FORM DETALLE ══
+function renderDetForm(item){
+  const tipo=item.tipo, d=item.dims||{}, arm=item.arm||{};
+  const hor=item.hormigon||'C25', etapa=item.etapa||'cimentacion';
+  const rec=REC[tipo]||0;
+  const esCim=['zapata','viga_cim','muro_cim','platea','dado'].includes(tipo);
+  const esCol=tipo==='columna';
+  const esVig=['viga_carga','viga_fachada','viga_trabe','viga_cim'].includes(tipo);
+  let h='';
+
+  // PRESET — columna
+  if(esCol){
+    h+=`<div class="card"><div class="card-title">Sección</div>`;
+    h+=`<div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;">`;
+    h+=`<div class="preset-grid">`;
+    PRESETS_COL.forEach(p=>{
+      const sel=item.presetId===p.id?' sel':'';
+      const svg=svgCol(p.sec,p.cant,true);
+      h+=`<div class="preset-card${sel}" id="pc-${p.id}" onclick="applyCol('${p.id}')">
+        <div>${svg}</div><div class="p-sub">${p.sub}</div></div>`;
+    });
+    h+=`</div>`;
+    h+=`<div class="preview-box" id="col-prev" style="min-width:100px;">
+      <div class="preview-lbl">Sección</div>
+      ${item.presetId?svgCol(PRESETS_COL.find(p=>p.id===item.presetId)?.sec||'cuad',PRESETS_COL.find(p=>p.id===item.presetId)?.cant||4,false):svgCol('cuad',4,false)}
+    </div>`;
+    h+=`</div></div>`;
+  }
+
+  // PRESET — vigas
+  if(esVig&&tipo!=='viga_cim'){
+    h+=`<div class="card"><div class="card-title">Sección</div>`;
+    h+=`<div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;">`;
+    h+=`<div class="preset-grid">`;
+    PRESETS_VIG.forEach(p=>{
+      const sel=item.presetId===p.id?' sel':'';
+      h+=`<div class="preset-card${sel}" id="pv-${p.id}" onclick="applyVig('${p.id}')">
+        <div>${svgVig(p.infC,p.supC,true)}</div><div class="p-sub">${p.sub}</div></div>`;
+    });
+    h+=`</div>`;
+    h+=`<div class="preview-box" id="vig-prev" style="min-width:110px;">
+      <div class="preview-lbl">Sección</div>
+      ${item.presetId?svgVig(PRESETS_VIG.find(p=>p.id===item.presetId)?.infC||2,PRESETS_VIG.find(p=>p.id===item.presetId)?.supC||2,false):svgVig(2,2,false)}
+    </div>`;
+    h+=`</div></div>`;
+  }
+
+  // GEOMETRÍA
+  h+=`<div class="card">`;
+  h+=`<div class="card-title">Geometría <span style="font-size:11px;color:var(--g3);font-weight:400;">— rec. ${rec}cm c/lado</span></div>`;
+  h+=`<div class="form-grid">`;
+  if(tipo==='zapata') h+=fi('d-l','Largo','m',d.l||2.0)+fi('d-a','Ancho','m',d.a||2.0)+fi('d-h','Profund.','m',d.h||0.40)+fi('d-e','Espesor','m',d.e||0);
+  else if(tipo==='muro_cim') h+=fi('d-l','Largo','m',d.l||5.0)+fi('d-h','Alto','m',d.h||0.80)+fi('d-e','Espesor','m',d.e||0.20);
+  else if(tipo==='viga_cim') h+=fi('d-l','Largo','m',d.l||5.0)+fi('d-a','Ancho','m',d.a||0.20)+fi('d-h','Alto','m',d.h||0.40);
+  else if(tipo==='platea') h+=fi('d-l','Largo','m',d.l||6.0)+fi('d-a','Ancho','m',d.a||5.0)+fi('d-h','Espesor','m',d.h||0.15);
+  else if(tipo==='dado') h+=fi('d-l','Largo','m',d.l||0.60)+fi('d-a','Ancho','m',d.a||0.60)+fi('d-h','Alto','m',d.h||0.40);
+  else if(tipo==='columna') h+=fi('d-a','Ancho','m',d.a||0.20)+fi('d-e','Largo/Diám.','m',d.e||0.20)+fi('d-h','Alto','m',d.h||2.80);
+  else if(esVig) h+=fi('d-l','Luz','m',d.l||4.0)+fi('d-a','Ancho','m',d.a||0.20)+fi('d-h','Alto','m',d.h||0.35);
+  else if(tipo==='losa') h+=fi('d-l','Largo','m',d.l||5.0)+fi('d-a','Ancho','m',d.a||4.0)+fi('d-h','Espesor','m',d.h||0.12);
+  else if(tipo==='carpeta') h+=fi('d-l','Largo','m',d.l||5.0)+fi('d-a','Ancho','m',d.a||4.0)+fi('d-h','Espesor','m',d.h||0.05);
+  h+=`</div>`;
+
+  // ARMADURA
+  if(tipo!=='carpeta'){
+    h+=`<div class="sec-div"><span>Armadura</span></div><div class="arm-box">`;
+    if(['zapata','dado'].includes(tipo)){
+      h+=`<div class="form-grid">${selD('arm-diam',arm.diam||10)}${fi('arm-cant','Barras por dir.','ud',arm.cant||8)}</div>`;
+    } else if(['muro_cim'].includes(tipo)){
+      h+=`<div class="form-grid">${selD('arm-diam',arm.diam||10)}${fi('arm-cant','Barras horiz.','ud',arm.cant||6)}</div>`;
+    } else if(tipo==='columna'){
+      h+=`<div class="form-grid">${fi('arm-cant','Cant. fierros','ud',arm.cant||4)}${selD('arm-diam',arm.diam||12)}${selDE('arm-est-d',arm.estD||6)}${fi('arm-est-e','Separación est.','m',arm.estE||0.20)}</div>`;
+    } else if(esVig||tipo==='viga_cim'){
+      h+=`<div class="form-grid">${fi('arm-inf-c','Fierros inf','ud',arm.infC||2)}${selD('arm-inf-d','Diám. inf',arm.infD||12)}${fi('arm-sup-c','Fierros sup','ud',arm.supC||2)}${selD('arm-sup-d','Diám. sup',arm.supD||10)}${selDE('arm-est-d',arm.estD||6)}${fi('arm-est-e','Separación','m',arm.estE||0.15)}</div>`;
+    } else if(['losa','platea'].includes(tipo)){
+      const ta=arm.tipoArm||'malla';
+      h+=`<div class="form-grid"><div class="fg"><label>Tipo</label><select id="arm-tipo" onchange="tArm()">
+        <option value="malla"${ta==='malla'?' selected':''}>Malla ALLUR</option>
+        <option value="fierro"${ta==='fierro'?' selected':''}>Fierros</option></select></div></div>`;
+      h+=`<div id="s-malla"${ta==='fierro'?' class="hidden"':''}>
+        <div class="form-grid">
+          <div class="fg"><label>Malla</label><select id="arm-malla">
+            <option value="3.5mm"${arm.mallaTipo==='3.5mm'?' selected':''}>3.5mm — contrapiso/vereda</option>
+            <option value="4.2mm"${arm.mallaTipo!=='3.5mm'?' selected':''}>4.2mm — losa/cargas</option></select></div>
+          ${fi('arm-rollos','Rollos','ud',arm.rollos||1)}</div></div>`;
+      h+=`<div id="s-fierro"${ta!=='fierro'?' class="hidden"':''}>
+        <div class="form-grid">${selD('arm-diam',arm.diam||10)}${fi('arm-esp','Separación','m',arm.esp||0.20)}</div></div>`;
+    }
+    h+=`</div>`;
+  }
+
+  // HORMIGÓN
+  h+=`<div class="sec-div"><span>Hormigón — UNIT 972</span></div>`;
+  h+=`<div class="form-grid"><div class="fg"><label>Tipo</label><select id="h-tipo">`;
+  Object.entries(HORMIGON).forEach(([k,v])=>h+=`<option value="${k}"${k===hor?' selected':''}>${k}</option>`);
+  h+=`</select></div><div class="fg"><label>Cantidad elem.</label><input type="number" id="elem-qty" value="${item.qty||1}" min="1"></div></div>`;
+
+  // NYLON (cimentación)
+  if(esCim){
+    const nc=item.nylon?.activo;
+    h+=`<div class="check-box"><label class="check-row"><input type="checkbox" id="nylon-check"${nc?' checked':''} onchange="tNylon()"> Nylon aislante en base</label>
+      <div id="nylon-opts"${nc?'':' class="hidden"'}><div class="form-grid" style="margin-top:8px;">
+        <div class="fg"><label>Tipo</label><select id="nylon-tipo">
+          <option value="200"${item.nylon?.tipo==='200'?' selected':''}>PE 200µ estándar</option>
+          <option value="300"${item.nylon?.tipo==='300'?' selected':''}>PE 300µ reforzado</option></select></div>
+        ${fi('nylon-solap','Solape (%)','%',item.nylon?.solap||15)}</div></div></div>`;
+  }
+
+  // ENCOFRADO
+  if(tipo!=='carpeta'){
+    const ec=item.encofrado?.activo!==false;
+    h+=`<div class="check-box"><label class="check-row"><input type="checkbox" id="enc-check"${ec?' checked':''} onchange="tEnc()"> Incluir encofrado</label>
+      <div id="enc-opts"${ec?'':' class="hidden"'}><div class="etapa-sel" style="margin-top:10px;">
+        <div class="etapa-opt${etapa==='cimentacion'?' sel':''}" data-etapa="cimentacion" onclick="selEt(this)"><div class="e-pct">100%</div><div class="e-desc">Cimentación<br>tablas nuevas</div></div>
+        <div class="etapa-opt${etapa==='elevada'?' sel':''}" data-etapa="elevada" onclick="selEt(this)"><div class="e-pct">35%</div><div class="e-desc">Elevada<br>65% reciclado</div></div>
+      </div></div></div>`;
+  }
+
+  h+=`</div>`;
+  document.getElementById('det-form').innerHTML=h;
+  document.getElementById('det-resultados').innerHTML='';
+}
+
+// ══ SVG ══
+function svgCol(sec,cant,small){
+  const S=small?56:100,pad=small?7:10,rec=small?10:16,barR=small?3.5:5;
+  const x1=pad,y1=pad,bw=S-2*pad,bh=S-2*pad;
+  let s='';
+  if(sec==='circ'){
+    const cx=S/2,cy=S/2,r=(S-2*pad)/2,ri=r-rec;
+    s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#E8E8E8" stroke="#616161" stroke-width="1.2"/>`;
+    s+=`<circle cx="${cx}" cy="${cy}" r="${ri}" fill="none" stroke="#FE0000" stroke-width="0.6" stroke-dasharray="2,1.5"/>`;
+    s+=`<circle cx="${cx}" cy="${cy}" r="${ri-barR-1}" fill="none" stroke="#9E9E9E" stroke-width="0.7"/>`;
+    for(let i=0;i<cant;i++){const a=(2*Math.PI*i/cant)-Math.PI/2;s+=`<circle cx="${(cx+(ri-barR)*Math.cos(a)).toFixed(1)}" cy="${(cy+(ri-barR)*Math.sin(a)).toFixed(1)}" r="${barR}" fill="#FE0000"/>`;}
+  } else {
+    s+=`<rect x="${x1}" y="${y1}" width="${bw}" height="${bh}" rx="2" fill="#E8E8E8" stroke="#616161" stroke-width="1.2"/>`;
+    s+=`<rect x="${x1+rec}" y="${y1+rec}" width="${bw-2*rec}" height="${bh-2*rec}" fill="none" stroke="#FE0000" stroke-width="0.6" stroke-dasharray="2,1.5"/>`;
+    s+=`<rect x="${x1+rec+2}" y="${y1+rec+2}" width="${bw-2*rec-4}" height="${bh-2*rec-4}" fill="none" stroke="#9E9E9E" stroke-width="0.7"/>`;
+    const ix=x1+rec+barR,iy=y1+rec+barR,ex=x1+bw-rec-barR,ey=y1+bh-rec-barR,mx=(ix+ex)/2,my=(iy+ey)/2;
+    const pts={4:[[ix,iy],[ex,iy],[ix,ey],[ex,ey]],6:[[ix,iy],[mx,iy],[ex,iy],[ix,ey],[mx,ey],[ex,ey]],8:[[ix,iy],[mx,iy],[ex,iy],[ex,my],[ex,ey],[mx,ey],[ix,ey],[ix,my]],12:[[ix,iy],[ix+(ex-ix)/3,iy],[ix+2*(ex-ix)/3,iy],[ex,iy],[ex,iy+(ey-iy)/3],[ex,iy+2*(ey-iy)/3],[ex,ey],[ex-(ex-ix)/3,ey],[ex-2*(ex-ix)/3,ey],[ix,ey],[ix,ey-(ey-iy)/3],[ix,ey-2*(ey-iy)/3]]}[cant]||[[ix,iy],[ex,iy],[ix,ey],[ex,ey]];
+    pts.forEach(([bx,by])=>s+=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${barR}" fill="#FE0000"/>`);
+  }
+  return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+function svgVig(infC,supC,small){
+  const W=small?72:120,H=small?48:80,pad=small?6:10,rec=small?8:13,barR=small?3:4.5;
+  let s=`<rect x="${pad}" y="${pad}" width="${W-2*pad}" height="${H-2*pad}" rx="2" fill="#E8E8E8" stroke="#616161" stroke-width="1.2"/>`;
+  s+=`<rect x="${pad+rec}" y="${pad+rec}" width="${W-2*pad-2*rec}" height="${H-2*pad-2*rec}" fill="none" stroke="#FE0000" stroke-width="0.6" stroke-dasharray="2,1.5"/>`;
+  s+=`<rect x="${pad+rec+2}" y="${pad+rec+2}" width="${W-2*pad-2*rec-4}" height="${H-2*pad-2*rec-4}" fill="none" stroke="#9E9E9E" stroke-width="0.7"/>`;
+  const ix=pad+rec+barR,ex=W-pad-rec-barR,iy_sup=pad+rec+barR,iy_inf=H-pad-rec-barR;
+  function dist(n,x1,x2){if(n<=1)return[(x1+x2)/2];const a=[];for(let i=0;i<n;i++)a.push(x1+i*(x2-x1)/(n-1));return a;}
+  dist(infC,ix,ex).forEach(bx=>s+=`<circle cx="${bx.toFixed(1)}" cy="${iy_inf.toFixed(1)}" r="${barR}" fill="#FE0000"/>`);
+  dist(supC,ix,ex).forEach(bx=>s+=`<circle cx="${bx.toFixed(1)}" cy="${iy_sup.toFixed(1)}" r="${barR}" fill="#FE0000"/>`);
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+}
+
+// ══ HELPERS FORM ══
+function fi(id,label,unit,val,step){step=step||0.01;return `<div class="fg"><label>${label}</label><input type="number" id="${id}" value="${val||0}" step="${step}" min="0"><span class="hint">${unit}</span></div>`;}
+function selD(id,sel){let h=`<div class="fg"><label>Diám.</label><select id="${id}">`;DIAMS.forEach(d=>h+=`<option value="${d}"${d==sel?' selected':''}>\u03A6${d}</option>`);return h+'</select></div>';}
+function selDE(id,sel){let h=`<div class="fg"><label>Diám. estribo</label><select id="${id}">`;DIAMS_EST.forEach(d=>h+=`<option value="${d}"${d==sel?' selected':''}>\u03A6${d}</option>`);return h+'</select></div>';}
+function selEt(el){document.querySelectorAll('.etapa-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');}
+function tNylon(){const c=document.getElementById('nylon-check'),o=document.getElementById('nylon-opts');if(o)o.classList.toggle('hidden',!c.checked);}
+function tEnc(){const c=document.getElementById('enc-check'),o=document.getElementById('enc-opts');if(o)o.classList.toggle('hidden',!c.checked);}
+function tArm(){const t=gs('arm-tipo'),m=document.getElementById('s-malla'),f=document.getElementById('s-fierro');if(m)m.classList.toggle('hidden',t!=='malla');if(f)f.classList.toggle('hidden',t!=='fierro');}
+
+// ══ APPLY PRESETS ══
+function applyCol(id){
+  const p=PRESETS_COL.find(x=>x.id===id);if(!p)return;
+  document.querySelectorAll('[id^="pc-"]').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('pc-'+id)?.classList.add('sel');
+  sv('d-a',p.a);sv('d-e',p.e||p.a);
+  sv('arm-cant',p.cant);sv('arm-diam',p.diam);sv('arm-est-d',p.estD);sv('arm-est-e',p.estE);
+  const prev=document.getElementById('col-prev');
+  if(prev)prev.innerHTML=`<div class="preview-lbl">Sección</div>${svgCol(p.sec,p.cant,false)}`;
+  if(activeItem)obra.grupos[activeItem.gid][activeItem.idx].presetId=id;
+}
+function applyVig(id){
+  const p=PRESETS_VIG.find(x=>x.id===id);if(!p)return;
+  document.querySelectorAll('[id^="pv-"]').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('pv-'+id)?.classList.add('sel');
+  sv('d-a',p.a);sv('d-h',p.h);
+  sv('arm-inf-c',p.infC);sv('arm-inf-d',p.infD);sv('arm-sup-c',p.supC);sv('arm-sup-d',p.supD);sv('arm-est-d',p.estD);sv('arm-est-e',p.estE);
+  const prev=document.getElementById('vig-prev');
+  if(prev)prev.innerHTML=`<div class="preview-lbl">Sección</div>${svgVig(p.infC,p.supC,false)}`;
+  if(activeItem)obra.grupos[activeItem.gid][activeItem.idx].presetId=id;
+}
+function sv(id,v){const el=document.getElementById(id);if(el)el.value=v;}
+
+// ══ CÁLCULO ══
+function g(id){const el=document.getElementById(id);return el?+el.value||0:0;}
+function gs(id){const el=document.getElementById(id);return el?el.value:'';}
+function fmt(n){return(+n||0).toLocaleString('es-UY',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function calcularElemento(){
+  if(!activeItem){alert('Sin elemento activo');return;}
+  const item=obra.grupos[activeItem.gid][activeItem.idx];
+  const tipo=item.tipo, cfg=getConfig(), precios=getPrecios();
+  const qty=g('elem-qty')||item.qty||1;
+  const hor=gs('h-tipo')||'C25';
+  const dosif=HORMIGON[hor];
+  const recM=(REC[tipo]||0)/100;
+  const etapa=document.querySelector('.etapa-opt.sel')?.dataset?.etapa||'cimentacion';
+  const factorEtapa=etapa==='cimentacion'?1.0:0.35;
+  const ancM=1+cfg.anc/100;
+  const esCim=['zapata','viga_cim','muro_cim','platea','dado'].includes(tipo);
+  const esVig=['viga_carga','viga_fachada','viga_trabe','viga_cim'].includes(tipo);
+
+  let L=g('d-l'),A=g('d-a')||g('d-e'),H=g('d-h'),E=g('d-e');
+  const Anet=A-2*recM,Hnet=H-2*recM;
+  let volumen=0,areaContacto=0,areaBase=0;
+  if(tipo==='zapata'){volumen=L*A*H;areaContacto=2*(L+A)*H;areaBase=L*A;}
+  else if(tipo==='muro_cim'){volumen=L*H*E;areaContacto=2*L*H;}
+  else if(tipo==='viga_cim'){volumen=L*A*H;areaContacto=(2*H+A)*L;}
+  else if(tipo==='platea'){volumen=L*A*H;areaContacto=L*A;areaBase=L*A;}
+  else if(tipo==='dado'){volumen=L*A*H;areaContacto=2*(L+A)*H;areaBase=L*A;}
+  else if(tipo==='columna'){volumen=A*E*H;areaContacto=(2*A+2*E)*H;}
+  else if(esVig){volumen=L*A*H;areaContacto=(2*H+A)*L;}
+  else if(tipo==='losa'){volumen=L*A*H;areaContacto=L*A;}
+  else if(tipo==='carpeta'){volumen=L*A*H;areaContacto=L*A;}
+
+  const bolsas=Math.ceil(dosif.cem*volumen/25);
+  const m3Arena=dosif.arena*volumen,m3Piedra=dosif.piedra*volumen,litrosAgua=dosif.agua*volumen;
+  const cCem=bolsas*precios.cemento,cArena=m3Arena*precios.arena,cPiedra=m3Piedra*precios.piedra;
+
+  // Nylon
+  let m2Nylon=0,cNylon=0,tipoNylon='';
+  const nc=document.getElementById('nylon-check');
+  if(esCim&&nc?.checked){
+    tipoNylon=gs('nylon-tipo')||'200';
+    m2Nylon=(areaBase||areaContacto)*(1+(g('nylon-solap')||15)/100);
+    cNylon=m2Nylon*(tipoNylon==='300'?precios.nylon_300:precios.nylon_200);
+  }
+
+  // Acero
+  let barras={},cAcero=0;
+  const pxm10=precios.acero_10/6;
+  function addB(d,m){const mt=m*ancM,b=Math.ceil(mt/6);if(!barras[d])barras[d]={metros:0,barras:0};barras[d].metros+=mt;barras[d].barras+=b;const px=precios['acero_'+d]?precios['acero_'+d]/6:pxm10*(PL[d]/PL[10]);cAcero+=mt*px;}
+  let descArm='';
+  if(['zapata','dado'].includes(tipo)){const d=+gs('arm-diam'),cant=g('arm-cant');addB(d,cant*(L+A));descArm=`${cant}\u03A6${d} 2dir.`;}
+  else if(tipo==='muro_cim'){const d=+gs('arm-diam'),cant=g('arm-cant');addB(d,cant*L);descArm=`${cant}\u03A6${d}`;}
+  else if(tipo==='columna'){const cant=g('arm-cant'),d=+gs('arm-diam'),ed=+gs('arm-est-d'),ee=g('arm-est-e')||0.20;addB(d,cant*H);const nE=Math.ceil(H/ee)+1,lE=2*(Anet+(E-2*recM))+0.20;addB(ed,nE*lE);descArm=`${cant}\u03A6${d}+${nE}est.\u03A6${ed}`;}
+  else if(esVig||tipo==='viga_cim'){const ic=g('arm-inf-c'),id2=+gs('arm-inf-d'),sc=g('arm-sup-c'),sd=+gs('arm-sup-d'),ed=+gs('arm-est-d'),ee=g('arm-est-e')||0.15;addB(id2,ic*(L||4));addB(sd,sc*(L||4));const nE=Math.ceil((L||4)/ee)+1,lE=2*(Anet+Hnet)+0.20;addB(ed,nE*lE);descArm=`${ic}\u03A6${id2}+${sc}\u03A6${sd}+est.\u03A6${ed}`;}
+  else if(['losa','platea'].includes(tipo)){
+    const ta=gs('arm-tipo')||'malla';
+    if(ta==='malla'){const mt=gs('arm-malla')||'4.2mm',rol=g('arm-rollos')||1;descArm=`${rol}rol Malla${mt}`;cAcero=rol*(mt==='3.5mm'?precios.malla_35:precios.malla_42);}
+    else{const d=+gs('arm-diam'),esp=g('arm-esp')||0.20;addB(d,(Math.ceil(A/esp)+1)*L+(Math.ceil(L/esp)+1)*A);descArm=`Malla\u03A6${d}esp${esp}m`;}
+  }
+  const kgAceroTot=Object.entries(barras).reduce((s,[d,i])=>s+i.metros*PL[d],0);
+  const kgAlambreAtar=kgAceroTot*(cfg.alat/100);
+
+  // Encofrado
+  const encCheck=document.getElementById('enc-check');
+  const inclEnc=tipo==='carpeta'?false:(encCheck?encCheck.checked:true);
+  let tablasBruto=0,tablasCompra=0,gateles=0,alfajias=0,kgClavos=0;
+  if(inclEnc){
+    if(tipo==='columna'){const tca=Math.ceil(A/TW),tcb=Math.ceil(E/TW),tch=Math.ceil(H/TL);tablasBruto=2*tca*tch+2*tcb*tch;}
+    else tablasBruto=Math.ceil(areaContacto/TA*(1+cfg.des/100));
+    tablasCompra=Math.ceil(tablasBruto*factorEtapa);
+    alfajias=Math.ceil(tablasCompra/3);
+    if(tipo==='zapata'||tipo==='dado')gateles=Math.ceil(2*(L+A)/0.50);
+    else if(tipo==='muro_cim')gateles=Math.ceil(L*H/0.80);
+    else if(tipo==='columna')gateles=Math.ceil(H/0.40);
+    else if(esVig||tipo==='viga_cim')gateles=Math.ceil((L||4)/0.50);
+    else if(['losa','platea'].includes(tipo))gateles=Math.ceil(A/0.80);
+    kgClavos=areaContacto*0.15;
+  }
+  const cTablas=tablasCompra*precios.tabla,cClavos=kgClavos*precios.clavos;
+  const subtotalEnc=cTablas+cClavos;
+
+  // MO
+  let rend=cfg.rz,cantMO=volumen;
+  if(tipo==='muro_cim'){rend=cfg.rm;cantMO=areaContacto;}
+  else if(tipo==='columna'){rend=cfg.rc;}
+  else if(esVig||tipo==='viga_cim'){rend=cfg.rv;}
+  else if(['losa','platea'].includes(tipo)){rend=cfg.rl;cantMO=areaContacto;}
+  else if(tipo==='carpeta'){rend=cfg.rca;cantMO=areaContacto;}
+  const jornadas=Math.ceil((cantMO*qty)/rend);
+  const costoDia=cfg.of+cfg.se+2*cfg.pe;
+  const pctC=(cfg.bps+cfg.sau+cfg.frl)/100;
+  const moBruto=jornadas*costoDia,cargas=moBruto*pctC,moTotal=moBruto+cargas;
+  const jorEnc=inclEnc?Math.ceil((areaContacto*qty)/cfg.ren):0;
+  const jorDesenc=inclEnc?Math.ceil((areaContacto*qty)/cfg.rde):0;
+  const moEnc=(jorEnc+jorDesenc)*costoDia*(1+pctC);
+  const moCompleta=moTotal+moEnc;
+  const subtotalMat=(cCem+cArena+cPiedra+cAcero+cNylon)*qty;
+  const subtotalEncTotal=subtotalEnc*qty;
+  const totalObra=subtotalMat+subtotalEncTotal+moCompleta;
+
+  currentResult={tipo,qty,hor,volumen,areaContacto,areaBase,bolsas,m3Arena,m3Piedra,litrosAgua,barras,descArm,kgAlambreAtar,m2Nylon,tipoNylon,cNylon,tablasBruto,tablasCompra,alfajias,gateles,kgClavos,inclEnc,jornadas,jorEnc,jorDesenc,moBruto,cargas,moTotal,moEnc,subtotalMat,subtotalEncTotal,moCompleta,totalObra,etapa,factorEtapa};
+  renderResultados(currentResult);
+}
+
+function renderResultados(r){
+  const cfg=getConfig(),qty=r.qty||1;
+  let h=`<div class="res-panel"><div class="res-title">${r.hor} · ${qty>1?'×'+qty+' ud':''} · ${fmt(r.volumen*qty)} m³</div>`;
+  h+=`<div class="res-sec">Hormigón</div>`;
+  h+=rr(`Cemento Portland (bolsas 25kg)`,`${r.bolsas*qty} bolsas`,fmt(r.cCem*qty||0));
+  h+=rr(`Arena gruesa`,`${fmt(r.m3Arena*qty)} m³`,fmt(r.cArena*qty||0));
+  h+=rr(`Piedra triturada`,`${fmt(r.m3Piedra*qty)} m³`,fmt(r.cPiedra*qty||0));
+  h+=rr(`Agua`,`${Math.round(r.litrosAgua*qty)} L`,'');
+  if(r.m2Nylon>0){h+=`<div class="res-sec">Aislación</div>`;h+=rr(`Nylon PE ${r.tipoNylon}µ`,`${fmt(r.m2Nylon*qty)} m²`,fmt(r.cNylon*qty||0));}
+  if(Object.keys(r.barras||{}).length>0){
+    h+=`<div class="res-sec">Acero — barras de 6m</div>`;
+    Object.entries(r.barras).forEach(([d,i])=>h+=rr(`Ø${d}mm`,`${Math.ceil(i.barras*qty)} barras × 6m`,fmt(r.cAcero*qty||0)));
+    h+=rr(`Alambre atar`,`${fmt(r.kgAlambreAtar*qty)} kg`,'');
+  } else if(r.descArm?.includes('Malla')){h+=`<div class="res-sec">Malla ALLUR</div>`;h+=rr(r.descArm,'',fmt(r.cAcero*qty||0));}
+  if(r.inclEnc){
+    h+=`<div class="res-sec">Encofrado</div>`;
+    h+=rr(`Tablas 0.15×3.00m`,`${Math.ceil(r.tablasCompra*qty)} ud`,fmt(r.subtotalEncTotal));
+    if(r.factorEtapa<1)h+=`<div style="font-size:10px;color:var(--g3);padding:2px 0;">Si todo nuevo: ${Math.ceil(r.tablasBruto*qty)} ud</div>`;
+    h+=rr(`Alfajías`,`${Math.ceil(r.alfajias*qty)} ud`,'');
+    h+=rr(`Gateles`,`${Math.ceil(r.gateles*qty)} ud`,'');
+    h+=rr(`Clavos`,`${fmt(r.kgClavos*qty)} kg`,'');
+  }
+  h+=`<div class="res-sec">Mano de Obra</div>`;
+  h+=rr(`Hormigonado (${r.jornadas} jornadas)`,'',fmt(r.moBruto));
+  if(r.jorEnc>0)h+=rr(`Enc./Desenc. (${r.jorEnc+r.jorDesenc} jornadas)`,'',fmt(r.moEnc));
+  h+=rr(`Cargas sociales`,'',fmt(r.cargas));
+  h+=`<div class="res-total"><div class="res-total-l">TOTAL${qty>1?' ×'+qty:''}</div><div class="res-total-v">$${fmt(r.totalObra)}</div></div>`;
+  h+=`<div class="res-usd">USD: $${fmt(r.totalObra/cfg.tc)}</div></div>`;
+  document.getElementById('det-resultados').innerHTML=h;
+}
+function rr(l,c,p){return `<div class="res-row"><span class="res-row-l">${l}${c?' <strong>'+c+'</strong>':''}</span><span class="res-row-v">${p?'$'+p:''}</span></div>`;}
+
+// ══ GUARDAR ══
+function guardarElemento(){
+  if(!activeItem){alert('Sin elemento activo');return;}
+  if(!currentResult){alert('Calculá primero');return;}
+  const item=obra.grupos[activeItem.gid][activeItem.idx];
+  item.qty=g('elem-qty')||item.qty;
+  item.hormigon=gs('h-tipo')||'C25';
+  item.dims={l:g('d-l'),a:g('d-a')||g('d-e'),h:g('d-h'),e:g('d-e')};
+  item.arm={tipoArm:gs('arm-tipo'),diam:+gs('arm-diam'),cant:g('arm-cant'),infC:g('arm-inf-c'),infD:+gs('arm-inf-d'),supC:g('arm-sup-c'),supD:+gs('arm-sup-d'),estD:+gs('arm-est-d'),estE:g('arm-est-e'),malla:gs('arm-malla'),rollos:g('arm-rollos'),esp:g('arm-esp')};
+  const nc=document.getElementById('nylon-check');
+  item.nylon=nc?{activo:nc.checked,tipo:gs('nylon-tipo'),solap:g('nylon-solap')||15}:null;
+  const ec=document.getElementById('enc-check');
+  item.encofrado=ec?{activo:ec.checked}:{activo:true};
+  item.etapa=document.querySelector('.etapa-opt.sel')?.dataset?.etapa||'cimentacion';
+  item.definido=true;
+  item.descArm=currentResult.descArm;
+  item.resultado=currentResult;
+  cerrarDetalle();
+}
+
+// ══ PRECIOS / CONFIG ══
+function getPrecios(){const s=localStorage.getItem('apu2_p');return s?JSON.parse(s):{...PRECIOS_DEF};}
+function setPrecios(p){localStorage.setItem('apu2_p',JSON.stringify(p));}
+function renderPrecios(){
+  const p=getPrecios();
+  const secs=[
+    {t:'Hormigón',items:[{k:'cemento',l:'Cemento Portland (bolsa 25kg)'},{k:'arena',l:'Arena gruesa (m³)'},{k:'piedra',l:'Piedra triturada (m³)'}]},
+    {t:'Acero — barra 6m',items:[{k:'acero_8',l:'\u03A68mm×6m'},{k:'acero_10',l:'\u03A610mm×6m'},{k:'acero_12',l:'\u03A612mm×6m'},{k:'acero_16',l:'\u03A616mm×6m'},{k:'acero_20',l:'\u03A620mm×6m'}]},
+    {t:'Malla ALLUR (rollo 1.50×25m)',items:[{k:'malla_35',l:'Malla 3.5mm'},{k:'malla_42',l:'Malla 4.2mm'}]},
+    {t:'Encofrado',items:[{k:'tabla',l:'Tabla de obra (ud)'},{k:'clavos',l:'Clavos (kg)'},{k:'alambre',l:'Alambre recocido (kg)'}]},
+    {t:'Nylon aislante',items:[{k:'nylon_200',l:'PE 200µ (m²)'},{k:'nylon_300',l:'PE 300µ (m²)'}]},
+  ];
+  document.getElementById('precios-container').innerHTML=secs.map(s=>`<div class="precio-sec"><h4>${s.t}</h4>${s.items.map(it=>`<div class="p-row"><label>${it.l}</label><input type="number" id="p-${it.k}" value="${p[it.k]||0}" step="1"> <small>UYU</small></div>`).join('')}</div>`).join('');
+}
+function guardarPrecios(){const p=getPrecios();Object.keys(PRECIOS_DEF).forEach(k=>{const el=document.getElementById('p-'+k);if(el)p[k]=+el.value||0;});setPrecios(p);alert('Guardado');}
+function getConfig(){const s=localStorage.getItem('apu2_c');if(s)return JSON.parse(s);return{tc:42.50,des:10,anc:10,alat:2,bps:4.0,sau:1.0,frl:0.375,of:1940,se:1760,pe:1665,rz:2.5,rm:8,rc:3,rv:4,rl:12,rca:20,ren:18,rde:30};}
+function setConfig(c){localStorage.setItem('apu2_c',JSON.stringify(c));}
+function loadConfig(){const c=getConfig();[['tc','cfg-tc'],['des','cfg-des'],['anc','cfg-anc'],['alat','cfg-alat'],['bps','cfg-bps'],['sau','cfg-sau'],['frl','cfg-frl'],['of','cfg-of'],['se','cfg-se'],['pe','cfg-pe'],['rz','cfg-rz'],['rm','cfg-rm'],['rc','cfg-rc'],['rv','cfg-rv'],['rl','cfg-rl'],['rca','cfg-rca'],['ren','cfg-ren'],['rde','cfg-rde']].forEach(([k,id])=>{const el=document.getElementById(id);if(el)el.value=c[k];});}
+function guardarConfig(){const c=getConfig();[['tc','cfg-tc'],['des','cfg-des'],['anc','cfg-anc'],['alat','cfg-alat'],['bps','cfg-bps'],['sau','cfg-sau'],['frl','cfg-frl'],['of','cfg-of'],['se','cfg-se'],['pe','cfg-pe'],['rz','cfg-rz'],['rm','cfg-rm'],['rc','cfg-rc'],['rv','cfg-rv'],['rl','cfg-rl'],['rca','cfg-rca'],['ren','cfg-ren'],['rde','cfg-rde']].forEach(([k,id])=>{const el=document.getElementById(id);if(el)c[k]=+el.value;});setConfig(c);alert('Guardado');}
+
+// ══ EXPORT ══
+function exportarCSV(){
+  const todos=GRUPOS_DEF.flatMap(g=>(obra.grupos[g.id]||[]).map(i=>({...i,grupo:g.label})));
+  if(!todos.length){alert('Sin elementos');return;}
+  let csv='Grupo,Nombre,Tipo,Cantidad,Hormigon,Dims,Total UYU\n';
+  todos.forEach(i=>csv+=`"${i.grupo}","${i.nombre}","${LABELS_TIPO[i.tipo]||i.tipo}",${i.qty},"${i.hormigon||''}","${dimStr(i.dims||{},i.tipo)||''}","${i.resultado?'$'+fmt(i.resultado.totalObra):''}"\n`);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='apu_core_v2.csv';a.click();
+}
+
+window.addEventListener('DOMContentLoaded',()=>{loadConfig();renderLista();});
+function ilsxOpen(){document.getElementById('ilsx-ov').classList.add('on')}
+function ilsxClose(){document.getElementById('ilsx-ov').classList.remove('on')}
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+</script>
+
+<!-- ===== iLStorage panel (estetico, additivo) ===== -->
+<style>
+#ilsx-ov{position:fixed;inset:0;background:rgba(20,20,20,.45);display:none;align-items:flex-end;justify-content:center;z-index:99999;font-family:'Exo 2',system-ui,sans-serif}
+#ilsx-ov.on{display:flex}
+#ilsx-sheet{background:#fff;width:100%;max-width:600px;border-radius:22px 22px 0 0;padding:8px 0 calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 40px rgba(0,0,0,.18);animation:ilsxUp .25s cubic-bezier(.3,1.1,.5,1)}
+@keyframes ilsxUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+#ilsx-grip{width:38px;height:4px;border-radius:2px;background:#e2e2e2;margin:6px auto 14px}
+.ilsx-app{font-size:20px;font-weight:800;color:#1a1a1a;padding:0 22px;letter-spacing:-.3px}
+.ilsx-app b{color:#FE0000;font-weight:800}
+.ilsx-ver{font-size:12px;color:#9e9e9e;padding:3px 22px 12px;font-weight:400}
+.ilsx-row{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #f0f0f0;padding:16px 22px;font-family:inherit;font-size:15px;font-weight:600;color:#1a1a1a;cursor:pointer;text-decoration:none}
+.ilsx-row svg{width:19px;height:19px;color:#9e9e9e;flex:none}
+.ilsx-row:active{background:#fafafa}
+.ilsx-foot{text-align:center;font-size:11px;color:#c4c4c4;font-weight:800;letter-spacing:.14em;padding:16px 0 2px}
+</style>
+<div id="ilsx-ov" onclick="if(event.target===this)ilsxClose()">
+  <div id="ilsx-sheet">
+    <div id="ilsx-grip"></div>
+    <div class="ilsx-app">APU <b>CORE</b></div>
+    <div class="ilsx-ver">versión 2.0 · cálculo de hormigón armado</div>
+    <a class="ilsx-row" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</a>
+    <div class="ilsx-foot">iLStorage</div>
+  </div>
+</div>
+</body>
+</html>
