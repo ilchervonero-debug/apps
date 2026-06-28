@@ -170,7 +170,7 @@ h1 span{color:var(--rojo)}
   <div id="cadena"></div>
   <button class="add" id="add">+ Agregar tramo</button>
   <div class="tot"><h2>Totales</h2><div class="tot-grid" id="totales"></div></div>
-  <div class="aviso">Profundidades desde nivel de terreno (terreno horizontal). Tocá la profundidad de cualquier cámara para fijarla: los tramos siguientes encadenan desde ahí. Tramos en NO no suman metraje. Primaria: mínimo Ø110 con inodoro aguas arriba (serie PVC Uruguay); secundaria: nodos PP (pileta de patio), arranque ~0,25 m. Verificar contra ordenanza de la intendencia.</div>
+  <div class="aviso">El <b>Ø sugerido</b> sale de las UD acumuladas y del mínimo de cada artefacto (lavatorio/bidé/lavarropas Ø40 · ducha/pileta de cocina/rejilla Ø50 · colectores Ø63 · inodoro/primaria Ø110). Pendientes mínimas (UNIT/OSE): Ø40-63 ≈ 2-3 %, Ø110 1,5 % normativo (proyectar 2 %), Ø160 1 %, Ø200 ≈ 0,7 %; se admite menos con cálculo por tensión tractiva (≥1 Pa). Cámaras de inspección: <b>60×60</b> hasta 1,00 m, <b>60×110</b> &gt;1,00 m, y &gt;1,50 m con h≥1,20 m y escalones c/40 cm; salto interno de <b>6 cm</b> (60 cm al 10 %) ya incluido. Distancia máx. <b>25 m</b> entre cámaras y <b>15 m</b> cámara→inodoro. Profundidades desde terreno; tocá una cámara para fijarla. Verificar contra la ordenanza de la intendencia.</div>
 </div>
 
 <!-- ================= 02 PLUVIALES ================= -->
@@ -356,13 +356,17 @@ h1 span{color:var(--rojo)}
 const TABLA=[{d:40,ud:3},{d:50,ud:6},{d:63,ud:12},{d:75,ud:20},{d:110,ud:180},{d:160,ud:700},{d:200,ud:1400}];
 const PMIN={40:3,50:3,63:3,75:2.5,110:2,160:1,200:1};
 const ARTEFACTOS=[
- {n:"Inodoro",ud:6,wc:true},{n:"Lavatorio",ud:2},{n:"Bidet",ud:2},{n:"Ducha",ud:3},
- {n:"Bañera",ud:4},{n:"Pileta de cocina",ud:3},{n:"Pileta de lavadero",ud:3},
- {n:"Lavarropas",ud:3},{n:"Lavavajillas",ud:3},{n:"Rejilla de piso",ud:2}];
+ {n:"Inodoro",ud:6,wc:true,dmin:110},{n:"Lavatorio",ud:2,dmin:40},{n:"Bidet",ud:2,dmin:40},{n:"Ducha",ud:3,dmin:50},
+ {n:"Bañera",ud:4,dmin:50},{n:"Pileta de cocina",ud:3,dmin:50},{n:"Pileta de lavadero",ud:3,dmin:50},
+ {n:"Lavarropas",ud:3,dmin:40},{n:"Lavavajillas",ud:3,dmin:50},{n:"Rejilla de piso",ud:2,dmin:50}];
 const nuevoArts=()=>ARTEFACTOS.map(()=>0);
 const udArts=a=>a.reduce((s,q,i)=>s+q*ARTEFACTOS[i].ud,0);
 const wcArts=a=>ARTEFACTOS.some((x,i)=>x.wc&&a[i]>0);
+const dminArts=a=>a.reduce((m,q,i)=>q>0?Math.max(m,ARTEFACTOS[i].dmin):m,0);
 const fmt=(n,d=2)=>n.toFixed(d).replace('.',',');
+/* cámara de inspección (OSE): salto interno 6 cm (60 cm al 10%); tipo segun profundidad */
+const SALTO_CAMARA=0.06;
+const tipoCamara=p=>p<=1.0?'60×60':(p<=1.5?'60×110':'60×110 · h≥1,20 + escalones c/40');
 
 /* ============ navegación ============ */
 const VISTAS=['vDes','vPlu','vPen','vRes','vPre','vGeo','vAgua','vCalc'];
@@ -383,16 +387,19 @@ let tramos=[{L:5,p:2,ud:0,wc:false,contar:true,fix:null,arts:nuevoArts(),open:tr
 tramos[0].arts[0]=1; // arranca con 1 inodoro de ejemplo
 
 function calcular(){
-  let out=[],prof=profInicial,udAc=0,wcUp=false;
-  tramos.forEach(t=>{
+  let out=[],prof=profInicial,udAc=0,wcUp=false,dminAc=0;
+  tramos.forEach((t,i)=>{
     udAc+=(+t.ud||0)+udArts(t.arts);wcUp=wcUp||t.wc||wcArts(t.arts);
+    dminAc=Math.max(dminAc,dminArts(t.arts),(t.wc?110:0),(red==='prim'&&wcUp?110:0));
     const caida=(+t.L||0)*(+t.p||0)/100, llega=prof+caida;
-    let fila=TABLA.find(x=>udAc<=x.ud)||TABLA[6];
-    if(red==='prim'&&wcUp&&fila.d<110)fila=TABLA.find(x=>x.d===110);
+    // Ø óptimo: cubre las UD acumuladas y respeta el mínimo del artefacto más exigente aguas arriba
+    let fila=TABLA.find(x=>udAc<=x.ud&&x.d>=dminAc)||TABLA.find(x=>x.d>=dminAc)||TABLA[6];
     const profDestino=t.fix!==null?t.fix:llega;
     out.push({sale:prof,caida,llega,profDestino,salto:profDestino-llega,dia:fila.d,udAc,
-              pmin:PMIN[fila.d],cumple:(+t.p||0)>=PMIN[fila.d],desborde:udAc>1400});
-    prof=profDestino;
+              pmin:PMIN[fila.d],cumple:(+t.p||0)>=PMIN[fila.d],desborde:udAc>1400,
+              tipoCam:tipoCamara(profDestino),
+              lejos:(+t.L||0)>25, lejosWC:red==='prim'&&wcUp&&(+t.L||0)>15});
+    prof=profDestino+(red==='prim'?SALTO_CAMARA:0); // salto interno de cámara
   });
   return out;
 }
@@ -426,13 +433,16 @@ function render(){
         <span class="dia"><span class="lbl">Ø sugerido</span><b class="mono">${r.desborde?'>1400 UD':'Ø'+r.dia}</b></span>
         <span><span class="lbl">UD acum.</span><b class="mono">${r.udAc}</b></span>
         <span><span class="lbl">Pend. mín</span><b class="mono" style="color:${r.cumple?'var(--ok)':'var(--rojo)'}">${r.cumple?'✓':'✗'} ${r.pmin}%</b></span>
-      </div></div>
+      </div>
+      ${(r.lejos||r.lejosWC)?`<div style="font-size:11px;color:var(--rojo);margin-top:6px;font-weight:600;line-height:1.4">${r.lejosWC?'• Máx 15 m entre cámara e inodoro<br>':''}${r.lejos?'• Tramo &gt; 25 m: intercalar cámara de inspección':''}</div>`:''}
+      </div>
     <div class="linea-v"></div>
     <div class="cam"><span class="tag">${NODO()}${i+2}</span>
       <input type="number" inputmode="decimal" step="0.01" value="${fmt(r.profDestino).replace(',','.')}" data-i="${i}" data-k="fix">
       <span class="prof">m</span>
       ${t.fix!==null?'<span class="fixt">fijada</span>':''}
-      ${r.salto>0.005?`<span class="salto">salto ${fmt(r.salto*100,0)} cm</span>`:''}</div>`;
+      ${r.salto>0.005?`<span class="salto">salto ${fmt(r.salto*100,0)} cm</span>`:''}
+      ${red==='prim'?`<span style="font-size:10px;color:var(--gris);font-family:'Geist Mono',monospace;margin-left:6px">cám. ${r.tipoCam}</span>`:''}</div>`;
   });
   cadena.innerHTML=h;
   renderTotales(R);renderPerfil(R);
