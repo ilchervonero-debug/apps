@@ -13,6 +13,9 @@
 <meta name="version" content="1.5">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.svg">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -1102,84 +1105,34 @@ async function respaldo(){
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 
-// ── Auth: Supabase + Google OAuth — PKCE flow ──
-const SUPA_URL='https://ujsqtrbftksnjxnefpwf.supabase.co';
-const SUPA_KEY='sb_publishable_EPAkyXO8dwo8o2_PLCQ_hw_xdeIkdNP';
-
-function _b64url(buf){ return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
-function _verifier(){ const a=new Uint8Array(32); crypto.getRandomValues(a); return _b64url(a); }
-async function _challenge(v){ return _b64url(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v))); }
-
-async function _parsearCallback(){
-  // PKCE: code en query string
-  const q=new URLSearchParams(location.search);
-  const code=q.get('code'), errQ=q.get('error_description')||q.get('error');
-  if(errQ){ history.replaceState(null,'',location.pathname); setTimeout(()=>toast('Login: '+decodeURIComponent(errQ.replace(/\+/g,' ')),true),400); return; }
-  if(code){
-    history.replaceState(null,'',location.pathname);
-    // localStorage como respaldo de sessionStorage (más robusto en cross-origin hops)
-    const verifier=sessionStorage.getItem('_pkce')||localStorage.getItem('_pkce');
-    sessionStorage.removeItem('_pkce'); localStorage.removeItem('_pkce');
-    if(!verifier){ toast('Sesión expiró — intentá de nuevo',true); return; }
-    try{
-      const r=await fetch(SUPA_URL+'/auth/v1/token?grant_type=pkce',{
-        method:'POST', headers:{'apikey':SUPA_KEY,'Content-Type':'application/json'},
-        body:JSON.stringify({auth_code:code,code_verifier:verifier})
-      });
-      if(!r.ok){
-        let msg='Error al iniciar sesión';
-        try{ const e=await r.json(); msg=e.error_description||e.msg||e.message||msg; }catch(_){}
-        toast(msg,true); return;
-      }
-      const d=await r.json();
-      if(!d.access_token){ toast('Respuesta inesperada de Supabase',true); return; }
-      localStorage.setItem('_iat',d.access_token);
-      if(d.refresh_token) localStorage.setItem('_irt',d.refresh_token);
-      setTimeout(()=>toast('¡Sesión iniciada!'),200);
-    }catch(e){ toast('Sin conexión',true); }
-    return;
-  }
-  // Implicit (fallback): token en hash
-  const h=location.hash.slice(1); if(!h) return;
-  const p=new URLSearchParams(h);
-  const errH=p.get('error_description')||p.get('error');
-  const at=p.get('access_token'), rt=p.get('refresh_token');
-  history.replaceState(null,'',location.pathname);
-  if(errH){ setTimeout(()=>toast('Login: '+decodeURIComponent(errH.replace(/\+/g,' ')),true),400); return; }
-  if(at){ localStorage.setItem('_iat',at); if(rt) localStorage.setItem('_irt',rt); }
-}
-
-async function obtenerSesion(){
-  await _parsearCallback();
-  const at=localStorage.getItem('_iat'); if(!at) return null;
-  try{
-    let r=await fetch(SUPA_URL+'/auth/v1/user',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+at}});
-    if(!r.ok){
-      const rt=localStorage.getItem('_irt'); if(!rt){ limpiarSesion(); return null; }
-      r=await fetch(SUPA_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'apikey':SUPA_KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:rt})});
-      if(!r.ok){ limpiarSesion(); return null; }
-      const d=await r.json();
-      localStorage.setItem('_iat',d.access_token); if(d.refresh_token) localStorage.setItem('_irt',d.refresh_token);
-      return {access_token:d.access_token,user:d.user};
-    }
-    return {access_token:at,user:await r.json()};
-  }catch(e){ return null; }
-}
-
-function limpiarSesion(){ localStorage.removeItem('_iat'); localStorage.removeItem('_irt'); sesion=null; }
+// ── Auth: Firebase + Google (mismo proyecto que Bitácora) ──
+firebase.initializeApp({
+  apiKey: "AIzaSyC91PdszG3hL0rxiyE5oewyMW_8FpDJm8M",
+  authDomain: "bitacorapp-3df06.firebaseapp.com",
+  projectId: "bitacorapp-3df06",
+  storageBucket: "bitacorapp-3df06.firebasestorage.app",
+  messagingSenderId: "366160320663",
+  appId: "1:366160320663:web:c52865fba74f49f78d71d2"
+});
+const fbAuth=firebase.auth();
+const fbDb=firebase.firestore();
 
 async function loginGoogle(){
-  const verifier=_verifier();
-  sessionStorage.setItem('_pkce',verifier);
-  localStorage.setItem('_pkce',verifier);
-  const challenge=await _challenge(verifier);
-  const red=encodeURIComponent(location.href.split('#')[0].split('?')[0]);
-  location.href=SUPA_URL+'/auth/v1/authorize?provider=google&redirect_to='+red+'&code_challenge='+challenge+'&code_challenge_method=s256';
+  try{
+    await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+  }catch(e){
+    if(e&&e.code==='auth/popup-blocked'){
+      try{ await fbAuth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()); }
+      catch(_){ toast('No se pudo abrir el login',true); }
+    } else if(e&&e.code!=='auth/cancelled-popup-request'&&e.code!=='auth/popup-closed-by-user'){
+      toast('Login: '+(e.message||e.code),true);
+    }
+  }
 }
 
 async function cerrarSesion(){
-  if(sesion) fetch(SUPA_URL+'/auth/v1/logout',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+sesion.access_token}}).catch(()=>{});
-  limpiarSesion(); actualizarAuthUI(); toast('Sesión cerrada');
+  try{ await fbAuth.signOut(); }catch(_){}
+  toast('Sesión cerrada');
 }
 
 let _syncH=null;
@@ -1188,16 +1141,15 @@ async function sincronizar(manual=false){
   clearTimeout(_syncH);
   _syncH=setTimeout(async()=>{
     try{
-      const h={'apikey':SUPA_KEY,'Authorization':'Bearer '+sesion.access_token,'Content-Type':'application/json'};
-      const r=await fetch(SUPA_URL+'/rest/v1/ilme_data?user_id=eq.'+sesion.user.id+'&select=data',{headers:h});
-      if(r.ok){
-        const rows=await r.json();
-        if(rows.length&&rows[0].data&&!store.get()){
-          data=rows[0].data; store.set(data); pintarTodo();
-        }
+      const ref=fbDb.collection('ilme').doc(sesion.user.id);
+      const snap=await ref.get();
+      if(snap.exists && snap.data().data && !store.get()){
+        data=snap.data().data;
+        data.dias=data.dias||{}; data.rutinas=data.rutinas||[]; data.memos=data.memos||[]; data.borrados=data.borrados||[];
+        store.set(data); pintarTodo();
       }
-      await fetch(SUPA_URL+'/rest/v1/ilme_data',{method:'POST',headers:{...h,'Prefer':'resolution=merge-duplicates'},body:JSON.stringify({user_id:sesion.user.id,data,updated_at:new Date().toISOString()})});
-      if(manual) toast('Sincronizado con la nube ✓');
+      await ref.set({data, updated_at:Date.now(), email:sesion.user.email||''}, {merge:true});
+      if(manual) toast('Sincronizado con la nube');
     }catch(e){ if(manual) toast('Sin conexión, guardado local',true); }
   }, manual?0:2000);
 }
@@ -1219,11 +1171,11 @@ function actualizarAuthUI(){
   }
 }
 
-(async function initAuth(){
-  sesion=await obtenerSesion();
+fbAuth.onAuthStateChanged(user=>{
+  sesion = user ? {user:{id:user.uid,email:user.email||'',displayName:user.displayName||''}} : null;
   actualizarAuthUI();
   if(sesion) sincronizar();
-})();
+});
 
 // Inicializar pantalla
 pintarTodo();
