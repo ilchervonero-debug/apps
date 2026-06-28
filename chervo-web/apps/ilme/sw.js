@@ -1,4 +1,4 @@
-const CACHE = 'ilme-v9';
+const CACHE = 'ilme-v10';
 const ASSETS = [
   '/apps/ilme/',
   '/apps/ilme/index.html',
@@ -23,14 +23,28 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  if (e.request.url.includes('supabase.co')) return; // no cachear API calls
-  e.respondWith(
-    caches.match(e.request).then(r => {
-      const fresh = fetch(e.request).then(res => {
-        if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+  const url = e.request.url;
+  if (url.includes('firestore.googleapis.com') || url.includes('googleapis.com') || url.includes('gstatic.com/firebasejs')) return; // no cachear Firebase
+  const req = e.request;
+  const isHTML = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+  if (isHTML) {
+    // network-first: siempre la última versión si hay internet
+    e.respondWith(
+      fetch(req).then(res => {
+        caches.open(CACHE).then(c => c.put(req, res.clone()));
         return res;
-      }).catch(() => {});
-      return r || fresh;
-    })
-  );
+      }).catch(() => caches.match(req).then(r => r || caches.match('/apps/ilme/index.html')))
+    );
+  } else {
+    // assets: cache-first con refresco en segundo plano
+    e.respondWith(
+      caches.match(req).then(r => {
+        const fresh = fetch(req).then(res => {
+          if (res.ok) caches.open(CACHE).then(c => c.put(req, res.clone()));
+          return res;
+        }).catch(() => r);
+        return r || fresh;
+      })
+    );
+  }
 });
