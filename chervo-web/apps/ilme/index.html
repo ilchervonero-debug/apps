@@ -38,8 +38,9 @@
   .mono{font-family:'Inter',sans-serif}
 
   /* ── Solapas Agenda / Rutinas ── */
-  .solapas{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px 0;flex-shrink:0}
-  .brand-nom{font-size:1.35rem;font-weight:700;letter-spacing:-.03em;color:var(--tinta)}
+  .solapas{display:flex;align-items:center;gap:12px;padding:12px 16px 0;flex-shrink:0}
+  .brand-nom{font-size:1.35rem;font-weight:700;letter-spacing:-.03em;color:var(--tinta);margin-right:auto}
+  #authChip img{width:30px!important;height:30px!important}
   .brand-nom span{color:var(--rojo)}
   .tabs-group{display:flex;align-items:center;gap:2px}
   .solapa{
@@ -333,6 +334,7 @@
     <button class="solapa" id="solMemory">Memory</button>
     <button class="fin" id="btnFin">✓</button>
   </div>
+  <span id="authChip" style="display:none;font-size:.65rem;font-family:'Geist Mono',monospace;color:var(--gris);background:var(--fondo-alt,#f3f3f0);border-radius:20px;padding:2px 8px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="document.getElementById('btnMenu').click()"></span>
 </div>
 
 <header id="cabAgenda">
@@ -352,7 +354,6 @@
         <button class="pbtn" id="btnHoy">HOY</button>
       </div>
       <span class="pd" id="pSem"></span>
-      <span id="authChip" style="display:none;font-size:.65rem;font-family:'Geist Mono',monospace;color:var(--gris);background:var(--fondo-alt,#f3f3f0);border-radius:20px;padding:2px 8px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="document.getElementById('btnMenu').click()"></span>
       <button class="pmenu" id="btnMenu">⋯</button>
     </div>
   </div>
