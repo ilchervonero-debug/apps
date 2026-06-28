@@ -35,8 +35,8 @@
   .mono{font-family:'Inter',sans-serif}
 
   /* ── Solapas Agenda / Rutinas ── */
-  .solapas{display:flex;align-items:center;justify-content:space-between;gap:2px;padding:12px 16px 0;flex-shrink:0}
-  .brand-nom{font-size:1.5rem;font-weight:700;letter-spacing:-.03em;color:var(--tinta)}
+  .solapas{display:flex;align-items:center;justify-content:flex-end;gap:14px;padding:12px 16px 0;flex-shrink:0}
+  .brand-nom{font-size:1.35rem;font-weight:700;letter-spacing:-.03em;color:var(--tinta)}
   .brand-nom span{color:var(--rojo)}
   .tabs-group{display:flex;align-items:center;gap:2px}
   .solapa{
@@ -54,7 +54,7 @@
 
   /* ── Cabecera 2/3 + 1/3 ── */
   header{padding:8px 16px 0;flex-shrink:0}
-  .cab{display:grid;grid-template-columns:1fr 2fr;gap:12px;align-items:start}
+  .cab{display:grid;grid-template-columns:2fr 1fr;gap:12px;align-items:start}
   .mes-bar{display:flex;align-items:baseline;justify-content:space-between}
   .mes-nombre{font-size:.92rem;font-weight:600;text-transform:capitalize}
   .mes-nav button{
@@ -334,14 +334,6 @@
 
 <header id="cabAgenda">
   <div class="cab">
-    <div class="panel">
-      <div class="panel-btns">
-        <button class="pbtn" id="btnHoy">HOY</button>
-      </div>
-      <span class="pd" id="pSem"></span>
-      <span id="authChip" style="display:none;font-size:.65rem;font-family:'Geist Mono',monospace;color:var(--gris);background:var(--fondo-alt,#f3f3f0);border-radius:20px;padding:2px 8px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="document.getElementById('btnMenu').click()"></span>
-      <button class="pmenu" id="btnMenu">⋯</button>
-    </div>
     <div>
       <div class="mes-bar">
         <span class="mes-nombre" id="mesNombre"></span>
@@ -351,6 +343,14 @@
         </div>
       </div>
       <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-btns">
+        <button class="pbtn" id="btnHoy">HOY</button>
+      </div>
+      <span class="pd" id="pSem"></span>
+      <span id="authChip" style="display:none;font-size:.65rem;font-family:'Geist Mono',monospace;color:var(--gris);background:var(--fondo-alt,#f3f3f0);border-radius:20px;padding:2px 8px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="document.getElementById('btnMenu').click()"></span>
+      <button class="pmenu" id="btnMenu">⋯</button>
     </div>
   </div>
 </header>
@@ -409,7 +409,6 @@
     <button id="mLogin"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:6px"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Entrar con Google</button>
     <button id="mSync" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:6px"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Sincronizar</button>
     <button id="mLogout" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:6px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span id="userNom"></span> · Salir</button>
-    <button onclick="location.href='/'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:6px"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</button>
     <div style="padding:10px 14px 6px;border-top:1px solid var(--linea);text-align:center">
       <div style="font-size:.68rem;color:var(--gris);line-height:1.6">Creado por <strong style="color:var(--tinta)">Angel Nieves</strong> · iLChervoNero</div>
       <div style="font-size:.6rem;color:#ADADA9;margin-top:1px">iLMe v1.5</div>
@@ -1034,7 +1033,7 @@ teclas.forEach(t=>{
 const menuOv=document.getElementById('menuOv');
 document.getElementById('btnMenu').onclick=()=>menuOv.classList.add('ver');
 menuOv.onclick=e=>{ if(e.target===menuOv) menuOv.classList.remove('ver'); };
-document.getElementById('mCalc').onclick=()=>{ menuOv.classList.remove('ver'); calcOv.classList.add('ver'); };
+document.getElementById('mCalc').onclick=()=>{ menuOv.classList.remove('ver'); window.open('/apps/ilcalc/','_blank'); };
 document.getElementById('mBorr').onclick=()=>{ menuOv.classList.remove('ver'); pintarBorrados(); borrOv.classList.add('ver'); };
 document.getElementById('mResp').onclick=()=>{ menuOv.classList.remove('ver'); respaldo(); };
 document.getElementById('mLogin').onclick=()=>{ menuOv.classList.remove('ver'); loginGoogle(); };

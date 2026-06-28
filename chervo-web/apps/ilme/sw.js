@@ -1,4 +1,4 @@
-const CACHE = 'ilme-v3';
+const CACHE = 'ilme-v4';
 const ASSETS = [
   '/apps/ilme/',
   '/apps/ilme/index.html',
