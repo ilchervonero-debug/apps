@@ -205,8 +205,8 @@ body{font-family:'Exo 2',sans-serif;background:var(--g1);color:var(--g5);font-si
 <!-- VIEW: PRECIOS / CONFIG -->
 <div class="view" id="view-config-precios">
   <div style="padding:12px 14px 0;">
-    <button class="btn btn-r btn-sm" onclick="showTab('lista')" style="display:inline-flex;align-items:center;gap:6px;">
-      <svg viewBox="0 0 12 12" fill="none" width="12" height="12"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <button onclick="showTab('lista')" style="background:none;border:none;color:var(--r);font-family:'Exo 2',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.4px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;padding:6px 2px;">
+      <svg viewBox="0 0 14 14" fill="none" width="15" height="15"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Inicio
     </button>
   </div>
@@ -216,7 +216,7 @@ body{font-family:'Exo 2',sans-serif;background:var(--g1);color:var(--g5);font-si
   </div>
   <div class="tab-view active" id="tv-precios">
     <div id="precios-container"></div>
-    <div style="padding:0 0 14px;"><button class="btn btn-r" onclick="guardarPrecios()">Guardar precios</button></div>
+    <div style="display:flex;justify-content:flex-end;padding:0 0 14px;"><button class="btn btn-r" onclick="guardarPrecios()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Guardar precios</button></div>
   </div>
   <div class="tab-view" id="tv-config">
     <div class="precio-sec">
@@ -249,7 +249,7 @@ body{font-family:'Exo 2',sans-serif;background:var(--g1);color:var(--g5);font-si
       <div class="p-row"><label>Encofrado (m²/día)</label><input type="number" id="cfg-ren" value="18"></div>
       <div class="p-row"><label>Desencofrado (m²/día)</label><input type="number" id="cfg-rde" value="30"></div>
     </div>
-    <button class="btn btn-r" onclick="guardarConfig()">Guardar config</button>
+    <div style="display:flex;justify-content:flex-end;"><button class="btn btn-r" onclick="guardarConfig()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Guardar config</button></div>
   </div>
 </div>
 
