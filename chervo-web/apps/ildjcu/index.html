@@ -72,7 +72,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
 .bienvenida-overlay{position:fixed;inset:0;background:#f4f4f4;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9998}
 .bienvenida-box{background:#fff;border-radius:14px;padding:28px 24px;width:300px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3)}
 .perm-btn{width:100%;padding:13px;margin-bottom:10px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px}
-.perm-btn.pendiente{background:#fafafa;color:#2b2b2b;border:2px solid #555555}
+.perm-btn.pendiente{background:#fafafa;color:#2b2b2b;border:2px solid #FE0000}
 .perm-btn.ok{background:#e8f8f0;color:#2d7a4f;border:2px solid #2d7a4f}
 .perm-btn.bloqueado{background:#fff0f0;color:#c0392b;border:2px solid #c0392b}
 .visor-overlay{position:fixed;inset:0;background:#2b2b2b;z-index:9997;display:none;flex-direction:column}
@@ -97,8 +97,8 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
 <!-- PANTALLA DE BIENVENIDA Y PERMISOS -->
 <div class="bienvenida-overlay" id="bienvenida_overlay">
   <div class="bienvenida-box">
-    <div style="margin-bottom:6px;color:#555555"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
-    <div style="font-size:16px;font-weight:700;color:#2b2b2b;margin-bottom:4px">Bienvenido</div>
+    <div style="margin-bottom:6px;color:#FE0000"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
+    <div style="font-size:18px;font-weight:800;color:#2b2b2b;margin-bottom:4px">Bienvenido</div>
     <div id="bienvenida_nombre" style="font-size:13px;color:#888;margin-bottom:20px"></div>
     <div style="font-size:13px;color:#666;margin-bottom:14px;text-align:left">Para usar cámara y micrófono en el relevamiento, habilitá los permisos:</div>
     <button id="btn_perm_cam" class="perm-btn pendiente" onclick="pedirPermiso('camara')">
@@ -108,7 +108,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
       <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Habilitar micrófono</span>
     </button>
     <div style="font-size:13px;color:#aaa;margin:10px 0 14px">Podés saltear esto y habilitarlos después desde el navegador.</div>
-    <button onclick="entrarApp()" style="width:100%;padding:13px;background:#555555;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">
+    <button onclick="entrarApp()" style="width:100%;padding:13px;background:#FE0000;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">
       Entrar →
     </button>
   </div>
@@ -171,7 +171,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
 <div class="app">
   <div class="header">
     <div>
-      <div class="header-sub" style="color:#FE0000">DJCU-UY <span style="color:#bbb;letter-spacing:1px">v3</span></div>
+      <div class="header-sub" style="color:#FE0000;font-weight:800">DJCU-UY <span style="color:#bbb;font-weight:400;letter-spacing:1px">v3</span></div>
       <div class="header-title" onclick="ilsxOpen()" style="cursor:pointer">Relevamiento de Campo</div>
     </div>
     <div class="header-user" id="header_user" onclick="goTab(8)" title="Mi cuenta">—</div>
