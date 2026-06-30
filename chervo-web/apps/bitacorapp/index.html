@@ -212,12 +212,16 @@
         }
         .bloque-meta { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--ink-3); font-weight: 500; }
         .bloque-acciones { display: flex; gap: 2px; }
-        .sel-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
-        .sel-bar label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 700; color: var(--ink-2); cursor: pointer; }
-        .sel-bar input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--red); }
-        .sel-bar .btn { padding: 9px 16px; font-size: 0.85rem; }
-        .sel-bar .btn svg { width: 16px; height: 16px; }
-        .bloque-chk { width: 21px; height: 21px; accent-color: var(--red); flex-shrink: 0; cursor: pointer; }
+        .print-bar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+        .print-bar .btn svg { width: 16px; height: 16px; }
+        .print-all { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 700; color: var(--ink-2); padding: 2px 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 8px; cursor: pointer; }
+        .print-all input { width: 21px; height: 21px; accent-color: var(--red); }
+        #print-list { max-height: 52vh; overflow-y: auto; }
+        .print-item { display: flex; align-items: center; gap: 12px; padding: 12px 2px; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .print-item input { width: 21px; height: 21px; accent-color: var(--red); flex-shrink: 0; }
+        .print-item span { display: flex; flex-direction: column; min-width: 0; }
+        .print-item b { font-size: 0.85rem; color: var(--ink); }
+        .print-item i { font-size: 0.8rem; color: var(--ink-3); font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .btn-bloque {
             width: 30px; height: 30px; border-radius: 8px; border: none;
             background: transparent; color: var(--ink-3);
@@ -612,6 +616,27 @@
     </div>
 </div>
 
+<!-- MODAL: IMPRIMIR / PDF -->
+<div class="modal-overlay" id="modal-print">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h2>Imprimir <span>PDF</span></h2>
+            <button class="btn-cerrar" onclick="cerrarModal('modal-print')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <label class="print-all"><input type="checkbox" id="print-all" checked onclick="printToggleAll()"> Seleccionar todo</label>
+            <div id="print-list"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secundario" onclick="cerrarModal('modal-print')">Cancelar</button>
+            <button class="btn btn-primario" id="print-go" onclick="imprimirDesdeModal()">Imprimir</button>
+        </div>
+    </div>
+</div>
+
 <input type="file" id="input-foto-galeria" accept="image/*" multiple onchange="onFotoNota(event)">
 <input type="file" id="input-foto-camara" accept="image/*" capture="environment" onchange="onFotoNota(event)">
 <div class="toast" id="toast"></div>
@@ -636,7 +661,6 @@ const APP_VERSION = 'v2.0';
 let currentUser = null;
 let proyectos = [];
 let proyectoIdx = null;
-let selBloques = new Set();   // indices seleccionados para imprimir
 let bloqueEditIdx = null;
 let notaFotos = [];
 let recognition = null;
@@ -870,7 +894,6 @@ function abrirProyecto(i) {
     const p = proyectos[i];
     document.getElementById('vp-nombre').textContent = p.nombre;
     document.getElementById('vp-fecha').textContent = 'Creado ' + fechaCorta(p.fechaCreacion);
-    selTodas();
     renderBloques();
     document.getElementById('page-dashboard').classList.remove('active');
     document.getElementById('page-proyecto').classList.add('active');
@@ -923,37 +946,8 @@ function renderBloques() {
         </div>`;
         return;
     }
-    container.innerHTML = barraSeleccion() + p.bloques.map((b,i) => renderBloque(b,i)).join('');
-}
-
-function selTodas() { // marca todas (al abrir proyecto o tras agregar/borrar)
-    const p = proyectos[proyectoIdx];
-    selBloques = new Set((p && p.bloques ? p.bloques : []).map((_,i)=>i));
-}
-
-function barraSeleccion() {
-    const n = selBloques.size, tot = (proyectos[proyectoIdx].bloques||[]).length;
-    return `<div class="sel-bar">
-        <label><input type="checkbox" id="sel-all" ${n===tot?'checked':''} onclick="toggleSelAll()"> Seleccionar todo</label>
-        <button class="btn btn-primario" onclick="exportarPDF()">${SVG_PDF} PDF (${n})</button>
-    </div>`;
-}
-
-function refrescarBarra() {
-    const bar = document.querySelector('.sel-bar');
-    if (bar) bar.outerHTML = barraSeleccion();
-}
-
-function toggleSel(i) {
-    if (selBloques.has(i)) selBloques.delete(i); else selBloques.add(i);
-    refrescarBarra();
-}
-
-function toggleSelAll() {
-    const tot = (proyectos[proyectoIdx].bloques||[]).length;
-    if (selBloques.size === tot) selBloques.clear();
-    else selBloques = new Set(Array.from({length:tot},(_,i)=>i));
-    renderBloques();
+    const barra = `<div class="print-bar"><button class="btn btn-secundario" onclick="abrirModalPrint()">${SVG_PDF} Imprimir / PDF</button></div>`;
+    container.innerHTML = barra + p.bloques.map((b,i) => renderBloque(b,i)).join('');
 }
 
 function renderBloque(b, i) {
@@ -962,21 +956,43 @@ function renderBloque(b, i) {
     const fotosHtml = fotos.length ? `<div class="nota-fotos">${fotos.map(src=>`<img class="nota-foto-img" src="${src}" loading="lazy">`).join('')}</div>` : '';
     return `<div class="bloque" id="bloque-${i}" style="animation-delay:${i*0.04}s">
         <div class="bloque-header">
-            <div style="display:flex;align-items:center;gap:9px;min-width:0;">
-                <input type="checkbox" class="bloque-chk" ${selBloques.has(i)?'checked':''} onclick="toggleSel(${i})" title="Incluir al imprimir">
-                <div class="bloque-meta">
-                    <span>${fechaCorta(b.fecha)}</span>
-                    ${b.editado?'<span>· editado</span>':''}
-                </div>
+            <div class="bloque-meta">
+                <span>${fechaCorta(b.fecha)}</span>
+                ${b.editado?'<span>· editado</span>':''}
             </div>
             <div class="bloque-acciones">
-                ${b.texto?`<button class="btn-bloque" onclick="copiarBloque(${i})">${SVG_COPY}</button>`:''}
-                <button class="btn-bloque" onclick="abrirNota(${i})">${SVG_EDIT}</button>
-                <button class="btn-bloque eliminar" onclick="eliminarBloque(${i})">${SVG_TRASH}</button>
+                <button class="btn-bloque" onclick="imprimirSeleccion([${i}])" title="Imprimir esta nota">${SVG_PDF}</button>
+                ${b.texto?`<button class="btn-bloque" onclick="copiarBloque(${i})" title="Copiar">${SVG_COPY}</button>`:''}
+                <button class="btn-bloque" onclick="abrirNota(${i})" title="Editar">${SVG_EDIT}</button>
+                <button class="btn-bloque eliminar" onclick="eliminarBloque(${i})" title="Eliminar">${SVG_TRASH}</button>
             </div>
         </div>
         <div class="bloque-contenido">${textoHtml}${fotosHtml}</div>
     </div>`;
+}
+
+// ===== MENÚ DE IMPRESIÓN =====
+function abrirModalPrint() {
+    const bs = (proyectos[proyectoIdx].bloques) || [];
+    if (!bs.length) { toast('No hay notas para imprimir', 'err'); return; }
+    document.getElementById('print-all').checked = true;
+    document.getElementById('print-list').innerHTML = bs.map((b,i) => {
+        const prev = (b.texto || '').replace(/[#*>`_~\-]/g,' ').replace(/\s+/g,' ').trim().slice(0,70)
+                     || ((b.fotos||[]).length ? '(fotos)' : '(vacío)');
+        return `<label class="print-item"><input type="checkbox" class="print-chk" value="${i}" checked onclick="printSync()"><span><b>${fechaCorta(b.fecha)}</b><i>${esc(prev)}</i></span></label>`;
+    }).join('');
+    printActualizarBtn();
+    abrirModal('modal-print');
+}
+function printChks() { return Array.from(document.querySelectorAll('.print-chk')); }
+function printSync() { document.getElementById('print-all').checked = printChks().every(c => c.checked); printActualizarBtn(); }
+function printToggleAll() { const v = document.getElementById('print-all').checked; printChks().forEach(c => c.checked = v); printActualizarBtn(); }
+function printActualizarBtn() { const n = printChks().filter(c => c.checked).length; document.getElementById('print-go').textContent = 'Imprimir (' + n + ')'; }
+function imprimirDesdeModal() {
+    const idx = printChks().filter(c => c.checked).map(c => +c.value);
+    if (!idx.length) { toast('Marcá al menos una nota', 'err'); return; }
+    cerrarModal('modal-print');
+    imprimirSeleccion(idx);
 }
 
 function copiarBloque(i) {
@@ -986,7 +1002,6 @@ function copiarBloque(i) {
 function eliminarBloque(i) {
     confirmar('Eliminar nota', '¿Eliminás esta nota?', async () => {
         proyectos[proyectoIdx].bloques.splice(i, 1);
-        selTodas();
         renderBloques();
         toast('Eliminado');
         await guardarProyecto(proyectos[proyectoIdx]);
@@ -1076,7 +1091,6 @@ async function guardarNota() {
         p.bloques.push({ texto, fotos: fotosUrl, fecha: new Date().toISOString() });
     }
     cerrarModalBloque();
-    selTodas();
     renderBloques();
     toast('Guardado');
     await guardarProyecto(p);
@@ -1158,12 +1172,13 @@ function toast(msg, tipo='ok') {
 }
 
 // ===== EXPORTAR PDF =====
-function exportarPDF() {
+function imprimirSeleccion(indices) {
     if (proyectoIdx === null) return;
     const p = proyectos[proyectoIdx];
     const todas = p.bloques || [];
-    const bloques = todas.filter((_,i) => selBloques.has(i));
-    if (!bloques.length) { toast('Seleccioná al menos una nota para imprimir', 'err'); return; }
+    const sel = (indices && indices.length) ? indices.slice().sort((a,b)=>a-b) : todas.map((_,i)=>i);
+    const bloques = sel.map(i => todas[i]).filter(Boolean);
+    if (!bloques.length) { toast('No hay notas para imprimir', 'err'); return; }
 
     const bloquesHtml = bloques.map(b => {
         const textoHtml = b.texto ? `<div class="md-render">${md(b.texto)}</div>` : '';
