@@ -188,6 +188,9 @@ canvas{display:block;touch-action:none;}
           </div>
         </div>
 
+        <div class="section-title">Ambientes Cargados</div>
+        <div id="envList"></div>
+
         <div id="pdTotals" style="display:none;">
           <div class="section-title">Resumen de Materiales</div>
           <div style="display:flex; gap:16px; margin-bottom:14px; align-items:center;">
@@ -202,8 +205,6 @@ canvas{display:block;touch-action:none;}
           </div>
         </div>
 
-        <div class="section-title">Ambientes Cargados</div>
-        <div id="envList"></div>
 
       </div>
     </div>
@@ -213,6 +214,7 @@ canvas{display:block;touch-action:none;}
     <div class="editor-layout">
       <div class="ed-left">
         <h2 id="printEnvName" class="print-only">Plano del Ambiente</h2>
+        <div id="printDataSheet" class="print-only" style="text-align:left; font-size:13px; border-bottom:none;"></div>
         <h3 id="edMainTitle" style="margin-bottom:24px; font-size:20px; font-weight:700; color:var(--color-gray-dark);">Nuevo Ambiente</h3>
         
         <div class="ed-group" style="display:flex; gap:16px; align-items:flex-end;">
@@ -632,6 +634,7 @@ function renderProject() {
         <div class="env-data">
           <b style="color:var(--color-gray-dark);">Área Total:</b> ${(e.area * mult).toFixed(2)} m² | <b style="color:var(--color-gray-dark);">Placas (aprox):</b> ${Math.ceil((e.area*mult) / 2.9768)} uds<br>
           <b style="color:var(--color-gray-dark);">Estructura Total:</b> Soleras: ${(e.perim * mult).toFixed(2)} ml | Montantes: ${(e.montML * mult).toFixed(2)} ml | Refuerzos: ${(e.refML * mult).toFixed(2)} ml<br>
+          <b style="color:var(--color-gray-dark);">Perfil:</b> ${e.perfil || 'PGU 35'} | <b style="color:var(--color-gray-dark);">Placa:</b> ${e.placaEsp || '12.5'} mm ${e.placaTipo || 'Estándar'}<br>
           ${e.cenefa > 0 ? `<span style="color:var(--color-red-accent); font-weight:600;">Cenefa LED Total: ${(e.cenefa * mult).toFixed(2)} ml ${e.cenefaWhere ? '('+e.cenefaWhere+')' : ''}</span>` : '<span style="color:var(--color-gray-text)">Sin Cenefa</span>'}${(e.lampQty||0) > 0 ? ` | <b style="color:var(--color-gray-dark);">Lámparas:</b> ${(e.lampQty*mult)} uds Ø${e.lampDia||92}mm` : ''}<br>
           <span style="font-size:12px; color:var(--color-gray-text);">Creado: ${new Date(e.created || e.id).toLocaleString('es-UY', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})}</span>
         </div>
@@ -907,6 +910,42 @@ function printEnvironment() {
   let name = document.getElementById('edEnvName').value.trim();
   if(!name) name = "Ambiente " + (projects.find(p=>p.id===activeProjId).envs.length + 1);
   document.getElementById('printEnvName').textContent = "Plano: " + name;
+
+  // Recalcular geometría con los valores actuales del formulario
+  const f = parseFloat(document.getElementById('units').value);
+  const spVal = parseFloat(document.getElementById('edSp').value) || 40; const sp = spVal / 100;
+  const mult = parseInt(document.getElementById('edMult').value) || 1;
+  let totalA = 0, totalP = 0, totalMont = 0, totalRef = 0;
+  tempPolys.forEach(pl => {
+    const v = pl.vertices.map(pt => ({x: pt.x*f, y: pt.y*f})); const geom = calcGeom(v, pl.closed);
+    totalA += geom.area; totalP += geom.perim;
+    if(geom.area > 0.05) { const b = bbox(v); totalMont += calcLineales(v, b, sp, perfDir); totalRef += calcLineales(v, b, 1.0, refDir); }
+  });
+  const cenefaLen = parseFloat(document.getElementById('edCenefaLen').value) || 0;
+  const cenefaWhere = document.getElementById('edCenefaWhere').value.trim();
+  const lampQty = parseInt(document.getElementById('edLampQty').value) || 0;
+  const lampDia = parseFloat(document.getElementById('edLampDia').value) || 92;
+  const lampML = lampQty * mult * Math.PI * (lampDia/1000);
+  const placaTxt = document.getElementById('edPlacaEsp').value + ' mm ' + document.getElementById('edPlacaTipo').value;
+
+  const row = (l, v) => `<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #ddd;"><span style="font-weight:600;">${l}</span><span>${v}</span></div>`;
+  document.getElementById('printDataSheet').innerHTML = `
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px 30px; margin-bottom:10px;">
+      ${row('Cantidad (repeticiones)', mult)}
+      ${row('Área total', (totalA*mult).toFixed(2) + ' m²')}
+      ${row('Perímetro (soleras)', (totalP*mult).toFixed(2) + ' ml')}
+      ${row('Montantes ' + (perfDir==='H'?'(Horiz.)':'(Vert.)') + ' c/' + spVal + 'cm', (totalMont*mult).toFixed(2) + ' ml')}
+      ${row('Velas / Refuerzos ' + (refDir==='H'?'(Horiz.)':'(Vert.)'), (totalRef*mult).toFixed(2) + ' ml')}
+      ${row('Perfil', perfilTipo)}
+      ${row('Placa de yeso', placaTxt)}
+      ${row('Placas (uds)', Math.ceil((totalA*mult)/COM.placaM2))}
+      ${row('Cenefa LED', cenefaLen > 0 ? (cenefaLen*mult).toFixed(2) + ' ml' + (cenefaWhere ? ' — ' + cenefaWhere : '') : 'Sin cenefa')}
+      ${row('Cantonera cenefa', cenefaLen > 0 ? Math.ceil((cenefaLen*mult)/COM.cantoneraLen) + ' uds' : '—')}
+      ${row('Lámparas / Spots', lampQty > 0 ? (lampQty*mult) + ' uds Ø' + lampDia + 'mm' : 'Sin lámparas')}
+      ${row('Cinta papel lámparas', lampQty > 0 ? lampML.toFixed(2) + ' ml' : '—')}
+    </div>
+    <div style="font-size:11px; color:#666;">Impreso: ${new Date().toLocaleString('es-UY')}</div>
+  `;
   window.print();
 }
 
