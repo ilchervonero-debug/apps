@@ -3,93 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Cielorraso Pro — Gestor de Proyectos</title>
-<meta name="theme-color" content="#C00000">
+<title>iLCelling cgg — Gestor de Proyectos</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;background:#f2f2f2;font-family:Arial,sans-serif;font-size:10pt;color:#333;}
+:root {
+  --color-white: #FFFFFF;
+  --color-gray-bg: #F8F9FA;
+  --color-gray-light: #F0F0F0;
+  --color-gray-medium: #E0E0E0;
+  --color-gray-dark: #333333;
+  --color-gray-text: #595959;
+  --color-red-accent: #FE0000;
+}
+
+*{box-sizing:border-box;margin:0;padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--color-gray-bg);font-family:'Exo',sans-serif;font-size:16px;color:var(--color-gray-dark);line-height:1.5;}
 .app{display:flex;flex-direction:column;height:100dvh;overflow:hidden;}
 
-header{background:#C00000;color:white;padding:10px 15px;font-size:11pt;font-weight:bold;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.header-btn{background:rgba(255,255,255,0.2);border:none;color:white;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:9pt;}
+/* ICONOS LINE-ART EQUILIBRADOS */
+.icon-svg { width:20px; height:20px; fill:none; stroke:var(--color-red-accent); stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+.btn .icon-svg, .tool-btn .icon-svg, .header-btn .icon-svg { width:18px; height:18px; stroke:currentColor; }
+
+/* HEADER OFICIAL */
+header{background:var(--color-white);padding:15px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-gray-medium);flex-shrink:0;}
+#headTitle{font-size:22px; letter-spacing:-0.5px; text-align:left; flex:1;}
+.il-red{color:var(--color-red-accent);font-weight:600;} /* Ajuste de negrita */
+.il-grey{color:var(--color-gray-text);font-weight:500;}
+.header-btn{background:var(--color-white);border:1px solid var(--color-gray-medium);color:var(--color-gray-dark);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;font-family:'Exo',sans-serif;display:flex;align-items:center;gap:6px;}
 
 /* VISTAS */
-.view { display:none; flex:1; overflow:hidden; flex-direction:column; }
+.view { display:none; flex:1; overflow:hidden; flex-direction:column; position:relative;}
 .view.active { display:flex; }
+.scroll-content { flex:1; overflow-y:auto; padding-bottom:30px; } 
 
 /* BOTONES GLOBALES */
-.btn{border:none;padding:8px 14px;border-radius:4px;font-size:9pt;cursor:pointer;font-weight:bold;color:white;}
-.btn-red{background:#C00000;} .btn-red:active{background:#a00000;}
-.btn-grey{background:#595959;} .btn-grey:active{background:#404040;}
-.btn-green{background:#217346;} .btn-green:active{background:#165a34;}
-.btn-org{background:#E07000;} .btn-org:active{background:#c87000;}
-.btn-out{background:white;color:#333;border:1px solid #ccc;}
+.btn-row{display:flex;gap:12px;}
+.btn{border:none;padding:12px 18px;border-radius:6px;font-size:15px;cursor:pointer;font-weight:600;font-family:'Exo',sans-serif;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-red{background:var(--color-red-accent);color:var(--color-white);}
+.btn-red:active{opacity:0.8;}
+.btn-grey-red{background:var(--color-gray-light);color:var(--color-red-accent);}
+.btn-grey-red:active{background:var(--color-gray-medium);}
+.btn-out{background:var(--color-white);color:var(--color-gray-dark);border:1px solid var(--color-gray-medium);}
+.btn-out:active{background:var(--color-gray-light);}
+.btn-sm{padding:10px 14px;font-size:14px;}
 
 /* HOME / PROYECTOS */
-.container{padding:20px;max-width:800px;margin:0 auto;width:100%;overflow-y:auto;}
-.proj-card{background:white;border-radius:6px;padding:15px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);display:flex;justify-content:space-between;align-items:center;border-left:4px solid #C00000;cursor:pointer;}
-.proj-card:hover{background:#fafafa;}
-.proj-title{font-size:12pt;font-weight:bold;margin-bottom:4px;}
-.proj-info{font-size:8.5pt;color:#777;}
-.del-btn{background:none;border:none;color:#aaa;font-size:16pt;cursor:pointer;padding:0 10px;}
-.del-btn:hover{color:#C00000;}
-.edit-btn{background:none;border:none;color:#0066cc;font-size:14pt;cursor:pointer;padding:0 10px;}
-.edit-btn:hover{color:#004a99;}
-.add-bar{display:flex;gap:10px;margin-bottom:20px;}
-.input-text{flex:1;padding:10px;border:1px solid #ccc;border-radius:4px;font-size:10pt;}
+.container{padding:24px;max-width:900px;margin:0 auto;width:100%;}
+.add-bar{display:flex;gap:12px;margin-bottom:30px;}
+.input-text{flex:1;padding:14px 16px;border:1px solid var(--color-gray-medium);border-radius:6px;font-size:16px;font-family:'Exo',sans-serif;background:var(--color-white);color:var(--color-gray-dark);width:100%;font-weight:500;transition:border 0.2s;}
+.input-text:focus{outline:none;border-color:var(--color-red-accent);}
+
+/* LISTAS ESTILO MENÚ LIMPIO */
+.list-item{display:flex;align-items:center;padding:20px;background:var(--color-white);border:1px solid var(--color-gray-medium);border-radius:6px;margin-bottom:12px;cursor:pointer;transition:background 0.2s;}
+.list-item:hover{background:var(--color-gray-light);}
+.list-icon{margin-right:16px;display:flex;align-items:center;}
+.list-content{flex:1;min-width:0;}
+.list-title{font-size:18px;font-weight:600;color:var(--color-gray-dark);margin-bottom:4px;}
+.list-subtitle{font-size:14px;color:var(--color-gray-text);font-weight:500;}
+.action-btn{background:none;border:none;cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;color:var(--color-gray-text);}
+.action-btn:hover .icon-svg{stroke:var(--color-gray-dark);}
 
 /* DETALLE DEL PROYECTO */
-.env-card{background:white;border-radius:6px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.05);display:flex;border-left:4px solid #595959;}
-.env-info{flex:1;}
-.env-name{font-size:10pt;font-weight:bold;color:#333;margin-bottom:4px;}
-.env-data{font-size:8.5pt;color:#666;line-height:1.6;}
-.env-actions{display:flex;flex-direction:column;justify-content:center;gap:5px;border-left:1px solid #eee;padding-left:10px;margin-left:10px;}
+.env-card{background:var(--color-white);border-radius:6px;padding:20px;margin-bottom:16px;border:1px solid var(--color-gray-medium);display:flex;border-left:4px solid var(--color-red-accent);}
+.env-info{flex:1;min-width:0;}
+.env-name{font-size:18px;font-weight:600;color:var(--color-gray-dark);margin-bottom:10px;}
+.env-data{font-size:14px;color:var(--color-gray-text);line-height:1.7;font-weight:400;}
+.env-actions{display:flex;flex-direction:column;justify-content:flex-start;gap:12px;padding-left:16px;margin-left:16px;border-left:1px solid var(--color-gray-light);}
 
-.totals-panel{background:white;border-radius:6px;margin-top:20px;border-top:4px solid #C00000;box-shadow:0 1px 3px rgba(0,0,0,.1);}
-.tp-head{background:#C00000;color:white;padding:8px 12px;font-weight:bold;}
-.tp-body{padding:15px;}
-.t-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));gap:12px;}
-.t-row{display:flex;flex-direction:column;}
-.t-lbl{font-size:7.5pt;color:#888;text-transform:uppercase;}
-.t-val{font-size:11pt;font-weight:bold;color:#333;}
+/* TOTALES */
+.section-title{padding:20px 0 12px;font-size:14px;font-weight:600;color:var(--color-gray-dark);text-transform:uppercase;letter-spacing:1px;}
+.summary-card{background:var(--color-white);padding:24px;border-radius:6px;border:1px solid var(--color-gray-medium);margin-bottom:20px;}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:20px;}
+.data-box{display:flex;flex-direction:column;}
+.db-lbl{font-size:13px;color:var(--color-gray-text);margin-bottom:4px;font-weight:500;text-transform:uppercase;}
+.db-val{font-size:18px;font-weight:600;color:var(--color-gray-dark);}
+.db-val-red{font-size:18px;font-weight:600;color:var(--color-red-accent);} /* Ajuste de negrita rojo */
 
 /* EDITOR DE AMBIENTE */
 .editor-layout{display:flex;flex-direction:column;flex:1;overflow:hidden;}
-.ed-left{background:white;padding:15px;border-right:1px solid #ddd;overflow-y:auto;flex:none;}
-.ed-right{flex:1;display:flex;flex-direction:column;background:#fafafa;position:relative;}
+.ed-left{flex:1; min-height:0; overflow-y:auto; padding:24px; background:var(--color-white);}
+.ed-right{flex:0 0 45vh; display:flex;flex-direction:column;background:var(--color-gray-bg);position:relative;border-top:1px solid var(--color-gray-medium);}
 @media (min-width: 768px) {
   .editor-layout{flex-direction:row;}
-  .ed-left{width:350px;}
+  .ed-left{width:420px; flex:none; border-right:1px solid var(--color-gray-medium); border-bottom:none;}
+  .ed-right{flex:1; height:100%; border-top:none;}
 }
 
-.ed-group{margin-bottom:15px;}
-.ed-group label{display:block;font-size:8pt;font-weight:bold;color:#555;margin-bottom:5px;text-transform:uppercase;}
-.ed-file-bar{display:flex;gap:10px;align-items:center;background:#f9f9f9;padding:10px;border-radius:4px;border:1px dashed #ccc;}
-.sel{font-size:8.5pt;padding:6px 6px;border:1px solid #ccc;border-radius:4px;background:white;}
-.dir-btn{flex:1;border:1px solid #ccc;background:white;padding:5px 3px;border-radius:4px;font-size:7.5pt;cursor:pointer;text-align:center;}
-.dir-btn.active{background:#C00000;color:white;border-color:#C00000;}
+.ed-group{margin-bottom:24px;}
+.ed-group label{display:block;font-size:14px;font-weight:600;color:var(--color-gray-dark);margin-bottom:8px;}
+.ed-file-bar{display:flex;gap:12px;align-items:center;}
+.btn-upload{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:2px dashed var(--color-red-accent);background:#FFF9F9;color:var(--color-red-accent);border-radius:6px;font-weight:700;cursor:pointer;font-size:15px;letter-spacing:0.5px;font-family:'Exo',sans-serif;text-transform:uppercase;}
+.btn-upload:active{background:#FFEFEF;}
+.dir-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:52px;border:1px solid var(--color-gray-medium);background:var(--color-white);color:var(--color-gray-text);border-radius:6px;cursor:pointer;font-family:'Exo',sans-serif;font-size:15px;font-weight:600;transition:all 0.15s;}
+.dir-btn svg{width:26px;height:26px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.dir-btn.active{border:2px solid var(--color-red-accent);color:var(--color-red-accent);background:#FFF9F9;}
+.sel{font-size:15px;padding:0 12px;border:1px solid var(--color-gray-medium);border-radius:6px;background:var(--color-white);height:48px;font-family:'Exo',sans-serif;color:var(--color-gray-dark);}
 
-/* RESUMEN EN VIVO (EDITOR) */
-.ed-summary-box{display:none;background:#f8f4ff;padding:12px;border:1px solid #e0d0f0;border-radius:6px;margin-bottom:15px;border-left:4px solid #7B2D8B;}
-.ed-summary-title{font-size:8pt;font-weight:bold;color:#7B2D8B;text-transform:uppercase;margin-bottom:6px;border-bottom:1px solid #e0d0f0;padding-bottom:4px;}
-.ed-summary-text{font-size:8.5pt;line-height:1.6;color:#444;}
+/* SEGMENTED CONTROL */
+.seg-ctrl{display:flex;background:var(--color-gray-light);border-radius:6px;padding:4px;height:46px;}
+.seg-btn{flex:1;border:none;background:transparent;border-radius:4px;font-size:14px;font-weight:500;color:var(--color-gray-text);cursor:pointer;transition:all 0.2s;font-family:'Exo',sans-serif;}
+.seg-btn.active{background:var(--color-white);color:var(--color-red-accent);box-shadow:0 1px 3px rgba(0,0,0,0.1);font-weight:600;}
 
 /* CANVAS TOOLS */
-.canvas-tools{background:#404040;padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.canvas-status{flex:1;color:white;font-size:8pt;text-align:right;white-space:nowrap;}
+.canvas-tools{background:var(--color-white);padding:10px 16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--color-gray-medium);overflow-x:auto;}
+.tool-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:6px;border:1px solid var(--color-gray-medium);background:var(--color-white);color:var(--color-gray-dark);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.tool-btn.active{background:var(--color-gray-light);font-weight:600;border-color:var(--color-gray-dark);}
 #cwrap{flex:1;position:relative;overflow:hidden;}
 canvas{display:block;touch-action:none;}
 
-#printHeader{display:none;}
+/* IMPRESIÓN */
+.print-only{display:none;}
 @media print {
-  header, .add-bar, .canvas-tools, #cwrap, .ed-left, .btn { display:none !important; }
-  body, .app, .container { display:block !important; height:auto !important; overflow:visible !important; }
-  #printHeader { display:block; text-align:center; border-bottom:2px solid #C00000; padding-bottom:10px; margin-bottom:20px; }
-  .totals-panel { break-inside: avoid; border:1px solid #ddd; box-shadow:none; }
-  .tp-head { color:black; background:#f0f0f0 !important; border-bottom:2px solid black; }
-  .env-card { box-shadow:none; border:1px solid #ddd; break-inside: avoid; }
-  .env-actions { display: none !important; }
+  header, .add-bar, .canvas-tools, .ed-group, .btn, .btn-row, .action-btn { display:none !important; }
+  body, .app, .scroll-content, .editor-layout { display:block !important; height:auto !important; overflow:visible !important; background:white !important; font-size:12px !important; }
+  .ed-left { width:100% !important; border:none !important; padding:0 !important; }
+  .ed-right { width:100% !important; height:auto !important; border:none !important; }
+  .print-only { display:block !important; text-align:center; font-size:20px; font-weight:600; border-bottom:2px solid var(--color-red-accent); padding-bottom:10px; margin-bottom:20px; color:var(--color-gray-dark); }
+  .list-item, .env-card { border:1px solid #ddd; margin-bottom:8px; break-inside: avoid; }
+  .summary-card { border:1px solid #ddd; break-inside: avoid; }
+  #cwrap { height:600px !important; border:1px solid #000 !important; margin-top:20px; }
 }
 </style>
 </head>
@@ -97,65 +133,105 @@ canvas{display:block;touch-action:none;}
 <div class="app">
 
   <header>
-    <div id="headTitle">&#9632; Gestor de Proyectos — Cielorraso</div>
+    <div id="headTitle"><span class="il-red">iL</span><span class="il-grey">Celling cgg</span></div>
     <div>
-      <button class="header-btn" id="btnBackHome" onclick="navTo('home')" style="display:none;">Volver a Proyectos</button>
+      <button class="header-btn" id="btnBack" onclick="goBack()" style="display:none;">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Volver
+      </button>
     </div>
   </header>
 
   <div id="view-home" class="view active">
-    <div class="container">
-      <div class="add-bar">
-        <input type="text" id="newProjName" class="input-text" placeholder="Ej: Proyecto Casa 1" onkeypress="if(event.key==='Enter') createProject()">
-        <button class="btn btn-red" onclick="createProject()">+ Crear Proyecto</button>
+    <div class="scroll-content">
+      <div class="container">
+        <div class="add-bar">
+          <input type="text" id="newProjName" class="input-text" placeholder="Nombre del nuevo proyecto..." onkeypress="if(event.key==='Enter') createProject()">
+          <button class="btn btn-red" onclick="createProject()">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Crear
+          </button>
+        </div>
+        <div id="projectsList"></div>
+        <div class="btn-row" style="margin-top:20px;">
+          <button class="btn btn-out btn-sm" style="flex:1;" onclick="exportBackup()">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M4 17v3h16v-3"/></svg> Exportar respaldo
+          </button>
+          <button class="btn btn-out btn-sm" style="flex:1;" onclick="document.getElementById('backupFile').value=''; document.getElementById('backupFile').click()">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4M4 17v3h16v-3"/></svg> Importar respaldo
+          </button>
+          <input type="file" id="backupFile" accept=".json,application/json" style="display:none;" onchange="importBackup(this)">
+        </div>
       </div>
-      <div id="projectsList"></div>
     </div>
   </div>
 
   <div id="view-proj" class="view">
-    <div class="container" style="max-width:1000px;">
-      
-      <div id="printHeader">
-        <h1 id="phTitle">Proyecto</h1>
-        <p>Listado de Materiales (Cantidades y Unidades)</p>
-      </div>
-
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2 id="pdTitle">Nombre del Proyecto</h2>
-        <div style="display:flex; gap:10px;">
-          <button class="btn btn-red" onclick="openNewEditor()">+ Cargar Ambiente</button>
-          <button class="btn btn-green" onclick="exportExcel()">Exportar Excel</button>
-          <button class="btn btn-out" onclick="window.print()">Imprimir PDF</button>
+    <div class="scroll-content">
+      <div class="container" style="max-width:1000px;">
+        
+        <div id="printHeader" class="print-only">
+          <h1 id="phTitle" style="font-family:'Exo',sans-serif; font-size:24px; color:var(--color-gray-dark); font-weight:700;">Proyecto</h1>
+          <p style="color:var(--color-gray-text);">Listado de Materiales (Cantidades y Unidades)</p>
         </div>
-      </div>
 
-      <div id="envList"></div>
-
-      <div class="totals-panel" id="pdTotals" style="display:none;">
-        <div class="tp-head">TOTAL DE MATERIALES DEL PROYECTO</div>
-        <div class="tp-body">
-          <div class="t-grid" id="pdGrid"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+          <h2 id="pdTitle" style="font-size:24px; font-weight:700; color:var(--color-gray-dark);">Proyecto</h2>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-red btn-sm" onclick="openNewEditor()">
+              <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Cargar Ambiente
+            </button>
+            <button class="btn btn-grey-red btn-sm" onclick="exportExcel()">
+              <svg class="icon-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Excel
+            </button>
+            <button class="btn btn-out btn-sm" onclick="window.print()">
+              <svg class="icon-svg" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> PDF
+            </button>
+          </div>
         </div>
-      </div>
 
+        <div id="pdTotals" style="display:none;">
+          <div class="section-title">Resumen de Materiales</div>
+          <div style="display:flex; gap:16px; margin-bottom:14px; align-items:center;">
+            <span style="font-size:15px; font-weight:500;">Cinta de juntas:</span>
+            <div style="display:flex; gap:6px; flex:1; max-width:320px;">
+              <button class="dir-btn" style="height:44px;" id="ctPapel" onclick="setCinta('papel')">Papel</button>
+              <button class="dir-btn" style="height:44px;" id="ctMalla" onclick="setCinta('malla')">Malla</button>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="grid-2" id="pdGrid"></div>
+          </div>
+        </div>
+
+        <div class="section-title">Ambientes Cargados</div>
+        <div id="envList"></div>
+
+      </div>
     </div>
   </div>
 
   <div id="view-editor" class="view">
     <div class="editor-layout">
       <div class="ed-left">
-        <h3 id="edMainTitle" style="margin-bottom:15px; color:#C00000;">Nuevo Ambiente</h3>
+        <h2 id="printEnvName" class="print-only">Plano del Ambiente</h2>
+        <h3 id="edMainTitle" style="margin-bottom:24px; font-size:20px; font-weight:700; color:var(--color-gray-dark);">Nuevo Ambiente</h3>
         
-        <div class="ed-group">
-          <label>1. Nombre del Ambiente</label>
-          <input type="text" id="edEnvName" class="input-text" placeholder="Ej: Dormitorio Principal">
+        <div class="ed-group" style="display:flex; gap:16px; align-items:flex-end;">
+          <div style="flex:1; min-width:0;">
+            <label>Nombre del Ambiente</label>
+            <input type="text" id="edEnvName" class="input-text" placeholder="Ej: Apto Tipo 1" style="margin-bottom:0;">
+          </div>
+          <div style="width:75px; flex-shrink:0;">
+            <label style="text-align:center;">Cant.</label>
+            <input type="number" id="edMult" class="input-text" value="1" min="1" max="999" step="1" style="text-align:center; padding:14px 4px; margin-bottom:0;">
+          </div>
         </div>
 
         <div class="ed-group">
-          <label>2. Archivo Plano DXF</label>
+          <label>Archivo Plano DXF</label>
           <div class="ed-file-bar">
-            <button class="btn btn-grey" onclick="document.getElementById('fi').value=''; document.getElementById('fi').click()">Cargar DXF</button>
+            <button class="btn-upload" onclick="document.getElementById('fi').value=''; document.getElementById('fi').click()">
+              <svg class="icon-svg" viewBox="0 0 24 24" style="width:20px;height:20px;stroke:var(--color-red-accent);"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> SELECCIONAR DXF
+            </button>
             <input type="file" id="fi" accept=".dxf" style="display:none;">
             <select id="units" class="sel" onchange="processCurrentDXF()">
               <option value="1">m</option>
@@ -163,58 +239,113 @@ canvas{display:block;touch-action:none;}
               <option value="0.01">cm</option>
             </select>
           </div>
-          <div id="edStatus" style="font-size:8pt; margin-top:5px; color:#E07000;">Sin archivo cargado.</div>
+          <div id="edStatus" style="font-size:13px; margin-top:8px; color:var(--color-gray-text); font-weight:500;">Esperando archivo...</div>
         </div>
 
         <div class="ed-group">
-          <label>3. Opciones Estructurales</label>
-          <div style="display:flex; gap:10px; margin-bottom:8px; align-items:center;">
-            <span style="font-size:8pt; flex:1;">Sep. Montantes:</span>
-            <input type="number" id="edSp" value="60" style="width:60px; padding:4px;"> cm
+          <label>Opciones Estructurales</label>
+          <div style="display:flex; gap:16px; margin-bottom:12px; align-items:center;">
+            <span style="font-size:15px; font-weight:500; flex:1;">Sep. Montantes:</span>
+            <input type="number" id="edSp" value="40" style="width:80px; height:42px; padding:6px; border:1px solid var(--color-gray-medium); border-radius:6px; text-align:center; font-family:'Exo',sans-serif; font-size:16px; font-weight:600;"> cm
           </div>
-          <div style="display:flex; gap:10px; margin-bottom:8px; align-items:center;">
-            <span style="font-size:8pt; flex:1;">Dir. Montantes:</span>
-            <div style="display:flex; gap:2px; flex:1;">
-              <button class="dir-btn active" id="dH" onclick="setDir('H')">H</button>
-              <button class="dir-btn" id="dV" onclick="setDir('V')">V</button>
+          <div style="display:flex; gap:16px; margin-bottom:12px; align-items:center;">
+            <span style="font-size:15px; font-weight:500; flex:1;">Dir. Montantes:</span>
+            <div style="display:flex; gap:6px; flex:1;">
+              <button class="dir-btn active" id="dH" onclick="setDir('H')"><svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>H</button>
+              <button class="dir-btn" id="dV" onclick="setDir('V')"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>V</button>
             </div>
           </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <span style="font-size:8pt; flex:1;">Dir. Refuerzos:</span>
-            <div style="display:flex; gap:2px; flex:1;">
-              <button class="dir-btn" id="rH" onclick="setRef('H')">H</button>
-              <button class="dir-btn active" id="rV" onclick="setRef('V')">V</button>
+          <div style="display:flex; gap:16px; align-items:center;">
+            <span style="font-size:15px; font-weight:500; flex:1;">Dir. Refuerzos:</span>
+            <div style="display:flex; gap:6px; flex:1;">
+              <button class="dir-btn" id="rH" onclick="setRef('H')"><svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>H</button>
+              <button class="dir-btn active" id="rV" onclick="setRef('V')"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>V</button>
             </div>
           </div>
         </div>
 
         <div class="ed-group">
-          <label>4. Detalles Cenefa</label>
-          <div style="display:flex; gap:10px; margin-bottom:5px;">
-            <input type="number" id="edCenefaLen" class="input-text" placeholder="Metros (ml)" step="0.01" style="width:100px; flex:none;">
-            <input type="text" id="edCenefaWhere" class="input-text" placeholder="¿Dónde va? (Ej: Sobre ventana)">
-          </div>
-          <div style="font-size:8pt; color:#666;">Dibuja la cenefa en el plano o ingresa los metros a mano.</div>
-        </div>
-
-        <div id="edSummaryGroup" class="ed-summary-box">
-          <div class="ed-summary-title">Mediciones del Ambiente</div>
-          <div id="edSummaryText" class="ed-summary-text">
+          <label>Placa y Perfil</label>
+          <div style="display:flex; gap:16px; margin-bottom:12px; align-items:center;">
+            <span style="font-size:15px; font-weight:500; flex:1;">Perfil:</span>
+            <div style="display:flex; gap:6px; flex:1;">
+              <button class="dir-btn active" id="pg35" onclick="setPerfil('PGU 35')">PGU 35</button>
+              <button class="dir-btn" id="pg70" onclick="setPerfil('PGU 70')">PGU 70</button>
             </div>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <div style="flex:1;">
+              <label style="font-size:13px;">Espesor Placa</label>
+              <select id="edPlacaEsp" class="sel" style="width:100%;">
+                <option value="9.5">9.5 mm</option>
+                <option value="12.5" selected>12.5 mm</option>
+                <option value="15">15 mm</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label style="font-size:13px;">Tipo Placa</label>
+              <select id="edPlacaTipo" class="sel" style="width:100%;">
+                <option value="Estándar" selected>Estándar</option>
+                <option value="RH (Verde)">RH (Verde)</option>
+                <option value="RF Ignífuga (Roja)">RF Ignífuga (Roja)</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <button class="btn btn-red" style="width:100%; padding:12px;" onclick="saveEnvironment()">&#10003; Guardar Ambiente</button>
-        <button class="btn btn-out" style="width:100%; margin-top:10px;" onclick="navTo('proj')">Cancelar</button>
+        <div class="ed-group">
+          <label>Lámparas / Spots</label>
+          <div style="display:flex; gap:12px;">
+            <div style="flex:1;">
+              <label style="font-size:13px;">Cantidad</label>
+              <input type="number" id="edLampQty" class="input-text" value="0" min="0" step="1" style="width:100%; text-align:center; margin-bottom:0;">
+            </div>
+            <div style="flex:1;">
+              <label style="font-size:13px;">Diámetro (mm)</label>
+              <input type="number" id="edLampDia" class="input-text" value="92" min="1" step="1" style="width:100%; text-align:center; margin-bottom:0;">
+            </div>
+          </div>
+          <div style="font-size:13px; color:var(--color-gray-text); font-weight:400; margin-top:8px;">Suma cinta papel por perímetro de cada perforación.</div>
+        </div>
+
+        <div class="ed-group">
+          <label>Detalles de Cenefa</label>
+          <div style="display:flex; gap:12px; margin-bottom:8px;">
+            <input type="number" id="edCenefaLen" class="input-text" placeholder="Metros (ml)" step="0.01" style="width:110px; flex:none;">
+            <input type="text" id="edCenefaWhere" class="input-text" placeholder="Ubicación (Opcional)" style="flex:1; min-width:0;">
+          </div>
+          <div style="font-size:13px; color:var(--color-gray-text); font-weight:400;">Dibuja en el plano o ingresa los metros.</div>
+        </div>
+
+        <div id="edSummaryGroup" class="summary-card" style="display:none; padding:20px; background:#FAFAFA;">
+          <div class="db-lbl" style="color:var(--color-gray-dark); margin-bottom:12px; font-weight:700;" id="edSumTitle">RESUMEN DEL AMBIENTE</div>
+          <div class="grid-2" id="edSummaryText"></div>
+        </div>
+
+        <button class="btn btn-red" style="width:100%; margin-bottom:14px;" onclick="saveEnvironment()">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar Ambiente
+        </button>
+        <button class="btn btn-out" style="width:100%; margin-bottom:14px;" onclick="printEnvironment()">
+          <svg class="icon-svg" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Exportar PDF Plano
+        </button>
+        <button class="btn btn-out" style="width:100%; border-color:transparent; color:var(--color-gray-text);" onclick="navTo('proj')">Descartar Cambios</button>
       </div>
       
       <div class="ed-right">
         <div class="canvas-tools">
-          <button class="btn btn-out" id="tPan" onclick="setTool('pan')" style="padding:5px 10px;">&#9995; Mover</button>
-          <button class="btn btn-org" id="tCenefa" onclick="setTool('cenefa')" style="padding:5px 10px;">&#9998; Dibujar Cenefa</button>
-          <button class="btn btn-grey" id="btnUndo" onclick="undoCenefa()" style="display:none; padding:5px 10px;">Deshacer</button>
-          <button class="btn btn-green" id="btnDoneCenefa" onclick="doneCenefa()" style="display:none; padding:5px 10px;">&#10003; Guardar Cenefa</button>
-          <button class="btn btn-red" id="btnCancelCenefa" onclick="cancelCenefa()" style="display:none; padding:5px 10px;">&#10005;</button>
-          <span class="canvas-status" id="cStatus"></span>
+          <button class="tool-btn active" id="tPan" onclick="setTool('pan')">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M19 9l3 3-3 3M9 19l3 3-3 3M2 12h20M12 2v20"/></svg> Mover
+          </button>
+          <button class="tool-btn" id="tCenefa" onclick="setTool('cenefa')">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> Lápiz Cenefa
+          </button>
+          <div style="flex:1;"></div>
+          <button class="tool-btn" id="btnUndo" onclick="undoCenefa()" style="display:none; color:var(--color-gray-dark);">
+            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+          </button>
+          <button class="tool-btn" id="btnCutCenefa" onclick="cutCenefa()" style="display:none; color:var(--color-red-accent); border-color:var(--color-red-accent);">
+            <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg> Tramo
+          </button>
         </div>
         <div id="cwrap">
           <canvas id="canvas"></canvas>
@@ -241,21 +372,64 @@ let sc=1, ox=0, oy=0, lpx=0, lpy=0, pan=false;
 
 function saveDB() { localStorage.setItem('cielorraso_db', JSON.stringify(projects)); }
 
+// ===== RESPALDO (EXPORTAR / IMPORTAR) =====
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(projects, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  const d = new Date().toISOString().slice(0,10);
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ilcelling_respaldo_' + d + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importBackup(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      let data = JSON.parse(e.target.result);
+      // Acepta tanto el array directo como el backup completo de localStorage {cielorraso_db: "..."}
+      if(!Array.isArray(data) && data.cielorraso_db) data = JSON.parse(data.cielorraso_db);
+      if(!Array.isArray(data)) throw new Error('Formato no reconocido');
+      if(projects.length > 0 && !confirm('Esto reemplaza los ' + projects.length + ' proyecto(s) actuales por los del respaldo. ¿Continuar?')) return;
+      projects = data;
+      saveDB();
+      renderHome();
+      alert('Respaldo importado: ' + projects.length + ' proyecto(s).');
+    } catch(err) {
+      alert('Archivo de respaldo inválido: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
 // ===== NAVEGACIÓN Y VISTAS =====
+function goBack() {
+  if(document.getElementById('view-editor').classList.contains('active')) { navTo('proj'); }
+  else if(document.getElementById('view-proj').classList.contains('active')) { navTo('home'); }
+}
+
 function navTo(view) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + view).classList.add('active');
   
+  const btnBack = document.getElementById('btnBack');
+  
   if(view === 'home') {
-    document.getElementById('headTitle').innerHTML = '&#9632; Gestor de Proyectos — Cielorraso';
-    document.getElementById('btnBackHome').style.display = 'none';
+    document.getElementById('headTitle').innerHTML = '<span class="il-red">iL</span><span class="il-grey">Celling cgg</span>';
+    btnBack.style.display = 'none';
     renderHome();
   } 
   else if(view === 'proj') {
     const p = projects.find(p => p.id === activeProjId);
-    document.getElementById('headTitle').innerHTML = '&#9632; Proyecto: ' + p.name;
-    document.getElementById('btnBackHome').style.display = 'block';
+    document.getElementById('headTitle').innerHTML = '<span class="il-red">iL</span><span class="il-grey">Celling cgg</span> <span style="font-size:16px; color:var(--color-gray-text); font-weight:500; margin-left:12px;">| ' + p.name + '</span>';
+    btnBack.style.display = 'flex';
     renderProject();
+  }
+  else if(view === 'editor') {
+    btnBack.style.display = 'flex';
   }
 }
 
@@ -263,13 +437,19 @@ function openNewEditor() {
   editingEnvId = null;
   document.getElementById('edMainTitle').textContent = "Nuevo Ambiente";
   document.getElementById('edEnvName').value = '';
+  document.getElementById('edMult').value = '1';
   document.getElementById('fi').value = '';
   document.getElementById('edCenefaLen').value = '';
   document.getElementById('edCenefaWhere').value = '';
-  document.getElementById('edSp').value = '60';
+  document.getElementById('edSp').value = '40';
   setDir('H'); setRef('V');
+  setPerfil('PGU 35');
+  document.getElementById('edPlacaEsp').value = '12.5';
+  document.getElementById('edPlacaTipo').value = 'Estándar';
+  document.getElementById('edLampQty').value = '0';
+  document.getElementById('edLampDia').value = '92';
   document.getElementById('edStatus').textContent = 'Sin archivo cargado.';
-  document.getElementById('edStatus').style.color = '#E07000';
+  document.getElementById('edStatus').style.color = 'var(--color-gray-text)';
   
   tempPolys = []; 
   tempCenefaPts = []; 
@@ -288,133 +468,219 @@ function editEnv(id) {
   if(!env) return;
 
   editingEnvId = id;
-  document.getElementById('edMainTitle').textContent = "Editando: " + env.name;
+  document.getElementById('edMainTitle').textContent = "Editando Ambiente";
   
   tempPolys = JSON.parse(JSON.stringify(env.rawPolys || []));
   tempCenefaPts = JSON.parse(JSON.stringify(env.rawCenefaPts || []));
   cursorPt = null;
 
   document.getElementById('edEnvName').value = env.name;
+  document.getElementById('edMult').value = env.multiplier || 1;
   document.getElementById('edCenefaLen').value = env.cenefa ? env.cenefa.toFixed(2) : '';
   document.getElementById('edCenefaWhere').value = env.cenefaWhere || '';
-  document.getElementById('edSp').value = env.sp || 60;
+  document.getElementById('edSp').value = env.sp || 40;
   setDir(env.perfDir || 'H');
   setRef(env.refDir || 'V');
+  setPerfil(env.perfil || 'PGU 35');
+  document.getElementById('edPlacaEsp').value = env.placaEsp || '12.5';
+  document.getElementById('edPlacaTipo').value = env.placaTipo || 'Estándar';
+  document.getElementById('edLampQty').value = env.lampQty || 0;
+  document.getElementById('edLampDia').value = env.lampDia || 92;
 
-  document.getElementById('edStatus').textContent = `Plano cargado desde memoria.`;
-  document.getElementById('edStatus').style.color = '#0066cc';
+  document.getElementById('edStatus').textContent = `DXF recuperado de memoria.`;
+  document.getElementById('edStatus').style.color = 'var(--color-gray-dark)';
 
   setTool('pan');
   updateEditorSummary();
   navTo('editor');
   
-  setTimeout(() => { 
-    resizeCanvas(); 
-    fitView(); 
-    renderCanvas(); 
-  }, 100);
+  setTimeout(() => { resizeCanvas(); fitView(); renderCanvas(); }, 100);
 }
 
-// ===== EVENT LISTENERS PARA ACTUALIZAR RESUMEN Y CANVAS EN VIVO =====
-document.getElementById('edSp').addEventListener('input', () => { 
-  renderCanvas(); 
-  updateEditorSummary(); 
-});
+// ===== EVENT LISTENERS EN VIVO =====
+document.getElementById('edSp').addEventListener('input', () => { renderCanvas(); updateEditorSummary(); });
+document.getElementById('edMult').addEventListener('input', updateEditorSummary);
 document.getElementById('edCenefaLen').addEventListener('input', updateEditorSummary);
-
 
 // ===== VISTAS PROYECTOS =====
 function createProject() {
   const input = document.getElementById('newProjName');
   const name = input.value.trim();
   if(!name) return alert('Escribe un nombre para el proyecto');
-  projects.push({ id: Date.now(), name: name, envs: [] });
+  projects.unshift({ id: Date.now(), name: name, created: Date.now(), envs: [] });
   saveDB(); input.value = ''; renderHome();
 }
 function deleteProject(e, id) {
   e.stopPropagation();
-  if(confirm('¿Eliminar proyecto y todos sus ambientes de forma permanente?')) {
+  if(confirm('¿Eliminar proyecto de forma permanente?')) {
     projects = projects.filter(p => p.id !== id);
     saveDB(); renderHome();
   }
 }
 function openProject(id) { activeProjId = id; navTo('proj'); }
+
 function renderHome() {
   const list = document.getElementById('projectsList');
-  if(!projects.length) { list.innerHTML = '<div style="color:#aaa; text-align:center; padding:30px;">No hay proyectos. Crea uno nuevo arriba.</div>'; return; }
-  list.innerHTML = projects.map(p => `
-    <div class="proj-card" onclick="openProject(${p.id})">
-      <div>
-        <div class="proj-title">${p.name}</div>
-        <div class="proj-info">${p.envs.length} Ambientes | Total: ${p.envs.reduce((sum,e)=>sum+e.area,0).toFixed(2)} m²</div>
+  if(!projects.length) { list.innerHTML = '<div style="color:var(--color-gray-text); text-align:center; padding:50px 20px; font-weight:500; font-size:16px;">Lista vacía.<br>Crea tu primer proyecto arriba.</div>'; return; }
+  
+  list.innerHTML = projects.map(p => {
+    const totA = p.envs.reduce((sum, e) => sum + (e.area * (e.multiplier||1)), 0);
+    const fch = new Date(p.created || p.id).toLocaleString('es-UY', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+    return `
+    <div class="list-item" onclick="openProject(${p.id})">
+      <div class="list-icon">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       </div>
-      <button class="del-btn" onclick="deleteProject(event, ${p.id})">&#10005;</button>
+      <div class="list-content">
+        <div class="list-title">${p.name}</div>
+        <div class="list-subtitle">${p.envs.length} Registro(s) | Total Construido: ${totA.toFixed(2)} m²<br><span style="font-size:12px;">Creado: ${fch}</span></div>
+      </div>
+      <button class="action-btn" onclick="deleteProject(event, ${p.id})">
+        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>
     </div>
-  `).join('');
+  `}).join('');
 }
 
-function delEnv(id) {
+function delEnv(e, id) {
+  e.stopPropagation();
   if(!confirm('¿Quitar este ambiente del proyecto?')) return;
   const p = projects.find(p => p.id === activeProjId);
   p.envs = p.envs.filter(e => e.id !== id);
   saveDB(); renderProject();
 }
 
+// ===== CALCULO DE MATERIALES (medidas + presentación comercial) =====
+const COM = {
+  placaM2: 2.9768,        // placa 1.22 x 2.44
+  perfilLen: 2.80,        // largo comercial perfil (m)
+  cantoneraLen: 2.60,     // cantonera metálica (m)
+  rolloPapel: 150,        // cinta papel (ml/rollo)
+  rolloMalla: 90,         // cinta malla (ml/rollo)
+  masillaKgM2: 1.5,       // tomado completo de juntas (kg/m²)
+  masillaBalde: 32,       // balde masilla lista (kg)
+  pinturaManos: 2,
+  pinturaRendM2L: 10,     // m² por litro por mano
+  pinturaBalde: 20        // litros por balde
+};
+
+function calcMateriales(p) {
+  const cinta = p.cintaTipo || 'papel';
+  let tArea=0, tPerim=0, tMontML=0, tRefML=0, tCenefa=0;
+  const placas = {};   // "12.5 mm Estándar" -> uds
+  const perfiles = {}; // "PGU 35" -> {sol, mont, ref}
+
+  p.envs.forEach(e => {
+    const m = e.multiplier || 1;
+    tArea += e.area*m; tPerim += e.perim*m; tMontML += e.montML*m; tRefML += e.refML*m; tCenefa += e.cenefa*m;
+    const kP = `${e.placaEsp||'12.5'} mm ${e.placaTipo||'Estándar'}`;
+    placas[kP] = (placas[kP]||0) + Math.ceil((e.area*m)/COM.placaM2);
+    const kF = e.perfil || 'PGU 35';
+    if(!perfiles[kF]) perfiles[kF] = {sol:0, mont:0, ref:0};
+    perfiles[kF].sol += e.perim*m; perfiles[kF].mont += e.montML*m; perfiles[kF].ref += e.refML*m;
+  });
+
+  let tLampUds = 0, tLampML = 0;
+  p.envs.forEach(e => {
+    const m = e.multiplier || 1;
+    const q = (e.lampQty || 0) * m;
+    tLampUds += q;
+    tLampML += q * Math.PI * ((e.lampDia || 92) / 1000);
+  });
+
+  const mlJuntas = tArea*1.5;
+  const rolloLen = cinta==='malla' ? COM.rolloMalla : COM.rolloPapel;
+  const mlEsquina = Math.max(0, tPerim - tCenefa) + tLampML;
+  const kgMasilla = tArea*COM.masillaKgM2;
+  const litros = (tArea*COM.pinturaManos)/COM.pinturaRendM2L;
+
+  return {
+    tArea, tPerim, tMontML, tRefML, tCenefa, placas, perfiles, cinta,
+    juntas:   { ml: mlJuntas, rollos: Math.ceil(mlJuntas/rolloLen), rolloLen },
+    esquina:  { ml: mlEsquina, rollos: Math.ceil(mlEsquina/COM.rolloPapel) },
+    lamparas: { uds: tLampUds, ml: tLampML },
+    cantonera:{ ml: tCenefa, uds: Math.ceil(tCenefa/COM.cantoneraLen) },
+    masilla:  { kg: kgMasilla, baldes: Math.ceil(kgMasilla/COM.masillaBalde) },
+    pintura:  { m2: tArea, litros, baldes: Math.ceil(litros/COM.pinturaBalde) },
+    tornT2: Math.ceil(tArea*30), tornT1: Math.ceil(tArea*15), fijMuro: Math.ceil(tPerim*2.5),
+    terminacion: Math.max(0, tPerim - tCenefa)
+  };
+}
+
+function setCinta(tipo) {
+  const p = projects.find(p => p.id === activeProjId);
+  p.cintaTipo = tipo; saveDB(); renderProject();
+}
+
 function renderProject() {
   const p = projects.find(p => p.id === activeProjId);
   document.getElementById('pdTitle').textContent = p.name;
-  document.getElementById('phTitle').textContent = p.name;
+  
   const list = document.getElementById('envList');
   if(!p.envs.length) { 
-    list.innerHTML = '<div style="color:#aaa; padding:20px 0;">No hay ambientes cargados. Usa "+ Cargar Ambiente".</div>'; 
+    list.innerHTML = '<div style="color:var(--color-gray-text); text-align:center; padding:40px 0; font-weight:500; font-size:16px;">No hay ambientes cargados. Presiona "Cargar Ambiente".</div>'; 
     document.getElementById('pdTotals').style.display = 'none';
     return; 
   }
 
-  // Tarjeta de Ambiente con desglose completo visible
-  list.innerHTML = p.envs.map(e => `
+  list.innerHTML = p.envs.map(e => {
+    const mult = e.multiplier || 1;
+    return `
     <div class="env-card">
       <div class="env-info">
-        <div class="env-name">${e.name}</div>
+        <div class="env-name">${e.name} ${mult>1 ? `<span style="color:var(--color-red-accent); font-size:14px; font-weight:600;">(x${mult})</span>` : ''}</div>
         <div class="env-data">
-          <b>Área:</b> ${e.area.toFixed(2)} m² | <b>Placas (aprox):</b> ${Math.ceil(e.area / 2.9768)} uds<br>
-          <b>Estructura:</b> Soleras: ${e.perim.toFixed(2)} ml | Montantes: ${e.montML.toFixed(2)} ml | Refuerzos: ${e.refML.toFixed(2)} ml<br>
-          ${e.cenefa > 0 ? `<span style="color:#c87000"><b>Cenefa LED:</b> ${e.cenefa.toFixed(2)} ml ${e.cenefaWhere ? '('+e.cenefaWhere+')' : ''}</span>` : '<span style="color:#aaa">Sin Cenefa</span>'}
+          <b style="color:var(--color-gray-dark);">Área Total:</b> ${(e.area * mult).toFixed(2)} m² | <b style="color:var(--color-gray-dark);">Placas (aprox):</b> ${Math.ceil((e.area*mult) / 2.9768)} uds<br>
+          <b style="color:var(--color-gray-dark);">Estructura Total:</b> Soleras: ${(e.perim * mult).toFixed(2)} ml | Montantes: ${(e.montML * mult).toFixed(2)} ml | Refuerzos: ${(e.refML * mult).toFixed(2)} ml<br>
+          ${e.cenefa > 0 ? `<span style="color:var(--color-red-accent); font-weight:600;">Cenefa LED Total: ${(e.cenefa * mult).toFixed(2)} ml ${e.cenefaWhere ? '('+e.cenefaWhere+')' : ''}</span>` : '<span style="color:var(--color-gray-text)">Sin Cenefa</span>'}${(e.lampQty||0) > 0 ? ` | <b style="color:var(--color-gray-dark);">Lámparas:</b> ${(e.lampQty*mult)} uds Ø${e.lampDia||92}mm` : ''}<br>
+          <span style="font-size:12px; color:var(--color-gray-text);">Creado: ${new Date(e.created || e.id).toLocaleString('es-UY', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})}</span>
         </div>
       </div>
       <div class="env-actions">
-        <button class="edit-btn" onclick="editEnv(${e.id})" title="Editar">&#9998;</button>
-        <button class="del-btn" onclick="delEnv(${e.id})" title="Eliminar">&#10005;</button>
+        <button class="action-btn" onclick="editEnv(${e.id})" title="Editar">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="action-btn" onclick="delEnv(event, ${e.id})" title="Eliminar">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
       </div>
     </div>
+  `}).join('');
+
+  const M = calcMateriales(p);
+
+  // Selector cinta activo
+  document.getElementById('ctPapel').classList.toggle('active', M.cinta === 'papel');
+  document.getElementById('ctMalla').classList.toggle('active', M.cinta === 'malla');
+
+  // Placas por tipo/espesor
+  const placasHTML = Object.entries(M.placas).map(([k, uds]) =>
+    `<div class="data-box"><span class="db-lbl">Placa ${k}</span><span class="db-val-red">${uds} uds</span></div>`
+  ).join('');
+
+  // Perfiles por tipo PGU (soleras, montantes, refuerzos → uds comerciales)
+  const perfHTML = Object.entries(M.perfiles).map(([k, v]) => `
+    <div class="data-box"><span class="db-lbl">Soleras ${k} (${COM.perfilLen}m)</span><span class="db-val">${v.sol.toFixed(2)} ml | ${Math.ceil(v.sol/COM.perfilLen)} uds</span></div>
+    <div class="data-box"><span class="db-lbl">Montantes ${k} (${COM.perfilLen}m)</span><span class="db-val">${v.mont.toFixed(2)} ml | ${Math.ceil(v.mont/COM.perfilLen)} uds</span></div>
+    <div class="data-box"><span class="db-lbl">Velas/Ref. ${k} (${COM.perfilLen}m)</span><span class="db-val">${v.ref.toFixed(2)} ml | ${Math.ceil(v.ref/COM.perfilLen)} uds</span></div>
   `).join('');
-
-  const tArea = p.envs.reduce((sum, e) => sum + e.area, 0);
-  const tPerim = p.envs.reduce((sum, e) => sum + e.perim, 0);
-  const tMontML = p.envs.reduce((sum, e) => sum + e.montML, 0);
-  const tRefML = p.envs.reduce((sum, e) => sum + e.refML, 0);
-  const tCenefa = p.envs.reduce((sum, e) => sum + e.cenefa, 0);
-
-  const placas = Math.ceil(tArea / 2.9768); 
-  const udsSoleras = Math.ceil(tPerim / 2.80);
-  const udsMont = Math.ceil(tMontML / 2.80);
-  const udsRef = Math.ceil(tRefML / 2.80);
-  const mlTerminacion = Math.max(0, tPerim - tCenefa);
 
   document.getElementById('pdTotals').style.display = 'block';
   document.getElementById('pdGrid').innerHTML = `
-    <div class="t-row"><span class="t-lbl">Área Cielorraso Total</span><span class="t-val" style="color:#C00000">${tArea.toFixed(2)} m²</span></div>
-    <div class="t-row"><span class="t-lbl">Placas Yeso (Enteras)</span><span class="t-val" style="color:#C00000">${placas} uds</span></div>
-    <div class="t-row"><span class="t-lbl">Soleras perim. (2.80m)</span><span class="t-val">${udsSoleras} uds</span></div>
-    <div class="t-row"><span class="t-lbl">Montantes estruct. (2.80m)</span><span class="t-val">${udsMont} uds</span></div>
-    <div class="t-row"><span class="t-lbl">Refuerzos / Velas (2.80m)</span><span class="t-val">${udsRef} uds</span></div>
-    <div class="t-row"><span class="t-lbl">Cantonera (Arista Cenefa)</span><span class="t-val" style="color:#E07000">${tCenefa.toFixed(2)} ml</span></div>
-    <div class="t-row"><span class="t-lbl">Perfil Terminación Pared</span><span class="t-val">${mlTerminacion.toFixed(2)} ml</span></div>
-    <div class="t-row"><span class="t-lbl">Tornillos T2 (Placa)</span><span class="t-val">${Math.ceil(tArea*30)} uds</span></div>
-    <div class="t-row"><span class="t-lbl">Tornillos T1 (Metal)</span><span class="t-val">${Math.ceil(tArea*15)} uds</span></div>
-    <div class="t-row"><span class="t-lbl">Fijaciones a Muro</span><span class="t-val">${Math.ceil(tPerim*2.5)} uds</span></div>
-    <div class="t-row"><span class="t-lbl">Cinta de papel</span><span class="t-val">${(tArea*1.5).toFixed(1)} ml</span></div>
-    <div class="t-row"><span class="t-lbl">Enduído (Juntas)</span><span class="t-val">${(tArea*0.9).toFixed(1)} kg</span></div>
+    <div class="data-box"><span class="db-lbl">Área Construida</span><span class="db-val-red">${M.tArea.toFixed(2)} m²</span></div>
+    <div class="data-box"><span class="db-lbl">Perímetro Total</span><span class="db-val">${M.tPerim.toFixed(2)} ml</span></div>
+    ${placasHTML}
+    ${perfHTML}
+    <div class="data-box"><span class="db-lbl">Perfil Term. Pared (${COM.perfilLen}m)</span><span class="db-val">${M.terminacion.toFixed(2)} ml | ${Math.ceil(M.terminacion/COM.perfilLen)} uds</span></div>
+    <div class="data-box"><span class="db-lbl">Cantonera Cenefa (${COM.cantoneraLen}m)</span><span class="db-val-red">${M.cantonera.ml.toFixed(2)} ml | ${M.cantonera.uds} uds</span></div>
+    <div class="data-box"><span class="db-lbl">Cinta ${M.cinta} juntas (rollo ${M.juntas.rolloLen}ml)</span><span class="db-val">${M.juntas.ml.toFixed(1)} ml | ${M.juntas.rollos} rollos</span></div>
+    <div class="data-box"><span class="db-lbl">Lámparas (cinta papel Ø)</span><span class="db-val">${M.lamparas.uds} uds | ${M.lamparas.ml.toFixed(1)} ml</span></div>
+    <div class="data-box"><span class="db-lbl">Cinta papel esquinero + lámparas (rollo ${COM.rolloPapel}ml)</span><span class="db-val">${M.esquina.ml.toFixed(1)} ml | ${M.esquina.rollos} rollos</span></div>
+    <div class="data-box"><span class="db-lbl">Masilla (balde ${COM.masillaBalde}kg)</span><span class="db-val">${M.masilla.kg.toFixed(1)} kg | ${M.masilla.baldes} baldes</span></div>
+    <div class="data-box"><span class="db-lbl">Pintura ${COM.pinturaManos} manos (balde ${COM.pinturaBalde}L)</span><span class="db-val">${M.pintura.m2.toFixed(2)} m² | ${M.pintura.litros.toFixed(1)} L | ${M.pintura.baldes} baldes</span></div>
+    <div class="data-box"><span class="db-lbl">Tornillos T2 (Placa)</span><span class="db-val">${M.tornT2} uds</span></div>
+    <div class="data-box"><span class="db-lbl">Tornillos T1 (Metal)</span><span class="db-val">${M.tornT1} uds</span></div>
+    <div class="data-box"><span class="db-lbl">Fijaciones a Muro</span><span class="db-val">${M.fijMuro} uds</span></div>
   `;
 }
 
@@ -428,12 +694,10 @@ function parseDXF(text){
   
   function tessellateBulge(p1, p2, bulge) {
     if (!bulge) return [];
-    const angle = 4 * Math.atan(bulge);
-    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const angle = 4 * Math.atan(bulge); const dx = p2.x - p1.x, dy = p2.y - p1.y;
     if (Math.abs(dx) < 1e-6 && Math.abs(dy) < 1e-6) return [];
     const cotHalfAngle = 1 / Math.tan(angle / 2);
-    const cx = p1.x + dx/2 - dy/2 * cotHalfAngle;
-    const cy = p1.y + dy/2 + dx/2 * cotHalfAngle;
+    const cx = p1.x + dx/2 - dy/2 * cotHalfAngle; const cy = p1.y + dy/2 + dx/2 * cotHalfAngle;
     const radius = Math.sqrt((p1.x - cx)**2 + (p1.y - cy)**2);
     const startAngle = Math.atan2(p1.y - cy, p1.x - cx);
     const segs = Math.max(4, Math.ceil(Math.abs(angle) / 0.1));
@@ -451,15 +715,13 @@ function parseDXF(text){
     if(code===2 && (value==='OBJECTS' || value==='BLOCKS')) inEnt = false;
     
     if(inEnt && code===0 && (value==='LWPOLYLINE' || value==='POLYLINE')){
-      const isLw = (value==='LWPOLYLINE');
-      const pl = {vertices:[], closed:false}; i++;
+      const isLw = (value==='LWPOLYLINE'); const pl = {vertices:[], closed:false}; i++;
       while(i<P.length){
         const p = P[i];
         if(p.code===0 && p.value!=='VERTEX' && !isLw) { if(p.value==='SEQEND') i++; break; }
         if(p.code===0 && isLw) break;
         
         if(p.code===70) pl.closed = (parseInt(p.value)&1)===1;
-        
         if(isLw && p.code===10) pl.vertices.push({x:parseFloat(p.value), y:0, bulge:0});
         if(isLw && p.code===20 && pl.vertices.length) pl.vertices[pl.vertices.length-1].y = parseFloat(p.value);
         if(isLw && p.code===42 && pl.vertices.length) pl.vertices[pl.vertices.length-1].bulge = parseFloat(p.value);
@@ -469,8 +731,7 @@ function parseDXF(text){
           while(i<P.length && P[i].code!==0){
             if(P[i].code===10) vx = parseFloat(P[i].value);
             if(P[i].code===20) vy = parseFloat(P[i].value);
-            if(P[i].code===42) vbulge = parseFloat(P[i].value);
-            i++;
+            if(P[i].code===42) vbulge = parseFloat(P[i].value); i++;
           }
           pl.vertices.push({x:vx, y:vy, bulge:vbulge}); continue;
         }
@@ -499,18 +760,12 @@ function parseDXF(text){
 document.getElementById('fi').addEventListener('change', function(e){
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = ev => {
-    tempPolys = parseDXF(ev.target.result);
-    processCurrentDXF();
-  };
+  reader.onload = ev => { tempPolys = parseDXF(ev.target.result); processCurrentDXF(); };
   reader.readAsText(file);
 });
 
 function processCurrentDXF() {
-  if(!tempPolys.length) {
-    updateEditorSummary();
-    return;
-  }
+  if(!tempPolys.length) { updateEditorSummary(); return; }
   
   const f = parseFloat(document.getElementById('units').value);
   let totalArea = 0;
@@ -523,23 +778,19 @@ function processCurrentDXF() {
   });
 
   const stat = document.getElementById('edStatus');
-  if(totalArea < 0.05) {
-    stat.textContent = `Área casi nula (${totalArea.toFixed(4)}). Ajusta la unidad a cm o mm.`;
-    stat.style.color = '#C00000';
-  } else {
-    stat.textContent = `DXF Leído: ${totalArea.toFixed(2)} m² detectados.`;
-    stat.style.color = '#217346';
+  if(totalArea < 0.05) { 
+    stat.textContent = `Área mínima (${totalArea.toFixed(4)}). Ajusta unidad a cm/mm.`; 
+    stat.style.color = 'var(--color-red-accent)'; 
+  } else { 
+    stat.textContent = `DXF Leído: ${totalArea.toFixed(2)} m² detectados.`; 
+    stat.style.color = 'var(--color-gray-dark)'; 
   }
   
-  tempCenefaPts = [];
-  cursorPt = null;
-  document.getElementById('edCenefaLen').value = '';
-  
-  updateEditorSummary();
-  fitView(); renderCanvas();
+  tempCenefaPts = []; cursorPt = null; document.getElementById('edCenefaLen').value = '';
+  updateEditorSummary(); fitView(); renderCanvas();
 }
 
-// ===== EDITOR MATEMATICA Y CANVAS =====
+// ===== EDITOR MATEMATICA =====
 function calcGeom(v, closed) {
   let a=0, p=0, n=v.length;
   for(let i=0; i<n; i++) { const j=(i+1)%n; a += v[i].x*v[j].y - v[j].x*v[i].y; }
@@ -563,8 +814,7 @@ function calcLineales(v, b, sp, dir){
         const yi = v[i].y, yj = v[j].y;
         if((yi<=y && yj>y) || (yj<=y && yi>y)) seg.push(v[i].x + (y-yi)/(yj-yi)*(v[j].x-v[i].x));
       }
-      seg.sort((a,b)=>a-b);
-      for(let k=0; k+1<seg.length; k+=2) tot += seg[k+1]-seg[k];
+      seg.sort((a,b)=>a-b); for(let k=0; k+1<seg.length; k+=2) tot += seg[k+1]-seg[k];
     }
   } else {
     for(let x = b.x0; x <= b.x1; x += sp){
@@ -573,62 +823,48 @@ function calcLineales(v, b, sp, dir){
         const xi = v[i].x, xj = v[j].x;
         if((xi<=x && xj>x) || (xj<=x && xi>x)) seg.push(v[i].y + (x-xi)/(xj-xi)*(v[j].y-v[i].y));
       }
-      seg.sort((a,b)=>a-b);
-      for(let k=0; k+1<seg.length; k+=2) tot += seg[k+1]-seg[k];
+      seg.sort((a,b)=>a-b); for(let k=0; k+1<seg.length; k+=2) tot += seg[k+1]-seg[k];
     }
   }
   return tot;
 }
 
+let perfilTipo = 'PGU 35';
+function setPerfil(t){
+  perfilTipo = t;
+  document.getElementById('pg35').classList.toggle('active', t === 'PGU 35');
+  document.getElementById('pg70').classList.toggle('active', t === 'PGU 70');
+}
 function setDir(d){
-  perfDir = d;
-  document.getElementById('dH').classList.toggle('active', d === 'H');
-  document.getElementById('dV').classList.toggle('active', d === 'V');
-  renderCanvas();
-  updateEditorSummary();
+  perfDir = d; document.getElementById('dH').classList.toggle('active', d === 'H'); document.getElementById('dV').classList.toggle('active', d === 'V');
+  renderCanvas(); updateEditorSummary();
 }
 function setRef(d){
-  refDir = d;
-  document.getElementById('rH').classList.toggle('active', d === 'H');
-  document.getElementById('rV').classList.toggle('active', d === 'V');
-  renderCanvas();
-  updateEditorSummary();
+  refDir = d; document.getElementById('rH').classList.toggle('active', d === 'H'); document.getElementById('rV').classList.toggle('active', d === 'V');
+  renderCanvas(); updateEditorSummary();
 }
 
-// ACTUALIZACIÓN EN VIVO DEL PANEL DE RESUMEN
 function updateEditorSummary() {
-  if(!tempPolys || !tempPolys.length) {
-    document.getElementById('edSummaryGroup').style.display = 'none';
-    return;
-  }
+  if(!tempPolys || !tempPolys.length) { document.getElementById('edSummaryGroup').style.display = 'none'; return; }
   
   const f = parseFloat(document.getElementById('units').value);
-  const spVal = parseFloat(document.getElementById('edSp').value) || 60;
-  const sp = spVal / 100;
-  
+  const spVal = parseFloat(document.getElementById('edSp').value) || 40; const sp = spVal / 100;
+  const mult = parseInt(document.getElementById('edMult').value) || 1;
   let totalA = 0, totalP = 0, totalMont = 0, totalRef = 0;
   
   tempPolys.forEach(pl => {
-    const v = pl.vertices.map(pt => ({x: pt.x*f, y: pt.y*f}));
-    const geom = calcGeom(v, pl.closed);
-    totalA += geom.area;
-    totalP += geom.perim;
-    if(geom.area > 0.05) {
-      const b = bbox(v);
-      totalMont += calcLineales(v, b, sp, perfDir);
-      totalRef += calcLineales(v, b, 1.0, refDir); 
-    }
+    const v = pl.vertices.map(pt => ({x: pt.x*f, y: pt.y*f})); const geom = calcGeom(v, pl.closed);
+    totalA += geom.area; totalP += geom.perim;
+    if(geom.area > 0.05) { const b = bbox(v); totalMont += calcLineales(v, b, sp, perfDir); totalRef += calcLineales(v, b, 1.0, refDir); }
   });
   
   const cenefaLen = parseFloat(document.getElementById('edCenefaLen').value) || 0;
   
   document.getElementById('edSummaryText').innerHTML = `
-    <b>Área:</b> ${totalA.toFixed(2)} m² <br>
-    <b>Placas (aprox):</b> ${Math.ceil(totalA / 2.9768)} uds<br>
-    <b>Soleras Perim.:</b> ${totalP.toFixed(2)} ml<br>
-    <b>Montantes:</b> ${totalMont.toFixed(2)} ml<br>
-    <b>Refuerzos:</b> ${totalRef.toFixed(2)} ml<br>
-    <b>Cenefa LED:</b> <span style="color:#E07000; font-weight:bold;">${cenefaLen.toFixed(2)} ml</span>
+    <div class="data-box"><span class="db-lbl">Área (x${mult})</span><span class="db-val">${(totalA * mult).toFixed(2)} m²</span></div>
+    <div class="data-box"><span class="db-lbl">Placas (x${mult})</span><span class="db-val">${Math.ceil((totalA * mult) / 2.9768)} uds</span></div>
+    <div class="data-box"><span class="db-lbl">Montantes (x${mult})</span><span class="db-val">${(totalMont * mult).toFixed(2)} ml</span></div>
+    <div class="data-box"><span class="db-lbl">Cenefa LED (x${mult})</span><span class="db-val-red">${(cenefaLen * mult).toFixed(2)} ml</span></div>
   `;
   document.getElementById('edSummaryGroup').style.display = 'block';
 }
@@ -639,236 +875,171 @@ function saveEnvironment() {
   if(!name) name = "Ambiente " + (projects.find(p=>p.id===activeProjId).envs.length + 1);
 
   const f = parseFloat(document.getElementById('units').value);
-  const spVal = parseFloat(document.getElementById('edSp').value);
-  const sp = spVal / 100;
-  
+  const spVal = parseFloat(document.getElementById('edSp').value) || 40; const sp = spVal / 100;
+  const mult = parseInt(document.getElementById('edMult').value) || 1;
   let totalA = 0, totalP = 0, totalMont = 0, totalRef = 0;
   
   tempPolys.forEach(pl => {
-    const v = pl.vertices.map(pt => ({x: pt.x*f, y: pt.y*f}));
-    const geom = calcGeom(v, pl.closed);
-    totalA += geom.area;
-    totalP += geom.perim;
-    if(geom.area > 0.05) {
-      const b = bbox(v);
-      totalMont += calcLineales(v, b, sp, perfDir);
-      totalRef += calcLineales(v, b, 1.0, refDir); 
-    }
+    const v = pl.vertices.map(pt => ({x: pt.x*f, y: pt.y*f})); const geom = calcGeom(v, pl.closed);
+    totalA += geom.area; totalP += geom.perim;
+    if(geom.area > 0.05) { const b = bbox(v); totalMont += calcLineales(v, b, sp, perfDir); totalRef += calcLineales(v, b, 1.0, refDir); }
   });
   
-  // La cenefa final la tomamos directamente de lo que esté escrito en la caja de texto.
   let cenefaFinal = parseFloat(document.getElementById('edCenefaLen').value) || 0;
-
   const newEnv = {
     id: editingEnvId ? editingEnvId : Date.now(),
-    name: name,
-    area: totalA,
-    perim: totalP,
-    montML: totalMont,
-    refML: totalRef,
-    cenefa: cenefaFinal,
-    cenefaWhere: document.getElementById('edCenefaWhere').value.trim(),
-    sp: spVal,
-    perfDir: perfDir,
-    refDir: refDir,
-    rawPolys: tempPolys,
-    rawCenefaPts: tempCenefaPts
+    created: editingEnvId ? (projects.find(p=>p.id===activeProjId).envs.find(e=>e.id===editingEnvId)||{}).created || Date.now() : Date.now(),
+    name: name, multiplier: mult, area: totalA, perim: totalP, montML: totalMont, refML: totalRef, cenefa: cenefaFinal,
+    lampQty: parseInt(document.getElementById('edLampQty').value) || 0,
+    lampDia: parseFloat(document.getElementById('edLampDia').value) || 92,
+    perfil: perfilTipo, placaEsp: document.getElementById('edPlacaEsp').value, placaTipo: document.getElementById('edPlacaTipo').value,
+    cenefaWhere: document.getElementById('edCenefaWhere').value.trim(), sp: spVal, perfDir: perfDir, refDir: refDir, rawPolys: tempPolys, rawCenefaPts: tempCenefaPts
   };
 
   const p = projects.find(p => p.id === activeProjId);
-  
-  if(editingEnvId) {
-    const idx = p.envs.findIndex(e => e.id === editingEnvId);
-    if(idx !== -1) p.envs[idx] = newEnv;
-  } else {
-    p.envs.push(newEnv);
-  }
-
-  editingEnvId = null;
-  saveDB();
-  navTo('proj');
+  if(editingEnvId) { const idx = p.envs.findIndex(e => e.id === editingEnvId); if(idx !== -1) p.envs[idx] = newEnv; } 
+  else { p.envs.unshift(newEnv); }
+  editingEnvId = null; saveDB(); navTo('proj');
 }
 
-// CANVAS DRAWING 
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+function printEnvironment() {
+  if(!tempPolys.length) return alert('Carga un plano DXF primero.');
+  let name = document.getElementById('edEnvName').value.trim();
+  if(!name) name = "Ambiente " + (projects.find(p=>p.id===activeProjId).envs.length + 1);
+  document.getElementById('printEnvName').textContent = "Plano: " + name;
+  window.print();
+}
+
+// ===== CANVAS DRAWING =====
+const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
 function tx(x){return ox+x*sc;} function ty(y){return canvas.height-(oy+y*sc);}
 function wx(px){return(px-ox)/sc;} function wy(py){return(canvas.height-py-oy)/sc;}
 
 function fitView(){
   if(!tempPolys.length) return;
-  const f = parseFloat(document.getElementById('units').value);
-  let allV = [];
+  const f = parseFloat(document.getElementById('units').value); let allV = [];
   tempPolys.forEach(pl => allV.push(...pl.vertices.map(pt => ({x: pt.x*f, y: pt.y*f}))));
   const b = bbox(allV), pad = 30;
-  sc = Math.min((canvas.width-pad*2)/(b.w||1), (canvas.height-pad*2)/(b.h||1), 800);
-  ox = pad - b.x0*sc; oy = pad - b.y0*sc;
+  sc = Math.min((canvas.width-pad*2)/(b.w||1), (canvas.height-pad*2)/(b.h||1), 800); ox = pad - b.x0*sc; oy = pad - b.y0*sc;
 }
 function resizeCanvas(){ const w = document.getElementById('cwrap'); canvas.width = w.clientWidth; canvas.height = w.clientHeight; renderCanvas(); }
 
 function renderCanvas(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.strokeStyle='#ebebeb'; ctx.lineWidth=1;
+  ctx.strokeStyle='#E0E0E0'; ctx.lineWidth=1;
   for(let x=0;x<canvas.width;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
   for(let y=0;y<canvas.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
   
   const f = parseFloat(document.getElementById('units').value);
-  const sp = parseFloat(document.getElementById('edSp').value) / 100;
+  const sp = (parseFloat(document.getElementById('edSp').value) || 40) / 100;
 
   tempPolys.forEach(pl => {
-    const v = pl.vertices.map(pt => ({x: pt.x*f, y: pt.y*f}));
-    if(!v.length) return;
-    const b = bbox(v);
+    const v = pl.vertices.map(pt => ({x: pt.x*f, y: pt.y*f})); if(!v.length) return; const b = bbox(v);
 
-    ctx.save();
-    ctx.beginPath(); v.forEach((p,j)=> j===0 ? ctx.moveTo(tx(p.x),ty(p.y)) : ctx.lineTo(tx(p.x),ty(p.y)));
-    if(pl.closed) ctx.closePath();
-    ctx.fillStyle = 'rgba(192,0,0,0.1)'; ctx.fill(); ctx.clip();
+    ctx.save(); ctx.beginPath(); v.forEach((p,j)=> j===0 ? ctx.moveTo(tx(p.x),ty(p.y)) : ctx.lineTo(tx(p.x),ty(p.y)));
+    if(pl.closed) ctx.closePath(); ctx.fillStyle = 'rgba(254,0,0,0.05)'; ctx.fill(); ctx.clip();
     
-    // Montantes
-    ctx.strokeStyle='#C0000088'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.strokeStyle='rgba(254,0,0,0.3)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
     if(perfDir==='H'){ for(let y=b.y0; y<=b.y1; y+=sp){ ctx.beginPath();ctx.moveTo(tx(b.x0),ty(y));ctx.lineTo(tx(b.x1),ty(y));ctx.stroke();} }
     else { for(let x=b.x0; x<=b.x1; x+=sp){ ctx.beginPath();ctx.moveTo(tx(x),ty(b.y0));ctx.lineTo(tx(x),ty(b.y1));ctx.stroke();} }
     
-    // Refuerzos
-    ctx.strokeStyle='#E0700088'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]);
+    ctx.strokeStyle='rgba(51,51,51,0.3)'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]);
     if(refDir==='H'){ for(let y=b.y0; y<=b.y1; y+=1.0){ ctx.beginPath();ctx.moveTo(tx(b.x0),ty(y));ctx.lineTo(tx(b.x1),ty(y));ctx.stroke();} }
     else { for(let x=b.x0; x<=b.x1; x+=1.0){ ctx.beginPath();ctx.moveTo(tx(x),ty(b.y0));ctx.lineTo(tx(x),ty(b.y1));ctx.stroke();} }
     ctx.restore();
     
-    // Borde
     ctx.beginPath(); v.forEach((p,j)=> j===0 ? ctx.moveTo(tx(p.x),ty(p.y)) : ctx.lineTo(tx(p.x),ty(p.y)));
-    if(pl.closed) ctx.closePath();
-    ctx.strokeStyle='#C00000'; ctx.lineWidth=2; ctx.stroke();
+    if(pl.closed) ctx.closePath(); ctx.strokeStyle='#333333'; ctx.lineWidth=2; ctx.stroke();
     
     if(toolMode === 'cenefa'){
-      ctx.fillStyle = 'rgba(224,112,0,0.5)';
+      ctx.fillStyle = 'rgba(51,51,51,0.3)';
       v.forEach(pt => { ctx.beginPath(); ctx.arc(tx(pt.x), ty(pt.y), 4, 0, Math.PI*2); ctx.fill(); });
     }
   });
 
   if(tempCenefaPts.length > 0){
-    const allPts = [...tempCenefaPts];
-    if(cursorPt) allPts.push(cursorPt); 
-    
-    ctx.strokeStyle='#E07000'; ctx.lineWidth=3; ctx.setLineDash(cursorPt ? [6,4] : []);
-    ctx.beginPath();
-    allPts.forEach((p,j)=> j===0 ? ctx.moveTo(tx(p.x),ty(p.y)) : ctx.lineTo(tx(p.x),ty(p.y)));
-    ctx.stroke(); ctx.setLineDash([]);
-    
-    tempCenefaPts.forEach(p => {
-      ctx.beginPath(); ctx.arc(tx(p.x), ty(p.y), 5, 0, Math.PI*2);
-      ctx.fillStyle='#E07000'; ctx.fill(); ctx.strokeStyle='white'; ctx.lineWidth=2; ctx.stroke();
+    const allPts = [...tempCenefaPts]; if(cursorPt) allPts.push(cursorPt); 
+    ctx.strokeStyle='#FE0000'; ctx.lineWidth=3; ctx.setLineDash(cursorPt ? [6,4] : []); ctx.beginPath();
+    let isFirst = true;
+    allPts.forEach(p => {
+      if(p === null) { ctx.stroke(); ctx.beginPath(); isFirst = true; } 
+      else { if(isFirst) { ctx.moveTo(tx(p.x), ty(p.y)); isFirst = false; } else { ctx.lineTo(tx(p.x), ty(p.y)); } }
     });
-
+    ctx.stroke(); ctx.setLineDash([]);
+    tempCenefaPts.forEach(p => {
+      if(p !== null) { ctx.beginPath(); ctx.arc(tx(p.x), ty(p.y), 5, 0, Math.PI*2); ctx.fillStyle='#FE0000'; ctx.fill(); ctx.strokeStyle='#FFFFFF'; ctx.lineWidth=2; ctx.stroke(); }
+    });
     if(cursorPt) {
       let len = 0;
-      for(let i=0; i<allPts.length-1; i++) {
-        len += Math.sqrt((allPts[i+1].x-allPts[i].x)**2 + (allPts[i+1].y-allPts[i].y)**2);
-      }
-      ctx.font = 'bold 12px Arial'; ctx.fillStyle = '#E07000'; ctx.textAlign = 'left';
+      for(let i=0; i<allPts.length-1; i++) { if(allPts[i] !== null && allPts[i+1] !== null) { len += Math.sqrt((allPts[i+1].x-allPts[i].x)**2 + (allPts[i+1].y-allPts[i].y)**2); } }
+      ctx.font = '500 14px Exo, sans-serif'; ctx.fillStyle = '#FE0000'; ctx.textAlign = 'left';
       ctx.fillText(len.toFixed(2) + ' ml', tx(cursorPt.x) + 10, ty(cursorPt.y) - 10);
     }
   }
 }
 
-// CANVAS TOOLS
+// ===== CANVAS TOOLS =====
 function updateCanvasStatus() {
+  const cStatus = document.getElementById('cStatus');
   if(toolMode === 'cenefa') {
       let len = 0;
       for(let i=0; i<tempCenefaPts.length-1; i++) {
-        len += Math.sqrt((tempCenefaPts[i+1].x-tempCenefaPts[i].x)**2 + (tempCenefaPts[i+1].y-tempCenefaPts[i].y)**2);
+        if(tempCenefaPts[i] !== null && tempCenefaPts[i+1] !== null) {
+          len += Math.sqrt((tempCenefaPts[i+1].x-tempCenefaPts[i].x)**2 + (tempCenefaPts[i+1].y-tempCenefaPts[i].y)**2);
+        }
       }
-      document.getElementById('cStatus').textContent = `${tempCenefaPts.length} pts — ${len.toFixed(2)} ml`;
-      
-      // Llenar caja e invocar actualización del resumen
-      if(tempCenefaPts.length > 0) {
-        document.getElementById('edCenefaLen').value = len.toFixed(2);
-        updateEditorSummary(); 
-      }
-  } else {
-      document.getElementById('cStatus').textContent = '';
-  }
+      const realPts = tempCenefaPts.filter(p => p !== null).length;
+      if(cStatus) cStatus.textContent = `${realPts} pts — ${len.toFixed(2)} ml`;
+      if(tempCenefaPts.length > 0) { document.getElementById('edCenefaLen').value = len.toFixed(2); updateEditorSummary(); }
+  } else { if(cStatus) cStatus.textContent = ''; }
 }
 
 function setTool(t) {
   toolMode = t;
-  document.getElementById('tPan').style.border = t==='pan' ? '2px solid black' : 'none';
-  document.getElementById('tCenefa').style.border = t==='cenefa' ? '2px solid black' : 'none';
+  document.getElementById('tPan').className = t==='pan' ? 'tool-btn active' : 'tool-btn';
+  document.getElementById('tCenefa').className = t==='cenefa' ? 'tool-btn active' : 'tool-btn';
   
   const isC = (t === 'cenefa');
-  document.getElementById('btnUndo').style.display = isC ? 'inline-block' : 'none';
-  document.getElementById('btnDoneCenefa').style.display = isC ? 'inline-block' : 'none';
-  document.getElementById('btnCancelCenefa').style.display = isC ? 'inline-block' : 'none';
+  document.getElementById('btnUndo').style.display = isC ? 'flex' : 'none';
+  document.getElementById('btnCutCenefa').style.display = isC ? 'flex' : 'none';
   
   canvas.style.cursor = isC ? 'crosshair' : 'grab';
-  if(!isC) cursorPt = null;
-  updateCanvasStatus();
-  renderCanvas();
+  if(!isC) cursorPt = null; updateCanvasStatus(); renderCanvas();
 }
 
-function undoCenefa() { tempCenefaPts.pop(); updateCanvasStatus(); renderCanvas(); }
-function cancelCenefa() { tempCenefaPts = []; setTool('pan'); document.getElementById('edCenefaLen').value=''; updateEditorSummary(); }
-function doneCenefa() {
-  if(tempCenefaPts.length < 2) { alert('Marca al menos 2 puntos para que la cenefa tenga longitud.'); return; }
-  setTool('pan'); 
+function cutCenefa() {
+  if(tempCenefaPts.length > 0 && tempCenefaPts[tempCenefaPts.length-1] !== null) {
+    tempCenefaPts.push(null); cursorPt = null; updateCanvasStatus(); renderCanvas();
+  }
 }
+function undoCenefa() { tempCenefaPts.pop(); updateCanvasStatus(); renderCanvas(); }
 
 function snapPt(cx, cy) {
   let best=null, bd=30; const f=parseFloat(document.getElementById('units').value);
-  tempPolys.forEach(pl => {
-    pl.vertices.forEach(v => {
-      const sx=tx(v.x*f), sy=ty(v.y*f);
-      const d=Math.sqrt((sx-cx)**2+(sy-cy)**2);
-      if(d<bd){ bd=d; best={x:v.x*f, y:v.y*f}; }
-    });
-  });
+  tempPolys.forEach(pl => { pl.vertices.forEach(v => { const sx=tx(v.x*f), sy=ty(v.y*f); const d=Math.sqrt((sx-cx)**2+(sy-cy)**2); if(d<bd){ bd=d; best={x:v.x*f, y:v.y*f}; } }); });
   return best;
 }
 
 canvas.addEventListener('mousedown', e => {
   const r=canvas.getBoundingClientRect(); const cx=e.clientX-r.left, cy=e.clientY-r.top;
-  if(toolMode==='cenefa'){
-    const snap = snapPt(cx,cy);
-    tempCenefaPts.push(snap ? snap : {x:wx(cx), y:wy(cy)});
-    updateCanvasStatus();
-    renderCanvas();
-  } else { pan=true; lpx=e.clientX; lpy=e.clientY; }
+  if(toolMode==='cenefa'){ const snap = snapPt(cx,cy); tempCenefaPts.push(snap ? snap : {x:wx(cx), y:wy(cy)}); updateCanvasStatus(); renderCanvas(); } 
+  else { pan=true; lpx=e.clientX; lpy=e.clientY; }
 });
 canvas.addEventListener('mousemove', e => {
   if(pan){ ox += e.clientX-lpx; oy -= e.clientY-lpy; lpx=e.clientX; lpy=e.clientY; renderCanvas(); }
-  if(toolMode==='cenefa'){
-    const r=canvas.getBoundingClientRect(); const cx=e.clientX-r.left, cy=e.clientY-r.top;
-    const snap = snapPt(cx,cy);
-    cursorPt = snap ? snap : {x:wx(cx), y:wy(cy)};
-    updateCanvasStatus();
-    renderCanvas();
-  }
+  if(toolMode==='cenefa'){ const r=canvas.getBoundingClientRect(); const cx=e.clientX-r.left, cy=e.clientY-r.top; const snap = snapPt(cx,cy); cursorPt = snap ? snap : {x:wx(cx), y:wy(cy)}; updateCanvasStatus(); renderCanvas(); }
 });
 window.addEventListener('mouseup', () => pan=false);
 canvas.addEventListener('wheel', e=>{ e.preventDefault(); const f=e.deltaY<0?1.1:0.9; const r=canvas.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top; ox=mx-(mx-ox)*f; oy=(canvas.height-my)-((canvas.height-my)-oy)*f; sc*=f; renderCanvas(); },{passive:false});
 
-canvas.addEventListener('touchstart',e=>{
-  if(e.touches.length===1 && toolMode==='pan'){ lpx=e.touches[0].clientX; lpy=e.touches[0].clientY; pan=true; }
-},{passive:false});
+canvas.addEventListener('touchstart',e=>{ if(e.touches.length===1 && toolMode==='pan'){ lpx=e.touches[0].clientX; lpy=e.touches[0].clientY; pan=true; } },{passive:false});
 canvas.addEventListener('touchmove',e=>{
   if(pan && e.touches.length===1){ ox+=e.touches[0].clientX-lpx; oy-=e.touches[0].clientY-lpy; lpx=e.touches[0].clientX; lpy=e.touches[0].clientY; renderCanvas(); }
-  if(toolMode==='cenefa' && e.touches.length===1){
-    const r=canvas.getBoundingClientRect(); const cx=e.touches[0].clientX-r.left, cy=e.touches[0].clientY-r.top;
-    const snap = snapPt(cx,cy);
-    cursorPt = snap ? snap : {x:wx(cx), y:wy(cy)};
-    updateCanvasStatus();
-    renderCanvas();
-  }
+  if(toolMode==='cenefa' && e.touches.length===1){ const r=canvas.getBoundingClientRect(); const cx=e.touches[0].clientX-r.left, cy=e.touches[0].clientY-r.top; const snap = snapPt(cx,cy); cursorPt = snap ? snap : {x:wx(cx), y:wy(cy)}; updateCanvasStatus(); renderCanvas(); }
 },{passive:false});
 canvas.addEventListener('touchend',e=>{
   pan=false;
-  if(toolMode==='cenefa' && e.changedTouches.length===1){
-    const r=canvas.getBoundingClientRect(); const cx=e.changedTouches[0].clientX-r.left, cy=e.changedTouches[0].clientY-r.top;
-    const snap = snapPt(cx,cy);
-    tempCenefaPts.push(snap ? snap : {x:wx(cx), y:wy(cy)});
-    updateCanvasStatus(); renderCanvas();
-  }
+  if(toolMode==='cenefa' && e.changedTouches.length===1){ const r=canvas.getBoundingClientRect(); const cx=e.changedTouches[0].clientX-r.left, cy=e.changedTouches[0].clientY-r.top; const snap = snapPt(cx,cy); tempCenefaPts.push(snap ? snap : {x:wx(cx), y:wy(cy)}); updateCanvasStatus(); renderCanvas(); }
 });
 
 // ===== EXPORTACION EXCEL =====
@@ -876,50 +1047,50 @@ function exportExcel(){
   const p = projects.find(p => p.id === activeProjId);
   if(!p.envs.length) return alert('No hay ambientes en el proyecto.');
   
-  const tArea = p.envs.reduce((sum, e) => sum + e.area, 0);
-  const tPerim = p.envs.reduce((sum, e) => sum + e.perim, 0);
-  const tMontML = p.envs.reduce((sum, e) => sum + e.montML, 0);
-  const tRefML = p.envs.reduce((sum, e) => sum + e.refML, 0);
-  const tCenefa = p.envs.reduce((sum, e) => sum + e.cenefa, 0);
-  
+  const M = calcMateriales(p);
+
   const wb = XLSX.utils.book_new();
-  
   const r1 = [
     [`PROYECTO: ${p.name.toUpperCase()}`],
-    [`Fecha de cálculo: ${new Date().toLocaleDateString('es-UY')}`], [],
-    ['Ítem', 'Cantidad', 'Unidad'],
-    ['Placas de Yeso (1.22x2.44)', Math.ceil(tArea / 2.9768), 'Unidades'],
-    ['Soleras Estructura (2.80m)', Math.ceil(tPerim / 2.80), 'Unidades'],
-    ['Montantes Estructura (2.80m)', Math.ceil(tMontML / 2.80), 'Unidades'],
-    ['Velas / Refuerzos (2.80m)', Math.ceil(tRefML / 2.80), 'Unidades'],
-    ['Perfil Terminación Pared', Math.max(0, tPerim - tCenefa).toFixed(2), 'Metros Lineales'],
-    ['Cantonera (Aristas de Cenefa)', tCenefa.toFixed(2), 'Metros Lineales'],
-    ['Tornillos T2 (Fijación Placa)', Math.ceil(tArea*30), 'Unidades'],
-    ['Tornillos T1 (Estructura Metal)', Math.ceil(tArea*15), 'Unidades'],
-    ['Fijaciones a Muro (Taco+Tornillo)', Math.ceil(tPerim*2.5), 'Unidades'],
-    ['Cinta de papel para Juntas', (tArea*1.5).toFixed(1), 'Metros Lineales'],
-    ['Masilla / Enduído (1 capa)', (tArea*0.9).toFixed(1), 'Kilos']
+    [`Fecha de cálculo: ${new Date().toLocaleString('es-UY')}`], [],
+    ['Ítem', 'Medida', 'Unidad Medida', 'Compra', 'Unidad Comercial'],
+    ['Área construida', M.tArea.toFixed(2), 'm²', '', ''],
+    ...Object.entries(M.placas).map(([k, uds]) => [`Placa de Yeso ${k} (1.22x2.44)`, '', '', uds, 'Unidades']),
+    ...Object.entries(M.perfiles).flatMap(([k, v]) => [
+      [`Soleras ${k} (${COM.perfilLen}m)`, v.sol.toFixed(2), 'ml', Math.ceil(v.sol/COM.perfilLen), 'Unidades'],
+      [`Montantes ${k} (${COM.perfilLen}m)`, v.mont.toFixed(2), 'ml', Math.ceil(v.mont/COM.perfilLen), 'Unidades'],
+      [`Velas / Refuerzos ${k} (${COM.perfilLen}m)`, v.ref.toFixed(2), 'ml', Math.ceil(v.ref/COM.perfilLen), 'Unidades']
+    ]),
+    [`Perfil Terminación Pared (${COM.perfilLen}m)`, M.terminacion.toFixed(2), 'ml', Math.ceil(M.terminacion/COM.perfilLen), 'Unidades'],
+    [`Cantonera Metálica Cenefa (${COM.cantoneraLen}m)`, M.cantonera.ml.toFixed(2), 'ml', M.cantonera.uds, 'Unidades'],
+    [`Cinta ${M.cinta} para Juntas (rollo ${M.juntas.rolloLen}ml)`, M.juntas.ml.toFixed(1), 'ml', M.juntas.rollos, 'Rollos'],
+    ['Lámparas / Spots (perforaciones)', M.lamparas.ml.toFixed(1), 'ml', M.lamparas.uds, 'Unidades'],
+    [`Cinta papel Esquinero + Lámparas (rollo ${COM.rolloPapel}ml)`, M.esquina.ml.toFixed(1), 'ml', M.esquina.rollos, 'Rollos'],
+    [`Masilla / Enduído tomado completo (balde ${COM.masillaBalde}kg)`, M.masilla.kg.toFixed(1), 'kg', M.masilla.baldes, 'Baldes'],
+    [`Pintura ${COM.pinturaManos} manos (balde ${COM.pinturaBalde}L)`, `${M.pintura.m2.toFixed(2)} m² | ${M.pintura.litros.toFixed(1)} L`, 'm² / L', M.pintura.baldes, 'Baldes'],
+    ['Tornillos T2 (Fijación Placa)', '', '', M.tornT2, 'Unidades'],
+    ['Tornillos T1 (Estructura Metal)', '', '', M.tornT1, 'Unidades'],
+    ['Fijaciones a Muro (Taco+Tornillo)', '', '', M.fijMuro, 'Unidades']
   ];
   const ws1 = XLSX.utils.aoa_to_sheet(r1);
-  ws1['!cols'] = [{wch:35}, {wch:15}, {wch:20}];
+  ws1['!cols'] = [{wch:48}, {wch:18}, {wch:14}, {wch:10}, {wch:18}];
   XLSX.utils.book_append_sheet(wb, ws1, 'Resumen de Compra');
   
   const r2 = [
     ['DESGLOSE POR AMBIENTE'], [],
-    ['Nombre del Ambiente', 'Área (m²)', 'Placas', 'Soleras (ml)', 'Montantes (ml)', 'Refuerzos (ml)', 'Cenefa LED (ml)', 'Ubicación Cenefa'],
-    ...p.envs.map(e => [
-      e.name, 
-      e.area.toFixed(2), 
-      Math.ceil(e.area / 2.9768),
-      e.perim.toFixed(2),
-      e.montML.toFixed(2),
-      e.refML.toFixed(2),
-      e.cenefa.toFixed(2), 
-      e.cenefaWhere||''
-    ])
+    ['Nombre del Ambiente', 'Cant. (Reps)', 'Área Total (m²)', 'Placas', 'Soleras (ml)', 'Montantes (ml)', 'Refuerzos (ml)', 'Cenefa LED (ml)', 'Ubicación Cenefa'],
+    ...p.envs.map(e => {
+      const mult = e.multiplier || 1;
+      return [
+        e.name, mult,
+        (e.area*mult).toFixed(2), Math.ceil((e.area*mult) / 2.9768),
+        (e.perim*mult).toFixed(2), (e.montML*mult).toFixed(2), (e.refML*mult).toFixed(2),
+        (e.cenefa*mult).toFixed(2), e.cenefaWhere||''
+      ];
+    })
   ];
   const ws2 = XLSX.utils.aoa_to_sheet(r2);
-  ws2['!cols'] = [{wch:25}, {wch:12}, {wch:10}, {wch:15}, {wch:15}, {wch:15}, {wch:15}, {wch:25}];
+  ws2['!cols'] = [{wch:25}, {wch:12}, {wch:15}, {wch:10}, {wch:15}, {wch:15}, {wch:15}, {wch:15}, {wch:25}];
   XLSX.utils.book_append_sheet(wb, ws2, 'Detalle Ambientes');
 
   XLSX.writeFile(wb, `Proyecto_${p.name.replace(/\s+/g,'_')}.xlsx`);
