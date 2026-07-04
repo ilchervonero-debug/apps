@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#318CE7">
+    <title>Gastos Ruta 26 1042</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --azul-francia: #318CE7;
+            --rosado: #FF69B4;
+            --gris-plata: #E5E4E2;
+            --gris-oscuro: #333333;
+            --blanco: #FFFFFF;
+            --verde-balance: #2ecc71;
+            --amarillo: #E6A800;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f5f7;
+            color: var(--gris-oscuro);
+            margin: 0;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: var(--blanco);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--gris-plata);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--gris-oscuro);
+            margin-top: 0;
+        }
+
+        h1 { font-size: 24px; }
+        h2 { font-size: 19px; }
+
+        /* Formulario */
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+            background-color: #fafafa;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--gris-plata);
+        }
+
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: span 2; }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+            width: 100%;
+            background-color: var(--blanco);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input:focus, select:focus { border-color: var(--azul-francia); }
+
+        button[type="submit"] {
+            grid-column: span 2;
+            padding: 14px;
+            min-height: 48px;
+            background-color: var(--gris-oscuro);
+            color: var(--blanco);
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:active { background-color: #555; }
+
+        /* Pestañas de meses */
+        .tabs-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+            flex: 1;
+            scrollbar-width: thin;
+        }
+
+        .tab {
+            flex: 0 0 auto;
+            padding: 10px 16px;
+            min-height: 42px;
+            border: 1px solid var(--gris-plata);
+            background-color: #fafafa;
+            color: var(--gris-oscuro);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background-color: var(--gris-oscuro);
+            color: var(--blanco);
+            border-color: var(--gris-oscuro);
+        }
+
+        .btn-print {
+            flex: 0 0 auto;
+            padding: 10px 14px;
+            min-height: 42px;
+            background-color: var(--azul-francia);
+            color: var(--blanco);
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-print:active { opacity: 0.85; }
+
+        /* Resumen y Gráficos */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #fdfdfd, var(--gris-plata));
+            padding: 14px 10px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.02);
+            border: 1px solid #dcdcdc;
+        }
+
+        .card h3 { margin: 0 0 8px 0; font-size: 14px; }
+        .card p { margin: 0; font-size: 22px; font-weight: bold; word-break: break-word; }
+
+        .card-balance {
+            grid-column: span 2;
+            background: #ffffff;
+            border: 2px solid var(--gris-plata);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .balance-text {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .total-yo { color: var(--azul-francia); }
+        .total-esposa { color: var(--rosado); }
+
+        .chart-container {
+            grid-column: span 2;
+            height: 240px;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Tabla de Gastos */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--gris-plata);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        td:nth-child(2) { white-space: normal; }
+
+        th { background-color: #eeeeee; font-weight: 600; }
+
+        .row-yo { border-left: 5px solid var(--azul-francia); }
+        .row-esposa { border-left: 5px solid var(--rosado); }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+        }
+        .badge-yo { background-color: var(--azul-francia); }
+        .badge-esposa { background-color: var(--rosado); }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #cc0000;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 8px;
+        }
+
+        .print-title { display: none; }
+
+        /* Historial en 2 columnas */
+        .historial-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .historial-col {
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #fafafa;
+            border: 1px solid var(--gris-plata);
+        }
+
+        .col-yo { border-top: 4px solid var(--azul-francia); }
+        .col-esposa { border-top: 4px solid var(--rosado); }
+
+        .col-title {
+            text-align: center;
+            font-size: 15px;
+            margin: 4px 0 12px 0;
+        }
+        .title-yo { color: var(--azul-francia); }
+        .title-esposa { color: var(--rosado); }
+
+        .exp-item {
+            background: var(--blanco);
+            border: 1px solid var(--gris-plata);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .exp-item .exp-date {
+            font-size: 12px;
+            color: #888;
+        }
+        .exp-item .exp-desc {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 3px 0;
+            word-break: break-word;
+        }
+        .exp-item .exp-amount {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .col-yo .exp-amount { color: var(--azul-francia); }
+        .col-esposa .exp-amount { color: var(--rosado); }
+
+        .exp-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+        }
+
+        .voucher-link {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--azul-francia);
+            text-decoration: underline;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 6px 0;
+        }
+        .col-esposa .voucher-link { color: var(--rosado); }
+
+        .empty-col {
+            text-align: center;
+            color: #bbb;
+            font-size: 13px;
+            padding: 15px 0;
+        }
+
+        /* Voucher */
+        input[type="file"] { padding: 9px; font-size: 14px; }
+        .voucher-row { display: flex; gap: 8px; align-items: stretch; }
+        .voucher-row input[type="file"] { flex: 1; }
+        .btn-camera {
+            flex: 0 0 auto;
+            width: 52px;
+            min-height: 44px;
+            background-color: var(--azul-francia);
+            border: none;
+            border-radius: 6px;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        .btn-camera:active { opacity: 0.85; }
+        .voucher-status { font-size: 12px; color: #777; margin-top: 4px; }
+
+        .voucher-thumb {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--gris-plata);
+            cursor: pointer;
+            display: block;
+        }
+        .no-voucher { color: #bbb; font-size: 12px; }
+
+        /* Modal para ver el voucher */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 15px;
+        }
+        .modal.open { display: flex; }
+        .modal img {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 8px;
+        }
+        .modal-close {
+            margin-top: 12px;
+            padding: 10px 24px;
+            background: var(--blanco);
+            border: none;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Móvil */
+        @media (max-width: 600px) {
+            body { padding: 8px; }
+            .container { padding: 14px 12px; }
+            h1 { font-size: 21px; }
+            form { grid-template-columns: 1fr; gap: 10px; padding: 14px 12px; }
+            .form-group.full-width, button[type="submit"] { grid-column: span 1; }
+            .dashboard { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .card p { font-size: 18px; }
+            .card-balance, .chart-container { grid-column: span 2; }
+            .balance-text { font-size: 18px; }
+            .chart-container { height: 200px; }
+            th, td { padding: 9px 6px; font-size: 13px; }
+        }
+
+        /* Impresión PDF */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { border: none; box-shadow: none; max-width: 100%; padding: 0; }
+            form, .tabs-wrapper, .btn-delete, h2.form-title { display: none !important; }
+            .btn-delete { display: none !important; }
+            .historial-grid { grid-template-columns: 1fr 1fr; }
+            .exp-item { page-break-inside: avoid; }
+            .voucher-link { text-decoration: none; }
+            .modal { display: none !important; }
+            .print-title {
+                display: block;
+                text-align: center;
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 15px;
+                color: #333;
+            }
+            .chart-container { height: 220px; page-break-inside: avoid; }
+            .card { background: white; }
+            tr { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gastos Ruta 26 1042</h1>
+    <p class="print-title" id="print-title"></p>
+
+    <form id="expense-form">
+        <div class="form-group">
+            <label for="date">Día</label>
+            <input type="date" id="date" required>
+        </div>
+        <div class="form-group">
+            <label for="amount">Gasto ($)</label>
+            <input type="number" id="amount" step="0.01" inputmode="decimal" placeholder="Ej: 1500" required>
+        </div>
+        <div class="form-group full-width">
+            <label for="description">¿A qué corresponde?</label>
+            <input type="text" id="description" placeholder="Ej: Supermercado, Luz, etc." required>
+        </div>
+        <div class="form-group full-width">
+            <label for="responsible">¿Quién lo gasta?</label>
+            <select id="responsible" required>
+                <option value="Yo">Gerardo</option>
+                <option value="Esposa">Ana Gracia</option>
+            </select>
+        </div>
+        <div class="form-group full-width">
+            <label for="voucher">Foto del voucher (opcional)</label>
+            <div class="voucher-row">
+                <input type="file" id="voucher" accept="image/*">
+                <button type="button" class="btn-camera" onclick="document.getElementById('voucher-camera').click()" title="Tomar foto">📸</button>
+            </div>
+            <input type="file" id="voucher-camera" accept="image/*" capture="environment" style="display:none;">
+            <span id="voucher-status" class="voucher-status"></span>
+        </div>
+        <button type="submit">Agregar Gasto</button>
+    </form>
+
+    <div class="tabs-wrapper">
+        <div class="tabs" id="month-tabs"></div>
+        <button class="btn-print" onclick="printMonth()">🖨 PDF</button>
+    </div>
+
+    <h2>Resumen de Gastos</h2>
+    <div class="dashboard">
+        <div class="card">
+            <h3>Gerardo</h3>
+            <p id="sum-yo" class="total-yo">$0.00</p>
+        </div>
+        <div class="card">
+            <h3>Ana Gracia</h3>
+            <p id="sum-esposa" class="total-esposa">$0.00</p>
+        </div>
+
+        <div class="card card-balance" id="balance-card">
+            <h3>Balance de Cuentas</h3>
+            <p id="balance-result" class="balance-text">Diferencia: $0.00</p>
+        </div>
+
+        <div class="card" style="grid-column: span 2;">
+            <h3 id="total-title">Total Combinado</h3>
+            <p id="sum-total" style="color: var(--amarillo);">$0.00</p>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="expenseChart"></canvas>
+        </div>
+    </div>
+
+    <h2>Historial</h2>
+    <div class="historial-grid">
+        <div class="historial-col col-yo">
+            <h3 class="col-title title-yo">Gerardo</h3>
+            <div id="list-yo"></div>
+        </div>
+        <div class="historial-col col-esposa">
+            <h3 class="col-title title-esposa">Ana Gracia</h3>
+            <div id="list-esposa"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="voucher-modal" onclick="closeVoucher()">
+    <img id="voucher-modal-img" src="" alt="Voucher">
+    <button class="modal-close" onclick="closeVoucher()">Cerrar</button>
+</div>
+
+<script>
+    // Valores internos 'Yo'/'Esposa' se mantienen por compatibilidad con datos previos
+    let expenses = JSON.parse(localStorage.getItem('home_expenses')) || [];
+    let myChart = null;
+    let currentMonth = 'todos'; // 'todos' o 'AAAA-MM'
+
+    const NOMBRE_1 = 'Gerardo';
+    const NOMBRE_2 = 'Ana Gracia';
+    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+    const expenseForm = document.getElementById('expense-form');
+
+
+    document.getElementById('date').valueAsDate = new Date();
+
+    function monthKey(dateString) {
+        return dateString.slice(0, 7); // AAAA-MM
+    }
+
+    function monthLabel(key) {
+        const [y, m] = key.split('-');
+        return `${MESES[parseInt(m,10)-1]} ${y}`;
+    }
+
+    function getFilteredExpenses() {
+        if (currentMonth === 'todos') return expenses;
+        return expenses.filter(exp => monthKey(exp.date) === currentMonth);
+    }
+
+    function updateApp() {
+        localStorage.setItem('home_expenses', JSON.stringify(expenses));
+        renderTabs();
+        renderExpenses();
+        calculateTotalsAndBalance();
+        renderChart();
+        updatePrintTitle();
+    }
+
+    // Pestañas de meses (generadas según los datos, más recientes primero)
+    function renderTabs() {
+        const tabsEl = document.getElementById('month-tabs');
+        const months = [...new Set(expenses.map(exp => monthKey(exp.date)))].sort().reverse();
+
+        // Si el mes activo ya no existe, volver a 'todos'
+        if (currentMonth !== 'todos' && !months.includes(currentMonth)) {
+            currentMonth = 'todos';
+        }
+
+        tabsEl.innerHTML = '';
+
+        const allTab = document.createElement('button');
+        allTab.className = 'tab' + (currentMonth === 'todos' ? ' active' : '');
+        allTab.innerText = 'Todos';
+        allTab.onclick = () => { currentMonth = 'todos'; updateApp(); };
+        tabsEl.appendChild(allTab);
+
+        months.forEach(key => {
+            const tab = document.createElement('button');
+            tab.className = 'tab' + (currentMonth === key ? ' active' : '');
+            tab.innerText = monthLabel(key);
+            tab.onclick = () => { currentMonth = key; updateApp(); };
+            tabsEl.appendChild(tab);
+        });
+    }
+
+    function updatePrintTitle() {
+        const label = currentMonth === 'todos' ? 'Todos los gastos' : monthLabel(currentMonth);
+        document.getElementById('print-title').innerText = `Reporte: ${label} — generado el ${new Date().toLocaleDateString('es-UY')}`;
+        // Título dinámico del total combinado según el mes activo
+        const totalLabel = currentMonth === 'todos' ? 'Todos los meses' : monthLabel(currentMonth);
+        document.getElementById('total-title').innerText = `Total Combinado — ${totalLabel}`;
+    }
+
+    // Imprimir PDF del mes seleccionado (usar "Guardar como PDF" en el diálogo)
+    function printMonth() {
+        window.print();
+    }
+
+    // Comprime la imagen para no saturar localStorage (~5MB de límite)
+    function compressImage(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX = 900;
+                    let { width, height } = img;
+                    if (width > MAX || height > MAX) {
+                        const ratio = Math.min(MAX / width, MAX / height);
+                        width = Math.round(width * ratio);
+                        height = Math.round(height * ratio);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+                img.onerror = () => resolve(null);
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // La foto puede venir del selector de archivos o de la cámara
+    let voucherFileSelected = null;
+
+    function setVoucherFile(file, origen) {
+        voucherFileSelected = file || null;
+        document.getElementById('voucher-status').innerText = file ? `${origen} ${file.name || 'foto capturada'}` : '';
+    }
+
+    document.getElementById('voucher').addEventListener('change', (e) => {
+        setVoucherFile(e.target.files[0], '📎');
+    });
+
+    document.getElementById('voucher-camera').addEventListener('change', (e) => {
+        setVoucherFile(e.target.files[0], '📸');
+    });
+
+    expenseForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const date = document.getElementById('date').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+        const description = document.getElementById('description').value;
+        const responsible = document.getElementById('responsible').value;
+
+        let photo = null;
+        if (voucherFileSelected) {
+            photo = await compressImage(voucherFileSelected);
+        }
+
+        expenses.push({ id: Date.now(), date, amount, description, responsible, photo });
+
+        try {
+            updateApp();
+        } catch (err) {
+            // Si localStorage se llenó, guardar el gasto sin la foto
+            if (photo) {
+                expenses[expenses.length - 1].photo = null;
+                updateApp();
+                alert('Espacio de almacenamiento lleno: el gasto se guardó sin la foto.');
+            }
+        }
+
+        document.getElementById('amount').value = '';
+        document.getElementById('description').value = '';
+        document.getElementById('voucher').value = '';
+        document.getElementById('voucher-camera').value = '';
+        voucherFileSelected = null;
+        document.getElementById('voucher-status').innerText = '';
+        document.getElementById('date').valueAsDate = new Date();
+    });
+
+    function openVoucher(id) {
+        const exp = expenses.find(e => e.id === id);
+        if (!exp || !exp.photo) return;
+        document.getElementById('voucher-modal-img').src = exp.photo;
+        document.getElementById('voucher-modal').classList.add('open');
+    }
+
+    function closeVoucher() {
+        document.getElementById('voucher-modal').classList.remove('open');
+    }
+
+    function deleteExpense(id) {
+        expenses = expenses.filter(exp => exp.id !== id);
+        updateApp();
+    }
+
+    function formatDate(dateString) {
+        const parts = dateString.split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return dateString;
+    }
+
+    function renderExpenses() {
+        const listYo = document.getElementById('list-yo');
+        const listEsposa = document.getElementById('list-esposa');
+        listYo.innerHTML = '';
+        listEsposa.innerHTML = '';
+
+        const sortedExpenses = [...getFilteredExpenses()].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        sortedExpenses.forEach(exp => {
+            const item = document.createElement('div');
+            item.className = 'exp-item';
+
+            const voucherBtn = exp.photo
+                ? `<button class="voucher-link" onclick="openVoucher(${exp.id})">📷 Ver voucher</button>`
+                : `<span class="no-voucher">Sin voucher</span>`;
+
+            item.innerHTML = `
+                <div class="exp-date">${formatDate(exp.date)}</div>
+                <div class="exp-desc">${exp.description}</div>
+                <div class="exp-amount">$${exp.amount.toFixed(2)}</div>
+                <div class="exp-actions">
+                    ${voucherBtn}
+                    <button class="btn-delete" onclick="deleteExpense(${exp.id})">🗑️</button>
+                </div>
+            `;
+
+            (exp.responsible === 'Yo' ? listYo : listEsposa).appendChild(item);
+        });
+
+        if (!listYo.children.length) listYo.innerHTML = '<div class="empty-col">Sin gastos</div>';
+        if (!listEsposa.children.length) listEsposa.innerHTML = '<div class="empty-col">Sin gastos</div>';
+    }
+
+    function getTotals() {
+        let totalYo = 0, totalEsposa = 0;
+        getFilteredExpenses().forEach(exp => {
+            if (exp.responsible === 'Yo') totalYo += exp.amount;
+            else totalEsposa += exp.amount;
+        });
+        return { totalYo, totalEsposa };
+    }
+
+    function calculateTotalsAndBalance() {
+        const { totalYo, totalEsposa } = getTotals();
+        const totalGeneral = totalYo + totalEsposa;
+
+        document.getElementById('sum-yo').innerText = `$${totalYo.toFixed(2)}`;
+        document.getElementById('sum-esposa').innerText = `$${totalEsposa.toFixed(2)}`;
+        document.getElementById('sum-total').innerText = `$${totalGeneral.toFixed(2)}`;
+
+        const balanceResultEl = document.getElementById('balance-result');
+        const balanceCardEl = document.getElementById('balance-card');
+
+        if (totalYo > totalEsposa) {
+            const diferencia = totalYo - totalEsposa;
+            balanceResultEl.innerText = `${NOMBRE_1} tiene $${diferencia.toFixed(2)} a favor`;
+            balanceResultEl.style.color = 'var(--azul-francia)';
+            balanceCardEl.style.borderColor = 'var(--azul-francia)';
+        } else if (totalEsposa > totalYo) {
+            const diferencia = totalEsposa - totalYo;
+            balanceResultEl.innerText = `${NOMBRE_2} tiene $${diferencia.toFixed(2)} a favor`;
+            balanceResultEl.style.color = 'var(--rosado)';
+            balanceCardEl.style.borderColor = 'var(--rosado)';
+        } else {
+            balanceResultEl.innerText = 'Diferencia: $0.00';
+            balanceResultEl.style.color = 'var(--verde-balance)';
+            balanceCardEl.style.borderColor = 'var(--gris-plata)';
+        }
+    }
+
+    function renderChart() {
+        const { totalYo, totalEsposa } = getTotals();
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+
+        if (myChart) myChart.destroy();
+        if (totalYo === 0 && totalEsposa === 0) return;
+
+        myChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: [NOMBRE_1, NOMBRE_2],
+                datasets: [{
+                    data: [totalYo, totalEsposa],
+                    backgroundColor: ['#318CE7', '#FF69B4'],
+                    borderWidth: 1,
+                    borderColor: '#FFFFFF'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    // Arrancar en el mes que corre (si no hay gastos de este mes, muestra Todos)
+    const hoyKey = new Date().toISOString().slice(0, 7);
+    if (expenses.some(exp => monthKey(exp.date) === hoyKey)) {
+        currentMonth = hoyKey;
+    }
+
+    updateApp();
+</script>
+
+</body>
+</html>
