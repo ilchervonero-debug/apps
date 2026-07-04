@@ -356,7 +356,7 @@
         .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 0; }
         .modal-header { padding: 14px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { font-size: 20px; font-weight: 600; }
-        .modal-header h2 span { color: var(--red); font-weight: 300; }
+        .modal-header h2 span { color: var(--red); font-weight: 600; }
         .btn-cerrar {
             width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
             background: var(--surface); color: var(--ink-2); cursor: pointer;
@@ -816,7 +816,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 db.enablePersistence().catch(() => {});
 
-const APP_VERSION = 'v2.9';
+const APP_VERSION = 'v2.10';
 
 // ===== ESTADO =====
 let currentUser = null;
