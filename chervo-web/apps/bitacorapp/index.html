@@ -54,7 +54,7 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 2000; padding: 40px 20px;
         }
-        .login-logo { font-size: 2.4rem; font-weight: 900; letter-spacing: -2px; margin-bottom: 8px; }
+        .login-logo { font-size: 2.9rem; font-weight: 700; letter-spacing: -2px; margin-bottom: 8px; }
         .login-logo .bita { color: var(--red); }
         .login-logo .app-word { color: var(--ink-2); }
         .login-sub { font-size: 0.85rem; color: var(--ink-3); margin-bottom: 52px; font-weight: 500; text-align: center; }
@@ -76,9 +76,9 @@
             background: var(--surface); position: sticky; top: 0; z-index: 100;
             backdrop-filter: blur(10px);
         }
-        .header h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -1px; }
+        .header h1 { font-size: 1.9rem; font-weight: 700; letter-spacing: -1px; }
         .header h1 .bita { color: var(--red); }
-        .header h1 .app-word { color: var(--ink-2); font-weight: 800; }
+        .header h1 .app-word { color: var(--ink-2); font-weight: 700; }
 
         /* ===== ACCOUNT BUTTON ===== */
         .btn-cuenta {
@@ -140,12 +140,12 @@
         .card-titulo { font-size: 16px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-meta-row { display: flex; gap: 8px; margin-top: 4px; font-size: 14px; color: var(--ink-2); font-weight: 400; }
         .card-del {
-            position: absolute; top: 7px; right: 7px; width: 26px; height: 26px;
-            border-radius: 50%; border: 2px solid white; background: var(--red);
-            color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            position: absolute; top: 2px; right: 2px; width: 44px; height: 44px;
+            border: none; background: transparent; color: var(--red);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
             opacity: 0; transition: opacity .2s; z-index: 10;
         }
-        .card-del svg { width: 11px; height: 11px; }
+        .card-del svg { width: 26px; height: 26px; stroke-width: 1.8; filter: drop-shadow(0 0 3px white) drop-shadow(0 0 6px rgba(255,255,255,.9)); }
         @keyframes wiggle {
             0%,100% { transform: rotate(0deg) scale(1); }
             25% { transform: rotate(-1.8deg) scale(1.01); }
@@ -155,12 +155,12 @@
         .edit-mode .proyecto-card .card-del { opacity: 1; }
         .edit-mode .proyecto-card:hover { transform: none; box-shadow: none; }
         .card-move {
-            position: absolute; top: 7px; left: 7px; width: 26px; height: 26px;
-            border-radius: 50%; border: 2px solid white; background: var(--ink-2);
-            color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            position: absolute; top: 2px; left: 2px; width: 44px; height: 44px;
+            border: none; background: transparent; color: var(--ink);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
             opacity: 0; transition: opacity .2s; z-index: 10;
         }
-        .card-move svg { width: 12px; height: 12px; }
+        .card-move svg { width: 26px; height: 26px; stroke-width: 1.8; filter: drop-shadow(0 0 3px white) drop-shadow(0 0 6px rgba(255,255,255,.9)); }
         .edit-mode .proyecto-card .card-move { opacity: 1; }
 
         /* ===== BUSQUEDA ===== */
@@ -248,12 +248,13 @@
             border-bottom: 1px solid var(--border);
         }
         .btn-volver {
-            width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border);
-            background: var(--surface); color: var(--ink);
+            width: 44px; height: 44px; border: none; background: transparent; color: var(--ink);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: all .2s;
+            margin-left: -10px; transition: color .2s;
         }
-        .btn-volver:hover { background: var(--red); color: white; border-color: var(--red); }
+        .btn-volver svg { width: 28px; height: 28px; }
+        .btn-volver:hover { color: var(--red); }
+        .btn-volver:active { color: var(--red); }
         .proyecto-header-info { flex: 1; min-width: 0; }
         .proyecto-header-info h2 { font-size: 1.2rem; font-weight: 800; }
         .proyecto-header-info .meta { font-size: 0.72rem; color: var(--ink-3); margin-top: 2px; }
@@ -432,7 +433,7 @@
 
         @media (max-width: 600px) {
             .proyectos-grid { grid-template-columns: repeat(2, 1fr); }
-            .header h1 { font-size: 1.25rem; }
+            .header h1 { font-size: 1.6rem; }
         }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -521,6 +522,25 @@
         <h3>Sin proyectos</h3>
         <p>Tocá + para empezar</p>
     </div>
+</div>
+
+<!-- PAGE: VISTA TRABAJO -->
+<div class="page" id="page-trabajo">
+    <div style="height: 20px;"></div>
+    <div class="proyecto-header-bar">
+        <button class="btn-volver" onclick="volverDashboard()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="proyecto-header-info">
+            <h2 id="vt-nombre">—</h2>
+            <div class="meta" id="vt-meta">—</div>
+        </div>
+        <button class="btn-editar-nombre" id="vt-editar" onclick="abrirModalTrabajo(trabajoActual)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editar
+        </button>
+    </div>
+    <div id="trabajo-grid"></div>
 </div>
 
 <!-- PAGE: VISTA PROYECTO -->
@@ -796,7 +816,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 db.enablePersistence().catch(() => {});
 
-const APP_VERSION = 'v2.3';
+const APP_VERSION = 'v2.6';
 
 // ===== ESTADO =====
 let currentUser = null;
@@ -805,6 +825,7 @@ let trabajos = [];
 let proyectoIdx = null;
 let busqueda = '';
 let moverIdx = null;
+let trabajoActual = null; // null=dashboard, ''=General, 'tXXX'=trabajo
 let trabajoEditId = null;
 let bloqueEditIdx = null;
 let notaFotos = [];
@@ -989,7 +1010,7 @@ const SVG_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const SVG_PDF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>';
 
 // ===== DASHBOARD =====
-const SVG_MOVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>';
+const SVG_MOVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
 
 function cardHtml(p, i, k) {
     const foto = (p.bloques||[]).find(b => (b.fotos||[]).length > 0);
@@ -1009,6 +1030,24 @@ function cardHtml(p, i, k) {
     </div>`;
 }
 
+function idsTrabajos() { return trabajos.map(t => t.id); }
+function proyectosDe(tid) {
+    const ids = idsTrabajos();
+    return proyectos.map((p, i) => ({ p, i })).filter(x =>
+        tid === '' ? (!x.p.trabajo || !ids.includes(x.p.trabajo)) : x.p.trabajo === tid
+    );
+}
+
+function trabajoCardHtml(t, cant, k) {
+    return `<div class="proyecto-card trabajo-card" data-tid="${t.id}" style="animation-delay:${k*0.04}s">
+        <div class="card-icon-wrap">${SVG_FOLDER}</div>
+        <div class="card-body">
+            <div class="card-titulo">${esc(t.nombre)}</div>
+            <div class="card-meta-row"><span>${cant} proyecto${cant!==1?'s':''}</span></div>
+        </div>
+    </div>`;
+}
+
 function renderDashboard() {
     editMode = false;
     const cont = document.getElementById('dashboard-secciones');
@@ -1018,44 +1057,45 @@ function renderDashboard() {
     empty.style.display = 'none';
 
     const q = busqueda.trim().toLowerCase();
-    const coincide = p => {
-        if (!q) return true;
-        if ((p.nombre||'').toLowerCase().includes(q)) return true;
-        return (p.bloques||[]).some(b => (b.texto||'').toLowerCase().includes(q));
-    };
-    const visibles = proyectos.map((p, i) => ({ p, i })).filter(x => coincide(x.p));
-
     let html = '';
     if (q) {
+        const coincide = p => (p.nombre||'').toLowerCase().includes(q) || (p.bloques||[]).some(b => (b.texto||'').toLowerCase().includes(q));
+        const visibles = proyectos.map((p, i) => ({ p, i })).filter(x => coincide(x.p));
         html = visibles.length
             ? `<div class="proyectos-grid">${visibles.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>`
             : `<div class="empty-state" style="display:block;padding:50px 20px;"><h3>Sin resultados</h3><p>Probá con otras palabras</p></div>`;
-    } else if (trabajos.length === 0) {
-        html = `<div class="proyectos-grid">${visibles.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>`;
-    } else {
-        const idsTrabajos = trabajos.map(t => t.id);
-        trabajos.forEach(t => {
-            const items = visibles.filter(x => x.p.trabajo === t.id);
-            html += `<div class="trabajo-seccion">
-                <div class="trabajo-header">
-                    <h3>${esc(t.nombre)}</h3>
-                    <span class="t-count">${items.length}</span>
-                    <button class="btn-trabajo-menu" onclick="abrirModalTrabajo('${t.id}')" title="Renombrar o eliminar trabajo">${SVG_EDIT}</button>
-                </div>
-                ${items.length ? `<div class="proyectos-grid">${items.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>` : `<p class="trabajo-vacio">Sin proyectos todavía</p>`}
-            </div>`;
-        });
-        const sueltos = visibles.filter(x => !x.p.trabajo || !idsTrabajos.includes(x.p.trabajo));
-        if (sueltos.length) {
-            html += `<div class="trabajo-seccion">
-                <div class="trabajo-header"><h3>General</h3><span class="t-count">${sueltos.length}</span></div>
-                <div class="proyectos-grid">${sueltos.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>
-            </div>`;
-        }
+        cont.innerHTML = html;
+        attachCardListeners(cont);
+        return;
     }
+    if (trabajos.length === 0) {
+        // sin trabajos creados: vista plana clásica, nada cambia para el usuario
+        const visibles = proyectos.map((p, i) => ({ p, i }));
+        cont.innerHTML = `<div class="proyectos-grid">${visibles.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>`;
+        attachCardListeners(cont);
+        return;
+    }
+    // carpetas anidadas: el dashboard muestra solo los trabajos
+    html = '<div class="proyectos-grid">';
+    trabajos.forEach((t, k) => { html += trabajoCardHtml(t, proyectosDe(t.id).length, k); });
+    const sueltos = proyectosDe('');
+    if (sueltos.length) html += trabajoCardHtml({ id: '', nombre: 'General' }, sueltos.length, trabajos.length);
+    html += '</div>';
     cont.innerHTML = html;
 
-    cont.querySelectorAll('.proyecto-card').forEach(card => {
+    cont.querySelectorAll('.trabajo-card').forEach(card => {
+        const tid = card.dataset.tid;
+        card.addEventListener('click', () => abrirTrabajo(tid));
+        if (tid) {
+            card.addEventListener('touchstart', () => { lpTimer = setTimeout(() => abrirModalTrabajo(tid), 500); }, {passive:true});
+            card.addEventListener('touchend', () => clearTimeout(lpTimer), {passive:true});
+            card.addEventListener('touchmove', () => clearTimeout(lpTimer), {passive:true});
+        }
+    });
+}
+
+function attachCardListeners(cont) {
+    cont.querySelectorAll('.proyecto-card:not(.trabajo-card)').forEach(card => {
         const i = parseInt(card.dataset.idx);
         card.addEventListener('click', () => { if (editMode) { exitEditMode(); return; } abrirProyecto(i); });
         card.addEventListener('touchstart', () => { lpTimer = setTimeout(() => enterEditMode(), 500); }, {passive:true});
@@ -1064,8 +1104,43 @@ function renderDashboard() {
     });
 }
 
-function enterEditMode() { editMode = true; document.getElementById('dashboard-secciones').classList.add('edit-mode'); }
-function exitEditMode() { editMode = false; document.getElementById('dashboard-secciones').classList.remove('edit-mode'); }
+function abrirTrabajo(tid) {
+    trabajoActual = tid;
+    const t = tid ? trabajos.find(x => x.id === tid) : null;
+    document.getElementById('vt-nombre').textContent = t ? t.nombre : 'General';
+    document.getElementById('vt-editar').style.display = t ? '' : 'none';
+    renderTrabajo();
+    document.getElementById('page-dashboard').classList.remove('active');
+    document.getElementById('page-trabajo').classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+function renderTrabajo() {
+    if (trabajoActual === null) return;
+    editMode = false;
+    const grid = document.getElementById('trabajo-grid');
+    grid.classList.remove('edit-mode');
+    const items = proyectosDe(trabajoActual);
+    document.getElementById('vt-meta').textContent = items.length + ' proyecto' + (items.length !== 1 ? 's' : '');
+    grid.innerHTML = items.length
+        ? `<div class="proyectos-grid">${items.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>`
+        : `<p class="trabajo-vacio" style="padding:30px 4px;">Sin proyectos todavía. Tocá + para crear el primero.</p>`;
+    attachCardListeners(grid);
+}
+
+function volverDashboard() {
+    trabajoActual = null;
+    document.getElementById('page-trabajo').classList.remove('active');
+    document.getElementById('page-dashboard').classList.add('active');
+    renderDashboard();
+}
+
+function renderVistaActual() {
+    if (trabajoActual !== null) renderTrabajo(); else renderDashboard();
+}
+
+function enterEditMode() { editMode = true; document.getElementById('dashboard-secciones').classList.add('edit-mode'); document.getElementById('trabajo-grid').classList.add('edit-mode'); }
+function exitEditMode() { editMode = false; document.getElementById('dashboard-secciones').classList.remove('edit-mode'); document.getElementById('trabajo-grid').classList.remove('edit-mode'); }
 
 // ===== BUSQUEDA =====
 function onBuscar(v) {
@@ -1114,7 +1189,11 @@ async function guardarTrabajo() {
     if (document.getElementById('modal-nuevo-proyecto').classList.contains('active')) {
         poblarSelectTrabajos(selNuevo, idNuevo, true);
     }
-    renderDashboard();
+    if (trabajoActual && trabajoActual === trabajoEditId) {
+        const t = trabajos.find(x => x.id === trabajoActual);
+        if (t) document.getElementById('vt-nombre').textContent = t.nombre;
+    }
+    renderVistaActual();
     toast(trabajoEditId ? 'Trabajo actualizado' : 'Trabajo creado');
     trabajoEditId = null;
     await guardarTrabajos();
@@ -1127,7 +1206,7 @@ function eliminarTrabajo() {
     confirmar('Eliminar trabajo', 'Se elimina solo la agrupación: los proyectos NO se borran, pasan a General.', async () => {
         trabajos = trabajos.filter(t => t.id !== id);
         trabajoEditId = null;
-        renderDashboard();
+        if (trabajoActual === id) { volverDashboard(); } else { renderVistaActual(); }
         toast('Trabajo eliminado — proyectos intactos');
         await guardarTrabajos();
     });
@@ -1146,7 +1225,7 @@ async function confirmarMover() {
     p.trabajo = document.getElementById('mover-trabajo').value || '';
     cerrarModal('modal-mover');
     moverIdx = null;
-    renderDashboard();
+    renderVistaActual();
     toast('Proyecto movido');
     await guardarProyecto(p);
 }
@@ -1185,11 +1264,13 @@ function usoAlmacenamiento() {
 
 // ===== FAB =====
 function onFab() {
-    if (proyectoIdx === null) {
+    if (proyectoIdx !== null) {
+        abrirNota(null);
+    } else if (trabajoActual !== null) {
+        abrirModalNuevoProyecto();
+    } else {
         const abierto = document.getElementById('fab-menu').classList.contains('abierto');
         abierto ? cerrarFabMenu() : abrirFabMenu();
-    } else {
-        abrirNota(null);
     }
 }
 
@@ -1207,7 +1288,7 @@ function cerrarFabMenu() {
 
 function abrirModalNuevoProyecto() {
     document.getElementById('nuevo-nombre').value = '';
-    poblarSelectTrabajos(document.getElementById('nuevo-trabajo'), '', false);
+    poblarSelectTrabajos(document.getElementById('nuevo-trabajo'), trabajoActual || '', false);
     abrirModal('modal-nuevo-proyecto');
     setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
 }
@@ -1220,7 +1301,7 @@ async function crearProyecto() {
     const p = { id: Date.now(), nombre, fechaCreacion: new Date().toISOString(), bloques: [], trabajo: (selT && selT !== '__new') ? selT : '' };
     proyectos.unshift(p);
     cerrarModal('modal-nuevo-proyecto');
-    renderDashboard();
+    renderVistaActual();
     abrirProyecto(0);
     toast('Proyecto creado');
     await guardarProyecto(p);
@@ -1234,22 +1315,28 @@ function abrirProyecto(i) {
     document.getElementById('vp-fecha').textContent = 'Creado ' + fechaCorta(p.fechaCreacion);
     renderBloques();
     document.getElementById('page-dashboard').classList.remove('active');
+    document.getElementById('page-trabajo').classList.remove('active');
     document.getElementById('page-proyecto').classList.add('active');
     window.scrollTo(0,0);
 }
 
 function irDashboard() {
     document.getElementById('page-proyecto').classList.remove('active');
-    document.getElementById('page-dashboard').classList.add('active');
     proyectoIdx = null;
-    renderDashboard();
+    if (trabajoActual !== null) {
+        document.getElementById('page-trabajo').classList.add('active');
+        renderTrabajo();
+    } else {
+        document.getElementById('page-dashboard').classList.add('active');
+        renderDashboard();
+    }
 }
 
 function eliminarProyecto(i) {
     confirmar('Eliminar proyecto', '¿Eliminás este proyecto y todo su contenido?', async () => {
         const p = proyectos[i];
         proyectos.splice(i, 1);
-        renderDashboard();
+        renderVistaActual();
         toast('Proyecto eliminado');
         await borrarProyectoFS(p);
     });
