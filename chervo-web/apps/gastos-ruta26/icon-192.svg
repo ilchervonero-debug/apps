@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect x="4" y="4" width="184" height="184" rx="44" fill="#318CE7"/>
+  <text x="96" y="128" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" font-size="92" font-weight="700" fill="#FFFFFF" text-anchor="middle">G2</text>
+  <rect x="4" y="4" width="184" height="184" rx="44" fill="none" stroke="#FF69B4" stroke-width="6"/>
+</svg>

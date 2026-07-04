@@ -1,0 +1,19 @@
+{
+  "name": "Gastos Ruta 26 1042",
+  "short_name": "Gastos G2",
+  "description": "Gastos compartidos de Gerardo y Ana Gracia",
+  "start_url": "/apps/gastos-ruta26/",
+  "scope": "/apps/gastos-ruta26/",
+  "display": "standalone",
+  "background_color": "#f4f5f7",
+  "theme_color": "#318CE7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/apps/gastos-ruta26/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
