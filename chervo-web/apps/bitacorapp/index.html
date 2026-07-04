@@ -153,6 +153,46 @@
         .edit-mode .proyecto-card { animation: wiggle .45s ease-in-out infinite; }
         .edit-mode .proyecto-card .card-del { opacity: 1; }
         .edit-mode .proyecto-card:hover { transform: none; box-shadow: none; }
+        .card-move {
+            position: absolute; top: 7px; left: 7px; width: 26px; height: 26px;
+            border-radius: 50%; border: 2px solid white; background: var(--ink-2);
+            color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity .2s; z-index: 10;
+        }
+        .card-move svg { width: 12px; height: 12px; }
+        .edit-mode .proyecto-card .card-move { opacity: 1; }
+
+        /* ===== BUSQUEDA ===== */
+        .search-bar { position: relative; margin-bottom: 20px; }
+        .search-bar > svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--ink-3); pointer-events: none; }
+        .search-input {
+            width: 100%; padding: 12px 42px; border-radius: 14px;
+            border: 1.5px solid var(--border); background: var(--surface);
+            font-family: 'Exo', sans-serif; font-size: 0.9rem; font-weight: 500;
+            color: var(--ink); outline: none; transition: border-color .2s;
+        }
+        .search-input:focus { border-color: var(--red); }
+        .search-clear {
+            position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+            width: 28px; height: 28px; border: none; background: transparent;
+            color: var(--ink-3); cursor: pointer; display: none;
+            align-items: center; justify-content: center; border-radius: 50%;
+        }
+        .search-clear svg { width: 14px; height: 14px; }
+
+        /* ===== TRABAJOS ===== */
+        .trabajo-seccion { margin-bottom: 28px; }
+        .trabajo-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 0 2px; }
+        .trabajo-header h3 { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-2); }
+        .trabajo-header .t-count { font-size: 0.72rem; color: var(--ink-3); font-weight: 700; flex: 1; }
+        .btn-trabajo-menu {
+            width: 28px; height: 28px; border: none; background: transparent;
+            color: var(--ink-3); cursor: pointer; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; transition: background .15s;
+        }
+        .btn-trabajo-menu:hover { background: var(--accent-soft); }
+        .btn-trabajo-menu svg { width: 15px; height: 15px; }
+        .trabajo-vacio { font-size: 0.8rem; color: var(--ink-3); padding: 4px 2px; }
 
         /* ===== EMPTY STATE ===== */
         .empty-state { text-align: center; padding: 80px 20px 40px; animation: fadeIn .3s ease; }
@@ -440,7 +480,14 @@
 <!-- PAGE: DASHBOARD -->
 <div class="page active" id="page-dashboard">
     <div style="height: 20px;"></div>
-    <div class="proyectos-grid" id="proyectos-grid"></div>
+    <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="search-input" placeholder="Buscar en proyectos y notas..." oninput="onBuscar(this.value)">
+        <button class="search-clear" id="search-clear" onclick="limpiarBusqueda()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div id="dashboard-secciones"></div>
     <div class="empty-state" id="empty-state" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         <h3>Sin proyectos</h3>
@@ -495,6 +542,10 @@
             <div class="form-group">
                 <label>Nombre</label>
                 <input class="form-input" id="nuevo-nombre" placeholder="Ej: Motor Industrial #45" onkeydown="if(event.key==='Enter')crearProyecto()">
+            </div>
+            <div class="form-group">
+                <label>Trabajo</label>
+                <select class="form-input" id="nuevo-trabajo" onchange="if(this.value==='__new')abrirModalTrabajo(null)"></select>
             </div>
         </div>
         <div class="modal-footer">
@@ -596,6 +647,53 @@
     </div>
 </div>
 
+<!-- MODAL: TRABAJO (crear / renombrar) -->
+<div class="modal-overlay" id="modal-trabajo">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h2 id="trabajo-modal-titulo">Nuevo <span>trabajo</span></h2>
+            <button class="btn-cerrar" onclick="cerrarModal('modal-trabajo')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Nombre del trabajo o entidad</label>
+                <input class="form-input" id="trabajo-nombre" placeholder="Ej: Alcaldía Tupambaé" onkeydown="if(event.key==='Enter')guardarTrabajo()">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" id="trabajo-del-btn" style="background:transparent;color:var(--red);display:none;margin-right:auto;" onclick="eliminarTrabajo()">Eliminar</button>
+            <button class="btn btn-secundario" onclick="cerrarModal('modal-trabajo')">Cancelar</button>
+            <button class="btn btn-primario" onclick="guardarTrabajo()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: MOVER PROYECTO -->
+<div class="modal-overlay" id="modal-mover">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <h2>Mover <span>proyecto</span></h2>
+            <button class="btn-cerrar" onclick="cerrarModal('modal-mover')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Mover a</label>
+                <select class="form-input" id="mover-trabajo"></select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secundario" onclick="cerrarModal('modal-mover')">Cancelar</button>
+            <button class="btn btn-primario" onclick="confirmarMover()">Mover</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL: CUENTA -->
 <div class="modal-overlay" id="modal-cuenta">
     <div class="modal">
@@ -604,6 +702,10 @@
         <div class="cuenta-version" id="cuenta-version"></div>
         <div class="cuenta-sep"></div>
         <div class="cuenta-actions">
+            <button class="btn-cuenta-accion" onclick="exportarRespaldo()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar respaldo (JSON)
+            </button>
             <a class="btn-cuenta-accion" href="/" style="text-decoration:none">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 Volver a iLStorage
@@ -659,12 +761,16 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 db.enablePersistence().catch(() => {});
 
-const APP_VERSION = 'v2.0';
+const APP_VERSION = 'v2.1';
 
 // ===== ESTADO =====
 let currentUser = null;
 let proyectos = [];
+let trabajos = [];
 let proyectoIdx = null;
+let busqueda = '';
+let moverIdx = null;
+let trabajoEditId = null;
 let bloqueEditIdx = null;
 let notaFotos = [];
 let recognition = null;
@@ -734,7 +840,8 @@ function abrirMenuCuenta() {
         <div class="cuenta-nombre">${esc(currentUser ? (currentUser.displayName || 'Usuario') : '')}</div>
         <div class="cuenta-email">${esc(currentUser ? (currentUser.email || '') : '')}</div>
     </div>`;
-    document.getElementById('cuenta-version').textContent = APP_VERSION;
+    const uso = usoAlmacenamiento();
+    document.getElementById('cuenta-version').textContent = APP_VERSION + ' · ' + uso.texto + (uso.alerta ? ' · ⚠ ' + uso.alerta + ' cerca del límite (1 MB)' : '');
     abrirModal('modal-cuenta');
 }
 
@@ -745,11 +852,24 @@ function colProyectos() {
 
 async function cargarProyectos() {
     try {
-        const snap = await colProyectos().orderBy('fechaCreacion', 'desc').get();
-        proyectos = snap.docs.map(doc => ({ _fid: doc.id, ...doc.data() }));
+        const [snap, metaDoc] = await Promise.all([
+            colProyectos().orderBy('fechaCreacion', 'desc').get(),
+            colProyectos().doc('_meta').get()
+        ]);
+        trabajos = (metaDoc.exists && Array.isArray(metaDoc.data().trabajos)) ? metaDoc.data().trabajos : [];
+        proyectos = snap.docs.filter(d => d.id !== '_meta').map(doc => ({ _fid: doc.id, ...doc.data() }));
         renderDashboard();
     } catch(e) {
         toast('Error al cargar datos', 'err');
+    }
+}
+
+async function guardarTrabajos() {
+    if (!currentUser) return;
+    try {
+        await colProyectos().doc('_meta').set({ trabajos }, { merge: true });
+    } catch(e) {
+        toast('Error al guardar', 'err');
     }
 }
 
@@ -834,30 +954,73 @@ const SVG_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const SVG_PDF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>';
 
 // ===== DASHBOARD =====
+const SVG_MOVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>';
+
+function cardHtml(p, i, k) {
+    const foto = (p.bloques||[]).find(b => (b.fotos||[]).length > 0);
+    const coverSrc = foto ? foto.fotos[0] : null;
+    const nNotas = (p.bloques||[]).length;
+    const iconWrap = coverSrc
+        ? `<div class="card-icon-wrap has-photo" style="background-image:url(${coverSrc})"></div>`
+        : `<div class="card-icon-wrap">${SVG_FOLDER}</div>`;
+    return `<div class="proyecto-card" data-idx="${i}" style="animation-delay:${k*0.04}s">
+        <button class="card-del" onclick="event.stopPropagation();eliminarProyecto(${i})">${SVG_TRASH}</button>
+        <button class="card-move" onclick="event.stopPropagation();abrirModalMover(${i})" title="Mover a otro trabajo">${SVG_MOVE}</button>
+        ${iconWrap}
+        <div class="card-body">
+            <div class="card-titulo">${esc(p.nombre)}</div>
+            <div class="card-meta-row"><span>${nNotas} nota${nNotas!==1?'s':''}</span></div>
+        </div>
+    </div>`;
+}
+
 function renderDashboard() {
     editMode = false;
-    const grid = document.getElementById('proyectos-grid');
+    const cont = document.getElementById('dashboard-secciones');
+    cont.classList.remove('edit-mode');
     const empty = document.getElementById('empty-state');
-    if (proyectos.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    if (proyectos.length === 0 && trabajos.length === 0) { cont.innerHTML = ''; empty.style.display = 'block'; return; }
     empty.style.display = 'none';
-    grid.innerHTML = proyectos.map((p, i) => {
-        const foto = (p.bloques||[]).find(b => (b.fotos||[]).length > 0);
-        const coverSrc = foto ? foto.fotos[0] : null;
-        const nNotas = (p.bloques||[]).length;
-        const iconWrap = coverSrc
-            ? `<div class="card-icon-wrap has-photo" style="background-image:url(${coverSrc})"></div>`
-            : `<div class="card-icon-wrap">${SVG_FOLDER}</div>`;
-        return `<div class="proyecto-card" data-idx="${i}" style="animation-delay:${i*0.04}s">
-            <button class="card-del" onclick="event.stopPropagation();eliminarProyecto(${i})">${SVG_TRASH}</button>
-            ${iconWrap}
-            <div class="card-body">
-                <div class="card-titulo">${esc(p.nombre)}</div>
-                <div class="card-meta-row"><span>${nNotas} nota${nNotas!==1?'s':''}</span></div>
-            </div>
-        </div>`;
-    }).join('');
 
-    grid.querySelectorAll('.proyecto-card').forEach(card => {
+    const q = busqueda.trim().toLowerCase();
+    const coincide = p => {
+        if (!q) return true;
+        if ((p.nombre||'').toLowerCase().includes(q)) return true;
+        return (p.bloques||[]).some(b => (b.texto||'').toLowerCase().includes(q));
+    };
+    const visibles = proyectos.map((p, i) => ({ p, i })).filter(x => coincide(x.p));
+
+    let html = '';
+    if (q) {
+        html = visibles.length
+            ? `<div class="proyectos-grid">${visibles.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>`
+            : `<div class="empty-state" style="display:block;padding:50px 20px;"><h3>Sin resultados</h3><p>Probá con otras palabras</p></div>`;
+    } else if (trabajos.length === 0) {
+        html = `<div class="proyectos-grid">${visibles.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>`;
+    } else {
+        const idsTrabajos = trabajos.map(t => t.id);
+        trabajos.forEach(t => {
+            const items = visibles.filter(x => x.p.trabajo === t.id);
+            html += `<div class="trabajo-seccion">
+                <div class="trabajo-header">
+                    <h3>${esc(t.nombre)}</h3>
+                    <span class="t-count">${items.length}</span>
+                    <button class="btn-trabajo-menu" onclick="abrirModalTrabajo('${t.id}')" title="Renombrar o eliminar trabajo">${SVG_EDIT}</button>
+                </div>
+                ${items.length ? `<div class="proyectos-grid">${items.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>` : `<p class="trabajo-vacio">Sin proyectos todavía</p>`}
+            </div>`;
+        });
+        const sueltos = visibles.filter(x => !x.p.trabajo || !idsTrabajos.includes(x.p.trabajo));
+        if (sueltos.length) {
+            html += `<div class="trabajo-seccion">
+                <div class="trabajo-header"><h3>General</h3><span class="t-count">${sueltos.length}</span></div>
+                <div class="proyectos-grid">${sueltos.map((x, k) => cardHtml(x.p, x.i, k)).join('')}</div>
+            </div>`;
+        }
+    }
+    cont.innerHTML = html;
+
+    cont.querySelectorAll('.proyecto-card').forEach(card => {
         const i = parseInt(card.dataset.idx);
         card.addEventListener('click', () => { if (editMode) { exitEditMode(); return; } abrirProyecto(i); });
         card.addEventListener('touchstart', () => { lpTimer = setTimeout(() => enterEditMode(), 500); }, {passive:true});
@@ -866,13 +1029,130 @@ function renderDashboard() {
     });
 }
 
-function enterEditMode() { editMode = true; document.getElementById('proyectos-grid').classList.add('edit-mode'); }
-function exitEditMode() { editMode = false; document.getElementById('proyectos-grid').classList.remove('edit-mode'); }
+function enterEditMode() { editMode = true; document.getElementById('dashboard-secciones').classList.add('edit-mode'); }
+function exitEditMode() { editMode = false; document.getElementById('dashboard-secciones').classList.remove('edit-mode'); }
+
+// ===== BUSQUEDA =====
+function onBuscar(v) {
+    busqueda = v;
+    document.getElementById('search-clear').style.display = v ? 'flex' : 'none';
+    renderDashboard();
+}
+function limpiarBusqueda() {
+    document.getElementById('search-input').value = '';
+    onBuscar('');
+}
+
+// ===== TRABAJOS =====
+function poblarSelectTrabajos(sel, valor, conNuevo) {
+    let opts = `<option value="">General (sin trabajo)</option>`;
+    opts += trabajos.map(t => `<option value="${t.id}"${t.id === valor ? ' selected' : ''}>${esc(t.nombre)}</option>`).join('');
+    if (conNuevo) opts += `<option value="__new">+ Nuevo trabajo...</option>`;
+    sel.innerHTML = opts;
+    if (!valor) sel.value = '';
+}
+
+function abrirModalTrabajo(id) {
+    trabajoEditId = id;
+    const t = id ? trabajos.find(x => x.id === id) : null;
+    document.getElementById('trabajo-modal-titulo').innerHTML = t ? 'Editar <span>trabajo</span>' : 'Nuevo <span>trabajo</span>';
+    document.getElementById('trabajo-nombre').value = t ? t.nombre : '';
+    document.getElementById('trabajo-del-btn').style.display = t ? '' : 'none';
+    abrirModal('modal-trabajo');
+    setTimeout(() => document.getElementById('trabajo-nombre').focus(), 300);
+}
+
+async function guardarTrabajo() {
+    const nombre = document.getElementById('trabajo-nombre').value.trim();
+    if (!nombre) { toast('Escribí un nombre', 'err'); return; }
+    let idNuevo = trabajoEditId;
+    if (trabajoEditId) {
+        const t = trabajos.find(x => x.id === trabajoEditId);
+        if (t) t.nombre = nombre;
+    } else {
+        idNuevo = 't' + Date.now();
+        trabajos.push({ id: idNuevo, nombre });
+    }
+    cerrarModal('modal-trabajo');
+    // si el modal de nuevo proyecto está abierto, refrescar su selector con el trabajo nuevo elegido
+    const selNuevo = document.getElementById('nuevo-trabajo');
+    if (document.getElementById('modal-nuevo-proyecto').classList.contains('active')) {
+        poblarSelectTrabajos(selNuevo, idNuevo, true);
+    }
+    renderDashboard();
+    toast(trabajoEditId ? 'Trabajo actualizado' : 'Trabajo creado');
+    trabajoEditId = null;
+    await guardarTrabajos();
+}
+
+function eliminarTrabajo() {
+    const id = trabajoEditId;
+    if (!id) return;
+    cerrarModal('modal-trabajo');
+    confirmar('Eliminar trabajo', 'Se elimina solo la agrupación: los proyectos NO se borran, pasan a General.', async () => {
+        trabajos = trabajos.filter(t => t.id !== id);
+        trabajoEditId = null;
+        renderDashboard();
+        toast('Trabajo eliminado — proyectos intactos');
+        await guardarTrabajos();
+    });
+}
+
+function abrirModalMover(i) {
+    moverIdx = i;
+    exitEditMode();
+    poblarSelectTrabajos(document.getElementById('mover-trabajo'), proyectos[i].trabajo || '', false);
+    abrirModal('modal-mover');
+}
+
+async function confirmarMover() {
+    if (moverIdx === null) return;
+    const p = proyectos[moverIdx];
+    p.trabajo = document.getElementById('mover-trabajo').value || '';
+    cerrarModal('modal-mover');
+    moverIdx = null;
+    renderDashboard();
+    toast('Proyecto movido');
+    await guardarProyecto(p);
+}
+
+// ===== RESPALDO =====
+function exportarRespaldo() {
+    const data = {
+        app: 'Bitacorapp',
+        version: APP_VERSION,
+        exportado: new Date().toISOString(),
+        usuario: currentUser ? (currentUser.email || '') : '',
+        trabajos: trabajos,
+        proyectos: proyectos.map(p => { const c = Object.assign({}, p); delete c._fid; return c; })
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'bitacorapp_respaldo_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    toast('Respaldo descargado');
+}
+
+function usoAlmacenamiento() {
+    let total = 0, alerta = 0;
+    proyectos.forEach(p => {
+        const s = new Blob([JSON.stringify(p)]).size;
+        total += s;
+        if (s > 800 * 1024) alerta++;
+    });
+    const mb = (total / (1024 * 1024)).toFixed(2);
+    return { texto: mb + ' MB en ' + proyectos.length + ' proyecto' + (proyectos.length !== 1 ? 's' : ''), alerta };
+}
 
 // ===== FAB =====
 function onFab() {
     if (proyectoIdx === null) {
         document.getElementById('nuevo-nombre').value = '';
+        poblarSelectTrabajos(document.getElementById('nuevo-trabajo'), '', true);
         abrirModal('modal-nuevo-proyecto');
         setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
     } else {
@@ -884,7 +1164,8 @@ function onFab() {
 async function crearProyecto() {
     const nombre = document.getElementById('nuevo-nombre').value.trim();
     if (!nombre) { toast('Escribí un nombre','err'); return; }
-    const p = { id: Date.now(), nombre, fechaCreacion: new Date().toISOString(), bloques: [] };
+    const selT = document.getElementById('nuevo-trabajo').value;
+    const p = { id: Date.now(), nombre, fechaCreacion: new Date().toISOString(), bloques: [], trabajo: (selT && selT !== '__new') ? selT : '' };
     proyectos.unshift(p);
     cerrarModal('modal-nuevo-proyecto');
     renderDashboard();
