@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <meta name="theme-color" content="#C70000">
+    <meta name="theme-color" content="#FE0000">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Bitacorapp">
-    <title>Bitacorapp</title>
+    <meta name="apple-mobile-web-app-title" content="bitacoraApp">
+    <title>bitacoraApp</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.svg">
     <link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -21,11 +21,11 @@
             --surface: #ffffff;
             --border: #e8e8e8;
             --ink: #1a1a1a;
-            --ink-2: #555555;
+            --ink-2: #595959;
             --ink-3: hsl(38, 7%, 70%);
             --ink-4: hsl(38, 7%, 82%);
-            --red: #C70000;
-            --red-hover: #a30000;
+            --red: #FE0000;
+            --red-hover: #d40000;
             --accent-soft: #f0f0f0;
             --code-bg: #1a1a1a;
             --code-fg: #e0e0e0;
@@ -56,6 +56,7 @@
         }
         .login-logo { font-size: 2.4rem; font-weight: 900; letter-spacing: -2px; margin-bottom: 8px; }
         .login-logo .bita { color: var(--red); }
+        .login-logo .app-word { color: var(--ink-2); }
         .login-sub { font-size: 0.85rem; color: var(--ink-3); margin-bottom: 52px; font-weight: 500; text-align: center; }
         .btn-google {
             display: flex; align-items: center; gap: 12px;
@@ -125,7 +126,7 @@
             animation: cardIn .25s ease both;
         }
         @keyframes cardIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
-        .proyecto-card:hover { transform: translateY(-2px); }
+        .proyecto-card:hover { border-color: #d0d0d0; }
         .proyecto-card:active { transform: scale(0.96); }
         .card-icon-wrap {
             flex: 1; display: flex; align-items: center; justify-content: center;
@@ -133,11 +134,11 @@
             transition: transform .3s ease;
         }
         .proyecto-card:hover .card-icon-wrap { transform: scale(1.04); }
-        .card-icon-wrap svg { width: 40px; height: 40px; color: var(--ink); opacity: 0.15; }
+        .card-icon-wrap svg { width: 28px; height: 28px; color: var(--ink-2); opacity: 0.5; stroke-width: 1.5; }
         .card-icon-wrap.has-photo svg { display: none; }
         .card-body { padding: 10px 12px 12px; border-top: 1px solid var(--border); }
-        .card-titulo { font-size: 0.82rem; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-meta-row { display: flex; gap: 8px; margin-top: 4px; font-size: 0.7rem; color: var(--ink-3); font-weight: 500; }
+        .card-titulo { font-size: 16px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-meta-row { display: flex; gap: 8px; margin-top: 4px; font-size: 14px; color: var(--ink-2); font-weight: 400; }
         .card-del {
             position: absolute; top: 7px; right: 7px; width: 26px; height: 26px;
             border-radius: 50%; border: 2px solid white; background: var(--red);
@@ -168,7 +169,7 @@
         .search-input {
             width: 100%; padding: 12px 42px; border-radius: 14px;
             border: 1.5px solid var(--border); background: var(--surface);
-            font-family: 'Exo', sans-serif; font-size: 0.9rem; font-weight: 500;
+            font-family: 'Exo', sans-serif; font-size: 16px; font-weight: 400;
             color: var(--ink); outline: none; transition: border-color .2s;
         }
         .search-input:focus { border-color: var(--red); }
@@ -183,8 +184,8 @@
         /* ===== TRABAJOS ===== */
         .trabajo-seccion { margin-bottom: 28px; }
         .trabajo-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 0 2px; }
-        .trabajo-header h3 { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-2); }
-        .trabajo-header .t-count { font-size: 0.72rem; color: var(--ink-3); font-weight: 700; flex: 1; }
+        .trabajo-header h3 { font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-2); }
+        .trabajo-header .t-count { font-size: 14px; color: var(--ink-2); font-weight: 500; flex: 1; }
         .btn-trabajo-menu {
             width: 28px; height: 28px; border: none; background: transparent;
             color: var(--ink-3); cursor: pointer; border-radius: 8px;
@@ -192,7 +193,7 @@
         }
         .btn-trabajo-menu:hover { background: var(--accent-soft); }
         .btn-trabajo-menu svg { width: 15px; height: 15px; }
-        .trabajo-vacio { font-size: 0.8rem; color: var(--ink-3); padding: 4px 2px; }
+        .trabajo-vacio { font-size: 14px; color: var(--ink-2); padding: 4px 2px; }
 
         /* ===== EMPTY STATE ===== */
         .empty-state { text-align: center; padding: 80px 20px 40px; animation: fadeIn .3s ease; }
@@ -210,6 +211,33 @@
         }
         .fab:hover { transform: scale(1.07); background: var(--red-hover); }
         .fab:active { transform: scale(0.91); }
+        .fab.abierto { transform: rotate(45deg); }
+        .fab-menu {
+            position: fixed; bottom: 96px; right: 24px; z-index: 800;
+            display: none; flex-direction: column; align-items: flex-end; gap: 14px;
+        }
+        .fab-menu.abierto { display: flex; }
+        .fab-opcion {
+            display: flex; align-items: center; gap: 12px;
+            background: transparent; border: none; cursor: pointer; padding: 0;
+            animation: fabIn .18s ease both;
+        }
+        .fab-opcion:nth-child(1) { animation-delay: .05s; }
+        .fab-opcion .fab-label {
+            background: var(--surface); color: var(--ink);
+            font-family: 'Exo', sans-serif; font-size: 15px; font-weight: 600;
+            padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border);
+        }
+        .fab-opcion .fab-mini {
+            width: 44px; height: 44px; border-radius: 14px;
+            background: var(--surface); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center; color: var(--ink);
+        }
+        .fab-opcion .fab-mini svg { width: 25px; height: 25px; stroke-width: 1.5; }
+        .fab-opcion:active { transform: scale(0.95); }
+        @keyframes fabIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .fab-backdrop { position: fixed; inset: 0; z-index: 790; display: none; }
+        .fab-backdrop.abierto { display: block; }
         .fab svg { width: 24px; height: 24px; }
         .fab.hidden { display: none; }
 
@@ -414,9 +442,9 @@
         @media print {
             body > *:not(#print-content) { display: none !important; }
             #print-content { display: block !important; font-family: 'Helvetica Neue', Arial, sans-serif; color: #1a1a1a; }
-            .pr-portada { padding: 32px 0 20px; border-bottom: 3px solid #C70000; margin-bottom: 28px; }
+            .pr-portada { padding: 32px 0 20px; border-bottom: 3px solid #FE0000; margin-bottom: 28px; }
             .pr-portada h1 { font-size: 1.8rem; font-weight: 900; margin: 0 0 4px; letter-spacing: -1px; }
-            .pr-portada h1 span { color: #C70000; }
+            .pr-portada h1 span { color: #FE0000; }
             .pr-portada h2 { font-size: 1.2rem; margin: 0 0 6px; font-weight: 700; }
             .pr-portada .meta { font-size: 0.75rem; color: #888; }
             .pr-bloque { padding: 14px 0; border-bottom: 1px solid #e8e8e8; break-inside: avoid; }
@@ -430,7 +458,7 @@
             .md-render strong { font-weight: 800; }
             .md-render em { font-style: italic; color: #555; }
             .md-render code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; font-size: 0.84em; }
-            .md-render blockquote { border-left: 3px solid #C70000; padding-left: 10px; color: #555; font-style: italic; margin: 4px 0; }
+            .md-render blockquote { border-left: 3px solid #FE0000; padding-left: 10px; color: #555; font-style: italic; margin: 4px 0; }
             .pr-fotos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
             .pr-fotos img { border-radius: 6px; object-fit: cover; flex: 1 1 calc(50% - 3px); max-width: calc(50% - 3px); max-height: 200px; }
             .pr-fotos img:only-child { flex: none; width: 100%; max-width: 100%; max-height: 280px; object-fit: contain; }
@@ -453,7 +481,7 @@
 
 <!-- LOGIN -->
 <div class="login-screen" id="login-screen" style="display:none">
-    <div class="login-logo"><span class="bita">Bitacora</span>app</div>
+    <div class="login-logo"><span class="bita">bitacora</span><span class="app-word">App</span></div>
     <div class="login-sub">Tu bitácora de obra, siempre sincronizada</div>
     <button class="btn-google" onclick="loginConGoogle()">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -468,7 +496,7 @@
 
 <!-- HEADER -->
 <div class="header" id="app-header" style="display:none">
-    <h1><span class="bita">Bitacora</span><span class="app-word">app</span></h1>
+    <h1><span class="bita">bitacora</span><span class="app-word">App</span></h1>
     <button class="btn-cuenta" id="btn-cuenta" onclick="abrirMenuCuenta()" title="Mi cuenta">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     </button>
@@ -522,6 +550,17 @@
 <div id="print-content"></div>
 
 <!-- FAB -->
+<div class="fab-backdrop" id="fab-backdrop" onclick="cerrarFabMenu()"></div>
+<div class="fab-menu" id="fab-menu">
+    <button class="fab-opcion" onclick="cerrarFabMenu();abrirModalTrabajo(null)">
+        <span class="fab-label">Nuevo trabajo</span>
+        <span class="fab-mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg></span>
+    </button>
+    <button class="fab-opcion" onclick="cerrarFabMenu();abrirModalNuevoProyecto()">
+        <span class="fab-label">Nuevo proyecto</span>
+        <span class="fab-mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+    </button>
+</div>
 <button class="fab" id="fab" onclick="onFab()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 </button>
@@ -545,7 +584,7 @@
             </div>
             <div class="form-group">
                 <label>Trabajo</label>
-                <select class="form-input" id="nuevo-trabajo" onchange="if(this.value==='__new')abrirModalTrabajo(null)"></select>
+                <select class="form-input" id="nuevo-trabajo"></select>
             </div>
         </div>
         <div class="modal-footer">
@@ -706,10 +745,6 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Exportar respaldo (JSON)
             </button>
-            <a class="btn-cuenta-accion" href="/" style="text-decoration:none">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Volver a iLStorage
-            </a>
             <button class="btn-cuenta-accion" onclick="cambiarCuenta()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
                 Cambiar cuenta
@@ -761,7 +796,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 db.enablePersistence().catch(() => {});
 
-const APP_VERSION = 'v2.1';
+const APP_VERSION = 'v2.3';
 
 // ===== ESTADO =====
 let currentUser = null;
@@ -1151,13 +1186,30 @@ function usoAlmacenamiento() {
 // ===== FAB =====
 function onFab() {
     if (proyectoIdx === null) {
-        document.getElementById('nuevo-nombre').value = '';
-        poblarSelectTrabajos(document.getElementById('nuevo-trabajo'), '', true);
-        abrirModal('modal-nuevo-proyecto');
-        setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
+        const abierto = document.getElementById('fab-menu').classList.contains('abierto');
+        abierto ? cerrarFabMenu() : abrirFabMenu();
     } else {
         abrirNota(null);
     }
+}
+
+function abrirFabMenu() {
+    document.getElementById('fab-menu').classList.add('abierto');
+    document.getElementById('fab-backdrop').classList.add('abierto');
+    document.getElementById('fab').classList.add('abierto');
+}
+
+function cerrarFabMenu() {
+    document.getElementById('fab-menu').classList.remove('abierto');
+    document.getElementById('fab-backdrop').classList.remove('abierto');
+    document.getElementById('fab').classList.remove('abierto');
+}
+
+function abrirModalNuevoProyecto() {
+    document.getElementById('nuevo-nombre').value = '';
+    poblarSelectTrabajos(document.getElementById('nuevo-trabajo'), '', false);
+    abrirModal('modal-nuevo-proyecto');
+    setTimeout(() => document.getElementById('nuevo-nombre').focus(), 300);
 }
 
 // ===== PROYECTOS =====
@@ -1175,6 +1227,7 @@ async function crearProyecto() {
 }
 
 function abrirProyecto(i) {
+    cerrarFabMenu();
     proyectoIdx = i;
     const p = proyectos[i];
     document.getElementById('vp-nombre').textContent = p.nombre;
@@ -1472,14 +1525,14 @@ function imprimirSeleccion(indices) {
     }).join('');
 
     const estilos = `*{box-sizing:border-box}body{font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;margin:0;padding:26px 22px}
-      .pr-portada{border-bottom:3px solid #C70000;padding-bottom:14px;margin-bottom:20px}
-      .pr-portada h1{font-size:1.8rem;font-weight:900;margin:0 0 4px;letter-spacing:-1px}.pr-portada h1 span{color:#C70000}
+      .pr-portada{border-bottom:3px solid #FE0000;padding-bottom:14px;margin-bottom:20px}
+      .pr-portada h1{font-size:1.8rem;font-weight:900;margin:0 0 4px;letter-spacing:-1px}.pr-portada h1 span{color:#FE0000}
       .pr-portada h2{font-size:1.2rem;margin:0 0 6px;font-weight:700}.pr-portada .meta{font-size:.8rem;color:#888}
       .pr-bloque{padding:14px 0;border-bottom:1px solid #e8e8e8;break-inside:avoid;page-break-inside:avoid}
       .pr-fecha{font-size:.72rem;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
       .md-render{line-height:1.7;font-size:.95rem}.md-render h1{font-size:1.15rem;margin:8px 0 4px}.md-render h2{font-size:1.02rem;margin:6px 0 3px}.md-render h3{font-size:.95rem;margin:4px 0 2px}
       .md-render p{margin:0 0 7px}.md-render ul,.md-render ol{padding-left:18px;margin:0 0 7px}.md-render strong{font-weight:800}.md-render em{font-style:italic;color:#555}
-      .md-render code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-size:.85em}.md-render blockquote{border-left:3px solid #C70000;padding-left:10px;color:#555;font-style:italic;margin:6px 0}
+      .md-render code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-size:.85em}.md-render blockquote{border-left:3px solid #FE0000;padding-left:10px;color:#555;font-style:italic;margin:6px 0}
       .code-block{background:#f4f4f4;border-radius:6px;margin:8px 0}.code-block pre{padding:10px;font-size:.82rem;white-space:pre-wrap;word-break:break-word;margin:0}.btn-copy-code{display:none}
       .pr-fotos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.pr-fotos img{border-radius:6px;object-fit:cover;flex:1 1 calc(50% - 3px);max-width:calc(50% - 3px);max-height:240px}.pr-fotos img:only-child{flex:none;width:100%;max-width:100%;max-height:340px;object-fit:contain}
       @media print{body{padding:0}@page{margin:14mm}}`;
