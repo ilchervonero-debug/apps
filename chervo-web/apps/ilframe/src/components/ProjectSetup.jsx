@@ -1,15 +1,26 @@
 import { useDrawingStore, wallThickness } from '../store/drawingStore'
-import { CU_NORMS, CU_SECTIONS } from '../data/profiles'
+import { PROFILE_NORMS, PROFILE_SECTIONS } from '../data/profiles'
 import { LAYER_TEMPLATES } from '../data/layers'
 
 // catálogo agrupado para agregar capas a una cara
 const CATS = [
   ['board', 'Placas'],
   ['sheathing', 'Revestimiento / membrana'],
+  ['cladding', 'Revestimiento exterior'],
   ['insulation', 'Aislante'],
   ['structure', 'Estructura / alfajías'],
 ]
 const layerName = (id) => LAYER_TEMPLATES.find((l) => l.id === id)?.name || id
+
+// Nombres de muro precargados (empacado). Se pueden elegir tal cual o
+// escribir uno propio en el campo de nombre (en obra los pasan por nombre).
+const WALL_PRESETS = [
+  'Interior - Exterior',
+  'Interior - Interior',
+  'Interior - Húmedo',
+  'Exterior - Húmedo',
+  'Húmedo - Húmedo',
+]
 
 // orden y etiquetas de los elementos
 const ELEMENTS = [
@@ -27,7 +38,7 @@ export default function ProjectSetup() {
   const toggleElement = useDrawingStore((s) => s.toggleElement)
   const setAppView = useDrawingStore((s) => s.setAppView)
 
-  const sections = CU_SECTIONS[project.profileNorm]?.C || CU_SECTIONS.cu_1.C
+  const sections = PROFILE_SECTIONS[project.profileNorm]?.C || PROFILE_SECTIONS.cu_1.C
 
   return (
     <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#f7f7f8', padding: '16px 16px 90px' }}>
@@ -45,9 +56,9 @@ export default function ProjectSetup() {
           <Label>Estructura — perfil de acero</Label>
           <Sub>Norma</Sub>
           <select value={project.profileNorm} onChange={(e) => setProject({ profileNorm: e.target.value })} style={inp}>
-            {CU_NORMS.map((n) => (
-              <option key={n.id} value={n.id} disabled={!CU_SECTIONS[n.id]}>
-                {n.name}{!CU_SECTIONS[n.id] ? ' (próximamente)' : ''}
+            {PROFILE_NORMS.map((n) => (
+              <option key={n.id} value={n.id} disabled={!PROFILE_SECTIONS[n.id]}>
+                {n.name}{!PROFILE_SECTIONS[n.id] ? ' (próximamente)' : ''}
               </option>
             ))}
           </select>
@@ -110,10 +121,18 @@ function WallTypeCard({ type, profileSection, canDelete }) {
     <div style={{ background: '#fff', borderRadius: 16, padding: 14, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <input value={type.name} onChange={(e) => updateWallType(type.id, { name: e.target.value })}
-          style={{ ...inp, fontWeight: 800, flex: 1 }} />
+          placeholder="Nombre del muro (o elegí abajo)"
+          style={{ ...inp, fontWeight: 600, flex: 1 }} />
         {canDelete && <button onClick={() => removeWallType(type.id)}
           style={{ border: '1px solid #ffd0d0', background: '#fff', color: '#fe0000', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontWeight: 700 }}>×</button>}
       </div>
+      {/* Precargados de empacado — no quita el nombre libre de arriba */}
+      <select value={WALL_PRESETS.includes(type.name) ? type.name : ''}
+        onChange={(e) => e.target.value && updateWallType(type.id, { name: e.target.value })}
+        style={{ ...inp, color: '#fe0000', fontWeight: 600 }}>
+        <option value="">Empacado precargado…</option>
+        {WALL_PRESETS.map((n) => <option key={n} value={n} style={{ color: '#222' }}>{n}</option>)}
+      </select>
       <div style={{ display: 'flex', gap: 8 }}>
         {[['exterior', 'Exterior'], ['interior', 'Interior']].map(([k, lbl]) => (
           <button key={k} onClick={() => updateWallType(type.id, { kind: k })} style={pill(type.kind === k)}>{lbl}</button>

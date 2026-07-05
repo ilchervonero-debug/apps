@@ -5,6 +5,7 @@
 export const LAYER_CATEGORIES = {
   structure: 'Estructura',
   sheathing: 'Revestimiento estructural',
+  cladding: 'Revestimiento exterior',
   insulation: 'Aislante',
   board: 'Placa',
   finish: 'Terminación',
@@ -17,7 +18,9 @@ export const BOARD_SIZES = {
   gyp_1200x2400: { w: 1200, h: 2400, label: '1200×2400mm' },
   gyp_1200x3000: { w: 1200, h: 3000, label: '1200×3000mm' },
   osb_1220x2440: { w: 1220, h: 2440, label: '1220×2440mm (OSB)' },
+  ply_1220x2440: { w: 1220, h: 2440, label: '1220×2440mm (fenólico)' },
   cement_1200x2400: { w: 1200, h: 2400, label: '1200×2400mm (cemento)' },
+  siding_2440x200: { w: 200, h: 2440, label: '2440×200mm (tabla siding)' },
 }
 
 export const LAYER_TEMPLATES = [
@@ -33,6 +36,37 @@ export const LAYER_TEMPLATES = [
   {
     id: 'cement_board', name: 'Placa de cemento', category: 'sheathing',
     unit: 'placa', board: 'cement_1200x2400', thickness: 12, waste_pct: 7,
+  },
+  {
+    id: 'osb_18', name: 'OSB 18mm', category: 'sheathing',
+    unit: 'placa', board: 'osb_1220x2440', thickness: 18, waste_pct: 10,
+  },
+  // Fenólico (plywood) — estructural, exterior
+  {
+    id: 'ply_12', name: 'Fenólico 12mm', category: 'sheathing',
+    unit: 'placa', board: 'ply_1220x2440', thickness: 12, waste_pct: 10,
+  },
+  {
+    id: 'ply_15', name: 'Fenólico 15mm', category: 'sheathing',
+    unit: 'placa', board: 'ply_1220x2440', thickness: 15, waste_pct: 10,
+  },
+  {
+    id: 'ply_18', name: 'Fenólico 18mm', category: 'sheathing',
+    unit: 'placa', board: 'ply_1220x2440', thickness: 18, waste_pct: 10,
+  },
+
+  // ── Revestimiento exterior (terminación de fachada) ───────
+  {
+    id: 'siding', name: 'Siding (panel exterior)', category: 'cladding',
+    unit: 'm2', thickness: 8, waste_pct: 10,
+  },
+  {
+    id: 'wood_cladding', name: 'Madera para exterior (tabla/tejuela)', category: 'cladding',
+    unit: 'm2', thickness: 20, waste_pct: 12,
+  },
+  {
+    id: 'metal_sheet', name: 'Chapa (revestimiento metálico)', category: 'cladding',
+    unit: 'm2', thickness: 0.5, waste_pct: 10,
   },
 
   // ── Aislante ──────────────────────────────────────────────
@@ -136,6 +170,16 @@ export const LAYER_TEMPLATES = [
     id: 'furring_wood_2x2', name: 'Alfajía 2x2" madera', category: 'structure',
     unit: 'ml', thickness: 50, waste_pct: 8,
     spacing_mm: 400,
+  },
+  {
+    id: 'omega_clip', name: 'Perfil omega (clip/cielorraso)', category: 'structure',
+    unit: 'ml', thickness: 20, waste_pct: 8,
+    spacing_mm: 400, // emparrillado metálico cada 40cm
+  },
+  {
+    id: 'omega_furring', name: 'Perfil omega substructura (fachada)', category: 'structure',
+    unit: 'ml', thickness: 40, waste_pct: 8,
+    spacing_mm: 600,
   },
 
   // ── Enduido ───────────────────────────────────────────────

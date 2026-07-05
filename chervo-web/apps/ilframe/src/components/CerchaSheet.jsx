@@ -1,5 +1,5 @@
 import { useDrawingStore } from '../store/drawingStore'
-import { CU_NORMS, CU_SECTIONS } from '../data/profiles'
+import { PROFILE_NORMS, PROFILE_SECTIONS } from '../data/profiles'
 import { CERCHA_TYPES, trussGeometry, cerchaKg, defaultRise } from '../engine/trusses'
 
 // Hoja paramétrica de la Cercha (spec iLFrame): modelo + geometría del alzado
@@ -43,13 +43,13 @@ export default function CerchaSheet() {
 
   const perfilSel = (label, key) => {
     const ref = cur[key] || { normId: 'cu_1', secIdx: 0 }
-    const secs = CU_SECTIONS[ref.normId]?.C || []
+    const secs = PROFILE_SECTIONS[ref.normId]?.C || []
     return (
       <div style={{ marginTop: 10 }}>
         <div style={{ ...cap, marginBottom: 5 }}>{label}</div>
         <div style={{ display: 'flex', gap: 8 }}>
           <select value={ref.normId} onChange={(e) => patch({ [key]: { normId: e.target.value, secIdx: 0 } })} style={{ ...field, flex: 1 }}>
-            {CU_NORMS.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
+            {PROFILE_NORMS.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
           </select>
           <select value={ref.secIdx} onChange={(e) => patch({ [key]: { ...ref, secIdx: +e.target.value } })} style={{ ...field, flex: 1 }}>
             {secs.map((s, i) => <option key={i} value={i}>{s.h}×{s.w}×{s.t} · {s.kg}kg/m</option>)}

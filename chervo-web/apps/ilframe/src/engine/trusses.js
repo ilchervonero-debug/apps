@@ -1,4 +1,4 @@
-import { CU_SECTIONS } from '../data/profiles'
+import { PROFILE_SECTIONS } from '../data/profiles'
 
 // ── Generador paramétrico de cerchas ──────────────────────────
 // Coords locales en mm, Y hacia arriba (0 = base de apoyos).
@@ -124,7 +124,7 @@ export function trussGeometry(cercha) {
 
 // kg de acero por cordón usando 3 perfiles (superior / inferior / retícula)
 function kgOf(ref, mm) {
-  const sec = (CU_SECTIONS[ref?.normId]?.C || [])[ref?.secIdx ?? 0]
+  const sec = (PROFILE_SECTIONS[ref?.normId]?.C || [])[ref?.secIdx ?? 0]
   return sec ? (mm / 1000) * sec.kg : 0
 }
 export function cerchaKg(cercha) {

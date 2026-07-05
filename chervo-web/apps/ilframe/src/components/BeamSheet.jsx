@@ -1,5 +1,5 @@
 import { useDrawingStore } from '../store/drawingStore'
-import { CU_NORMS, CU_SECTIONS } from '../data/profiles'
+import { PROFILE_NORMS, PROFILE_SECTIONS } from '../data/profiles'
 import { BEAM_TYPES, beamTypeDef, beamKg } from '../engine/beams'
 
 // Hoja inferior: configura la próxima viga (sin selección) o edita la
@@ -21,7 +21,7 @@ export default function BeamSheet() {
   const beam = beams.find((b) => b.id === selectedBeamId)
   const cur = beam || config
   const patch = (p) => (beam ? updateBeam(beam.id, p) : setConfig(p))
-  const sections = CU_SECTIONS[cur.normId]?.C || []
+  const sections = PROFILE_SECTIONS[cur.normId]?.C || []
   const sec = sections[cur.secIdx]
 
   const cap = { fontSize: 14, fontWeight: 500, color: '#8a8a8a', letterSpacing: '0.04em', textTransform: 'uppercase' }
@@ -63,7 +63,7 @@ export default function BeamSheet() {
           <select value={cur.normId}
             onChange={(e) => patch({ normId: e.target.value, secIdx: 0 })}
             style={{ ...field, flex: 1 }}>
-            {CU_NORMS.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
+            {PROFILE_NORMS.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
           </select>
           <select value={cur.secIdx}
             onChange={(e) => patch({ secIdx: +e.target.value })}
