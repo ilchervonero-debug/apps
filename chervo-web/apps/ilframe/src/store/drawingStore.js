@@ -201,7 +201,7 @@ export const useDrawingStore = create((set) => ({
   cerchaSheet: false, // hoja de estilo/perfil/medidas abierta
   // parámetros: modelo + geometría (pico, alturas, apoyos, divisiones) + 3 perfiles
   cerchaConfig: {
-    modelo: 'FINK', pico: null, rise: null, hIzq: 0, hDer: 0, divisiones: 6,
+    modelo: 'FINK', patron: 'DA', verticales: true, pico: null, rise: null, hIzq: 0, hDer: 0, divisiones: 6,
     perfilSuperior: { normId: 'cu_1', secIdx: 0 },
     perfilInferior: { normId: 'cu_1', secIdx: 0 },
     perfilReticula: { normId: 'cu_1', secIdx: 0 },

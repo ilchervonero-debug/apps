@@ -11,11 +11,22 @@ import { PROFILE_SECTIONS } from '../data/profiles'
 //   divisiones  tramos del cordón inferior (nudos)
 
 export const CERCHA_TYPES = [
+  { id: 'RECTA', name: 'Reticulada recta', desc: 'cordones paralelos (viga de alma abierta)' },
   { id: 'FINK', name: 'Fink (W)', desc: 'alma en W · la más común' },
   { id: 'HOWE', name: 'Howe', desc: 'montantes + diagonales al pico' },
   { id: 'PRATT', name: 'Pratt', desc: 'montantes + diagonales a los apoyos' },
   { id: 'TIJERA', name: 'Tijera', desc: 'cordón inferior a dos aguas (cielo inclinado)' },
   { id: 'UN_AGUA', name: 'Un agua', desc: 'una sola pendiente (mono)' },
+]
+
+// Patrón de las traviesas (diagonales) — simétrico desde el centro.
+// Las verticales (montantes) se suman aparte con el toggle `verticales`.
+export const RETI_PATRONES = [
+  { id: 'DA', name: 'A los apoyos', desc: 'diagonales al apoyo (Pratt plana)' },
+  { id: 'DC', name: 'Al centro', desc: 'diagonales al centro (Howe plana)' },
+  { id: 'X', name: 'Cruces (X)', desc: 'doble diagonal (cruz de San Andrés)' },
+  { id: 'W', name: 'Warren', desc: 'zig-zag alternado desde el centro' },
+  { id: 'N', name: 'Sin diagonal', desc: 'solo verticales (escalera)' },
 ]
 
 export const cerchaTypeDef = (id) => CERCHA_TYPES.find((t) => t.id === id) || CERCHA_TYPES[0]
@@ -34,18 +45,22 @@ export function cerchaParams(c) {
   const hIzq = Math.max(0, c.hIzq || 0)
   const hDer = Math.max(0, c.hDer || 0)
   const divisiones = Math.max(2, Math.round(c.divisiones || 6))
-  return { span, pico, rise, hIzq, hDer, modelo, divisiones }
+  const patron = c.patron || 'DA'
+  const verticales = c.verticales !== false // por defecto sí
+  return { span, pico, rise, hIzq, hDer, modelo, divisiones, patron, verticales }
 }
 
 // Y del cordón superior en x (piecewise entre apoyos y pico)
 function yTopAt(p, x) {
   const { span, pico, rise, hIzq, hDer } = p
+  if (p.modelo === 'RECTA') return rise            // cordones paralelos → canto constante
   if (p.modelo === 'UN_AGUA') return hIzq + (rise - hIzq) * (x / span)
   if (x <= pico) return pico <= 0 ? rise : hIzq + (rise - hIzq) * (x / pico)
   return (span - pico) <= 0 ? rise : rise + (hDer - rise) * ((x - pico) / (span - pico))
 }
 // Y del cordón inferior en x (recto salvo TIJERA que sube al centro)
 function yBotAt(p, x) {
+  if (p.modelo === 'RECTA') return 0               // base plana
   const base = p.hIzq + (p.hDer - p.hIzq) * (x / p.span)
   if (p.modelo !== 'TIJERA') return base
   const hb = p.rise * 0.45
@@ -82,27 +97,46 @@ export function trussGeometry(cercha) {
   for (let i = 0; i <= divisiones; i++) div.push(Math.round((i * span) / divisiones))
   const picoIdx = nodeAt(Math.round(pico))
 
-  // montante central (pendolón) hasta el pico, salvo mono
-  if (modelo !== 'UN_AGUA' && picoIdx != null) web.push([bot[picoIdx], top[picoIdx]])
-
   const vertical = (i) => web.push([bot[i], top[i]])
   const diagTo = (iBot, iTop) => { if (ux[iTop]) web.push([bot[iBot], top[iTop]]) }
 
-  for (let k = 1; k < divisiones; k++) {
-    const i = nodeAt(div[k])
-    if (i == null) continue
-    if (modelo === 'HOWE' || modelo === 'PRATT' || modelo === 'TIJERA' || modelo === 'UN_AGUA') {
-      vertical(i)
-      const toApex = ux[i] < pico ? 1 : -1 // dirección hacia el pico
-      const dir = (modelo === 'PRATT') ? -toApex : toApex
-      const j = nodeAt(div[k + (dir > 0 ? 1 : -1)])
-      if (j != null && j !== i) diagTo(i, j)
-    } else { // FINK → W: diagonal alternada sin montantes intermedios
-      const toApex = ux[i] < pico ? 1 : -1
-      const j = nodeAt(div[k + (k % 2 === 1 ? toApex : 0)])
-      if (k % 2 === 1) { const jj = nodeAt(div[k + toApex]); if (jj != null) diagTo(i, jj) }
-      else vertical(i)
-      void j
+  if (modelo === 'RECTA') {
+    // Reticulada recta: traviesas SIMÉTRICAS desde el centro.
+    const idx = div.map((x) => nodeAt(x)).filter((i) => i != null)
+    const P = p.patron
+    const cx = span / 2
+    if (p.verticales) idx.forEach((i) => vertical(i)) // montantes (toggle aparte)
+    for (let k = 0; k < idx.length - 1; k++) {
+      const a = idx[k], b = idx[k + 1]
+      const left = ((ux[a] + ux[b]) / 2) < cx // ¿panel a la izquierda del centro?
+      // "a los apoyos" (Pratt): en cada mitad la diagonal baja hacia el apoyo
+      const toApoyo = left ? [top[b], bot[a]] : [top[a], bot[b]]
+      const toCentro = left ? [bot[a], top[b]] : [bot[b], top[a]]
+      if (P === 'DA') web.push(toApoyo)
+      else if (P === 'DC') web.push(toCentro)
+      else if (P === 'X') { web.push(toApoyo); web.push(toCentro) }
+      else if (P === 'W') web.push((k % 2 === 0) === left ? toCentro : toApoyo)
+      // 'N' → sin diagonales (solo verticales)
+    }
+  } else {
+    // montante central (pendolón) hasta el pico, salvo mono
+    if (modelo !== 'UN_AGUA' && picoIdx != null) web.push([bot[picoIdx], top[picoIdx]])
+    for (let k = 1; k < divisiones; k++) {
+      const i = nodeAt(div[k])
+      if (i == null) continue
+      if (modelo === 'HOWE' || modelo === 'PRATT' || modelo === 'TIJERA' || modelo === 'UN_AGUA') {
+        vertical(i)
+        const toApex = ux[i] < pico ? 1 : -1 // dirección hacia el pico
+        const dir = (modelo === 'PRATT') ? -toApex : toApex
+        const j = nodeAt(div[k + (dir > 0 ? 1 : -1)])
+        if (j != null && j !== i) diagTo(i, j)
+      } else { // FINK → W: diagonal alternada sin montantes intermedios
+        const toApex = ux[i] < pico ? 1 : -1
+        const j = nodeAt(div[k + (k % 2 === 1 ? toApex : 0)])
+        if (k % 2 === 1) { const jj = nodeAt(div[k + toApex]); if (jj != null) diagTo(i, jj) }
+        else vertical(i)
+        void j
+      }
     }
   }
 
@@ -114,10 +148,12 @@ export function trussGeometry(cercha) {
   const alerts = []
   const sepNudo = span / divisiones
   if (sepNudo > 1200) alerts.push(`Nudos muy separados (${(sepNudo / 1000).toFixed(2)} m) — riesgo de pandeo del cordón inferior.`)
-  const angL = pico > 0 ? Math.atan((p.rise - p.hIzq) / pico) * 180 / Math.PI : 0
-  const angR = (span - pico) > 0 ? Math.atan((p.rise - p.hDer) / (span - pico)) * 180 / Math.PI : 0
-  if ((angL > 0 && angL < 10) || (angR > 0 && angR < 10)) alerts.push('Pendiente muy baja (< 10°) — riesgo de estancamiento.')
-  if (angL > 60 || angR > 60) alerts.push('Pendiente excesiva (> 60°) — revisá el diseño.')
+  const angL = modelo !== 'RECTA' && pico > 0 ? Math.atan((p.rise - p.hIzq) / pico) * 180 / Math.PI : 0
+  const angR = modelo !== 'RECTA' && (span - pico) > 0 ? Math.atan((p.rise - p.hDer) / (span - pico)) * 180 / Math.PI : 0
+  if (modelo !== 'RECTA') {
+    if ((angL > 0 && angL < 10) || (angR > 0 && angR < 10)) alerts.push('Pendiente muy baja (< 10°) — riesgo de estancamiento.')
+    if (angL > 60 || angR > 60) alerts.push('Pendiente excesiva (> 60°) — revisá el diseño.')
+  }
 
   return { p, top, bot, chordTop, chordBot, web, lens, alerts, angL, angR, sepNudo }
 }

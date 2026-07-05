@@ -1,6 +1,6 @@
 import { useDrawingStore } from '../store/drawingStore'
 import { PROFILE_NORMS, PROFILE_SECTIONS } from '../data/profiles'
-import { CERCHA_TYPES, trussGeometry, cerchaKg, defaultRise } from '../engine/trusses'
+import { CERCHA_TYPES, RETI_PATRONES, trussGeometry, cerchaKg, defaultRise } from '../engine/trusses'
 
 // Hoja paramétrica de la Cercha (spec iLFrame): modelo + geometría del alzado
 // (pico, altura, apoyos) + retícula (divisiones) + 3 perfiles (superior/inferior/
@@ -29,6 +29,7 @@ export default function CerchaSheet() {
   const cap = { fontSize: 14, fontWeight: 500, color: '#8a8a8a', letterSpacing: '0.03em' }
   const field = { width: '100%', padding: '11px 10px', border: '1px solid #d8d8d8', borderRadius: 10, fontSize: 18, background: '#fff', boxSizing: 'border-box', color: '#1c1c1c' }
   const mono = cur.modelo === 'UN_AGUA'
+  const recta = cur.modelo === 'RECTA'
 
   // input en metros ↔ mm
   const numM = (label, value, onSet, opts = {}) => (
@@ -99,17 +100,48 @@ export default function CerchaSheet() {
           )
         })}
 
+        {/* Traviesas (retícula) — solo para la reticulada recta */}
+        {recta && (
+          <>
+            <div style={{ padding: '14px 22px 8px', ...cap, textTransform: 'uppercase' }}>Traviesas</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '0 22px' }}>
+              {RETI_PATRONES.map((r) => {
+                const on = (cur.patron || 'DA') === r.id
+                return (
+                  <button key={r.id} onClick={() => patch({ patron: r.id })} title={r.desc}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '8px 10px', borderRadius: 12, cursor: 'pointer',
+                      border: '1px solid', borderColor: on ? '#fe0000' : '#d8d8d8', background: '#fff' }}>
+                    <PatronIcon patron={r.id} vert={cur.verticales !== false} on={on} />
+                    <span style={{ fontSize: 14, fontWeight: 500, color: on ? '#fe0000' : '#1c1c1c' }}>{r.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+            {/* Verticales como agregado independiente a cualquier patrón */}
+            <div style={{ padding: '10px 22px 0' }}>
+              <button onClick={() => patch({ verticales: cur.verticales === false })}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, cursor: 'pointer', width: '100%', textAlign: 'left',
+                  border: '1px solid', borderColor: cur.verticales !== false ? '#fe0000' : '#d8d8d8', background: '#fff' }}>
+                <span style={{ width: 20, height: 20, borderRadius: 5, background: cur.verticales !== false ? '#fe0000' : '#e8e8e8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>{cur.verticales !== false ? '✓' : ''}</span>
+                <span style={{ fontSize: 16, fontWeight: 500, color: '#1c1c1c' }}>Sumar montantes (verticales)</span>
+              </button>
+            </div>
+          </>
+        )}
+
         {/* Geometría del alzado */}
-        <div style={{ padding: '16px 22px 6px', ...cap, textTransform: 'uppercase' }}>Silueta (alzado)</div>
+        <div style={{ padding: '16px 22px 6px', ...cap, textTransform: 'uppercase' }}>{recta ? 'Medidas' : 'Silueta (alzado)'}</div>
         <div style={{ display: 'flex', gap: 10, padding: '0 22px 10px' }}>
           {numM('Luz (m)', span, (v) => cercha && updateCercha(cercha.id, { span: v }), { disabled: !cercha, clampMin: 500 })}
-          {numM('Pico X (m)', pico, (v) => patch({ pico: v }), { disabled: mono, clampMax: span })}
+          {numM(recta ? 'Canto (m)' : 'Altura pico (m)', rise, (v) => patch({ rise: v }), { clampMin: 100 })}
         </div>
-        <div style={{ display: 'flex', gap: 10, padding: '0 22px' }}>
-          {numM('Altura pico (m)', rise, (v) => patch({ rise: v }), { clampMin: 100 })}
-          {numM('Apoyo izq (m)', cur.hIzq || 0, (v) => patch({ hIzq: v }))}
-          {numM('Apoyo der (m)', cur.hDer || 0, (v) => patch({ hDer: v }))}
-        </div>
+        {!recta && (
+          <div style={{ display: 'flex', gap: 10, padding: '0 22px' }}>
+            {numM('Pico X (m)', pico, (v) => patch({ pico: v }), { disabled: mono, clampMax: span })}
+            {numM('Apoyo izq (m)', cur.hIzq || 0, (v) => patch({ hIzq: v }))}
+            {numM('Apoyo der (m)', cur.hDer || 0, (v) => patch({ hDer: v }))}
+          </div>
+        )}
 
         {/* Retícula */}
         <div style={{ display: 'flex', gap: 10, padding: '14px 22px 0', alignItems: 'flex-end' }}>
@@ -165,6 +197,22 @@ function TrussPreview({ geo, span, rise }) {
       {geo.web.map((m, i) => <path key={'w' + i} d={line(m)} stroke="#9a9a9a" strokeWidth={1.2} fill="none" strokeLinecap="round" />)}
       {geo.chordBot.map((m, i) => <path key={'b' + i} d={line(m)} stroke="#fe0000" strokeWidth={1.8} fill="none" strokeLinecap="round" />)}
       {geo.chordTop.map((m, i) => <path key={'t' + i} d={line(m)} stroke="#fe0000" strokeWidth={1.8} fill="none" strokeLinecap="round" />)}
+    </svg>
+  )
+}
+
+// Icono chico del patrón de traviesas (reticulada recta)
+function PatronIcon({ patron, on, vert = true }) {
+  const geo = trussGeometry({ span: 3600, rise: 1200, divisiones: 4, modelo: 'RECTA', patron, verticales: vert })
+  const s = Math.min(34 / 3600, 18 / 1200), ox = 3, oy = 21
+  const tx = ([x, y]) => [ox + x * s, oy - y * s]
+  const seg = (m, i, extra) => { const p = tx(m[0]), q = tx(m[1]); return <line key={extra + i} x1={p[0]} y1={p[1]} x2={q[0]} y2={q[1]} /> }
+  const col = on ? '#fe0000' : '#1c1c1c'
+  return (
+    <svg width="40" height="24" viewBox="0 0 40 24" fill="none" stroke={col} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+      {geo.web.map((m, i) => seg(m, i, 'w'))}
+      {geo.chordBot.map((m, i) => seg(m, i, 'b'))}
+      {geo.chordTop.map((m, i) => seg(m, i, 't'))}
     </svg>
   )
 }
