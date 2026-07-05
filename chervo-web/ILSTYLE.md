@@ -38,23 +38,31 @@ Vale igual en el header y en el panel iLStorage (¡no invertir!).
 
 ---
 
-## 3. Tipografía
+## 3. Tipografía y legibilidad — REGLA DEFINITIVA
 
 - Familia: **Exo** (`https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;600;700;800`).
-- Números / monoespaciado (opcional): Geist Mono.
+  Números / monoespaciado (opcional): Geist Mono.
+- Esto es para **gente que trabaja, sin lentes**. Ángel **ve borroso** → texto **grande y limpio**.
+  **Hay espacio: se usa texto grande.** No se discute más.
 
-**Tamaños (piso legible — "constructores que no ven bien"):**
+**Tamaños — piso OBLIGATORIO:**
 
 | Elemento | px |
 |---|---|
-| Piso de cualquier texto | **14** (13 solo si 14 distorsiona una grilla densa) |
-| Inputs | **16–18** (nunca < 16 → evita el zoom de iOS) |
-| Contenido | 16 |
-| Etiquetas de campo | 14 |
-| Título de sección | 18–20 |
-| Totales / resultados | 20–23 |
+| Cualquier texto que se lee | **16** (nunca menos) |
+| Micro-etiqueta / caption (única excepción) | **14** mínimo |
+| Etiquetas de campo | 15–16 |
+| Inputs | **18** (≥16 obligatorio → evita zoom iOS) |
+| Contenido / lectura | 16–18 |
+| Título de sección | 20–22 |
+| Totales / resultados | 22–26 |
 
-Preferir **tamaño a énfasis**: subir tamaño antes que poner negrita.
+**Negrita: uso mínimo.** Lectura en peso **400–500**; 600 solo para un título o acento puntual.
+**Nunca** bloques de texto en 700+. Un texto en negrita se ve como **una mancha** para quien ve
+borroso. **El énfasis se logra con tamaño, no con negrita.**
+
+**Prioridad: letra grande > botón grande > ícono grande.** Si hay que elegir, se agranda el
+**texto**. Jamás achicar texto para que entren botones o adornos.
 
 ---
 
