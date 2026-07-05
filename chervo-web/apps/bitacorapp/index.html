@@ -1040,7 +1040,11 @@ function proyectosDe(tid) {
 }
 
 function trabajoCardHtml(t, cant, k) {
+    const acciones = t.id ? `
+        <button class="card-del" onclick="event.stopPropagation();eliminarTrabajo('${t.id}')">${SVG_TRASH}</button>
+        <button class="card-move" onclick="event.stopPropagation();abrirModalTrabajo('${t.id}')" title="Renombrar">${SVG_EDIT}</button>` : '';
     return `<div class="proyecto-card trabajo-card" data-tid="${t.id}" style="animation-delay:${k*0.04}s">
+        ${acciones}
         <div class="card-icon-wrap">${SVG_FOLDER}</div>
         <div class="card-body">
             <div class="card-titulo">${esc(t.nombre)}</div>
@@ -1086,9 +1090,9 @@ function renderDashboard() {
 
     cont.querySelectorAll('.trabajo-card').forEach(card => {
         const tid = card.dataset.tid;
-        card.addEventListener('click', () => abrirTrabajo(tid));
+        card.addEventListener('click', () => { if (editMode) { exitEditMode(); return; } abrirTrabajo(tid); });
         if (tid) {
-            card.addEventListener('touchstart', () => { lpTimer = setTimeout(() => abrirModalTrabajo(tid), 500); }, {passive:true});
+            card.addEventListener('touchstart', () => { lpTimer = setTimeout(() => enterEditMode(), 500); }, {passive:true});
             card.addEventListener('touchend', () => clearTimeout(lpTimer), {passive:true});
             card.addEventListener('touchmove', () => clearTimeout(lpTimer), {passive:true});
         }
@@ -1200,8 +1204,8 @@ async function guardarTrabajo() {
     await guardarTrabajos();
 }
 
-function eliminarTrabajo() {
-    const id = trabajoEditId;
+function eliminarTrabajo(id) {
+    id = id || trabajoEditId;
     if (!id) return;
     cerrarModal('modal-trabajo');
     confirmar('Eliminar trabajo', 'Se elimina solo la agrupación: los proyectos NO se borran, pasan a General.', async () => {
