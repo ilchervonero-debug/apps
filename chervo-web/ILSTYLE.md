@@ -100,9 +100,14 @@ Reglas:
 2. **Grilla 24×24**: mismo alto óptico, mismo aire alrededor.
 3. **Caps y joins redondos** (`round`) → trazo suave, no técnico.
 4. **Una metáfora por ícono**, simple.
-5. **Monocromo tinta `#1C1C1C`**; el **rojo `#FE0000` solo como acento** (una flecha `›`, un punto "new", una barra de "resistente"), nunca todo el ícono.
+5. **Color por jerarquía:** **ícono ROJO `#FE0000` para lo principal** (navegación, menú de la app, acciones destacadas); **ícono NEGRO/tinta `#1C1C1C` para lo contextual/secundario** (acciones dentro de una fila, detalles).
 6. **Tamaño, no negrita.** Para que un ícono resalte, se agranda (28px standalone / 40px en botones de menú), no se engrosa.
 7. En botones se usa `stroke:currentColor` para heredar el color del contexto cuando haga falta.
+
+**Estado activo / en acción → BORDE ROJO, nunca rosado.** Botón encendido, seleccionado o input
+enfocado se marca con **borde rojo `#FE0000`** (texto/ícono rojo opcional) sobre fondo blanco o gris
+claro. **Prohibido el rosado** (fondos rojo-clarito tipo `#fdeaea`/`#ffe2e2`, o rojo a baja opacidad):
+no existe en las apps. Para "presionado" se usa un gris apenas más oscuro, no rosa.
 
 ### Set base (contenido interno del `<svg>`)
 

@@ -60,39 +60,39 @@
   #scr-tools{flex:1;display:none;flex-direction:column;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
   /* menú de cálculos: grilla de 3 (botones compactos, ícono grande) */
   .calc-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;flex-shrink:0}
-  .cmod{border:none;background:var(--fondo-2);border-radius:16px;cursor:pointer;font-family:inherit;
-    color:var(--rojo);display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:8px;padding:13px 6px;min-height:82px;text-align:center;font-size:14px;font-weight:500;line-height:1.15}
-  .cmod svg{width:44px;height:44px;fill:none;stroke:var(--tinta);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
-  .cmod:active{background:#fdeaea}
-  .cmod.on{background:#fdeaea;color:var(--rojo)}
+  .cmod{border:2px solid transparent;background:var(--fondo-2);border-radius:16px;cursor:pointer;font-family:inherit;
+    color:var(--tinta);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:8px;padding:13px 6px;min-height:84px;text-align:center;font-size:16px;font-weight:500;line-height:1.15}
+  .cmod svg{width:44px;height:44px;fill:none;stroke:var(--rojo);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
+  .cmod:active{filter:brightness(.95)}
+  .cmod.on{border-color:var(--rojo)}
   .tool-body{flex-shrink:0;padding-bottom:24px}
   .tool{display:none}
   .tool.on{display:block}
-  .tool-tit{font-size:19px;font-weight:700;margin-bottom:14px}
+  .tool-tit{font-size:22px;font-weight:700;margin-bottom:14px}
   .subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
-  .sub{border:none;background:var(--fondo-2);color:var(--gris);border-radius:999px;
-    padding:9px 15px;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;
+  .sub{border:2px solid transparent;background:var(--fondo-2);color:var(--gris);border-radius:999px;
+    padding:8px 15px;font-size:16px;font-weight:600;white-space:nowrap;cursor:pointer;
     flex-shrink:0;font-family:inherit}
-  .sub.on{background:var(--tinta);color:#fff}
+  .sub.on{background:#fff;border-color:var(--rojo);color:var(--rojo)}
   .grp{margin-bottom:12px}
-  .grp label{display:block;font-size:14px;color:var(--gris);font-weight:600;margin-bottom:6px}
+  .grp label{display:block;font-size:16px;color:var(--gris);font-weight:500;margin-bottom:6px}
   .grp input,.grp select{width:100%;font-family:'Geist Mono',monospace;font-size:18px;font-weight:600;
-    border:none;background:var(--fondo-2);border-radius:14px;padding:14px 16px;color:var(--tinta);
+    border:2px solid transparent;background:var(--fondo-2);border-radius:14px;padding:13px 15px;color:var(--tinta);
     outline:none;appearance:none}
-  .grp input:focus{background:#fdeaea}
+  .grp input:focus{border-color:var(--rojo);background:#fff}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .fieldset{display:none}
   .fieldset.on{display:block}
   .res{margin-top:8px;background:var(--fondo-2);border-radius:16px;padding:8px 18px}
-  .res .r{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;font-size:16px;border-bottom:1px solid var(--linea)}
+  .res .r{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;font-size:17px;border-bottom:1px solid var(--linea)}
   .res .r:last-child{border-bottom:none}
-  .res .r span{color:var(--gris);font-weight:600}
-  .res .r b{font-family:'Geist Mono',monospace;font-size:23px;color:var(--rojo);font-weight:700}
-  .btn{width:100%;border:none;background:var(--rojo);color:#fff;border-radius:14px;padding:14px;
-    font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+  .res .r span{color:var(--gris);font-weight:500}
+  .res .r b{font-family:'Geist Mono',monospace;font-size:24px;color:var(--rojo);font-weight:700}
+  .btn{width:100%;border:none;background:var(--rojo);color:#fff;border-radius:14px;padding:15px;
+    font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
   .btn.ghost{background:var(--fondo-2);color:var(--tinta)}
-  .hint{font-size:14px;color:var(--gris);margin-top:12px;line-height:1.55}
+  .hint{font-size:16px;color:var(--gris);margin-top:12px;line-height:1.55}
 </style>
 </head>
 <body>

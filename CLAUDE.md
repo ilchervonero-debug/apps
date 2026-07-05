@@ -20,6 +20,13 @@ Ejemplo: "Hola Ángel, …". Un saludo breve y natural, sin exagerar; después s
 - **Letra grande antes que botón/ícono grande.** Hay espacio → texto grande. No achicar texto por adornos.
 - Detalle completo en `chervo-web/ILSTYLE.md` §3.
 
+## Íconos y color de estado (regla fija)
+
+- **Ícono rojo `#FE0000` = principal** (navegación, menú, acción destacada); **ícono negro/tinta = contexto/secundario.**
+- Ícono de **línea fina** (stroke ~1.1), nunca grueso.
+- **Estado encendido/activo/enfocado = BORDE ROJO**, nunca rosado.
+- **Sin rosado en ninguna app** (nada de `#fdeaea`, `#ffe2e2`, ni rojo a baja opacidad). "Presionado" = gris apenas más oscuro.
+
 ## Contexto del proyecto
 
 - Familia de PWAs **iLStorage** en `chervo-web/` (deploy a **ilchervo.com** vía Vercel, rama `master`).

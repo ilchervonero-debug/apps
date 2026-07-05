@@ -25,7 +25,7 @@ h1 span{color:#C0C0C0}
 .mod{display:flex;align-items:center;gap:14px;text-align:left;background:var(--suave);border:none;
   padding:16px 18px;border-radius:20px;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;
   animation:pop .4s ease both}
-.mod:active{transform:scale(.97);background:#fdeaea}
+.mod:active{transform:scale(.97);filter:brightness(.96)}
 @media(hover:hover){.mod:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.08)}
 .mod:hover .fl{transform:translateX(4px)}}
 
@@ -57,8 +57,8 @@ h1 span{color:#C0C0C0}
 .campo{margin-bottom:14px}
 .campo label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--gris);margin-bottom:5px}
 .campo input,.campo select{width:100%;font-family:'Geist Mono',monospace;font-size:20px;font-weight:600;border:none;background:var(--suave);border-radius:22px;padding:13px 18px;color:var(--tinta);outline:none;appearance:none}
-.campo input:focus{background:#fdeaea}
-.campo input:disabled{background:#fbe3e3;color:var(--rojo);-webkit-text-fill-color:var(--rojo)}
+.campo input:focus{box-shadow:inset 0 0 0 2px var(--rojo);background:#fff}
+.campo input:disabled{background:#EDEDEA;color:var(--rojo);-webkit-text-fill-color:var(--rojo)}
 .out{margin-top:16px;background:var(--suave);border-radius:22px;padding:18px 20px}
 .out .big{font-size:32px;font-weight:700;letter-spacing:-1px}
 .out .big small{font-size:15px;color:var(--gris);font-weight:500}
@@ -73,7 +73,7 @@ h1 span{color:#C0C0C0}
 .cam{display:flex;align-items:center;gap:10px;padding:10px 2px;flex-wrap:wrap}
 .cam .tag{font-family:'Geist Mono',monospace;font-size:12px;font-weight:600;background:var(--tinta);color:#fff;border-radius:999px;padding:5px 11px}
 .cam input{font-family:'Geist Mono',monospace;font-size:15px;font-weight:600;width:88px;border:none;background:var(--suave);border-radius:999px;padding:8px 14px;color:var(--tinta);outline:none;text-align:right}
-.cam input:focus{background:#fdeaea}
+.cam input:focus{box-shadow:inset 0 0 0 2px var(--rojo);background:#fff}
 .cam .prof{font-size:13px;color:var(--gris)}
 .cam .fixt{font-size:10px;color:var(--rojo);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 .cam .salto{font-size:11px;color:var(--gris)}
@@ -89,7 +89,7 @@ h1 span{color:#C0C0C0}
 .t-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .t-grid label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--gris);margin-bottom:3px}
 .t-grid input{width:100%;font-family:'Geist Mono',monospace;font-size:16px;font-weight:600;border:none;background:var(--suave);border-radius:16px;padding:9px 12px;color:var(--tinta);outline:none}
-.t-grid input:focus{background:#fdeaea}
+.t-grid input:focus{box-shadow:inset 0 0 0 2px var(--rojo);background:#fff}
 .wc{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--gris)}
 .wc input{width:17px;height:17px;accent-color:var(--rojo)}
 .t-res{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px}
@@ -114,7 +114,7 @@ h1 span{color:#C0C0C0}
 .ck{border:none;border-radius:999px;aspect-ratio:1;font-size:24px;font-weight:600;font-family:'Geist',sans-serif;
   background:var(--suave);color:var(--tinta);cursor:pointer;transition:transform .1s ease,filter .1s ease}
 .ck:active{transform:scale(.92);filter:brightness(.95)}
-.ck.op{background:#ffe2e2;color:var(--rojo)}
+.ck.op{background:#E4E4E0;color:var(--rojo)}
 .ck.op.on{background:var(--rojo);color:#fff}
 .ck.fn{background:#eee;color:var(--gris)}
 .ck.eq{background:var(--rojo);color:#fff}
@@ -133,7 +133,7 @@ h1 span{color:#C0C0C0}
 .baj:first-child{border-top:none}
 .baj .tag{font-family:'Geist Mono',monospace;font-size:12px;font-weight:600;background:var(--tinta);color:#fff;border-radius:999px;padding:5px 11px}
 .baj input{flex:1;font-family:'Geist Mono',monospace;font-size:17px;font-weight:600;border:none;background:var(--suave);border-radius:999px;padding:10px 16px;color:var(--tinta);outline:none}
-.baj input:focus{background:#fdeaea}
+.baj input:focus{box-shadow:inset 0 0 0 2px var(--rojo);background:#fff}
 .baj .r{font-family:'Geist Mono',monospace;font-size:13px;font-weight:600;color:var(--rojo);min-width:54px;text-align:right}
 .baj .del{border:none;background:none;color:var(--rojo);font-size:15px;cursor:pointer;padding:4px}
 </style>

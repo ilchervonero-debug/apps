@@ -42,7 +42,7 @@ header{background:var(--color-white);padding:15px 20px;display:flex;align-items:
 
 /* BOTONES GLOBALES */
 .btn-row{display:flex;gap:12px;}
-.btn{border:none;padding:12px 18px;border-radius:6px;font-size:15px;cursor:pointer;font-weight:600;font-family:'Exo',sans-serif;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn{border:none;padding:13px 18px;border-radius:6px;font-size:16px;cursor:pointer;font-weight:600;font-family:'Exo',sans-serif;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-red{background:var(--color-red-accent);color:var(--color-white);}
 .btn-red:active{opacity:0.8;}
 .btn-grey-red{background:var(--color-gray-light);color:var(--color-red-accent);}
@@ -63,7 +63,7 @@ header{background:var(--color-white);padding:15px 20px;display:flex;align-items:
 .list-icon{margin-right:16px;display:flex;align-items:center;}
 .list-content{flex:1;min-width:0;}
 .list-title{font-size:18px;font-weight:600;color:var(--color-gray-dark);margin-bottom:4px;}
-.list-subtitle{font-size:14px;color:var(--color-gray-text);font-weight:500;}
+.list-subtitle{font-size:15px;color:var(--color-gray-text);font-weight:500;}
 .action-btn{background:none;border:none;cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;color:var(--color-gray-text);}
 .action-btn:hover .icon-svg{stroke:var(--color-gray-dark);}
 
@@ -71,7 +71,7 @@ header{background:var(--color-white);padding:15px 20px;display:flex;align-items:
 .env-card{background:var(--color-white);border-radius:6px;padding:20px;margin-bottom:16px;border:1px solid var(--color-gray-medium);display:flex;border-left:4px solid var(--color-red-accent);}
 .env-info{flex:1;min-width:0;}
 .env-name{font-size:18px;font-weight:600;color:var(--color-gray-dark);margin-bottom:10px;}
-.env-data{font-size:14px;color:var(--color-gray-text);line-height:1.7;font-weight:400;}
+.env-data{font-size:16px;color:var(--color-gray-text);line-height:1.7;font-weight:400;}
 .env-actions{display:flex;flex-direction:column;justify-content:flex-start;gap:12px;padding-left:16px;margin-left:16px;border-left:1px solid var(--color-gray-light);}
 
 /* TOTALES */
@@ -94,13 +94,13 @@ header{background:var(--color-white);padding:15px 20px;display:flex;align-items:
 }
 
 .ed-group{margin-bottom:24px;}
-.ed-group label{display:block;font-size:14px;font-weight:600;color:var(--color-gray-dark);margin-bottom:8px;}
+.ed-group label{display:block;font-size:16px;font-weight:600;color:var(--color-gray-dark);margin-bottom:8px;}
 .ed-file-bar{display:flex;gap:12px;align-items:center;}
-.btn-upload{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:2px dashed var(--color-red-accent);background:#FFF9F9;color:var(--color-red-accent);border-radius:6px;font-weight:700;cursor:pointer;font-size:15px;letter-spacing:0.5px;font-family:'Exo',sans-serif;text-transform:uppercase;}
-.btn-upload:active{background:#FFEFEF;}
+.btn-upload{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:2px dashed var(--color-red-accent);background:var(--color-gray-light);color:var(--color-red-accent);border-radius:6px;font-weight:700;cursor:pointer;font-size:16px;letter-spacing:0.5px;font-family:'Exo',sans-serif;text-transform:uppercase;}
+.btn-upload:active{background:var(--color-gray-medium);}
 .dir-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:52px;border:1px solid var(--color-gray-medium);background:var(--color-white);color:var(--color-gray-text);border-radius:6px;cursor:pointer;font-family:'Exo',sans-serif;font-size:15px;font-weight:600;transition:all 0.15s;}
 .dir-btn svg{width:26px;height:26px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
-.dir-btn.active{border:2px solid var(--color-red-accent);color:var(--color-red-accent);background:#FFF9F9;}
+.dir-btn.active{border:2px solid var(--color-red-accent);color:var(--color-red-accent);background:var(--color-white);}
 .sel{font-size:15px;padding:0 12px;border:1px solid var(--color-gray-medium);border-radius:6px;background:var(--color-white);height:48px;font-family:'Exo',sans-serif;color:var(--color-gray-dark);}
 
 /* SEGMENTED CONTROL */
@@ -277,7 +277,7 @@ canvas{display:block;touch-action:none;}
           </div>
           <div style="display:flex; gap:12px;">
             <div style="flex:1;">
-              <label style="font-size:13px;">Espesor Placa</label>
+              <label style="font-size:16px;">Espesor Placa</label>
               <select id="edPlacaEsp" class="sel" style="width:100%;">
                 <option value="9.5">9.5 mm</option>
                 <option value="12.5">12.5 mm</option>
@@ -285,7 +285,7 @@ canvas{display:block;touch-action:none;}
               </select>
             </div>
             <div style="flex:1;">
-              <label style="font-size:13px;">Tipo Placa</label>
+              <label style="font-size:16px;">Tipo Placa</label>
               <select id="edPlacaTipo" class="sel" style="width:100%;">
                 <option value="Estándar" selected>Estándar</option>
                 <option value="RH (Verde)">RH (Verde)</option>
@@ -299,15 +299,15 @@ canvas{display:block;touch-action:none;}
           <label>Lámparas / Spots</label>
           <div style="display:flex; gap:12px;">
             <div style="flex:1;">
-              <label style="font-size:13px;">Cantidad</label>
+              <label style="font-size:16px;">Cantidad</label>
               <input type="number" id="edLampQty" class="input-text" value="0" min="0" step="1" style="width:100%; text-align:center; margin-bottom:0;">
             </div>
             <div style="flex:1;">
-              <label style="font-size:13px;">Diámetro (mm)</label>
+              <label style="font-size:16px;">Diámetro (mm)</label>
               <input type="number" id="edLampDia" class="input-text" value="92" min="1" step="1" style="width:100%; text-align:center; margin-bottom:0;">
             </div>
           </div>
-          <div style="font-size:13px; color:var(--color-gray-text); font-weight:400; margin-top:8px;">Suma cinta papel por perímetro de cada perforación.</div>
+          <div style="font-size:15px; color:var(--color-gray-text); font-weight:400; margin-top:8px;">Suma cinta papel por perímetro de cada perforación.</div>
         </div>
 
         <div class="ed-group">
@@ -316,7 +316,7 @@ canvas{display:block;touch-action:none;}
             <input type="number" id="edCenefaLen" class="input-text" placeholder="Metros (ml)" step="0.01" style="width:110px; flex:none;">
             <input type="text" id="edCenefaWhere" class="input-text" placeholder="Ubicación (Opcional)" style="flex:1; min-width:0;">
           </div>
-          <div style="font-size:13px; color:var(--color-gray-text); font-weight:400;">Dibuja en el plano o ingresa los metros.</div>
+          <div style="font-size:15px; color:var(--color-gray-text); font-weight:400;">Dibuja en el plano o ingresa los metros.</div>
         </div>
 
         <div id="edSummaryGroup" class="summary-card" style="display:none; padding:20px; background:#FAFAFA;">

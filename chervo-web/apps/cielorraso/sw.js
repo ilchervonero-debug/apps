@@ -1,4 +1,4 @@
-const CACHE = 'cielorraso-v4';
+const CACHE = 'cielorraso-v5';
 const ASSETS = [
   '/apps/cielorraso/',
   '/apps/cielorraso/index.html',

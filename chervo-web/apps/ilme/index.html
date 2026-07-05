@@ -131,7 +131,7 @@
   }
   .item.remarcado::before{
     content:"";position:absolute;left:-8px;right:-8px;top:6px;bottom:6px;
-    background:var(--rojo);opacity:.1;border-radius:6px;transform:rotate(-.3deg);z-index:0;
+    background:var(--fondo-2);opacity:1;border-radius:6px;transform:rotate(-.3deg);z-index:0;
   }
   .item.remarcado{border-left:3px solid var(--rojo);padding-left:6px}
   .item > *{position:relative;z-index:1}
@@ -180,7 +180,7 @@
   .ic svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
   .sq.recordatorio{background:var(--rojo)}
   .item.recordatorio .ic{color:var(--tinta)}
-  .item.alarma{background:#F4DEDE}
+  .item.alarma{background:var(--fondo-2);box-shadow:inset 3px 0 0 var(--rojo)}
   .item.alarma .ic{color:var(--rojo);animation:parpadeo .6s infinite}
   .item.alarma .txt{color:var(--rojo)}
   @keyframes parpadeo{0%,100%{opacity:1}50%{opacity:0.6}}
