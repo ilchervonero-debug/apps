@@ -1,4 +1,4 @@
-const CACHE = 'ilsanitaria-v4';
+const CACHE = 'ilsanitaria-v5';
 const ASSETS = [
   '/apps/ilsanitaria/',
   '/apps/ilsanitaria/index.html',
