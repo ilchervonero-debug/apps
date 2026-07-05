@@ -57,18 +57,23 @@
 
   /* ── Área de Cálculos ── */
   #scr-tools{flex:1;display:none;flex-direction:column;min-height:0}
-  .tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;flex-shrink:0;scrollbar-width:none}
-  .tabs::-webkit-scrollbar{display:none}
-  .tab{border:none;background:var(--fondo-2);color:var(--gris);border-radius:999px;
-    padding:10px 16px;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;
-    flex-shrink:0;font-family:inherit}
-  .tab.on{background:var(--rojo);color:#fff}
+  /* menú de cálculos: grilla de 3, igual que la calculadora */
+  .calc-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1;
+    overflow-y:auto;align-content:start;padding-bottom:20px}
+  .cmod{border:none;background:var(--fondo-2);border-radius:16px;cursor:pointer;font-family:inherit;
+    color:var(--tinta);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:9px;padding:20px 6px;min-height:98px;text-align:center;font-size:13px;font-weight:700;line-height:1.15}
+  .cmod svg{width:32px;height:32px;fill:none;stroke:var(--rojo);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .cmod:active{background:#fdeaea}
+  #tool-view{flex:1;display:none;flex-direction:column;min-height:0}
+  .volver-menu{align-self:flex-start;border:none;background:none;color:var(--rojo);font-family:inherit;
+    font-size:15px;font-weight:700;cursor:pointer;padding:0 0 12px;display:flex;align-items:center;gap:5px}
+  .volver-menu svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
   .tool-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:20px}
   .tool{display:none}
   .tool.on{display:block}
   .tool-tit{font-size:17px;font-weight:700;margin-bottom:12px}
-  .subtabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none}
-  .subtabs::-webkit-scrollbar{display:none}
+  .subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
   .sub{border:none;background:var(--fondo-2);color:var(--gris);border-radius:999px;
     padding:8px 14px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;
     flex-shrink:0;font-family:inherit}
@@ -113,8 +118,10 @@
 
 <!-- ══════ Área de Cálculos ══════ -->
 <section id="scr-tools">
-  <div class="tabs" id="tabs"></div>
-  <div class="tool-body">
+  <div class="calc-menu" id="tools-menu"></div>
+  <div id="tool-view">
+    <button class="volver-menu" onclick="cerrarTool()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Menú de cálculos</button>
+    <div class="tool-body">
 
     <!-- Geometría -->
     <div class="tool" data-t="geo">
@@ -231,6 +238,7 @@
       <div class="hint" id="monHint"></div>
     </div>
 
+    </div>
   </div>
 </section>
 
@@ -242,6 +250,7 @@ function mostrar(scr){
   document.getElementById('scr-tools').style.display = tools?'flex':'none';
   document.getElementById('navTools').style.display = tools?'none':'flex';
   document.getElementById('navCalc').style.display = tools?'flex':'none';
+  if(tools) cerrarTool(); // entrar siempre muestra el menú de cálculos
 }
 
 /* ══════════ Calculadora ══════════ */
@@ -296,19 +305,30 @@ const V = id => { const el=document.getElementById(id); if(!el) return NaN;
 const F = n => { if(!isFinite(n)) return '—'; const r=Math.round(n*1e4)/1e4; return String(r); };
 const fila = (lbl,val,uni='') => '<div class="r"><span>'+lbl+'</span><b>'+val+(uni?' <small style="color:var(--gris);font-size:13px">'+uni+'</small>':'')+'</b></div>';
 
-/* Pestañas principales */
-const TABS=[['geo','Geometría'],['r3','Regla de 3'],['pit','Pitágoras'],['pen','Pendientes'],['med','Medidas'],['mon','Moneda']];
-const tabsC=document.getElementById('tabs');
-TABS.forEach(([id,nom],i)=>{
-  const b=document.createElement('button'); b.className='tab'+(i===0?' on':''); b.textContent=nom;
-  b.onclick=()=>{
-    document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');
-    document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('on', x.dataset.t===id));
-  };
-  tabsC.appendChild(b);
+/* Menú de cálculos (grilla de 3, orden pedido: Regla de 3, Áreas, Conversión, y el resto abajo) */
+const MENU=[
+  ['r3','Regla de 3', '<svg viewBox="0 0 24 24"><path d="M12 4v16"/><path d="M5 8h14"/><path d="M5 8l-2.5 5a2.5 2.5 0 0 0 5 0z"/><path d="M19 8l-2.5 5a2.5 2.5 0 0 0 5 0z"/><path d="M8 20h8"/></svg>'],
+  ['geo','Áreas', '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="9" height="9" rx="1"/><path d="M13 20l5-9 5 9z"/></svg>'],
+  ['med','Conversión', '<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="1.5"/><path d="M6 7v3M10 7v4M14 7v3M18 7v4"/></svg>'],
+  ['pit','Pitágoras', '<svg viewBox="0 0 24 24"><path d="M5 19V6l13 13z"/><path d="M5 15h4v4"/></svg>'],
+  ['pen','Pendientes', '<svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 20L19 7"/><path d="M19 7v13"/></svg>'],
+  ['mon','Moneda', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M14.5 9.3a2.4 2 0 0 0-2.5-1.3c-1.5 0-2.7.8-2.7 2s1.2 1.7 2.7 2.1 2.7.9 2.7 2.1-1.2 2-2.7 2a2.6 2 0 0 1-2.6-1.4"/></svg>'],
+];
+const menuC=document.getElementById('tools-menu');
+MENU.forEach(([id,nom,ic])=>{
+  const b=document.createElement('button'); b.className='cmod'; b.innerHTML=ic+'<span>'+nom+'</span>';
+  b.onclick=()=>abrirTool(id);
+  menuC.appendChild(b);
 });
-document.querySelector('.tool[data-t="geo"]').classList.add('on');
+function abrirTool(id){
+  document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('on', x.dataset.t===id));
+  document.getElementById('tools-menu').style.display='none';
+  document.getElementById('tool-view').style.display='flex';
+}
+function cerrarTool(){
+  document.getElementById('tool-view').style.display='none';
+  document.getElementById('tools-menu').style.display='grid';
+}
 
 /* Sub-pestañas genéricas: (contenedor, items, onSel) */
 function subPills(cont, items, cb, sel0){
