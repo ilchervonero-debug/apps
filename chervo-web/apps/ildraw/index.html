@@ -10,12 +10,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
   --accent:#C70000;--red:#C70000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
   --tb:56px;--prop:44px;
-  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  --font:'Exo',-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;height:100dvh;overflow:hidden;touch-action:none;user-select:none;font-family:var(--font);}
@@ -35,9 +37,9 @@ body{display:flex;flex-direction:column;background:#fff;}
   height:100%;display:flex;align-items:center;
   padding:0 10px 0 12px;flex-shrink:0;
   border-right:1px solid rgba(0,0,0,.06);
-  font-size:14px;font-weight:800;letter-spacing:-0.5px;color:var(--ink);
+  font-size:15px;font-weight:800;letter-spacing:-0.5px;color:#C0C0C0;
 }
-.bar-logo span{color:var(--accent);}
+.bar-logo span{color:#FE0000;}
 .tg{display:flex;align-items:center;gap:2px;padding:0 6px;height:100%;flex-shrink:0;border-right:1px solid rgba(0,0,0,.06);}
 .tg:last-child{border-right:none;}
 
@@ -1253,18 +1255,18 @@ if('serviceWorker' in navigator){
 #ilsx-sheet{background:#fff;width:100%;max-width:600px;border-radius:22px 22px 0 0;padding:8px 0 calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 40px rgba(0,0,0,.18);animation:ilsxUp .25s cubic-bezier(.3,1.1,.5,1)}
 @keyframes ilsxUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 #ilsx-grip{width:38px;height:4px;border-radius:2px;background:#e2e2e2;margin:6px auto 14px}
-.ilsx-app{font-size:20px;font-weight:700;color:#2b2b2b;padding:0 22px;letter-spacing:-.3px}
-.ilsx-app b{color:#fe0000;font-weight:800}
+.ilsx-app{font-size:20px;font-weight:800;color:#C0C0C0;padding:0 22px;letter-spacing:-.3px}
+.ilsx-app b{color:#FE0000;font-weight:800}
 .ilsx-ver{font-size:12px;color:#8a8a8a;padding:3px 22px 12px;font-weight:300}
 .ilsx-row{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #f0f0f0;padding:16px 22px;font-family:inherit;font-size:15px;font-weight:600;color:#2b2b2b;cursor:pointer;text-decoration:none}
-.ilsx-row svg{width:19px;height:19px;color:#8a8a8a;flex:none}
+.ilsx-row svg{width:22px;height:22px;color:#8a8a8a;flex:none}
 .ilsx-row:active{background:#fafafa}
 .ilsx-foot{text-align:center;font-size:11px;color:#c4c4c4;font-weight:800;letter-spacing:.14em;padding:16px 0 2px}
 </style>
 <div id="ilsx-ov" onclick="if(event.target===this)ilsxClose()">
   <div id="ilsx-sheet">
     <div id="ilsx-grip"></div>
-    <div class="ilsx-app">iL<b>Draw</b></div>
+    <div class="ilsx-app"><b>iL</b>Draw</div>
     <div class="ilsx-ver">versión 3.0</div>
     <a class="ilsx-row" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</a>
     <div class="ilsx-foot">iLStorage</div>
