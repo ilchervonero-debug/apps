@@ -10,14 +10,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="author" content="Angel Nieves — iLChervoNero">
 <meta name="creator" content="Creado por Angel Nieves — iLChervoNero">
-<meta name="version" content="1.5">
+<meta name="version" content="1.6">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.svg">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --fondo:#F2F2F0;
@@ -30,18 +30,18 @@
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{
-    font-family:'Inter',system-ui,sans-serif;
+    font-family:'Exo',system-ui,sans-serif;
     background:var(--fondo);color:var(--tinta);
     display:flex;flex-direction:column;overflow:hidden;
-    font-weight:300;
+    font-weight:400;
   }
-  .mono{font-family:'Inter',sans-serif}
+  .mono{font-family:'Exo',sans-serif}
 
   /* ── Solapas Agenda / Rutinas ── */
   .solapas{display:flex;align-items:center;gap:12px;padding:12px 16px 0;flex-shrink:0}
-  .brand-nom{font-size:1.35rem;font-weight:700;letter-spacing:-.03em;color:var(--tinta);margin-right:auto}
-  #authChip img{width:30px!important;height:30px!important}
-  .brand-nom span{color:var(--rojo)}
+  .brand-nom{font-size:1.35rem;font-weight:800;letter-spacing:-.03em;color:var(--tinta);margin-right:auto}
+  #authChip img{width:28px!important;height:28px!important}
+  .brand-nom span{color:#C0C0C0}
   .tabs-group{display:flex;align-items:center;gap:2px}
   .solapa{
     border:none;background:none;font-family:inherit;cursor:pointer;
@@ -159,7 +159,7 @@
     padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;
     transition:background .12s,color .12s;
   }
-  .acc svg{width:17px;height:17px;display:block;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .acc svg{width:21px;height:21px;display:block;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .acc:hover{background:var(--fondo-2);color:var(--tinta)}
   .acc:active{background:var(--linea)}
   .acc.del{color:var(--rojo)}
@@ -177,7 +177,7 @@
   .rut-racha{font-size:.66rem;color:var(--rojo);font-family:'Geist Mono',monospace;flex-shrink:0;align-self:center}
 
   /* recordatorios y rutinas con hora (en marca: negro / rojo al sonar) */
-  .ic svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+  .ic svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
   .sq.recordatorio{background:var(--rojo)}
   .item.recordatorio .ic{color:var(--tinta)}
   .item.alarma{background:#F4DEDE}
@@ -257,13 +257,6 @@
   .calc-grid button.op{background:var(--rojo);color:#fff}
   .calc-grid button.ig{background:var(--rojo);color:#fff}
 
-  /* ── Botón menú del panel ── */
-  .pmenu{
-    border:none;background:var(--fondo);border-radius:10px;cursor:pointer;
-    font-size:1.25rem;line-height:1;padding:9px 18px;color:var(--tinta);
-    font-weight:700;letter-spacing:.05em;
-  }
-
   /* ── Menú contextual ── */
   #menuOv{position:fixed;inset:0;z-index:60;display:none}
   #menuOv.ver{display:block}
@@ -273,9 +266,10 @@
     box-shadow:0 8px 24px rgba(28,28,28,.18);min-width:175px;
   }
   .menu button{
-    display:block;width:100%;border:none;background:none;font-family:inherit;
-    text-align:left;font-size:.9rem;padding:11px 14px;cursor:pointer;color:var(--tinta);
+    display:flex;align-items:center;width:100%;border:none;background:none;font-family:inherit;
+    text-align:left;font-size:.95rem;padding:12px 15px;cursor:pointer;color:var(--tinta);
   }
+  .menu button svg{width:25px;height:25px;margin-right:11px;flex-shrink:0}
   .menu button:active{background:var(--fondo-2)}
   .menu button+button{border-top:1px solid var(--linea)}
 
@@ -328,13 +322,13 @@
 <body>
 
 <div class="solapas">
-  <div class="brand-nom"><span>iL</span>Me</div>
+  <div class="brand-nom">iL<span>Me</span></div>
   <div class="tabs-group">
     <button class="solapa sel" id="solAgenda">Agenda</button>
     <button class="solapa" id="solMemory">Memory</button>
     <button class="fin" id="btnFin">✓</button>
   </div>
-  <span id="authChip" style="display:none;font-size:.65rem;font-family:'Geist Mono',monospace;color:var(--gris);background:var(--fondo-alt,#f3f3f0);border-radius:20px;padding:2px 8px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer" onclick="document.getElementById('btnMenu').click()"></span>
+  <button id="authChip" title="Cuenta y opciones" style="border:none;background:none;padding:0;margin:0;cursor:pointer;display:flex;align-items:center;color:var(--gris)"></button>
 </div>
 
 <header id="cabAgenda">
@@ -354,7 +348,6 @@
         <button class="pbtn" id="btnHoy">HOY</button>
       </div>
       <span class="pd" id="pSem"></span>
-      <button class="pmenu" id="btnMenu">⋯</button>
     </div>
   </div>
 </header>
@@ -415,7 +408,7 @@
     <button id="mLogout" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:6px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span id="userNom"></span> · Salir</button>
     <div style="padding:10px 14px 6px;border-top:1px solid var(--linea);text-align:center">
       <div style="font-size:.68rem;color:var(--gris);line-height:1.6">Creado por <strong style="color:var(--tinta)">Angel Nieves</strong> · iLChervoNero</div>
-      <div style="font-size:.6rem;color:#ADADA9;margin-top:1px">iLMe v1.5</div>
+      <div style="font-size:.6rem;color:#ADADA9;margin-top:1px">iLMe v1.6</div>
     </div>
   </div>
 </div>
@@ -1033,9 +1026,12 @@ teclas.forEach(t=>{
   grid.appendChild(b);
 });
 
-// ── Menú contextual (⋯) ──
+// ── Menú contextual (se abre desde el avatar / botón de cuenta) ──
 const menuOv=document.getElementById('menuOv');
-document.getElementById('btnMenu').onclick=()=>menuOv.classList.add('ver');
+// Ícono de cuenta (persona) cuando no hay sesión de Google — 28px standalone (iLStyle)
+const ICONO_CUENTA='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+document.getElementById('authChip').innerHTML=ICONO_CUENTA; // estado inicial mientras resuelve la sesión
+document.getElementById('authChip').onclick=()=>menuOv.classList.add('ver');
 menuOv.onclick=e=>{ if(e.target===menuOv) menuOv.classList.remove('ver'); };
 document.getElementById('mCalc').onclick=()=>{ menuOv.classList.remove('ver'); window.open('/apps/ilcalc/','_blank'); };
 document.getElementById('mBorr').onclick=()=>{ menuOv.classList.remove('ver'); pintarBorrados(); borrOv.classList.add('ver'); };
@@ -1168,14 +1164,15 @@ function actualizarAuthUI(){
     userNom.textContent=nom;
     if(chip){
       if(sesion.user.photo){
-        chip.innerHTML='<img src="'+sesion.user.photo+'" alt="" referrerpolicy="no-referrer" style="width:26px;height:26px;border-radius:50%;display:block;object-fit:cover">';
-        chip.style.padding='0'; chip.style.background='none'; chip.style.maxWidth='none';
-      } else { chip.textContent='● '+nom; chip.style.padding=''; chip.style.background=''; }
-      chip.style.display='';
+        chip.innerHTML='<img src="'+sesion.user.photo+'" alt="" referrerpolicy="no-referrer" style="width:28px;height:28px;border-radius:50%;display:block;object-fit:cover">';
+      } else {
+        chip.innerHTML=ICONO_CUENTA+'<span style="font-size:.72rem;color:var(--gris);margin-left:5px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+nom+'</span>';
+      }
+      chip.style.display='flex';
     }
   } else {
     mLogin.style.display=''; mLogout.style.display='none'; mSync.style.display='none';
-    if(chip) chip.style.display='none';
+    if(chip){ chip.innerHTML=ICONO_CUENTA; chip.style.display='flex'; } // ícono de cuenta genérico, sigue abriendo el menú (Entrar con Google)
   }
 }
 
