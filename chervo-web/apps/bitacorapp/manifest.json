@@ -5,8 +5,8 @@
   "start_url": "/apps/bitacorapp/",
   "scope": "/apps/bitacorapp/",
   "display": "standalone",
-  "background_color": "#f7f7f7",
-  "theme_color": "#1a1a1a",
+  "background_color": "#F2F2F0",
+  "theme_color": "#F2F2F0",
   "orientation": "portrait-primary",
   "icons": [
     {

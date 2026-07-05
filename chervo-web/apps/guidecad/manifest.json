@@ -7,8 +7,8 @@
   "start_url": "/apps/guidecad/",
   "scope": "/apps/guidecad/",
   "display": "standalone",
-  "background_color": "#f2f2f2",
-  "theme_color": "#b71c1c",
+  "background_color": "#F2F2F0",
+  "theme_color": "#F2F2F0",
   "orientation": "portrait-primary",
   "icons": [
     {

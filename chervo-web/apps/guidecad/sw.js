@@ -1,4 +1,4 @@
-const CACHE = 'guidecad-v2';
+const CACHE = 'guidecad-v3';
 const ASSETS = [
   '/apps/guidecad/',
   '/apps/guidecad/index.html',

@@ -137,6 +137,21 @@ Reglas:
 
 > Galería visual (viva) desplegada en **`/ilstyle-iconos.html`**.
 
+### Ícono de app instalada (launcher / PWA)
+
+Es distinto al ícono de interfaz: es la **identidad** de la app en la pantalla del celu.
+Todos comparten el mismo molde para verse hermanos:
+
+- Lienzo **192×192**, fondo **full-bleed** `#F2F2F0` (sin margen ni esquinas propias):
+  `<rect width="192" height="192" fill="#F2F2F0"/>` — el launcher aplica su propia máscara.
+- Glifo de identidad en **gris `#888888`** (relleno o trazo grueso, legible a tamaño chico).
+- Acento en **rojo `#FF3333`** (un detalle, no todo el glifo).
+- Contenido dentro de la **zona segura** (círculo central ~80%): nada pegado al borde.
+- En `manifest.json`: `"purpose": "any maskable"`, `background_color` y `theme_color` = `#F2F2F0`.
+
+> **Ojo (Android):** el ícono instalado se **congela al instalar** (WebAPK). Cambiar el
+> archivo no actualiza el que ya está en la pantalla — hay que **reinstalar** la app.
+
 ---
 
 ## 7. Botones e íconos: "el texto es el botón"
@@ -147,4 +162,4 @@ Reglas:
 
 ---
 
-_Versión iLStyle 1.2 — se agrega la regla de íconos y el set base._
+_Versión iLStyle 1.3 — se agrega el estándar de ícono de app instalada (launcher full-bleed maskable) y se uniforman los íconos instalados._
