@@ -56,46 +56,43 @@
   .grid button.ig{background:var(--rojo);color:#fff}
 
   /* ── Área de Cálculos ── */
-  #scr-tools{flex:1;display:none;flex-direction:column;min-height:0}
-  /* menú de cálculos: grilla de 3, igual que la calculadora */
-  .calc-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;flex:1;
-    overflow-y:auto;align-content:start;padding-bottom:20px}
+  /* área de Cálculos: todo scroll vertical; el menú queda arriba y la herramienta debajo */
+  #scr-tools{flex:1;display:none;flex-direction:column;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  /* menú de cálculos: grilla de 3 (botones compactos, ícono grande) */
+  .calc-menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;flex-shrink:0}
   .cmod{border:none;background:var(--fondo-2);border-radius:16px;cursor:pointer;font-family:inherit;
     color:var(--tinta);display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:9px;padding:20px 6px;min-height:98px;text-align:center;font-size:13px;font-weight:700;line-height:1.15}
-  .cmod svg{width:32px;height:32px;fill:none;stroke:var(--rojo);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    gap:8px;padding:13px 6px;min-height:82px;text-align:center;font-size:14px;font-weight:600;line-height:1.15}
+  .cmod svg{width:40px;height:40px;fill:none;stroke:var(--rojo);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .cmod:active{background:#fdeaea}
-  #tool-view{flex:1;display:none;flex-direction:column;min-height:0}
-  .volver-menu{align-self:flex-start;border:none;background:none;color:var(--rojo);font-family:inherit;
-    font-size:15px;font-weight:700;cursor:pointer;padding:0 0 12px;display:flex;align-items:center;gap:5px}
-  .volver-menu svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
-  .tool-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:20px}
+  .cmod.on{background:#fdeaea;color:var(--rojo)}
+  .tool-body{flex-shrink:0;padding-bottom:24px}
   .tool{display:none}
   .tool.on{display:block}
-  .tool-tit{font-size:17px;font-weight:700;margin-bottom:12px}
+  .tool-tit{font-size:19px;font-weight:700;margin-bottom:14px}
   .subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
   .sub{border:none;background:var(--fondo-2);color:var(--gris);border-radius:999px;
-    padding:8px 14px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;
+    padding:9px 15px;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;
     flex-shrink:0;font-family:inherit}
   .sub.on{background:var(--tinta);color:#fff}
   .grp{margin-bottom:12px}
-  .grp label{display:block;font-size:13px;color:var(--gris);font-weight:600;margin-bottom:5px}
-  .grp input,.grp select{width:100%;font-family:'Geist Mono',monospace;font-size:17px;font-weight:600;
-    border:none;background:var(--fondo-2);border-radius:14px;padding:13px 16px;color:var(--tinta);
+  .grp label{display:block;font-size:14px;color:var(--gris);font-weight:600;margin-bottom:6px}
+  .grp input,.grp select{width:100%;font-family:'Geist Mono',monospace;font-size:18px;font-weight:600;
+    border:none;background:var(--fondo-2);border-radius:14px;padding:14px 16px;color:var(--tinta);
     outline:none;appearance:none}
   .grp input:focus{background:#fdeaea}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .fieldset{display:none}
   .fieldset.on{display:block}
   .res{margin-top:8px;background:var(--fondo-2);border-radius:16px;padding:8px 18px}
-  .res .r{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px;border-bottom:1px solid var(--linea)}
+  .res .r{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;font-size:16px;border-bottom:1px solid var(--linea)}
   .res .r:last-child{border-bottom:none}
   .res .r span{color:var(--gris);font-weight:600}
-  .res .r b{font-family:'Geist Mono',monospace;font-size:21px;color:var(--rojo);font-weight:700}
-  .btn{width:100%;border:none;background:var(--rojo);color:#fff;border-radius:14px;padding:13px;
-    font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+  .res .r b{font-family:'Geist Mono',monospace;font-size:23px;color:var(--rojo);font-weight:700}
+  .btn{width:100%;border:none;background:var(--rojo);color:#fff;border-radius:14px;padding:14px;
+    font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
   .btn.ghost{background:var(--fondo-2);color:var(--tinta)}
-  .hint{font-size:13px;color:var(--gris);margin-top:12px;line-height:1.55}
+  .hint{font-size:14px;color:var(--gris);margin-top:12px;line-height:1.55}
 </style>
 </head>
 <body>
@@ -119,9 +116,7 @@
 <!-- ══════ Área de Cálculos ══════ -->
 <section id="scr-tools">
   <div class="calc-menu" id="tools-menu"></div>
-  <div id="tool-view">
-    <button class="volver-menu" onclick="cerrarTool()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Menú de cálculos</button>
-    <div class="tool-body">
+  <div class="tool-body">
 
     <!-- Geometría -->
     <div class="tool" data-t="geo">
@@ -238,7 +233,6 @@
       <div class="hint" id="monHint"></div>
     </div>
 
-    </div>
   </div>
 </section>
 
@@ -250,7 +244,6 @@ function mostrar(scr){
   document.getElementById('scr-tools').style.display = tools?'flex':'none';
   document.getElementById('navTools').style.display = tools?'none':'flex';
   document.getElementById('navCalc').style.display = tools?'flex':'none';
-  if(tools) cerrarTool(); // entrar siempre muestra el menú de cálculos
 }
 
 /* ══════════ Calculadora ══════════ */
@@ -316,19 +309,18 @@ const MENU=[
 ];
 const menuC=document.getElementById('tools-menu');
 MENU.forEach(([id,nom,ic])=>{
-  const b=document.createElement('button'); b.className='cmod'; b.innerHTML=ic+'<span>'+nom+'</span>';
+  const b=document.createElement('button'); b.className='cmod'; b.dataset.id=id; b.innerHTML=ic+'<span>'+nom+'</span>';
   b.onclick=()=>abrirTool(id);
   menuC.appendChild(b);
 });
+// Muestra la herramienta debajo del menú (misma pantalla) y resalta su botón. Sin cambiar de vista.
 function abrirTool(id){
   document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('on', x.dataset.t===id));
-  document.getElementById('tools-menu').style.display='none';
-  document.getElementById('tool-view').style.display='flex';
+  document.querySelectorAll('#tools-menu .cmod').forEach(b=>b.classList.toggle('on', b.dataset.id===id));
+  const t=document.querySelector('.tool.on');
+  if(t) t.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
-function cerrarTool(){
-  document.getElementById('tool-view').style.display='none';
-  document.getElementById('tools-menu').style.display='grid';
-}
+abrirTool(MENU[0][0]); // por defecto: Regla de 3
 
 /* Sub-pestañas genéricas: (contenedor, items, onSel) */
 function subPills(cont, items, cb, sel0){
