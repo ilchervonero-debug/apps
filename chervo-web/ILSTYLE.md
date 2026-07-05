@@ -82,13 +82,13 @@ Todos los íconos son **un solo sistema** (se ven dibujados por la misma mano).
 **Envoltorio estándar** (copiar tal cual, solo cambia el contenido interno):
 
 ```html
-<svg viewBox="0 0 24 24" fill="none" stroke="#1C1C1C" stroke-width="1.6"
+<svg viewBox="0 0 24 24" fill="none" stroke="#1C1C1C" stroke-width="1.5"
      stroke-linecap="round" stroke-linejoin="round">…</svg>
 ```
 
 Reglas:
 
-1. **Monolínea**: `fill:none`, `stroke-width:1.6` parejo en todos. Sin rellenos, sin partes gruesas.
+1. **Monolínea**: `fill:none`, `stroke-width:1.5` parejo en todos (fino, nunca negrita: un trazo pesado se vuelve una mancha para quien ve borroso). Sin rellenos, sin partes gruesas.
 2. **Grilla 24×24**: mismo alto óptico, mismo aire alrededor.
 3. **Caps y joins redondos** (`round`) → trazo suave, no técnico.
 4. **Una metáfora por ícono**, simple.
