@@ -3,7 +3,7 @@ import { useDrawingStore, panelPolygon, panelMaxHeight, MAJOR, snapPoint, neares
 import BeamSheet from './BeamSheet'
 import CerchaSheet from './CerchaSheet'
 import { beamWidthMm } from '../engine/beams'
-import { trussMembers, defaultRise } from '../engine/trusses'
+import { trussGeometry, cerchaTypeDef } from '../engine/trusses'
 import '../styles/DrawingCanvas.css'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -892,58 +892,60 @@ function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView
   })
 }
 
-// ── ALZADO de la CERCHA (vista a escala del estilo elegido) ───
+// ── ALZADO de la CERCHA (vista paramétrica, centrada y grande) ─
 function drawCerchaElevation(svg, cercha, elevView) {
   const ev = elevView || { z: 1, tx: 0, ty: 0 }
   const vg = el('g', { transform: `translate(${ev.tx} ${ev.ty}) scale(${ev.z})` })
   svg.appendChild(vg)
 
-  const span = cercha.span
-  const rise = cercha.rise ?? defaultRise(span)
-  const marginX = 70, marginTop = 60, marginBot = 70
+  const geo = trussGeometry(cercha)
+  const span = geo.p.span
+  const rise = Math.max(geo.p.rise, geo.p.hIzq, geo.p.hDer, 1)
+  // margen inferior amplio para que no lo tape la barra/FAB; centrado horizontal
+  const marginTop = 96, marginBot = 150, marginX = 80
   const s = Math.min((1000 - marginX * 2) / span, (ELEV.h - marginTop - marginBot) / rise)
-  const ox = marginX, oy = ELEV.h - marginBot
+  const ox = (1000 - span * s) / 2
+  const oy = marginTop + (ELEV.h - marginTop - marginBot + rise * s) / 2 // centro vertical de la caja
   const tx = ([x, y]) => [ox + x * s, oy - y * s]
 
-  // línea de base (nivel de apoyo)
-  const bA = tx([0, 0]), bB = tx([span, 0])
-  vg.appendChild(el('line', { x1: bA[0], y1: bA[1], x2: bB[0], y2: bB[1], stroke: '#bbb', 'stroke-width': 1, 'stroke-dasharray': '6 5' }))
+  const drawSeg = (m, col, w) => { const p = tx(m[0]), q = tx(m[1]); vg.appendChild(el('line', { x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: col, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })) }
+  geo.web.forEach((m) => drawSeg(m, '#8a8a8a', 1.6))
+  geo.chordBot.forEach((m) => drawSeg(m, '#fe0000', 3))
+  geo.chordTop.forEach((m) => drawSeg(m, '#fe0000', 3))
 
-  // barras de la cercha
-  const ms = trussMembers(cercha.type, span, rise)
-  ms.forEach(([a, b]) => {
-    const p = tx(a), q = tx(b)
-    vg.appendChild(el('line', { x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: '#fe0000', 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }))
-  })
   // nudos
   const seen = new Set()
-  ms.forEach(([a, b]) => {
-    [a, b].forEach((pt) => {
-      const key = pt[0].toFixed(1) + ',' + pt[1].toFixed(1)
-      if (seen.has(key)) return
-      seen.add(key)
-      const v = tx(pt)
-      vg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 3, fill: '#fff', stroke: '#fe0000', 'stroke-width': 1.5 }))
-    })
+  const nodes = [...geo.top, ...geo.bot]
+  nodes.forEach((pt) => {
+    const key = Math.round(pt[0]) + ',' + Math.round(pt[1])
+    if (seen.has(key)) return
+    seen.add(key)
+    const v = tx(pt)
+    vg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 3.5, fill: '#fff', stroke: '#fe0000', 'stroke-width': 1.6 }))
   })
 
-  // cota de luz (abajo) y de altura (izquierda)
-  const yDim = oy + 30
-  vg.appendChild(el('line', { x1: bA[0], y1: yDim, x2: bB[0], y2: yDim, stroke: '#666', 'stroke-width': 1 }))
-  const lz = el('text', { x: (bA[0] + bB[0]) / 2, y: yDim + 18, 'font-size': 15, fill: '#444', 'text-anchor': 'middle' })
+  // cota de luz
+  const bA = tx([0, geo.p.hIzq]), bB = tx([span, geo.p.hDer])
+  const yDim = Math.max(bA[1], bB[1]) + 34
+  vg.appendChild(el('line', { x1: tx([0, 0])[0], y1: yDim, x2: tx([span, 0])[0], y2: yDim, stroke: '#666', 'stroke-width': 1 }))
+  const lz = el('text', { x: 500, y: yDim + 22, 'font-size': 16, fill: '#444', 'text-anchor': 'middle' })
   lz.textContent = `luz ${(span / 1000).toFixed(2)} m`
   vg.appendChild(lz)
-  const topL = tx([span / 2, rise])
-  const alt = el('text', { x: topL[0], y: topL[1] - 12, 'font-size': 15, fill: '#444', 'text-anchor': 'middle' })
-  alt.textContent = `alto ${(rise / 1000).toFixed(2)} m`
-  vg.appendChild(alt)
+  // cota de altura del pico
+  const apex = tx([geo.p.pico, geo.p.rise])
+  const at = el('text', { x: apex[0], y: apex[1] - 12, 'font-size': 16, fill: '#444', 'text-anchor': 'middle' })
+  at.textContent = `alto ${(geo.p.rise / 1000).toFixed(2)} m`
+  vg.appendChild(at)
 
-  const title = el('text', { x: 500, y: 28, 'font-size': 15, fill: '#999', 'text-anchor': 'middle' })
-  title.textContent = `${cercha.id} · ${trussName(cercha.type)}`
+  // título
+  const title = el('text', { x: 500, y: 40, 'font-size': 16, fill: '#999', 'text-anchor': 'middle' })
+  title.textContent = `${cercha.id} · ${cerchaTypeDef(cercha.modelo).name} · ${geo.angL.toFixed(0)}°/${geo.angR.toFixed(0)}°`
   vg.appendChild(title)
-}
 
-function trussName(type) {
-  const n = { mono: 'Un agua', dual: 'Dos aguas', fink: 'Fink (W)', howe: 'Howe', tijera: 'Tijera' }
-  return n[type] || 'Cercha'
+  // alertas (rojo, sin caja rosada)
+  geo.alerts.forEach((a, i) => {
+    const t = el('text', { x: 500, y: 62 + i * 20, 'font-size': 14, fill: '#fe0000', 'text-anchor': 'middle' })
+    t.textContent = a
+    vg.appendChild(t)
+  })
 }

@@ -199,7 +199,13 @@ export const useDrawingStore = create((set) => ({
   cerchaDraft: null, // { a, b } mientras se arrastra en planta
   selectedCerchaId: null,
   cerchaSheet: false, // hoja de estilo/perfil/medidas abierta
-  cerchaConfig: { type: 'fink', normId: 'cu_1', secIdx: 0, rise: null },
+  // parámetros: modelo + geometría (pico, alturas, apoyos, divisiones) + 3 perfiles
+  cerchaConfig: {
+    modelo: 'FINK', pico: null, rise: null, hIzq: 0, hDer: 0, divisiones: 6,
+    perfilSuperior: { normId: 'cu_1', secIdx: 0 },
+    perfilInferior: { normId: 'cu_1', secIdx: 0 },
+    perfilReticula: { normId: 'cu_1', secIdx: 0 },
+  },
   setCerchaSheet: (v) => set({ cerchaSheet: v }),
   setCerchaConfig: (patch) => set((s) => ({ cerchaConfig: { ...s.cerchaConfig, ...patch } })),
   selectCercha: (id) => set({ selectedCerchaId: id, selectedBeamId: null, selectedId: null, selectedVertex: null }),
@@ -217,8 +223,7 @@ export const useDrawingStore = create((set) => ({
     let n = 1
     while (used.has('C' + n)) n++
     const cfg = { ...s.cerchaConfig }
-    const rise = cfg.rise || defaultRise(span)
-    const cercha = { id: 'C' + n, a, b, span, ...cfg, rise }
+    const cercha = { id: 'C' + n, a, b, span, ...cfg, pico: cfg.pico ?? Math.round(span / 2), rise: cfg.rise ?? defaultRise(span) }
     return { cerchas: [...s.cerchas, cercha], cerchaDraft: null, selectedCerchaId: cercha.id, cerchaSheet: true }
   }),
   cancelCercha: () => set({ cerchaDraft: null }),
