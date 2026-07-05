@@ -141,11 +141,11 @@
         .card-meta-row { display: flex; gap: 8px; margin-top: 4px; font-size: 16px; color: var(--ink-3); font-weight: 400; }
         .card-del {
             position: absolute; top: 2px; right: 2px; width: 44px; height: 44px;
-            border: none; background: transparent; color: var(--red);
+            border: none; background: transparent; color: var(--ink);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             opacity: 0; transition: opacity .2s; z-index: 10;
         }
-        .card-del svg { width: 26px; height: 26px; stroke-width: 1.8; filter: drop-shadow(0 0 3px white) drop-shadow(0 0 6px rgba(255,255,255,.9)); }
+        .card-del svg { width: 27px; height: 27px; stroke-width: 1.6; filter: drop-shadow(0 0 3px white) drop-shadow(0 0 6px rgba(255,255,255,.9)); }
         @keyframes wiggle {
             0%,100% { transform: rotate(0deg) scale(1); }
             25% { transform: rotate(-1.8deg) scale(1.01); }
@@ -160,7 +160,7 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             opacity: 0; transition: opacity .2s; z-index: 10;
         }
-        .card-move svg { width: 26px; height: 26px; stroke-width: 1.8; filter: drop-shadow(0 0 3px white) drop-shadow(0 0 6px rgba(255,255,255,.9)); }
+        .card-move svg { width: 27px; height: 27px; stroke-width: 1.6; filter: drop-shadow(0 0 3px white) drop-shadow(0 0 6px rgba(255,255,255,.9)); }
         .edit-mode .proyecto-card .card-move { opacity: 1; }
 
         /* ===== BUSQUEDA ===== */
@@ -231,9 +231,9 @@
         .fab-opcion .fab-mini {
             width: 44px; height: 44px; border-radius: 14px;
             background: var(--surface); border: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center; color: var(--ink);
+            display: flex; align-items: center; justify-content: center; color: var(--red);
         }
-        .fab-opcion .fab-mini svg { width: 25px; height: 25px; stroke-width: 1.5; }
+        .fab-opcion .fab-mini svg { width: 32px; height: 32px; stroke-width: 1.6; }
         .fab-opcion:active { transform: scale(0.95); }
         @keyframes fabIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .fab-backdrop { position: fixed; inset: 0; z-index: 790; display: none; }
@@ -1011,7 +1011,7 @@ const SVG_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const SVG_PDF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>';
 
 // ===== DASHBOARD =====
-const SVG_MOVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/><path d="M12 10v5"/><path d="M9.5 12.5 12 15l2.5-2.5"/></svg>';
+const SVG_MOVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6a2 2 0 0 1 2-2h4.5l2 2h8.5a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-15a2 2 0 0 1-2-2V6z"/><path d="M12 10.5v4.5"/><path d="M9.5 12.5 12 15l2.5-2.5"/></svg>';
 
 function cardHtml(p, i, k) {
     const foto = (p.bloques||[]).find(b => (b.fotos||[]).length > 0);
