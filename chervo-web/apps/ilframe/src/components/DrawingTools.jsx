@@ -51,6 +51,9 @@ export default function DrawingTools() {
     } else if (toolId === 'cercha') {
       st.selectCercha(null)
       st.setCerchaSheet(true) // submenú: estilo + perfil + medidas
+    } else if (toolId === 'pilar') {
+      st.selectPilar(null)
+      st.setPilarSheet(true) // submenú: armado + perfil + altura
     }
   }
 

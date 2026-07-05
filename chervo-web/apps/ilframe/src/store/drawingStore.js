@@ -154,7 +154,7 @@ export const useDrawingStore = create((set) => ({
   beamConfig: { type: 'back_to_back', normId: 'cu_1', secIdx: 0, level: 2400 },
   setBeamSheet: (v) => set({ beamSheet: v }),
   setBeamConfig: (patch) => set((s) => ({ beamConfig: { ...s.beamConfig, ...patch } })),
-  selectBeam: (id) => set({ selectedBeamId: id, selectedCerchaId: null, selectedId: null, selectedVertex: null }),
+  selectBeam: (id) => set({ selectedBeamId: id, selectedCerchaId: null, selectedPilarId: null, selectedId: null, selectedVertex: null }),
   startBeam: (pt) => set((s) => {
     const p = snapPoint(pt, s.gridMm, s.panels)
     return { beamDraft: { a: p, b: p } }
@@ -208,7 +208,7 @@ export const useDrawingStore = create((set) => ({
   },
   setCerchaSheet: (v) => set({ cerchaSheet: v }),
   setCerchaConfig: (patch) => set((s) => ({ cerchaConfig: { ...s.cerchaConfig, ...patch } })),
-  selectCercha: (id) => set({ selectedCerchaId: id, selectedBeamId: null, selectedId: null, selectedVertex: null }),
+  selectCercha: (id) => set({ selectedCerchaId: id, selectedBeamId: null, selectedPilarId: null, selectedId: null, selectedVertex: null }),
   startCercha: (pt) => set((s) => {
     const p = snapPoint(pt, s.gridMm, s.panels)
     return { cerchaDraft: { a: p, b: p } }
@@ -245,6 +245,30 @@ export const useDrawingStore = create((set) => ({
   removeCercha: (id) => set((s) => ({
     cerchas: s.cerchas.filter((x) => x.id !== id),
     selectedCerchaId: s.selectedCerchaId === id ? null : s.selectedCerchaId,
+  })),
+
+  // ── PILARES / COLUMNAS armadas (P1, P2…) ───────────────────
+  // Se colocan por tap en planta (cuadrado gris = sección agrupada) y en
+  // alzado se ven como silueta vertical. Armado 1–4 perfiles.
+  pilares: [],
+  selectedPilarId: null,
+  pilarSheet: false,
+  pilarConfig: { altura: 2800, tipoArmado: 'DOBLE_CAJON', perfil: { normId: 'cu_1', secIdx: 0 } },
+  setPilarSheet: (v) => set({ pilarSheet: v }),
+  setPilarConfig: (patch) => set((s) => ({ pilarConfig: { ...s.pilarConfig, ...patch } })),
+  selectPilar: (id) => set({ selectedPilarId: id, selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedVertex: null }),
+  addPilar: (pt) => set((s) => {
+    const p = snapPoint(pt, s.gridMm, s.panels)
+    const used = new Set(s.pilares.map((x) => x.id))
+    let n = 1
+    while (used.has('P' + n)) n++
+    const pilar = { id: 'P' + n, pos: p, ...s.pilarConfig }
+    return { pilares: [...s.pilares, pilar], selectedPilarId: pilar.id, pilarSheet: true }
+  }),
+  updatePilar: (id, patch) => set((s) => ({ pilares: s.pilares.map((x) => (x.id === id ? { ...x, ...patch } : x)) })),
+  removePilar: (id) => set((s) => ({
+    pilares: s.pilares.filter((x) => x.id !== id),
+    selectedPilarId: s.selectedPilarId === id ? null : s.selectedPilarId,
   })),
 
   // ── T-CONNECT (encuentros de muros) ────────────────────────
@@ -409,7 +433,7 @@ export const useDrawingStore = create((set) => ({
   }),
   cancelWall: () => set({ draft: null }),
 
-  select: (id) => set({ selectedId: id, selectedBeamId: null, selectedCerchaId: null, selectedVertex: null }),
+  select: (id) => set({ selectedId: id, selectedBeamId: null, selectedCerchaId: null, selectedPilarId: null, selectedVertex: null }),
   deselect: () => set({ selectedId: null, selectedVertex: null }),
 
   // ── Historial ─────────────────────────────────────────────
@@ -474,7 +498,7 @@ export const useDrawingStore = create((set) => ({
     selectedId: s.selectedId === id ? null : s.selectedId,
     selectedVertex: null,
   })),
-  clearAll: () => set((s) => ({ ...histPatch(s, 'clear'), panels: [], beams: [], cerchas: [], tconnects: [], selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedVertex: null })),
+  clearAll: () => set((s) => ({ ...histPatch(s, 'clear'), panels: [], beams: [], cerchas: [], pilares: [], tconnects: [], selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedPilarId: null, selectedVertex: null })),
 
   // ── PLANTA: ancho exacto (mueve B en la dirección del trazo) ──
   setWidth: (id, mm) => set((s) => ({

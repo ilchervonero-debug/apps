@@ -2,8 +2,10 @@ import { useRef, useEffect, useState } from 'react'
 import { useDrawingStore, panelPolygon, panelMaxHeight, MAJOR, snapPoint, nearestVertex, VERT_RADIUS } from '../store/drawingStore'
 import BeamSheet from './BeamSheet'
 import CerchaSheet from './CerchaSheet'
+import PilarSheet from './PilarSheet'
 import { beamWidthMm } from '../engine/beams'
 import { trussGeometry, cerchaTypeDef } from '../engine/trusses'
+import { pilarFootprint, pilarArmadoDef } from '../engine/pilares'
 import '../styles/DrawingCanvas.css'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -53,6 +55,8 @@ export default function DrawingCanvas() {
   const cerchas = useDrawingStore((s) => s.cerchas)
   const cerchaDraft = useDrawingStore((s) => s.cerchaDraft)
   const selectedCerchaId = useDrawingStore((s) => s.selectedCerchaId)
+  const pilares = useDrawingStore((s) => s.pilares)
+  const selectedPilarId = useDrawingStore((s) => s.selectedPilarId)
   const tconnects = useDrawingStore((s) => s.tconnects)
   const tcFirst = useDrawingStore((s) => s.tcFirst)
   const tab = useDrawingStore((s) => s.tab)
@@ -100,16 +104,16 @@ export default function DrawingCanvas() {
   // ── Render reactivo ──
   useEffect(() => {
     drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm, view,
-      { beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, tconnects, tcFirst })
+      { beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, pilares, selectedPilarId, tconnects, tcFirst })
     drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm, elevView, tconnects,
-      { cerchas, selectedCerchaId })
-  }, [panels, beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, tconnects, tcFirst, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab, elevView])
+      { cerchas, selectedCerchaId, pilares, selectedPilarId })
+  }, [panels, beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, pilares, selectedPilarId, tconnects, tcFirst, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab, elevView])
 
   // al cambiar de panel o cercha, reinicia la vista del alzado (encaja la cara)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setElevView({ z: 1, tx: 0, ty: 0 })
-  }, [selectedId, selectedCerchaId])
+  }, [selectedId, selectedCerchaId, selectedPilarId])
 
   // Conversión exacta pantalla → viewBox usando la matriz del SVG.
   // (Evita el error de snap cuando el SVG no llena exacto su viewBox.)
@@ -273,9 +277,15 @@ export default function DrawingCanvas() {
         if (pt) st.addTConnect(pA.id, pB.id, pt)
         else st.setTcFirst(null)
         st.deselect()
+      } else if (activeTool === 'pilar') {
+        // tap coloca un pilar nuevo, salvo que toques uno existente (lo edita)
+        const pilarHit = pickPilar(mm, st.pilares)
+        if (pilarHit) { st.selectPilar(pilarHit); st.setPilarSheet(true) }
+        else st.addPilar(mm)
       } else if (activeTool === 'select' || activeTool === 'wall' || activeTool === 'viga' || activeTool === 'cercha') {
         const beamHit = pickBeam(mm, st.beams)
         const cerchaHit = pickCercha(mm, st.cerchas)
+        const pilarHit = pickPilar(mm, st.pilares)
         if (activeTool === 'viga') {
           if (beamHit) { st.selectBeam(beamHit); st.setBeamSheet(true) }
         } else if (activeTool === 'cercha') {
@@ -283,6 +293,7 @@ export default function DrawingCanvas() {
         } else if (hit) st.select(hit)
         else if (beamHit) { st.selectBeam(beamHit); st.setBeamSheet(true) }
         else if (cerchaHit) { st.selectCercha(cerchaHit); st.setCerchaSheet(true) }
+        else if (pilarHit) { st.selectPilar(pilarHit); st.setPilarSheet(true) }
         else if (activeTool === 'select') st.deselect()
       }
     }
@@ -412,6 +423,7 @@ export default function DrawingCanvas() {
     <div className="drawing-canvas">
       <BeamSheet />
       <CerchaSheet />
+      <PilarSheet />
       {/* Banner modo mover */}
       {moving && (
         <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#fe0000', color: '#fff', padding: '8px 16px', borderRadius: 20, fontSize: 16, fontWeight: 500, boxShadow: '0 2px 8px rgba(0,0,0,0.25)', display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -443,19 +455,21 @@ export default function DrawingCanvas() {
         <span className="ct-hint">
           {(() => {
             const open = { door: 'puerta', window: 'ventana', opening: 'abertura' }
-            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso', pilar: 'Pilar' }
+            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso' }
             if (tab === 'plan') {
               if (moving) return 'Arrastrá el muro a su lugar'
               if (activeTool === 'wall') return 'Arrastrá para dibujar · mantené presionado para editar'
               if (activeTool === 'viga') return 'Arrastrá para dibujar la viga · tocá el eje para editarla'
               if (activeTool === 'cercha') return 'Arrastrá para dibujar la luz · elegí estilo y medidas · el alzado la muestra'
+              if (activeTool === 'pilar') return 'Tocá en planta para colocar el pilar · tocalo para editar o ver en alzado'
               if (activeTool === 'tconnect') return tcFirst ? `Pasante ${tcFirst} · tocá el muro que llega` : 'Tocá el muro pasante (continuo)'
               if (open[activeTool]) return `Tocá un muro para agregarle ${open[activeTool]}`
               if (soon[activeTool]) return `${soon[activeTool]}: reglas próximamente`
               return 'Tocá un muro para editar'
             }
             if (selectedCerchaId) return `${selectedCerchaId} · vista de la cercha · editá estilo y medidas en su hoja`
-            if (!selectedId) return 'Seleccioná un muro o cercha en la pestaña Planta'
+            if (selectedPilarId) return `${selectedPilarId} · vista del pilar · editá armado y altura en su hoja`
+            if (!selectedId) return 'Seleccioná un muro, cercha o pilar en la pestaña Planta'
             if (open[activeTool]) return `Tocá la cara para ubicar ${open[activeTool]}`
             return `Cara de ${selectedId} · arrastrá vértices · base bloqueada`
           })()}
@@ -466,6 +480,9 @@ export default function DrawingCanvas() {
           )}
           {tab === 'plan' && activeTool === 'cercha' && (
             <button onClick={() => { useDrawingStore.getState().setCerchaSheet(true) }} title="Estilo de cercha" className="ct-btn">Estilo</button>
+          )}
+          {tab === 'plan' && activeTool === 'pilar' && (
+            <button onClick={() => { useDrawingStore.getState().setPilarSheet(true) }} title="Armado del pilar" className="ct-btn">Armado</button>
           )}
           <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer" className="ct-btn">↶</button>
           <button onClick={() => useDrawingStore.getState().redo()} disabled={!canRedo} title="Rehacer" className="ct-btn">↷</button>
@@ -553,6 +570,14 @@ function pickCercha(mm, cerchas) {
   }
   return best
 }
+function pickPilar(mm, pilares) {
+  let best = null, bestD = 500 // tolerancia al punto de inserción
+  for (const p of pilares || []) {
+    const d = Math.hypot(mm[0] - p.pos[0], mm[1] - p.pos[1])
+    if (d < bestD) { bestD = d; best = p.id }
+  }
+  return best
+}
 
 // Punto de encuentro T: extremo del muro que llega (B) proyectado sobre el
 // eje del pasante (A). Vale si el extremo queda a menos de una celda del eje.
@@ -602,7 +627,7 @@ function elevTransform(panel) {
 // ── Dibujo PLANTA ──────────────────────────────────────────
 function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, view, extra) {
   if (!svg) return
-  const { beams = [], beamDraft = null, selectedBeamId = null, cerchas = [], cerchaDraft = null, selectedCerchaId = null, tconnects = [], tcFirst = null } = extra || {}
+  const { beams = [], beamDraft = null, selectedBeamId = null, cerchas = [], cerchaDraft = null, selectedCerchaId = null, pilares = [], selectedPilarId = null, tconnects = [], tcFirst = null } = extra || {}
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: PLAN.h, fill: 'white' }))
 
@@ -719,6 +744,18 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, vi
     }
   }
 
+  // pilares (P1, P2…): cuadrado gris = sección agrupada, punto de inserción
+  pilares.forEach((pl) => {
+    const c = planToVb(pl.pos)
+    const sel = pl.id === selectedPilarId
+    const [fxmm, fymm] = pilarFootprint(pl)
+    const w = Math.max(fxmm * PLAN.s, 7 * k), h = Math.max(fymm * PLAN.s, 7 * k)
+    svg.appendChild(el('rect', { x: c[0] - w / 2, y: c[1] - h / 2, width: w, height: h, fill: sel ? '#fe0000' : '#8a8a8a', opacity: sel ? 0.85 : 1, stroke: sel ? '#fe0000' : '#5a5a5a', 'stroke-width': 1 * k }))
+    const t = el('text', { x: c[0], y: c[1] - h / 2 - 6 * k, 'font-size': 13 * k, fill: sel ? '#fe0000' : '#555', 'text-anchor': 'middle' })
+    t.textContent = pl.id
+    svg.appendChild(t)
+  })
+
   // T-connects: montante de respaldo en el encuentro (cuadrado + T)
   tconnects.forEach((tc) => {
     const v = planToVb(tc.point)
@@ -793,18 +830,21 @@ function drawPlanGrid(svg, gridMm, view) {
 // ── Dibujo ALZADO (0,0 local en la base izquierda) ─────────
 function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView, tconnects, extra) {
   if (!svg) return
-  const { cerchas = [], selectedCerchaId = null } = extra || {}
+  const { cerchas = [], selectedCerchaId = null, pilares = [], selectedPilarId = null } = extra || {}
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: ELEV.h, fill: 'white' }))
 
   // si hay una cercha seleccionada, el alzado muestra la cercha (vista)
   const cercha = cerchas.find((c) => c.id === selectedCerchaId)
   if (cercha) { drawCerchaElevation(svg, cercha, elevView); return }
+  // si hay un pilar seleccionado, el alzado muestra su silueta vertical
+  const pilar = pilares.find((x) => x.id === selectedPilarId)
+  if (pilar) { drawPilarElevation(svg, pilar, elevView); return }
 
   const panel = panels.find((p) => p.id === selectedId)
   if (!panel) {
     const t = el('text', { x: 500, y: ELEV.h / 2, 'font-size': 18, fill: '#bbb', 'text-anchor': 'middle' })
-    t.textContent = 'Seleccioná un muro o cercha en la pestaña Planta'
+    t.textContent = 'Seleccioná un muro, cercha o pilar en la pestaña Planta'
     svg.appendChild(t)
     return
   }
@@ -948,4 +988,32 @@ function drawCerchaElevation(svg, cercha, elevView) {
     t.textContent = a
     vg.appendChild(t)
   })
+}
+
+// ── ALZADO del PILAR (silueta vertical rellena, alto = altura) ─
+function drawPilarElevation(svg, pilar, elevView) {
+  const ev = elevView || { z: 1, tx: 0, ty: 0 }
+  const vg = el('g', { transform: `translate(${ev.tx} ${ev.ty}) scale(${ev.z})` })
+  svg.appendChild(vg)
+
+  const altura = pilar.altura || 2800
+  const [fx] = pilarFootprint(pilar)
+  const marginTop = 90, marginBot = 120
+  const s = (ELEV.h - marginTop - marginBot) / altura
+  const wVb = Math.max(fx * s, 26)
+  const cx = 500, oy = ELEV.h - marginBot
+  const x = cx - wVb / 2, yTop = oy - altura * s
+
+  // silueta rellena gris (roja si activo, que siempre lo está al verlo)
+  vg.appendChild(el('rect', { x, y: yTop, width: wVb, height: altura * s, fill: '#fe0000', opacity: 0.12, stroke: '#fe0000', 'stroke-width': 2 }))
+  // línea de base
+  vg.appendChild(el('line', { x1: x - 30, y1: oy, x2: x + wVb + 30, y2: oy, stroke: '#666', 'stroke-width': 1.5 }))
+
+  // cota de altura
+  const at = el('text', { x: cx, y: yTop - 12, 'font-size': 16, fill: '#444', 'text-anchor': 'middle' })
+  at.textContent = `alto ${(altura / 1000).toFixed(2)} m`
+  vg.appendChild(at)
+  const title = el('text', { x: cx, y: 40, 'font-size': 16, fill: '#999', 'text-anchor': 'middle' })
+  title.textContent = `${pilar.id} · ${pilarArmadoDef(pilar.tipoArmado).name}`
+  vg.appendChild(title)
 }
