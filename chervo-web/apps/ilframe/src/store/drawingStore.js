@@ -253,7 +253,12 @@ export const useDrawingStore = create((set) => ({
   pilares: [],
   selectedPilarId: null,
   pilarSheet: false,
-  pilarConfig: { altura: 2800, tipoArmado: 'DOBLE_CAJON', perfil: { normId: 'cu_1', secIdx: 0 } },
+  pilarConfig: {
+    kind: 'armada', altura: 2800, tipoArmado: 'DOBLE_CAJON', perfil: { normId: 'cu_1', secIdx: 0 },
+    // columna reticulada / acartelada
+    anchoBase: 400, anchoTope: 400, caraRecta: 'IZQ', divisiones: 5, patron: 'WARREN',
+    perfilReticula: { normId: 'cu_1', secIdx: 0 },
+  },
   setPilarSheet: (v) => set({ pilarSheet: v }),
   setPilarConfig: (patch) => set((s) => ({ pilarConfig: { ...s.pilarConfig, ...patch } })),
   selectPilar: (id) => set({ selectedPilarId: id, selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedVertex: null }),

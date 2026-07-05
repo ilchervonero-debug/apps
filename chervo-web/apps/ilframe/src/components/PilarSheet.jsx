@@ -1,9 +1,9 @@
 import { useDrawingStore } from '../store/drawingStore'
 import { PROFILE_NORMS, PROFILE_SECTIONS } from '../data/profiles'
-import { PILAR_ARMADOS, pilarKg, pilarTornillos, pilarFootprint } from '../engine/pilares'
+import { PILAR_ARMADOS, COLUMNA_PATRONES, CARA_RECTA, pilarKg, pilarTornillos, pilarFootprint, columnaKg, columnaGeometry } from '../engine/pilares'
 
-// Hoja del Pilar / Columna armada. En planta se coloca por tap (cuadrado
-// gris); acá se define altura, armado (1–4 perfiles) y el perfil. iLStyle.
+// Hoja del Pilar / Columna. Dos tipos: Armada (perfiles agrupados) o
+// Reticulada/acartelada (dos cordones + alma, trapezoidal/asimétrica).
 export default function PilarSheet() {
   const open = useDrawingStore((s) => s.pilarSheet)
   const setOpen = useDrawingStore((s) => s.setPilarSheet)
@@ -19,68 +19,141 @@ export default function PilarSheet() {
   const pilar = pilares.find((x) => x.id === selectedPilarId)
   const cur = pilar || config
   const patch = (p) => (pilar ? updatePilar(pilar.id, p) : setConfig(p))
-  const ref = cur.perfil || { normId: 'cu_1', secIdx: 0 }
-  const secs = PROFILE_SECTIONS[ref.normId]?.C || []
-  const [fx, fy] = pilarFootprint(cur)
+  const reti = cur.kind === 'reticulada'
 
   const cap = { fontSize: 14, fontWeight: 500, color: '#8a8a8a', letterSpacing: '0.03em', textTransform: 'uppercase' }
   const field = { width: '100%', padding: '11px 10px', border: '1px solid #d8d8d8', borderRadius: 10, fontSize: 18, background: '#fff', boxSizing: 'border-box', color: '#1c1c1c' }
 
-  return (
-    <div onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,20,0.45)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 9999 }}>
-      <div style={{ background: '#fff', width: '100%', maxWidth: 600, borderRadius: '22px 22px 0 0', padding: '8px 0 22px', boxShadow: '0 -8px 40px rgba(0,0,0,0.18)', maxHeight: '88dvh', overflowY: 'auto' }}>
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#e2e2e2', margin: '6px auto 12px' }} />
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '0 22px' }}>
-          <div style={{ fontSize: 22, fontWeight: 500, color: '#1c1c1c' }}>{pilar ? pilar.id : 'Pilar'}</div>
-          <div style={{ fontSize: 15, color: '#8a8a8a' }}>{pilar ? 'editar' : 'elegí armado y tocá en planta'}</div>
-        </div>
-
-        {/* Armado */}
-        <div style={{ padding: '16px 22px 4px', ...cap }}>Armado</div>
-        {PILAR_ARMADOS.map((a) => {
-          const on = cur.tipoArmado === a.id
-          return (
-            <button key={a.id} onClick={() => patch({ tipoArmado: a.id })}
-              style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', padding: '11px 22px', background: 'none', border: 'none', cursor: 'pointer' }}>
-              <ArmadoIcon tipo={a.id} on={on} />
-              <span style={{ flex: 1 }}>
-                <span style={{ display: 'block', fontSize: 17, fontWeight: 500, color: on ? '#fe0000' : '#1c1c1c' }}>{a.name}</span>
-                <span style={{ display: 'block', fontSize: 14, color: '#8a8a8a' }}>{a.desc}</span>
-              </span>
-            </button>
-          )
-        })}
-
-        {/* Perfil */}
-        <div style={{ padding: '16px 22px 8px', ...cap }}>Perfil</div>
-        <div style={{ display: 'flex', gap: 10, padding: '0 22px' }}>
-          <select value={ref.normId} onChange={(e) => patch({ perfil: { normId: e.target.value, secIdx: 0 } })} style={{ ...field, flex: 1 }}>
+  const numM = (label, value, onSet, opts = {}) => (
+    <label style={{ flex: 1, minWidth: 0 }}>
+      <span style={{ display: 'block', marginBottom: 5, ...cap, textTransform: 'none' }}>{label}</span>
+      <input type="number" step="0.05" defaultValue={(value / 1000).toFixed(2)} key={(pilar ? pilar.id : 'c') + label + value}
+        onBlur={(e) => onSet(Math.max(opts.min || 0, Math.round((parseFloat(e.target.value) || 0) * 1000)))} style={field} />
+    </label>
+  )
+  const perfilSel = (label, key) => {
+    const ref = cur[key] || { normId: 'cu_1', secIdx: 0 }
+    const secs = PROFILE_SECTIONS[ref.normId]?.C || []
+    return (
+      <div style={{ marginTop: 10 }}>
+        <div style={{ ...cap, marginBottom: 5 }}>{label}</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <select value={ref.normId} onChange={(e) => patch({ [key]: { normId: e.target.value, secIdx: 0 } })} style={{ ...field, flex: 1 }}>
             {PROFILE_NORMS.map((n) => <option key={n.id} value={n.id}>{n.name}</option>)}
           </select>
-          <select value={ref.secIdx} onChange={(e) => patch({ perfil: { ...ref, secIdx: +e.target.value } })} style={{ ...field, flex: 1 }}>
+          <select value={ref.secIdx} onChange={(e) => patch({ [key]: { ...ref, secIdx: +e.target.value } })} style={{ ...field, flex: 1 }}>
             {secs.map((s, i) => <option key={i} value={i}>{s.h}×{s.w}×{s.t} · {s.kg}kg/m</option>)}
           </select>
         </div>
+      </div>
+    )
+  }
 
-        {/* Altura */}
+  const geo = reti ? columnaGeometry(cur) : null
+  const [fx, fy] = pilarFootprint(cur)
+
+  return (
+    <div onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,20,0.45)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 9999 }}>
+      <div style={{ background: '#fff', width: '100%', maxWidth: 600, borderRadius: '22px 22px 0 0', padding: '8px 0 22px', boxShadow: '0 -8px 40px rgba(0,0,0,0.18)', maxHeight: '90dvh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#e2e2e2', margin: '6px auto 12px' }} />
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '0 22px' }}>
+          <div style={{ fontSize: 22, fontWeight: 500, color: '#1c1c1c' }}>{pilar ? pilar.id : 'Pilar / Columna'}</div>
+          <div style={{ fontSize: 15, color: '#8a8a8a' }}>{pilar ? 'editar' : 'elegí tipo y tocá en planta'}</div>
+        </div>
+
+        {/* Tipo */}
+        <div style={{ display: 'flex', gap: 10, padding: '14px 22px 0' }}>
+          {[['armada', 'Armada'], ['reticulada', 'Reticulada']].map(([k, lbl]) => {
+            const on = (cur.kind || 'armada') === k
+            return (
+              <button key={k} onClick={() => patch({ kind: k })}
+                style={{ flex: 1, padding: '11px', borderRadius: 12, cursor: 'pointer', fontSize: 16, fontWeight: 500,
+                  border: '1px solid', borderColor: on ? '#fe0000' : '#d8d8d8', background: '#fff', color: on ? '#fe0000' : '#1c1c1c' }}>{lbl}</button>
+            )
+          })}
+        </div>
+
+        {!reti ? (
+          <>
+            <div style={{ padding: '16px 22px 4px', ...cap }}>Armado</div>
+            {PILAR_ARMADOS.map((a) => {
+              const on = cur.tipoArmado === a.id
+              return (
+                <button key={a.id} onClick={() => patch({ tipoArmado: a.id })}
+                  style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', padding: '11px 22px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <ArmadoIcon tipo={a.id} on={on} />
+                  <span style={{ flex: 1 }}>
+                    <span style={{ display: 'block', fontSize: 17, fontWeight: 500, color: on ? '#fe0000' : '#1c1c1c' }}>{a.name}</span>
+                    <span style={{ display: 'block', fontSize: 14, color: '#8a8a8a' }}>{a.desc}</span>
+                  </span>
+                </button>
+              )
+            })}
+            <div style={{ padding: '16px 22px 8px', ...cap }}>Perfil</div>
+            <div style={{ padding: '0 22px' }}>{perfilSel('Perfil', 'perfil')}</div>
+          </>
+        ) : (
+          <>
+            {geo.alerts.length > 0 && (
+              <div style={{ margin: '12px 22px 0', border: '1px solid #fe0000', borderRadius: 12, padding: '10px 14px' }}>
+                {geo.alerts.map((a, i) => <div key={i} style={{ fontSize: 15, color: '#fe0000', lineHeight: 1.35 }}>{a}</div>)}
+              </div>
+            )}
+            <div style={{ padding: '16px 22px 6px', ...cap }}>Silueta (acartelada)</div>
+            <div style={{ display: 'flex', gap: 10, padding: '0 22px 10px' }}>
+              {numM('Ancho base (m)', cur.anchoBase || 400, (v) => patch({ anchoBase: Math.max(100, v) }), { min: 100 })}
+              {numM('Ancho tope (m)', cur.anchoTope || 400, (v) => patch({ anchoTope: Math.max(100, v) }), { min: 100 })}
+            </div>
+            <div style={{ padding: '0 22px 4px', ...cap }}>Cara a plomo</div>
+            <div style={{ display: 'flex', gap: 8, padding: '0 22px' }}>
+              {CARA_RECTA.map((c) => {
+                const on = (cur.caraRecta || 'IZQ') === c.id
+                return <button key={c.id} onClick={() => patch({ caraRecta: c.id })}
+                  style={{ flex: 1, padding: '10px 6px', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: 500,
+                    border: '1px solid', borderColor: on ? '#fe0000' : '#d8d8d8', background: '#fff', color: on ? '#fe0000' : '#1c1c1c' }}>{c.name}</button>
+              })}
+            </div>
+            <div style={{ padding: '14px 22px 4px', ...cap }}>Retícula</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '0 22px' }}>
+              {COLUMNA_PATRONES.map((r) => {
+                const on = (cur.patron || 'WARREN') === r.id
+                return <button key={r.id} onClick={() => patch({ patron: r.id })} title={r.desc}
+                  style={{ padding: '9px 14px', borderRadius: 10, cursor: 'pointer', fontSize: 15, fontWeight: 500,
+                    border: '1px solid', borderColor: on ? '#fe0000' : '#d8d8d8', background: '#fff', color: on ? '#fe0000' : '#1c1c1c' }}>{r.name}</button>
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 10, padding: '14px 22px 0' }}>
+              <label style={{ flex: 1 }}>
+                <span style={{ display: 'block', marginBottom: 5, ...cap, textTransform: 'none' }}>Divisiones</span>
+                <input type="number" step="1" defaultValue={cur.divisiones || 5} key={(pilar ? pilar.id : 'c') + 'div' + (cur.divisiones || 5)}
+                  onBlur={(e) => patch({ divisiones: Math.max(2, parseInt(e.target.value) || 5) })} style={field} />
+              </label>
+            </div>
+            <div style={{ padding: '16px 22px 2px', ...cap }}>Perfiles</div>
+            <div style={{ padding: '0 22px' }}>
+              {perfilSel('Cordones', 'perfil')}
+              {perfilSel('Retícula (alma)', 'perfilReticula')}
+            </div>
+          </>
+        )}
+
+        {/* Altura (común) */}
         <div style={{ display: 'flex', gap: 10, padding: '16px 22px 0' }}>
-          <label style={{ flex: 1 }}>
-            <span style={{ display: 'block', marginBottom: 5, ...cap, textTransform: 'none' }}>Altura (m)</span>
-            <input type="number" step="0.1" defaultValue={((cur.altura || 2800) / 1000).toFixed(2)} key={(pilar ? pilar.id : 'c') + (cur.altura || 2800)}
-              onBlur={(e) => patch({ altura: Math.max(300, Math.round((parseFloat(e.target.value) || 0) * 1000)) })} style={field} />
-          </label>
+          {numM('Altura (m)', cur.altura || 2800, (v) => patch({ altura: Math.max(300, v) }), { min: 300 })}
         </div>
 
         {/* Resumen */}
         <div style={{ padding: '14px 22px 0', fontSize: 15, color: '#6f6f6f' }}>
-          Huella ≈ {(fx / 10).toFixed(0)}×{(fy / 10).toFixed(0)} cm · {pilar ? `${pilarKg(cur).toFixed(1)} kg acero · ${pilarTornillos(cur)} tornillos` : 'colocá para computar'}
+          {reti
+            ? (pilar ? `Cordones ${(geo.lens.cordon / 1000).toFixed(2)} + alma ${(geo.lens.reticula / 1000).toFixed(2)} ml · ${columnaKg(cur).toFixed(1)} kg acero` : 'colocá para computar')
+            : `Huella ≈ ${(fx / 10).toFixed(0)}×${(fy / 10).toFixed(0)} cm · ${pilar ? `${pilarKg(cur).toFixed(1)} kg acero · ${pilarTornillos(cur)} tornillos` : 'colocá para computar'}`}
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 22px 0' }}>
           {pilar ? (
             <button onClick={() => { removePilar(pilar.id); setOpen(false) }}
-              style={{ background: 'none', border: 'none', color: '#1c1c1c', fontSize: 16, fontWeight: 500, cursor: 'pointer', padding: 0 }}>Borrar pilar</button>
+              style={{ background: 'none', border: 'none', color: '#1c1c1c', fontSize: 16, fontWeight: 500, cursor: 'pointer', padding: 0 }}>Borrar</button>
           ) : <span />}
           <button onClick={() => setOpen(false)}
             style={{ background: '#fe0000', border: 'none', color: '#fff', fontSize: 17, fontWeight: 500, borderRadius: 12, padding: '12px 28px', cursor: 'pointer' }}>

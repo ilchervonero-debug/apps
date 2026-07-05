@@ -5,7 +5,7 @@ import CerchaSheet from './CerchaSheet'
 import PilarSheet from './PilarSheet'
 import { beamWidthMm } from '../engine/beams'
 import { trussGeometry, cerchaTypeDef } from '../engine/trusses'
-import { pilarFootprint, pilarArmadoDef } from '../engine/pilares'
+import { pilarFootprint, pilarArmadoDef, columnaGeometry } from '../engine/pilares'
 import '../styles/DrawingCanvas.css'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -990,13 +990,35 @@ function drawCerchaElevation(svg, cercha, elevView) {
   })
 }
 
-// ── ALZADO del PILAR (silueta vertical rellena, alto = altura) ─
+// ── ALZADO del PILAR / COLUMNA ────────────────────────────────
 function drawPilarElevation(svg, pilar, elevView) {
   const ev = elevView || { z: 1, tx: 0, ty: 0 }
   const vg = el('g', { transform: `translate(${ev.tx} ${ev.ty}) scale(${ev.z})` })
   svg.appendChild(vg)
 
   const altura = pilar.altura || 2800
+
+  // Columna reticulada / acartelada: cordones + alma a escala
+  if (pilar.kind === 'reticulada') {
+    const g = columnaGeometry(pilar)
+    const marginTop = 90, marginBot = 120, marginX = 120
+    const s = Math.min((1000 - marginX * 2) / Math.max(g.width, 1), (ELEV.h - marginTop - marginBot) / altura)
+    const ox = (1000 - g.width * s) / 2, oy = ELEV.h - marginBot
+    const tx = ([x, y]) => [ox + x * s, oy - y * s]
+    const drawSeg = (m, col, w) => { const a = tx(m[0]), b = tx(m[1]); vg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: col, 'stroke-width': w, 'stroke-linecap': 'round' })) }
+    g.web.forEach((m) => drawSeg(m, '#8a8a8a', 1.6))
+    g.chords.forEach((m) => drawSeg(m, '#fe0000', 3))
+    ;[...g.L, ...g.R].forEach((pt) => { const v = tx(pt); vg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 3.2, fill: '#fff', stroke: '#fe0000', 'stroke-width': 1.4 })) })
+    const at = el('text', { x: 500, y: tx([0, altura])[1] - 12, 'font-size': 16, fill: '#444', 'text-anchor': 'middle' })
+    at.textContent = `alto ${(altura / 1000).toFixed(2)} m · base ${((pilar.anchoBase || 400) / 1000).toFixed(2)} / tope ${((pilar.anchoTope || 400) / 1000).toFixed(2)} m`
+    vg.appendChild(at)
+    const ti = el('text', { x: 500, y: 40, 'font-size': 16, fill: '#999', 'text-anchor': 'middle' })
+    ti.textContent = `${pilar.id} · columna reticulada`
+    vg.appendChild(ti)
+    g.alerts.forEach((a, i) => { const t = el('text', { x: 500, y: 62 + i * 20, 'font-size': 14, fill: '#fe0000', 'text-anchor': 'middle' }); t.textContent = a; vg.appendChild(t) })
+    return
+  }
+
   const [fx] = pilarFootprint(pilar)
   const marginTop = 90, marginBot = 120
   const s = (ELEV.h - marginTop - marginBot) / altura
