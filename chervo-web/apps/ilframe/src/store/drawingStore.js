@@ -256,7 +256,7 @@ export const useDrawingStore = create((set) => ({
   pilarConfig: {
     kind: 'armada', altura: 2800, tipoArmado: 'DOBLE_CAJON', perfil: { normId: 'cu_1', secIdx: 0 },
     // columna reticulada / acartelada
-    anchoBase: 400, anchoTope: 400, caraRecta: 'IZQ', divisiones: 5, patron: 'WARREN',
+    anchoBase: 400, anchoTope: 400, caraRecta: 'IZQ', divisiones: 5, patron: 'DA', verticales: true,
     perfilReticula: { normId: 'cu_1', secIdx: 0 },
   },
   setPilarSheet: (v) => set({ pilarSheet: v }),

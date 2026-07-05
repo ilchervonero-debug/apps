@@ -1,4 +1,5 @@
 import { PROFILE_SECTIONS } from '../data/profiles'
+import { RETI_PATRONES } from './trusses'
 
 // Armado del pilar/columna: cantidad de perfiles agrupados (multiplicador de kg)
 export const PILAR_ARMADOS = [
@@ -39,13 +40,11 @@ export function pilarTornillos(p) {
 }
 
 // ── COLUMNA RETICULADA / ACARTELADA ───────────────────────────
-// Dos cordones (izq/der) de la base al tope. Si anchoBase ≠ anchoTope es
-// acartelada (trapezoidal). caraRecta define qué cordón sube a plomo.
-export const COLUMNA_PATRONES = [
-  { id: 'WARREN', name: 'Warren (zig-zag)', desc: 'diagonales alternadas' },
-  { id: 'X_CROSS', name: 'Cruces (X)', desc: 'doble diagonal por tramo' },
-  { id: 'LADDER', name: 'Escalera', desc: 'travesaños horizontales' },
-]
+// Es una Pratt "parada": misma familia de retícula que la cercha recta
+// (A los apoyos / Al centro / Cruces X / Warren / Sin diagonal) + los
+// travesaños (verticales) como toggle. Dos cordones (izq/der) de la base
+// al tope; si anchoBase ≠ anchoTope es acartelada (trapezoidal).
+export const COLUMNA_PATRONES = RETI_PATRONES
 export const CARA_RECTA = [
   { id: 'IZQ', name: 'Izquierda a plomo' },
   { id: 'DER', name: 'Derecha a plomo' },
@@ -76,12 +75,22 @@ export function columnaGeometry(p) {
 
   const chords = []
   for (let i = 0; i < n; i++) { chords.push([L[i], L[i + 1]]); chords.push([R[i], R[i + 1]]) }
+
+  // alma tipo Pratt vertical: travesaños (verticales) + diagonales simétricas
   const web = []
-  web.push([L[0], R[0]]); web.push([L[n], R[n]]) // travesaños base y tope
+  web.push([L[0], R[0]]); web.push([L[n], R[n]]) // travesaños base y tope (siempre)
+  if (p.verticales !== false) for (let i = 1; i < n; i++) web.push([L[i], R[i]])
+  const P = p.patron || 'DA'
+  const cy = H / 2
   for (let i = 0; i < n; i++) {
-    if (p.patron === 'LADDER') web.push([L[i + 1], R[i + 1]])
-    else if (p.patron === 'X_CROSS') { web.push([L[i], R[i + 1]]); web.push([R[i], L[i + 1]]) }
-    else web.push(i % 2 === 0 ? [L[i], R[i + 1]] : [R[i], L[i + 1]]) // WARREN
+    const lower = (ys[i] + ys[i + 1]) / 2 < cy
+    const toApoyo = lower ? [R[i + 1], L[i]] : [R[i], L[i + 1]] // hacia los extremos
+    const toCentro = lower ? [L[i], R[i + 1]] : [L[i + 1], R[i]] // hacia el medio
+    if (P === 'DA') web.push(toApoyo)
+    else if (P === 'DC') web.push(toCentro)
+    else if (P === 'X') { web.push(toApoyo); web.push(toCentro) }
+    else if (P === 'W') web.push((i % 2 === 0) === lower ? toCentro : toApoyo)
+    // 'N' → sin diagonales (solo travesaños)
   }
 
   const sum = (arr) => arr.reduce((s, [a, b]) => s + clen(a, b), 0)

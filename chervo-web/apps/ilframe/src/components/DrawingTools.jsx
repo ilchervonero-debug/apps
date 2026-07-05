@@ -28,6 +28,7 @@ export default function DrawingTools() {
   const tools = [
     { id: 'wall', label: 'Muro', icon: 'wall' },
     { id: 'pilar', label: 'Pilar', icon: 'pilar' },
+    { id: 'columna', label: 'Columna', icon: 'columna' },
     { id: 'viga', label: 'Viga', icon: 'viga' },
     { id: 'cercha', label: 'Cercha', icon: 'cercha' },
     { id: 'roof', label: 'Techo', icon: 'roof' },
@@ -53,7 +54,12 @@ export default function DrawingTools() {
       st.setCerchaSheet(true) // submenú: estilo + perfil + medidas
     } else if (toolId === 'pilar') {
       st.selectPilar(null)
-      st.setPilarSheet(true) // submenú: armado + perfil + altura
+      st.setPilarConfig({ kind: 'armada' })
+      st.setPilarSheet(true) // pilar armado: perfiles agrupados
+    } else if (toolId === 'columna') {
+      st.selectPilar(null)
+      st.setPilarConfig({ kind: 'reticulada' })
+      st.setPilarSheet(true) // columna reticulada / acartelada
     }
   }
 
@@ -98,6 +104,7 @@ function ToolIcon({ type }) {
     ceiling: <svg {...iconProps}><line x1="4" y1="6" x2="20" y2="6" /><line x1="7" y1="6" x2="7" y2="10" /><line x1="12" y1="6" x2="12" y2="10" /><line x1="17" y1="6" x2="17" y2="10" /></svg>,
     slab: <svg {...iconProps}><rect x="3" y="9" width="18" height="6" rx="1" /></svg>,
     pilar: <svg {...iconProps}><rect x="9" y="3" width="6" height="18" rx="1" /></svg>,
+    columna: <svg {...iconProps}><line x1="8" y1="3" x2="8" y2="21" /><line x1="16" y1="3" x2="16" y2="21" /><path d="M8 5h8" /><path d="M8 19h8" /><path d="M8 8 16 15" /><path d="M16 8 8 15" /></svg>,
     viga: <svg {...iconProps}><rect x="3" y="9" width="18" height="6" rx="1" /><line x1="3" y1="12" x2="21" y2="12" /></svg>,
     cercha: <svg {...iconProps}><path d="M3 20h18L12 5z" /><line x1="12" y1="5" x2="12" y2="20" /><line x1="7.5" y1="20" x2="12" y2="12.5" /><line x1="16.5" y1="20" x2="12" y2="12.5" /></svg>,
     door: <svg {...iconProps}><rect x="6" y="3" width="12" height="18" rx="1" /><circle cx="14" cy="12" r="1" fill="currentColor" /></svg>,

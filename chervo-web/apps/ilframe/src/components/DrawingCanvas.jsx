@@ -277,8 +277,8 @@ export default function DrawingCanvas() {
         if (pt) st.addTConnect(pA.id, pB.id, pt)
         else st.setTcFirst(null)
         st.deselect()
-      } else if (activeTool === 'pilar') {
-        // tap coloca un pilar nuevo, salvo que toques uno existente (lo edita)
+      } else if (activeTool === 'pilar' || activeTool === 'columna') {
+        // tap coloca uno nuevo, salvo que toques uno existente (lo edita)
         const pilarHit = pickPilar(mm, st.pilares)
         if (pilarHit) { st.selectPilar(pilarHit); st.setPilarSheet(true) }
         else st.addPilar(mm)
@@ -462,6 +462,7 @@ export default function DrawingCanvas() {
               if (activeTool === 'viga') return 'Arrastrá para dibujar la viga · tocá el eje para editarla'
               if (activeTool === 'cercha') return 'Arrastrá para dibujar la luz · elegí estilo y medidas · el alzado la muestra'
               if (activeTool === 'pilar') return 'Tocá en planta para colocar el pilar · tocalo para editar o ver en alzado'
+              if (activeTool === 'columna') return 'Tocá en planta para colocar la columna reticulada · tocala para editar o ver en alzado'
               if (activeTool === 'tconnect') return tcFirst ? `Pasante ${tcFirst} · tocá el muro que llega` : 'Tocá el muro pasante (continuo)'
               if (open[activeTool]) return `Tocá un muro para agregarle ${open[activeTool]}`
               if (soon[activeTool]) return `${soon[activeTool]}: reglas próximamente`
@@ -483,6 +484,9 @@ export default function DrawingCanvas() {
           )}
           {tab === 'plan' && activeTool === 'pilar' && (
             <button onClick={() => { useDrawingStore.getState().setPilarSheet(true) }} title="Armado del pilar" className="ct-btn">Armado</button>
+          )}
+          {tab === 'plan' && activeTool === 'columna' && (
+            <button onClick={() => { useDrawingStore.getState().setPilarConfig({ kind: 'reticulada' }); useDrawingStore.getState().setPilarSheet(true) }} title="Retícula de la columna" className="ct-btn">Retícula</button>
           )}
           <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer" className="ct-btn">↶</button>
           <button onClick={() => useDrawingStore.getState().redo()} disabled={!canRedo} title="Rehacer" className="ct-btn">↷</button>

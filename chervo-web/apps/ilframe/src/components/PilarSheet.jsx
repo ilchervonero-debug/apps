@@ -58,20 +58,8 @@ export default function PilarSheet() {
       <div style={{ background: '#fff', width: '100%', maxWidth: 600, borderRadius: '22px 22px 0 0', padding: '8px 0 22px', boxShadow: '0 -8px 40px rgba(0,0,0,0.18)', maxHeight: '90dvh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: '#e2e2e2', margin: '6px auto 12px' }} />
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '0 22px' }}>
-          <div style={{ fontSize: 22, fontWeight: 500, color: '#1c1c1c' }}>{pilar ? pilar.id : 'Pilar / Columna'}</div>
-          <div style={{ fontSize: 15, color: '#8a8a8a' }}>{pilar ? 'editar' : 'elegí tipo y tocá en planta'}</div>
-        </div>
-
-        {/* Tipo */}
-        <div style={{ display: 'flex', gap: 10, padding: '14px 22px 0' }}>
-          {[['armada', 'Armada'], ['reticulada', 'Reticulada']].map(([k, lbl]) => {
-            const on = (cur.kind || 'armada') === k
-            return (
-              <button key={k} onClick={() => patch({ kind: k })}
-                style={{ flex: 1, padding: '11px', borderRadius: 12, cursor: 'pointer', fontSize: 16, fontWeight: 500,
-                  border: '1px solid', borderColor: on ? '#fe0000' : '#d8d8d8', background: '#fff', color: on ? '#fe0000' : '#1c1c1c' }}>{lbl}</button>
-            )
-          })}
+          <div style={{ fontSize: 22, fontWeight: 500, color: '#1c1c1c' }}>{pilar ? pilar.id : (reti ? 'Columna reticulada' : 'Pilar')}</div>
+          <div style={{ fontSize: 15, color: '#8a8a8a' }}>{pilar ? 'editar' : 'tocá en planta para colocar'}</div>
         </div>
 
         {!reti ? (
@@ -114,14 +102,22 @@ export default function PilarSheet() {
                     border: '1px solid', borderColor: on ? '#fe0000' : '#d8d8d8', background: '#fff', color: on ? '#fe0000' : '#1c1c1c' }}>{c.name}</button>
               })}
             </div>
-            <div style={{ padding: '14px 22px 4px', ...cap }}>Retícula</div>
+            <div style={{ padding: '14px 22px 4px', ...cap }}>Retícula (como Pratt)</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '0 22px' }}>
               {COLUMNA_PATRONES.map((r) => {
-                const on = (cur.patron || 'WARREN') === r.id
+                const on = (cur.patron || 'DA') === r.id
                 return <button key={r.id} onClick={() => patch({ patron: r.id })} title={r.desc}
                   style={{ padding: '9px 14px', borderRadius: 10, cursor: 'pointer', fontSize: 15, fontWeight: 500,
                     border: '1px solid', borderColor: on ? '#fe0000' : '#d8d8d8', background: '#fff', color: on ? '#fe0000' : '#1c1c1c' }}>{r.name}</button>
               })}
+            </div>
+            <div style={{ padding: '10px 22px 0' }}>
+              <button onClick={() => patch({ verticales: cur.verticales === false })}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, cursor: 'pointer', width: '100%', textAlign: 'left',
+                  border: '1px solid', borderColor: cur.verticales !== false ? '#fe0000' : '#d8d8d8', background: '#fff' }}>
+                <span style={{ width: 20, height: 20, borderRadius: 5, background: cur.verticales !== false ? '#fe0000' : '#e8e8e8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>{cur.verticales !== false ? '✓' : ''}</span>
+                <span style={{ fontSize: 16, fontWeight: 500, color: '#1c1c1c' }}>Sumar travesaños (verticales)</span>
+              </button>
             </div>
             <div style={{ display: 'flex', gap: 10, padding: '14px 22px 0' }}>
               <label style={{ flex: 1 }}>
