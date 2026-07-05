@@ -119,7 +119,7 @@ export default function BeamSheet() {
 
 // Sección transversal de cada tipo (icon flat fino, sin emojis)
 function BeamIcon({ type, on }) {
-  const p = { width: 38, height: 38, viewBox: '0 0 24 24', fill: 'none', stroke: on ? '#fe0000' : '#1c1c1c', strokeWidth: 1.1, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  const p = { width: 40, height: 40, viewBox: '0 0 24 24', fill: 'none', stroke: on ? '#fe0000' : '#1c1c1c', strokeWidth: 1, strokeLinecap: 'round', strokeLinejoin: 'round' }
   if (type === 'simple') return <svg {...p}><path d="M15 4h-5v16h5" /></svg>
   if (type === 'back_to_back') return <svg {...p}><path d="M7 4h4v16H7" /><path d="M17 4h-4v16h4" /></svg>
   if (type === 'box') return <svg {...p}><path d="M6 4h5v16H6" /><path d="M18 4h-5v16h5" /></svg>

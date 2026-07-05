@@ -1,7 +1,9 @@
 import { useRef, useEffect, useState } from 'react'
 import { useDrawingStore, panelPolygon, panelMaxHeight, MAJOR, snapPoint, nearestVertex, VERT_RADIUS } from '../store/drawingStore'
 import BeamSheet from './BeamSheet'
+import CerchaSheet from './CerchaSheet'
 import { beamWidthMm } from '../engine/beams'
+import { trussMembers, defaultRise } from '../engine/trusses'
 import '../styles/DrawingCanvas.css'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -48,6 +50,9 @@ export default function DrawingCanvas() {
   const beams = useDrawingStore((s) => s.beams)
   const beamDraft = useDrawingStore((s) => s.beamDraft)
   const selectedBeamId = useDrawingStore((s) => s.selectedBeamId)
+  const cerchas = useDrawingStore((s) => s.cerchas)
+  const cerchaDraft = useDrawingStore((s) => s.cerchaDraft)
+  const selectedCerchaId = useDrawingStore((s) => s.selectedCerchaId)
   const tconnects = useDrawingStore((s) => s.tconnects)
   const tcFirst = useDrawingStore((s) => s.tcFirst)
   const tab = useDrawingStore((s) => s.tab)
@@ -95,15 +100,16 @@ export default function DrawingCanvas() {
   // ── Render reactivo ──
   useEffect(() => {
     drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm, view,
-      { beams, beamDraft, selectedBeamId, tconnects, tcFirst })
-    drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm, elevView, tconnects)
-  }, [panels, beams, beamDraft, selectedBeamId, tconnects, tcFirst, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab, elevView])
+      { beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, tconnects, tcFirst })
+    drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm, elevView, tconnects,
+      { cerchas, selectedCerchaId })
+  }, [panels, beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, tconnects, tcFirst, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab, elevView])
 
-  // al cambiar de panel, reinicia la vista del alzado (encaja la cara)
+  // al cambiar de panel o cercha, reinicia la vista del alzado (encaja la cara)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setElevView({ z: 1, tx: 0, ty: 0 })
-  }, [selectedId])
+  }, [selectedId, selectedCerchaId])
 
   // Conversión exacta pantalla → viewBox usando la matriz del SVG.
   // (Evita el error de snap cuando el SVG no llena exacto su viewBox.)
@@ -180,6 +186,9 @@ export default function DrawingCanvas() {
     } else if (activeTool === 'viga') {
       dragRef.current = { active: true, moved: false }
       st.startBeam(mm)
+    } else if (activeTool === 'cercha') {
+      dragRef.current = { active: true, moved: false }
+      st.startCercha(mm)
     }
     setCursor({ view: 'plan', vb })
   }
@@ -222,6 +231,7 @@ export default function DrawingCanvas() {
     if (dragRef.current.active) {
       const st2 = useDrawingStore.getState()
       if (st2.activeTool === 'viga') st2.dragBeam(vbToPlan(worldFromVb(vb)))
+      else if (st2.activeTool === 'cercha') st2.dragCercha(vbToPlan(worldFromVb(vb)))
       else st2.dragWall(vbToPlan(worldFromVb(vb)))
       if (moved) dragRef.current.moved = true // solo arrastre real, no micro-movimiento
     }
@@ -241,6 +251,7 @@ export default function DrawingCanvas() {
     if (dragRef.current.active) {
       const st0 = useDrawingStore.getState()
       if (st0.activeTool === 'viga') st0.finishBeam()
+      else if (st0.activeTool === 'cercha') st0.finishCercha()
       else st0.finishWall()
       dragRef.current.active = false
     }
@@ -262,10 +273,16 @@ export default function DrawingCanvas() {
         if (pt) st.addTConnect(pA.id, pB.id, pt)
         else st.setTcFirst(null)
         st.deselect()
-      } else if (activeTool === 'select' || activeTool === 'wall' || activeTool === 'viga') {
+      } else if (activeTool === 'select' || activeTool === 'wall' || activeTool === 'viga' || activeTool === 'cercha') {
         const beamHit = pickBeam(mm, st.beams)
-        if (activeTool !== 'viga' && hit) st.select(hit)
+        const cerchaHit = pickCercha(mm, st.cerchas)
+        if (activeTool === 'viga') {
+          if (beamHit) { st.selectBeam(beamHit); st.setBeamSheet(true) }
+        } else if (activeTool === 'cercha') {
+          if (cerchaHit) { st.selectCercha(cerchaHit); st.setCerchaSheet(true) }
+        } else if (hit) st.select(hit)
         else if (beamHit) { st.selectBeam(beamHit); st.setBeamSheet(true) }
+        else if (cerchaHit) { st.selectCercha(cerchaHit); st.setCerchaSheet(true) }
         else if (activeTool === 'select') st.deselect()
       }
     }
@@ -394,6 +411,7 @@ export default function DrawingCanvas() {
   return (
     <div className="drawing-canvas">
       <BeamSheet />
+      <CerchaSheet />
       {/* Banner modo mover */}
       {moving && (
         <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#fe0000', color: '#fff', padding: '8px 16px', borderRadius: 20, fontSize: 16, fontWeight: 500, boxShadow: '0 2px 8px rgba(0,0,0,0.25)', display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -425,17 +443,19 @@ export default function DrawingCanvas() {
         <span className="ct-hint">
           {(() => {
             const open = { door: 'puerta', window: 'ventana', opening: 'abertura' }
-            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso', pilar: 'Pilar', cercha: 'Cercha' }
+            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso', pilar: 'Pilar' }
             if (tab === 'plan') {
               if (moving) return 'Arrastrá el muro a su lugar'
               if (activeTool === 'wall') return 'Arrastrá para dibujar · mantené presionado para editar'
               if (activeTool === 'viga') return 'Arrastrá para dibujar la viga · tocá el eje para editarla'
+              if (activeTool === 'cercha') return 'Arrastrá para dibujar la luz · elegí estilo y medidas · el alzado la muestra'
               if (activeTool === 'tconnect') return tcFirst ? `Pasante ${tcFirst} · tocá el muro que llega` : 'Tocá el muro pasante (continuo)'
               if (open[activeTool]) return `Tocá un muro para agregarle ${open[activeTool]}`
               if (soon[activeTool]) return `${soon[activeTool]}: reglas próximamente`
               return 'Tocá un muro para editar'
             }
-            if (!selectedId) return 'Seleccioná un muro en la pestaña Planta'
+            if (selectedCerchaId) return `${selectedCerchaId} · vista de la cercha · editá estilo y medidas en su hoja`
+            if (!selectedId) return 'Seleccioná un muro o cercha en la pestaña Planta'
             if (open[activeTool]) return `Tocá la cara para ubicar ${open[activeTool]}`
             return `Cara de ${selectedId} · arrastrá vértices · base bloqueada`
           })()}
@@ -443,6 +463,9 @@ export default function DrawingCanvas() {
         <span className="ct-actions">
           {tab === 'plan' && activeTool === 'viga' && (
             <button onClick={() => { useDrawingStore.getState().selectBeam(null); useDrawingStore.getState().setBeamSheet(true) }} title="Tipo de viga" className="ct-btn">Tipo</button>
+          )}
+          {tab === 'plan' && activeTool === 'cercha' && (
+            <button onClick={() => { useDrawingStore.getState().setCerchaSheet(true) }} title="Estilo de cercha" className="ct-btn">Estilo</button>
           )}
           <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer" className="ct-btn">↶</button>
           <button onClick={() => useDrawingStore.getState().redo()} disabled={!canRedo} title="Rehacer" className="ct-btn">↷</button>
@@ -522,6 +545,14 @@ function pickBeam(mm, beams) {
   }
   return best
 }
+function pickCercha(mm, cerchas) {
+  let best = null, bestD = 600
+  for (const c of cerchas || []) {
+    const d = distPointSeg(mm, c.a, c.b)
+    if (d < bestD) { bestD = d; best = c.id }
+  }
+  return best
+}
 
 // Punto de encuentro T: extremo del muro que llega (B) proyectado sobre el
 // eje del pasante (A). Vale si el extremo queda a menos de una celda del eje.
@@ -571,7 +602,7 @@ function elevTransform(panel) {
 // ── Dibujo PLANTA ──────────────────────────────────────────
 function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, view, extra) {
   if (!svg) return
-  const { beams = [], beamDraft = null, selectedBeamId = null, tconnects = [], tcFirst = null } = extra || {}
+  const { beams = [], beamDraft = null, selectedBeamId = null, cerchas = [], cerchaDraft = null, selectedCerchaId = null, tconnects = [], tcFirst = null } = extra || {}
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: PLAN.h, fill: 'white' }))
 
@@ -659,6 +690,35 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, vi
     }
   }
 
+  // cerchas (C1, C2…): línea de luz con marcas de cabio (vista en planta)
+  cerchas.forEach((c) => {
+    const a = planToVb(c.a), b = planToVb(c.b)
+    const sel = c.id === selectedCerchaId
+    const col = sel ? '#fe0000' : '#777'
+    svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: col, 'stroke-width': (sel ? 2.4 : 1.8) * k, 'stroke-linecap': 'round' }))
+    const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1
+    const ux = dx / L, uy = dy / L, nx = -uy, ny = ux
+    const step = 16 * k, tick = 5 * k
+    for (let d = step; d < L - step * 0.5; d += step) {
+      const px = a[0] + ux * d, py = a[1] + uy * d
+      svg.appendChild(el('line', { x1: px - nx * tick, y1: py - ny * tick, x2: px + nx * tick, y2: py + ny * tick, stroke: col, 'stroke-width': 1 * k }))
+    }
+    const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+    const t = el('text', { x: mid[0], y: mid[1] - 10 * k, 'font-size': 13 * k, fill: col, 'text-anchor': 'middle' })
+    t.textContent = `${c.id} · ${(c.span / 1000).toFixed(2)} m`
+    svg.appendChild(t)
+  })
+  if (cerchaDraft) {
+    const a = planToVb(cerchaDraft.a), b = planToVb(cerchaDraft.b)
+    svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#fe0000', 'stroke-width': 2 * k, 'stroke-dasharray': `${8 * k} ${4 * k}` }))
+    const w = Math.round(Math.hypot(cerchaDraft.b[0] - cerchaDraft.a[0], cerchaDraft.b[1] - cerchaDraft.a[1]))
+    if (w > 0) {
+      const t = el('text', { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 - 8 * k, 'font-size': 13 * k, fill: '#fe0000', 'text-anchor': 'middle' })
+      t.textContent = `C · ${(w / 1000).toFixed(2)} m`
+      svg.appendChild(t)
+    }
+  }
+
   // T-connects: montante de respaldo en el encuentro (cuadrado + T)
   tconnects.forEach((tc) => {
     const v = planToVb(tc.point)
@@ -731,15 +791,20 @@ function drawPlanGrid(svg, gridMm, view) {
 }
 
 // ── Dibujo ALZADO (0,0 local en la base izquierda) ─────────
-function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView, tconnects) {
+function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView, tconnects, extra) {
   if (!svg) return
+  const { cerchas = [], selectedCerchaId = null } = extra || {}
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: ELEV.h, fill: 'white' }))
+
+  // si hay una cercha seleccionada, el alzado muestra la cercha (vista)
+  const cercha = cerchas.find((c) => c.id === selectedCerchaId)
+  if (cercha) { drawCerchaElevation(svg, cercha, elevView); return }
 
   const panel = panels.find((p) => p.id === selectedId)
   if (!panel) {
     const t = el('text', { x: 500, y: ELEV.h / 2, 'font-size': 18, fill: '#bbb', 'text-anchor': 'middle' })
-    t.textContent = 'Seleccioná un muro en la pestaña Planta'
+    t.textContent = 'Seleccioná un muro o cercha en la pestaña Planta'
     svg.appendChild(t)
     return
   }
@@ -825,4 +890,60 @@ function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView
       : `${(pt[0] / 1000).toFixed(2)} ; ${(pt[1] / 1000).toFixed(2)}`
     svg.appendChild(lbl)
   })
+}
+
+// ── ALZADO de la CERCHA (vista a escala del estilo elegido) ───
+function drawCerchaElevation(svg, cercha, elevView) {
+  const ev = elevView || { z: 1, tx: 0, ty: 0 }
+  const vg = el('g', { transform: `translate(${ev.tx} ${ev.ty}) scale(${ev.z})` })
+  svg.appendChild(vg)
+
+  const span = cercha.span
+  const rise = cercha.rise ?? defaultRise(span)
+  const marginX = 70, marginTop = 60, marginBot = 70
+  const s = Math.min((1000 - marginX * 2) / span, (ELEV.h - marginTop - marginBot) / rise)
+  const ox = marginX, oy = ELEV.h - marginBot
+  const tx = ([x, y]) => [ox + x * s, oy - y * s]
+
+  // línea de base (nivel de apoyo)
+  const bA = tx([0, 0]), bB = tx([span, 0])
+  vg.appendChild(el('line', { x1: bA[0], y1: bA[1], x2: bB[0], y2: bB[1], stroke: '#bbb', 'stroke-width': 1, 'stroke-dasharray': '6 5' }))
+
+  // barras de la cercha
+  const ms = trussMembers(cercha.type, span, rise)
+  ms.forEach(([a, b]) => {
+    const p = tx(a), q = tx(b)
+    vg.appendChild(el('line', { x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: '#fe0000', 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }))
+  })
+  // nudos
+  const seen = new Set()
+  ms.forEach(([a, b]) => {
+    [a, b].forEach((pt) => {
+      const key = pt[0].toFixed(1) + ',' + pt[1].toFixed(1)
+      if (seen.has(key)) return
+      seen.add(key)
+      const v = tx(pt)
+      vg.appendChild(el('circle', { cx: v[0], cy: v[1], r: 3, fill: '#fff', stroke: '#fe0000', 'stroke-width': 1.5 }))
+    })
+  })
+
+  // cota de luz (abajo) y de altura (izquierda)
+  const yDim = oy + 30
+  vg.appendChild(el('line', { x1: bA[0], y1: yDim, x2: bB[0], y2: yDim, stroke: '#666', 'stroke-width': 1 }))
+  const lz = el('text', { x: (bA[0] + bB[0]) / 2, y: yDim + 18, 'font-size': 15, fill: '#444', 'text-anchor': 'middle' })
+  lz.textContent = `luz ${(span / 1000).toFixed(2)} m`
+  vg.appendChild(lz)
+  const topL = tx([span / 2, rise])
+  const alt = el('text', { x: topL[0], y: topL[1] - 12, 'font-size': 15, fill: '#444', 'text-anchor': 'middle' })
+  alt.textContent = `alto ${(rise / 1000).toFixed(2)} m`
+  vg.appendChild(alt)
+
+  const title = el('text', { x: 500, y: 28, 'font-size': 15, fill: '#999', 'text-anchor': 'middle' })
+  title.textContent = `${cercha.id} · ${trussName(cercha.type)}`
+  vg.appendChild(title)
+}
+
+function trussName(type) {
+  const n = { mono: 'Un agua', dual: 'Dos aguas', fink: 'Fink (W)', howe: 'Howe', tijera: 'Tijera' }
+  return n[type] || 'Cercha'
 }

@@ -48,6 +48,9 @@ export default function DrawingTools() {
     if (toolId === 'viga') {
       st.selectBeam(null)
       st.setBeamSheet(true) // submenú: tipo de viga + perfil + nivel
+    } else if (toolId === 'cercha') {
+      st.selectCercha(null)
+      st.setCerchaSheet(true) // submenú: estilo + perfil + medidas
     }
   }
 
@@ -84,7 +87,7 @@ export default function DrawingTools() {
 }
 
 function ToolIcon({ type }) {
-  const iconProps = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.1, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  const iconProps = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1, strokeLinecap: 'round', strokeLinejoin: 'round' }
 
   const icons = {
     wall: <svg {...iconProps}><line x1="4" y1="12" x2="20" y2="12" /></svg>,

@@ -90,19 +90,20 @@ Todos los íconos son **un solo sistema** (se ven dibujados por la misma mano).
 **Envoltorio estándar** (copiar tal cual, solo cambia el contenido interno):
 
 ```html
-<svg viewBox="0 0 24 24" fill="none" stroke="#1C1C1C" stroke-width="1.1"
+<svg viewBox="0 0 24 24" fill="none" stroke="#1C1C1C" stroke-width="1"
      stroke-linecap="round" stroke-linejoin="round">…</svg>
 ```
 
 Reglas:
 
-1. **Monolínea FINA**: `fill:none`, `stroke-width:1.1` parejo en todos. **Líneas finas, nunca medias ni gruesas** (referencia: íconos EGGER). Un trazo pesado se vuelve una mancha para quien ve borroso. Sin rellenos, sin partes gruesas.
+1. **Monolínea FINA**: `fill:none`, `stroke-width:1` parejo en todos (rango fino 1.0–1.1; **cuanto más fino, mejor**). **Líneas finas, nunca medias ni gruesas** (referencia: íconos EGGER). Un trazo pesado se vuelve una mancha para quien ve borroso. Sin rellenos, sin partes gruesas.
 2. **Grilla 24×24**: mismo alto óptico, mismo aire alrededor.
 3. **Caps y joins redondos** (`round`) → trazo suave, no técnico.
 4. **Una metáfora por ícono**, simple.
 5. **Color por jerarquía:** **ícono ROJO `#FE0000` para lo principal** (navegación, menú de la app, acciones destacadas); **ícono NEGRO/tinta `#1C1C1C` para lo contextual/secundario** (acciones dentro de una fila, detalles).
-6. **Tamaño, no negrita.** Para que un ícono resalte, se agranda (28px standalone / 40px en botones de menú), no se engrosa.
-7. En botones se usa `stroke:currentColor` para heredar el color del contexto cuando haga falta.
+6. **Tamaño, no negrita.** Para que un ícono resalte, se **agranda** (mín. 40px en botones de menú, 28px inline). Ícono **grande + línea fina**: nunca se engrosa el trazo para darle peso. Hay espacio → ícono grande.
+7. **Estado activo/encendido = BORDE ROJO** (no relleno rojo, nunca rosado).
+8. En botones se usa `stroke:currentColor` para heredar el color del contexto cuando haga falta.
 
 **Estado activo / en acción → BORDE ROJO, nunca rosado.** Botón encendido, seleccionado o input
 enfocado se marca con **borde rojo `#FE0000`** (texto/ícono rojo opcional) sobre fondo blanco o gris
@@ -175,4 +176,4 @@ Todos comparten el mismo molde para verse hermanos:
 
 ---
 
-_Versión iLStyle 1.3 — se agrega el estándar de ícono de app instalada (launcher full-bleed maskable) y se uniforman los íconos instalados._
+_Versión iLStyle 1.4 — íconos aún más finos (`stroke-width:1`) y más grandes (mín. 40px en menú); se agrega la regla de estado activo = borde rojo. Versión 1.3 — estándar de ícono de app instalada (launcher full-bleed maskable) e íconos instalados uniformados._

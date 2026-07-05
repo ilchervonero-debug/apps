@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { LAYER_TEMPLATES } from '../data/layers'
+import { defaultRise } from '../engine/trusses'
 
 // Espesor de pared (mm) = núcleo (alto del montante) + capas de ambas caras
 export function wallThickness(type, profileSection) {
@@ -153,7 +154,7 @@ export const useDrawingStore = create((set) => ({
   beamConfig: { type: 'back_to_back', normId: 'cu_1', secIdx: 0, level: 2400 },
   setBeamSheet: (v) => set({ beamSheet: v }),
   setBeamConfig: (patch) => set((s) => ({ beamConfig: { ...s.beamConfig, ...patch } })),
-  selectBeam: (id) => set({ selectedBeamId: id, selectedId: null, selectedVertex: null }),
+  selectBeam: (id) => set({ selectedBeamId: id, selectedCerchaId: null, selectedId: null, selectedVertex: null }),
   startBeam: (pt) => set((s) => {
     const p = snapPoint(pt, s.gridMm, s.panels)
     return { beamDraft: { a: p, b: p } }
@@ -189,6 +190,56 @@ export const useDrawingStore = create((set) => ({
   removeBeam: (id) => set((s) => ({
     beams: s.beams.filter((x) => x.id !== id),
     selectedBeamId: s.selectedBeamId === id ? null : s.selectedBeamId,
+  })),
+
+  // ── CERCHAS (C1, C2…) ──────────────────────────────────────
+  // En planta se dibuja una línea = LUZ. El estilo (Fink, dos aguas…),
+  // la altura y el perfil se eligen en la hoja; el alzado muestra la cercha.
+  cerchas: [],
+  cerchaDraft: null, // { a, b } mientras se arrastra en planta
+  selectedCerchaId: null,
+  cerchaSheet: false, // hoja de estilo/perfil/medidas abierta
+  cerchaConfig: { type: 'fink', normId: 'cu_1', secIdx: 0, rise: null },
+  setCerchaSheet: (v) => set({ cerchaSheet: v }),
+  setCerchaConfig: (patch) => set((s) => ({ cerchaConfig: { ...s.cerchaConfig, ...patch } })),
+  selectCercha: (id) => set({ selectedCerchaId: id, selectedBeamId: null, selectedId: null, selectedVertex: null }),
+  startCercha: (pt) => set((s) => {
+    const p = snapPoint(pt, s.gridMm, s.panels)
+    return { cerchaDraft: { a: p, b: p } }
+  }),
+  dragCercha: (pt) => set((s) => (s.cerchaDraft ? { cerchaDraft: { ...s.cerchaDraft, b: snapPoint(pt, s.gridMm, s.panels) } } : {})),
+  finishCercha: () => set((s) => {
+    if (!s.cerchaDraft) return {}
+    const { a, b } = s.cerchaDraft
+    const span = Math.round(dist(a, b))
+    if (span < s.gridMm) return { cerchaDraft: null }
+    const used = new Set(s.cerchas.map((x) => x.id))
+    let n = 1
+    while (used.has('C' + n)) n++
+    const cfg = { ...s.cerchaConfig }
+    const rise = cfg.rise || defaultRise(span)
+    const cercha = { id: 'C' + n, a, b, span, ...cfg, rise }
+    return { cerchas: [...s.cerchas, cercha], cerchaDraft: null, selectedCerchaId: cercha.id, cerchaSheet: true }
+  }),
+  cancelCercha: () => set({ cerchaDraft: null }),
+  updateCercha: (id, patch) => set((s) => ({
+    cerchas: s.cerchas.map((x) => {
+      if (x.id !== id) return x
+      const nx = { ...x, ...patch }
+      if (patch.span != null) {
+        const w = Math.max(100, Math.round(+patch.span || 0))
+        const d = dist(x.a, x.b) || 1
+        const ux = (x.b[0] - x.a[0]) / d
+        const uy = (x.b[1] - x.a[1]) / d
+        nx.span = w
+        nx.b = [x.a[0] + ux * w, x.a[1] + uy * w]
+      }
+      return nx
+    }),
+  })),
+  removeCercha: (id) => set((s) => ({
+    cerchas: s.cerchas.filter((x) => x.id !== id),
+    selectedCerchaId: s.selectedCerchaId === id ? null : s.selectedCerchaId,
   })),
 
   // ── T-CONNECT (encuentros de muros) ────────────────────────
@@ -353,7 +404,7 @@ export const useDrawingStore = create((set) => ({
   }),
   cancelWall: () => set({ draft: null }),
 
-  select: (id) => set({ selectedId: id, selectedVertex: null }),
+  select: (id) => set({ selectedId: id, selectedBeamId: null, selectedCerchaId: null, selectedVertex: null }),
   deselect: () => set({ selectedId: null, selectedVertex: null }),
 
   // ── Historial ─────────────────────────────────────────────
@@ -418,7 +469,7 @@ export const useDrawingStore = create((set) => ({
     selectedId: s.selectedId === id ? null : s.selectedId,
     selectedVertex: null,
   })),
-  clearAll: () => set((s) => ({ ...histPatch(s, 'clear'), panels: [], beams: [], tconnects: [], selectedId: null, selectedBeamId: null, selectedVertex: null })),
+  clearAll: () => set((s) => ({ ...histPatch(s, 'clear'), panels: [], beams: [], cerchas: [], tconnects: [], selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedVertex: null })),
 
   // ── PLANTA: ancho exacto (mueve B en la dirección del trazo) ──
   setWidth: (id, mm) => set((s) => ({
