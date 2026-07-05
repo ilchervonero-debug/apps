@@ -143,6 +143,76 @@ export const useDrawingStore = create((set) => ({
   elevationHeight: 50, // % de alto del canvas superior
   draft: null, // { a:[mm,mm], b:[mm,mm] } mientras se arrastra en planta
 
+  // ── VIGAS (V1, V2…) ────────────────────────────────────────
+  // Tipos SketchFramer: simple (1C) · back_to_back (2C alma con alma, sección I)
+  // · box (2C boca con boca, cajón) · built_up_u (2C + 2U envolventes)
+  beams: [],
+  beamDraft: null, // { a, b } mientras se arrastra
+  selectedBeamId: null,
+  beamSheet: false, // hoja de tipo/perfil abierta
+  beamConfig: { type: 'back_to_back', normId: 'cu_1', secIdx: 0, level: 2400 },
+  setBeamSheet: (v) => set({ beamSheet: v }),
+  setBeamConfig: (patch) => set((s) => ({ beamConfig: { ...s.beamConfig, ...patch } })),
+  selectBeam: (id) => set({ selectedBeamId: id, selectedId: null, selectedVertex: null }),
+  startBeam: (pt) => set((s) => {
+    const p = snapPoint(pt, s.gridMm, s.panels)
+    return { beamDraft: { a: p, b: p } }
+  }),
+  dragBeam: (pt) => set((s) => (s.beamDraft ? { beamDraft: { ...s.beamDraft, b: snapPoint(pt, s.gridMm, s.panels) } } : {})),
+  finishBeam: () => set((s) => {
+    if (!s.beamDraft) return {}
+    const { a, b } = s.beamDraft
+    const span = Math.round(dist(a, b))
+    if (span < s.gridMm) return { beamDraft: null }
+    const used = new Set(s.beams.map((x) => x.id))
+    let n = 1
+    while (used.has('V' + n)) n++
+    const beam = { id: 'V' + n, a, b, span, ...s.beamConfig }
+    return { beams: [...s.beams, beam], beamDraft: null, selectedBeamId: beam.id }
+  }),
+  cancelBeam: () => set({ beamDraft: null }),
+  updateBeam: (id, patch) => set((s) => ({
+    beams: s.beams.map((x) => {
+      if (x.id !== id) return x
+      const nx = { ...x, ...patch }
+      if (patch.span != null) {
+        const w = Math.max(100, Math.round(+patch.span || 0))
+        const d = dist(x.a, x.b) || 1
+        const ux = (x.b[0] - x.a[0]) / d
+        const uy = (x.b[1] - x.a[1]) / d
+        nx.span = w
+        nx.b = [x.a[0] + ux * w, x.a[1] + uy * w]
+      }
+      return nx
+    }),
+  })),
+  removeBeam: (id) => set((s) => ({
+    beams: s.beams.filter((x) => x.id !== id),
+    selectedBeamId: s.selectedBeamId === id ? null : s.selectedBeamId,
+  })),
+
+  // ── T-CONNECT (encuentros de muros) ────────────────────────
+  // Tap 1 = muro pasante · tap 2 = muro que llega. En el core suma un
+  // montante de respaldo en el pasante (para atornillar la placa de la
+  // esquina) y deja registrado el encuentro para los descuentos del BOM.
+  tconnects: [],
+  tcFirst: null, // id del muro pasante ya elegido
+  setTcFirst: (id) => set({ tcFirst: id }),
+  addTConnect: (throughId, incomingId, point) => set((s) => {
+    if (throughId === incomingId) return { tcFirst: null }
+    const dup = s.tconnects.find((t) => (t.through === throughId && t.incoming === incomingId) || (t.through === incomingId && t.incoming === throughId))
+    if (dup) return { tcFirst: null }
+    const used = new Set(s.tconnects.map((t) => t.id))
+    let n = 1
+    while (used.has('T' + n)) n++
+    return { tconnects: [...s.tconnects, { id: 'T' + n, through: throughId, incoming: incomingId, point }], tcFirst: null }
+  }),
+  removeTConnect: (id) => set((s) => ({ tconnects: s.tconnects.filter((t) => t.id !== id) })),
+  // limpia conexiones y vigas huérfanas si se borra un muro
+  cleanupRefs: () => set((s) => ({
+    tconnects: s.tconnects.filter((t) => s.panels.some((p) => p.id === t.through) && s.panels.some((p) => p.id === t.incoming)),
+  })),
+
   // ── Configuración del proyecto (Etapa 2) ──────────────────
   appView: 'setup', // 'setup' | 'draw'
   tab: 'plan', // 'plan' | 'elev' — pestaña activa del dibujo
@@ -344,10 +414,11 @@ export const useDrawingStore = create((set) => ({
   remove: (id) => set((s) => ({
     ...histPatch(s, 'remove'),
     panels: s.panels.filter((p) => p.id !== id),
+    tconnects: s.tconnects.filter((t) => t.through !== id && t.incoming !== id),
     selectedId: s.selectedId === id ? null : s.selectedId,
     selectedVertex: null,
   })),
-  clearAll: () => set((s) => ({ ...histPatch(s, 'clear'), panels: [], selectedId: null, selectedVertex: null })),
+  clearAll: () => set((s) => ({ ...histPatch(s, 'clear'), panels: [], beams: [], tconnects: [], selectedId: null, selectedBeamId: null, selectedVertex: null })),
 
   // ── PLANTA: ancho exacto (mueve B en la dirección del trazo) ──
   setWidth: (id, mm) => set((s) => ({

@@ -43,6 +43,12 @@ export default function DrawingTools() {
   const handleSelectTool = (toolId) => {
     setActiveTool(toolId)
     setExpanded(false)
+    const st = useDrawingStore.getState()
+    st.setTcFirst(null) // reinicia la secuencia de T-connect al cambiar de herramienta
+    if (toolId === 'viga') {
+      st.selectBeam(null)
+      st.setBeamSheet(true) // submenú: tipo de viga + perfil + nivel
+    }
   }
 
   return (
@@ -78,7 +84,7 @@ export default function DrawingTools() {
 }
 
 function ToolIcon({ type }) {
-  const iconProps = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  const iconProps = { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.1, strokeLinecap: 'round', strokeLinejoin: 'round' }
 
   const icons = {
     wall: <svg {...iconProps}><line x1="4" y1="12" x2="20" y2="12" /></svg>,

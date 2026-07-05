@@ -1,5 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { useDrawingStore, panelPolygon, panelMaxHeight, MAJOR, snapPoint, nearestVertex, VERT_RADIUS } from '../store/drawingStore'
+import BeamSheet from './BeamSheet'
+import { beamWidthMm } from '../engine/beams'
 import '../styles/DrawingCanvas.css'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -43,6 +45,11 @@ export default function DrawingCanvas() {
   const [elevH, setElevH] = useState(500) // alto del viewBox del alzado
 
   const panels = useDrawingStore((s) => s.panels)
+  const beams = useDrawingStore((s) => s.beams)
+  const beamDraft = useDrawingStore((s) => s.beamDraft)
+  const selectedBeamId = useDrawingStore((s) => s.selectedBeamId)
+  const tconnects = useDrawingStore((s) => s.tconnects)
+  const tcFirst = useDrawingStore((s) => s.tcFirst)
   const tab = useDrawingStore((s) => s.tab)
   const selectedId = useDrawingStore((s) => s.selectedId)
   const selectedVertex = useDrawingStore((s) => s.selectedVertex)
@@ -87,9 +94,10 @@ export default function DrawingCanvas() {
 
   // ── Render reactivo ──
   useEffect(() => {
-    drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm, view)
-    drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm, elevView)
-  }, [panels, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab, elevView])
+    drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm, view,
+      { beams, beamDraft, selectedBeamId, tconnects, tcFirst })
+    drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm, elevView, tconnects)
+  }, [panels, beams, beamDraft, selectedBeamId, tconnects, tcFirst, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab, elevView])
 
   // al cambiar de panel, reinicia la vista del alzado (encaja la cara)
   useEffect(() => {
@@ -133,7 +141,7 @@ export default function DrawingCanvas() {
     }
     // cancelar dibujo/long-press en curso
     clearLongPress()
-    if (dragRef.current.active) { useDrawingStore.getState().cancelWall(); dragRef.current.active = false }
+    if (dragRef.current.active) { useDrawingStore.getState().cancelWall(); useDrawingStore.getState().cancelBeam(); dragRef.current.active = false }
     movingRef.current = null
   }
 
@@ -169,6 +177,9 @@ export default function DrawingCanvas() {
     if (activeTool === 'wall') {
       dragRef.current = { active: true, moved: false }
       st.startWall(mm)
+    } else if (activeTool === 'viga') {
+      dragRef.current = { active: true, moved: false }
+      st.startBeam(mm)
     }
     setCursor({ view: 'plan', vb })
   }
@@ -209,7 +220,9 @@ export default function DrawingCanvas() {
       : false
     if (moved) clearLongPress()
     if (dragRef.current.active) {
-      useDrawingStore.getState().dragWall(vbToPlan(worldFromVb(vb)))
+      const st2 = useDrawingStore.getState()
+      if (st2.activeTool === 'viga') st2.dragBeam(vbToPlan(worldFromVb(vb)))
+      else st2.dragWall(vbToPlan(worldFromVb(vb)))
       if (moved) dragRef.current.moved = true // solo arrastre real, no micro-movimiento
     }
   }
@@ -226,7 +239,9 @@ export default function DrawingCanvas() {
 
     if (movingRef.current) { movingRef.current = null; setMoving(null); return }
     if (dragRef.current.active) {
-      useDrawingStore.getState().finishWall()
+      const st0 = useDrawingStore.getState()
+      if (st0.activeTool === 'viga') st0.finishBeam()
+      else st0.finishWall()
       dragRef.current.active = false
     }
     // tap corto = solo seleccionar (el menú mover/borrar sale con long-press)
@@ -236,8 +251,21 @@ export default function DrawingCanvas() {
       const hit = pickPanel(mm, st.panels)
       if (['door', 'window', 'opening'].includes(activeTool)) {
         if (hit) { st.select(hit); st.addOpening(hit, activeTool); st.setTab('elev') }
-      } else if (activeTool === 'select' || activeTool === 'wall') {
-        if (hit) st.select(hit)
+      } else if (activeTool === 'tconnect') {
+        // tap 1 = muro pasante · tap 2 = muro que llega
+        if (!hit) { st.setTcFirst(null); return }
+        if (!st.tcFirst) { st.setTcFirst(hit); st.select(hit); return }
+        if (st.tcFirst === hit) { st.setTcFirst(null); st.deselect(); return }
+        const pA = st.panels.find((p) => p.id === st.tcFirst)
+        const pB = st.panels.find((p) => p.id === hit)
+        const pt = tMeetPoint(pA, pB, st.gridMm)
+        if (pt) st.addTConnect(pA.id, pB.id, pt)
+        else st.setTcFirst(null)
+        st.deselect()
+      } else if (activeTool === 'select' || activeTool === 'wall' || activeTool === 'viga') {
+        const beamHit = pickBeam(mm, st.beams)
+        if (activeTool !== 'viga' && hit) st.select(hit)
+        else if (beamHit) { st.selectBeam(beamHit); st.setBeamSheet(true) }
         else if (activeTool === 'select') st.deselect()
       }
     }
@@ -365,11 +393,12 @@ export default function DrawingCanvas() {
 
   return (
     <div className="drawing-canvas">
+      <BeamSheet />
       {/* Banner modo mover */}
       {moving && (
-        <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#fe0000', color: '#fff', padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, boxShadow: '0 2px 8px rgba(0,0,0,0.25)', display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#fe0000', color: '#fff', padding: '8px 16px', borderRadius: 20, fontSize: 16, fontWeight: 500, boxShadow: '0 2px 8px rgba(0,0,0,0.25)', display: 'flex', gap: 12, alignItems: 'center' }}>
           Moviendo {moving} — arrastralo a su lugar
-          <button onClick={() => setMoving(null)} style={{ background: 'rgba(255,255,255,0.25)', border: 'none', color: '#fff', borderRadius: 12, padding: '2px 10px', fontWeight: 700, cursor: 'pointer' }}>Listo</button>
+          <button onClick={() => setMoving(null)} style={{ background: 'rgba(255,255,255,0.25)', border: 'none', color: '#fff', borderRadius: 12, padding: '4px 12px', fontSize: 16, fontWeight: 500, cursor: 'pointer' }}>Listo</button>
         </div>
       )}
 
@@ -383,7 +412,7 @@ export default function DrawingCanvas() {
             zIndex: 91, background: '#fff', border: '1px solid #e0e0e0', borderRadius: 12,
             boxShadow: '0 6px 24px rgba(0,0,0,0.18)', overflow: 'hidden', minWidth: 140,
           }}>
-            <div style={{ padding: '8px 14px', fontSize: 11, fontWeight: 800, color: '#fe0000', borderBottom: '1px solid #f0f0f0' }}>{menu.id}</div>
+            <div style={{ padding: '10px 16px', fontSize: 15, fontWeight: 500, color: '#fe0000', borderBottom: '1px solid #f0f0f0' }}>{menu.id}</div>
             <CtxItem label="Mover" onClick={doMove} />
             <CtxItem label="Copiar" onClick={doCopy} />
             <CtxItem label="Borrar" danger onClick={doDelete} />
@@ -396,10 +425,12 @@ export default function DrawingCanvas() {
         <span className="ct-hint">
           {(() => {
             const open = { door: 'puerta', window: 'ventana', opening: 'abertura' }
-            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso', tconnect: 'T-connect', pilar: 'Pilar', viga: 'Viga', cercha: 'Cercha' }
+            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso', pilar: 'Pilar', cercha: 'Cercha' }
             if (tab === 'plan') {
               if (moving) return 'Arrastrá el muro a su lugar'
               if (activeTool === 'wall') return 'Arrastrá para dibujar · mantené presionado para editar'
+              if (activeTool === 'viga') return 'Arrastrá para dibujar la viga · tocá el eje para editarla'
+              if (activeTool === 'tconnect') return tcFirst ? `Pasante ${tcFirst} · tocá el muro que llega` : 'Tocá el muro pasante (continuo)'
               if (open[activeTool]) return `Tocá un muro para agregarle ${open[activeTool]}`
               if (soon[activeTool]) return `${soon[activeTool]}: reglas próximamente`
               return 'Tocá un muro para editar'
@@ -410,6 +441,9 @@ export default function DrawingCanvas() {
           })()}
         </span>
         <span className="ct-actions">
+          {tab === 'plan' && activeTool === 'viga' && (
+            <button onClick={() => { useDrawingStore.getState().selectBeam(null); useDrawingStore.getState().setBeamSheet(true) }} title="Tipo de viga" className="ct-btn">Tipo</button>
+          )}
           <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer" className="ct-btn">↶</button>
           <button onClick={() => useDrawingStore.getState().redo()} disabled={!canRedo} title="Rehacer" className="ct-btn">↷</button>
           {tab === 'plan' && <>
@@ -462,9 +496,9 @@ export default function DrawingCanvas() {
 function CtxItem({ label, onClick, danger }) {
   return (
     <button onClick={onClick} style={{
-      display: 'block', width: '100%', textAlign: 'left', padding: '11px 14px',
+      display: 'block', width: '100%', textAlign: 'left', padding: '13px 16px',
       background: '#fff', border: 'none', borderBottom: '1px solid #f5f5f5',
-      fontSize: 14, fontWeight: 600, color: danger ? '#fe0000' : '#333', cursor: 'pointer',
+      fontSize: 16, fontWeight: 500, color: danger ? '#1c1c1c' : '#333', cursor: 'pointer',
     }}>
       {label}
     </button>
@@ -480,6 +514,34 @@ function pickPanel(mm, panels) {
   }
   return best
 }
+function pickBeam(mm, beams) {
+  let best = null, bestD = 600
+  for (const b of beams || []) {
+    const d = distPointSeg(mm, b.a, b.b)
+    if (d < bestD) { bestD = d; best = b.id }
+  }
+  return best
+}
+
+// Punto de encuentro T: extremo del muro que llega (B) proyectado sobre el
+// eje del pasante (A). Vale si el extremo queda a menos de una celda del eje.
+function tMeetPoint(pA, pB, gridMm) {
+  if (!pA || !pB) return null
+  let best = null, bestD = gridMm * 1.01
+  for (const end of [pB.a, pB.b]) {
+    const d = distPointSeg(end, pA.a, pA.b)
+    if (d < bestD) {
+      bestD = d
+      const dx = pA.b[0] - pA.a[0], dy = pA.b[1] - pA.a[1]
+      const l2 = dx * dx + dy * dy || 1
+      let t = ((end[0] - pA.a[0]) * dx + (end[1] - pA.a[1]) * dy) / l2
+      t = Math.max(0, Math.min(1, t))
+      best = [pA.a[0] + t * dx, pA.a[1] + t * dy]
+    }
+  }
+  return best
+}
+
 function distPointSeg(p, a, b) {
   const dx = b[0] - a[0], dy = b[1] - a[1]
   const l2 = dx * dx + dy * dy
@@ -507,8 +569,9 @@ function elevTransform(panel) {
 }
 
 // ── Dibujo PLANTA ──────────────────────────────────────────
-function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, view) {
+function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, view, extra) {
   if (!svg) return
+  const { beams = [], beamDraft = null, selectedBeamId = null, tconnects = [], tcFirst = null } = extra || {}
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: PLAN.h, fill: 'white' }))
 
@@ -562,6 +625,48 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, vi
       et.textContent = 'ext'
       svg.appendChild(et)
     }
+  })
+
+  // muro pasante elegido para T-connect (tap 1)
+  if (tcFirst) {
+    const p = panels.find((x) => x.id === tcFirst)
+    if (p) {
+      const a = planToVb(p.a), b = planToVb(p.b)
+      svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#fe0000', 'stroke-width': 7 * k, 'stroke-linecap': 'round', opacity: 0.25 }))
+    }
+  }
+
+  // vigas (V1, V2…): banda gris al ancho real del perfil + eje
+  beams.forEach((bm) => {
+    const a = planToVb(bm.a), b = planToVb(bm.b)
+    const sel = bm.id === selectedBeamId
+    const wVb = Math.max(beamWidthMm(bm) * PLAN.s, 3 * k)
+    svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: sel ? '#fe0000' : '#999', 'stroke-width': wVb, 'stroke-linecap': 'butt', opacity: sel ? 0.3 : 0.35 }))
+    svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: sel ? '#fe0000' : '#666', 'stroke-width': 1.6 * k, 'stroke-dasharray': `${7 * k} ${4 * k}` }))
+    const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+    const t = el('text', { x: mid[0], y: mid[1] - 9 * k, 'font-size': 13 * k, 'font-weight': 'bold', fill: sel ? '#fe0000' : '#666', 'text-anchor': 'middle' })
+    t.textContent = `${bm.id} · ${(bm.span / 1000).toFixed(2)} m`
+    svg.appendChild(t)
+  })
+  if (beamDraft) {
+    const a = planToVb(beamDraft.a), b = planToVb(beamDraft.b)
+    svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#fe0000', 'stroke-width': 2 * k, 'stroke-dasharray': `${8 * k} ${4 * k}` }))
+    const w = Math.round(Math.hypot(beamDraft.b[0] - beamDraft.a[0], beamDraft.b[1] - beamDraft.a[1]))
+    if (w > 0) {
+      const t = el('text', { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 - 8 * k, 'font-size': 13 * k, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
+      t.textContent = `V · ${(w / 1000).toFixed(2)} m`
+      svg.appendChild(t)
+    }
+  }
+
+  // T-connects: montante de respaldo en el encuentro (cuadrado + T)
+  tconnects.forEach((tc) => {
+    const v = planToVb(tc.point)
+    const r = 6 * k
+    svg.appendChild(el('rect', { x: v[0] - r, y: v[1] - r, width: r * 2, height: r * 2, fill: '#fff', stroke: '#fe0000', 'stroke-width': 1.6 * k }))
+    const t = el('text', { x: v[0], y: v[1] + 3.6 * k, 'font-size': 9 * k, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
+    t.textContent = 'T'
+    svg.appendChild(t)
   })
 
   // trazo en curso
@@ -626,7 +731,7 @@ function drawPlanGrid(svg, gridMm, view) {
 }
 
 // ── Dibujo ALZADO (0,0 local en la base izquierda) ─────────
-function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView) {
+function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView, tconnects) {
   if (!svg) return
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: ELEV.h, fill: 'white' }))
@@ -670,7 +775,7 @@ function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView
 
   // polígono de la cara
   const poly = panelPolygon(panel).map(tf.toVb)
-  svg.appendChild(el('polygon', { points: poly.map((v) => `${v[0]},${v[1]}`).join(' '), fill: 'rgba(254,0,0,0.07)', stroke: '#fe0000', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }))
+  svg.appendChild(el('polygon', { points: poly.map((v) => `${v[0]},${v[1]}`).join(' '), fill: 'rgba(28,28,28,0.05)', stroke: '#fe0000', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }))
 
   // base bloqueada (ancho de planta)
   const baseA = tf.toVb([0, 0]), baseB = tf.toVb([panel.width, 0])
@@ -695,6 +800,17 @@ function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView
     const t2 = el('text', { x: cx, y: cy + 16, 'font-size': 10, fill: '#0a84ff', 'text-anchor': 'middle' })
     t2.textContent = `${(op.width / 1000).toFixed(2)}×${(op.height / 1000).toFixed(2)}`
     svg.appendChild(t2)
+  })
+
+  // montantes de respaldo por T-connect (este panel es el pasante)
+  ;(tconnects || []).filter((tc) => tc.through === panel.id).forEach((tc) => {
+    const lx = Math.hypot(tc.point[0] - panel.a[0], tc.point[1] - panel.a[1])
+    const hAt = panelMaxHeight(panel)
+    const a = tf.toVb([lx, 0]), b = tf.toVb([lx, hAt])
+    svg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#fe0000', 'stroke-width': 2, 'stroke-dasharray': '6 4', opacity: 0.7 }))
+    const t = el('text', { x: a[0], y: a[1] + 38, 'font-size': 10, 'font-weight': 'bold', fill: '#fe0000', 'text-anchor': 'middle' })
+    t.textContent = `${tc.id} · respaldo ${tc.incoming}`
+    svg.appendChild(t)
   })
 
   // vértices del contorno con coordenadas locales (X desde A, Y altura)
