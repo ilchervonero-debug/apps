@@ -3,9 +3,11 @@ import { useDrawingStore, panelPolygon, panelMaxHeight, MAJOR, snapPoint, neares
 import BeamSheet from './BeamSheet'
 import CerchaSheet from './CerchaSheet'
 import PilarSheet from './PilarSheet'
+import TechoSheet from './TechoSheet'
 import { beamWidthMm } from '../engine/beams'
 import { trussGeometry, cerchaTypeDef } from '../engine/trusses'
 import { pilarFootprint, pilarArmadoDef, columnaGeometry } from '../engine/pilares'
+import { roofGeometry, roofDims, roofFormaDef } from '../engine/roofs'
 import '../styles/DrawingCanvas.css'
 
 const SVG = 'http://www.w3.org/2000/svg'
@@ -57,6 +59,9 @@ export default function DrawingCanvas() {
   const selectedCerchaId = useDrawingStore((s) => s.selectedCerchaId)
   const pilares = useDrawingStore((s) => s.pilares)
   const selectedPilarId = useDrawingStore((s) => s.selectedPilarId)
+  const techos = useDrawingStore((s) => s.techos)
+  const techoDraft = useDrawingStore((s) => s.techoDraft)
+  const selectedTechoId = useDrawingStore((s) => s.selectedTechoId)
   const tconnects = useDrawingStore((s) => s.tconnects)
   const tcFirst = useDrawingStore((s) => s.tcFirst)
   const tab = useDrawingStore((s) => s.tab)
@@ -104,16 +109,16 @@ export default function DrawingCanvas() {
   // ── Render reactivo ──
   useEffect(() => {
     drawPlan(planRef.current, panels, selectedId, draft, cursor, activeTool, gridMm, view,
-      { beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, pilares, selectedPilarId, tconnects, tcFirst })
+      { beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, pilares, selectedPilarId, techos, techoDraft, selectedTechoId, tconnects, tcFirst })
     drawElevation(elevRef.current, panels, selectedId, selectedVertex, gridMm, elevView, tconnects,
-      { cerchas, selectedCerchaId, pilares, selectedPilarId })
-  }, [panels, beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, pilares, selectedPilarId, tconnects, tcFirst, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab, elevView])
+      { cerchas, selectedCerchaId, pilares, selectedPilarId, techos, selectedTechoId })
+  }, [panels, beams, beamDraft, selectedBeamId, cerchas, cerchaDraft, selectedCerchaId, pilares, selectedPilarId, techos, techoDraft, selectedTechoId, tconnects, tcFirst, selectedId, selectedVertex, draft, cursor, activeTool, gridMm, view, planH, elevH, tab, elevView])
 
   // al cambiar de panel o cercha, reinicia la vista del alzado (encaja la cara)
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setElevView({ z: 1, tx: 0, ty: 0 })
-  }, [selectedId, selectedCerchaId, selectedPilarId])
+  }, [selectedId, selectedCerchaId, selectedPilarId, selectedTechoId])
 
   // Conversión exacta pantalla → viewBox usando la matriz del SVG.
   // (Evita el error de snap cuando el SVG no llena exacto su viewBox.)
@@ -193,6 +198,9 @@ export default function DrawingCanvas() {
     } else if (activeTool === 'cercha') {
       dragRef.current = { active: true, moved: false }
       st.startCercha(mm)
+    } else if (activeTool === 'roof') {
+      dragRef.current = { active: true, moved: false }
+      st.startTecho(mm)
     }
     setCursor({ view: 'plan', vb })
   }
@@ -236,6 +244,7 @@ export default function DrawingCanvas() {
       const st2 = useDrawingStore.getState()
       if (st2.activeTool === 'viga') st2.dragBeam(vbToPlan(worldFromVb(vb)))
       else if (st2.activeTool === 'cercha') st2.dragCercha(vbToPlan(worldFromVb(vb)))
+      else if (st2.activeTool === 'roof') st2.dragTecho(vbToPlan(worldFromVb(vb)))
       else st2.dragWall(vbToPlan(worldFromVb(vb)))
       if (moved) dragRef.current.moved = true // solo arrastre real, no micro-movimiento
     }
@@ -256,6 +265,7 @@ export default function DrawingCanvas() {
       const st0 = useDrawingStore.getState()
       if (st0.activeTool === 'viga') st0.finishBeam()
       else if (st0.activeTool === 'cercha') st0.finishCercha()
+      else if (st0.activeTool === 'roof') st0.finishTecho()
       else st0.finishWall()
       dragRef.current.active = false
     }
@@ -282,10 +292,14 @@ export default function DrawingCanvas() {
         const pilarHit = pickPilar(mm, st.pilares)
         if (pilarHit) { st.selectPilar(pilarHit); st.setPilarSheet(true) }
         else st.addPilar(mm)
+      } else if (activeTool === 'roof') {
+        const techoHit = pickTecho(mm, st.techos)
+        if (techoHit) { st.selectTecho(techoHit); st.setTechoSheet(true) }
       } else if (activeTool === 'select' || activeTool === 'wall' || activeTool === 'viga' || activeTool === 'cercha') {
         const beamHit = pickBeam(mm, st.beams)
         const cerchaHit = pickCercha(mm, st.cerchas)
         const pilarHit = pickPilar(mm, st.pilares)
+        const techoHit = pickTecho(mm, st.techos)
         if (activeTool === 'viga') {
           if (beamHit) { st.selectBeam(beamHit); st.setBeamSheet(true) }
         } else if (activeTool === 'cercha') {
@@ -294,6 +308,7 @@ export default function DrawingCanvas() {
         else if (beamHit) { st.selectBeam(beamHit); st.setBeamSheet(true) }
         else if (cerchaHit) { st.selectCercha(cerchaHit); st.setCerchaSheet(true) }
         else if (pilarHit) { st.selectPilar(pilarHit); st.setPilarSheet(true) }
+        else if (techoHit) { st.selectTecho(techoHit); st.setTechoSheet(true) }
         else if (activeTool === 'select') st.deselect()
       }
     }
@@ -424,6 +439,7 @@ export default function DrawingCanvas() {
       <BeamSheet />
       <CerchaSheet />
       <PilarSheet />
+      <TechoSheet />
       {/* Banner modo mover */}
       {moving && (
         <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#fe0000', color: '#fff', padding: '8px 16px', borderRadius: 20, fontSize: 16, fontWeight: 500, boxShadow: '0 2px 8px rgba(0,0,0,0.25)', display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -455,7 +471,7 @@ export default function DrawingCanvas() {
         <span className="ct-hint">
           {(() => {
             const open = { door: 'puerta', window: 'ventana', opening: 'abertura' }
-            const soon = { roof: 'Techo', ceiling: 'Cielorraso', slab: 'Losa de piso' }
+            const soon = { ceiling: 'Cielorraso', slab: 'Losa de piso' }
             if (tab === 'plan') {
               if (moving) return 'Arrastrá el muro a su lugar'
               if (activeTool === 'wall') return 'Arrastrá para dibujar · mantené presionado para editar'
@@ -463,6 +479,7 @@ export default function DrawingCanvas() {
               if (activeTool === 'cercha') return 'Arrastrá para dibujar la luz · elegí estilo y medidas · el alzado la muestra'
               if (activeTool === 'pilar') return 'Tocá en planta para colocar el pilar · tocalo para editar o ver en alzado'
               if (activeTool === 'columna') return 'Tocá en planta para colocar la columna reticulada · tocala para editar o ver en alzado'
+              if (activeTool === 'roof') return 'Arrastrá el rectángulo de la cubierta · forma, aleros y chapa en su hoja · el alzado muestra la sección'
               if (activeTool === 'tconnect') return tcFirst ? `Pasante ${tcFirst} · tocá el muro que llega` : 'Tocá el muro pasante (continuo)'
               if (open[activeTool]) return `Tocá un muro para agregarle ${open[activeTool]}`
               if (soon[activeTool]) return `${soon[activeTool]}: reglas próximamente`
@@ -470,7 +487,8 @@ export default function DrawingCanvas() {
             }
             if (selectedCerchaId) return `${selectedCerchaId} · vista de la cercha · editá estilo y medidas en su hoja`
             if (selectedPilarId) return `${selectedPilarId} · vista del pilar · editá armado y altura en su hoja`
-            if (!selectedId) return 'Seleccioná un muro, cercha o pilar en la pestaña Planta'
+            if (selectedTechoId) return `${selectedTechoId} · sección de la cubierta · editá forma y aleros en su hoja`
+            if (!selectedId) return 'Seleccioná un muro, cercha, pilar o techo en la pestaña Planta'
             if (open[activeTool]) return `Tocá la cara para ubicar ${open[activeTool]}`
             return `Cara de ${selectedId} · arrastrá vértices · base bloqueada`
           })()}
@@ -487,6 +505,9 @@ export default function DrawingCanvas() {
           )}
           {tab === 'plan' && activeTool === 'columna' && (
             <button onClick={() => { useDrawingStore.getState().setPilarConfig({ kind: 'reticulada' }); useDrawingStore.getState().setPilarSheet(true) }} title="Retícula de la columna" className="ct-btn">Retícula</button>
+          )}
+          {tab === 'plan' && activeTool === 'roof' && (
+            <button onClick={() => { useDrawingStore.getState().setTechoSheet(true) }} title="Forma de la cubierta" className="ct-btn">Forma</button>
           )}
           <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer" className="ct-btn">↶</button>
           <button onClick={() => useDrawingStore.getState().redo()} disabled={!canRedo} title="Rehacer" className="ct-btn">↷</button>
@@ -582,6 +603,14 @@ function pickPilar(mm, pilares) {
   }
   return best
 }
+function pickTecho(mm, techos) {
+  for (const t of techos || []) {
+    const x0 = Math.min(t.a[0], t.b[0]), x1 = Math.max(t.a[0], t.b[0])
+    const y0 = Math.min(t.a[1], t.b[1]), y1 = Math.max(t.a[1], t.b[1])
+    if (mm[0] >= x0 && mm[0] <= x1 && mm[1] >= y0 && mm[1] <= y1) return t.id
+  }
+  return null
+}
 
 // Punto de encuentro T: extremo del muro que llega (B) proyectado sobre el
 // eje del pasante (A). Vale si el extremo queda a menos de una celda del eje.
@@ -631,7 +660,7 @@ function elevTransform(panel) {
 // ── Dibujo PLANTA ──────────────────────────────────────────
 function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, view, extra) {
   if (!svg) return
-  const { beams = [], beamDraft = null, selectedBeamId = null, cerchas = [], cerchaDraft = null, selectedCerchaId = null, pilares = [], selectedPilarId = null, tconnects = [], tcFirst = null } = extra || {}
+  const { beams = [], beamDraft = null, selectedBeamId = null, cerchas = [], cerchaDraft = null, selectedCerchaId = null, pilares = [], selectedPilarId = null, techos = [], techoDraft = null, selectedTechoId = null, tconnects = [], tcFirst = null } = extra || {}
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: PLAN.h, fill: 'white' }))
 
@@ -760,6 +789,36 @@ function drawPlan(svg, panels, selectedId, draft, cursor, activeTool, gridMm, vi
     svg.appendChild(t)
   })
 
+  // techos (Te1…): huella + aleros (punteado) + cumbrera
+  const drawTechoPlan = (t, isDraft) => {
+    const x0 = Math.min(t.a[0], t.b[0]), x1 = Math.max(t.a[0], t.b[0])
+    const y0 = Math.min(t.a[1], t.b[1]), y1 = Math.max(t.a[1], t.b[1])
+    const sel = !isDraft && t.id === selectedTechoId
+    const col = isDraft ? '#fe0000' : (sel ? '#fe0000' : '#888')
+    const A = planToVb([x0, y1]), B = planToVb([x1, y0]) // esquinas vb
+    const rx = Math.min(A[0], B[0]), ry = Math.min(A[1], B[1]), rw = Math.abs(B[0] - A[0]), rh = Math.abs(B[1] - A[1])
+    // aleros (punteado) hacia afuera
+    const al = t.aleros || {}
+    if (!isDraft && (al.izq || al.der || al.frente || al.fondo)) {
+      const oA = planToVb([x0 - (al.izq || 0), y1 + (al.frente || 0)]), oB = planToVb([x1 + (al.der || 0), y0 - (al.fondo || 0)])
+      svg.appendChild(el('rect', { x: Math.min(oA[0], oB[0]), y: Math.min(oA[1], oB[1]), width: Math.abs(oB[0] - oA[0]), height: Math.abs(oB[1] - oA[1]), fill: 'none', stroke: col, 'stroke-width': 1 * k, 'stroke-dasharray': `${5 * k} ${4 * k}`, opacity: 0.7 }))
+    }
+    svg.appendChild(el('rect', { x: rx, y: ry, width: rw, height: rh, fill: 'rgba(28,28,28,0.04)', stroke: col, 'stroke-width': (sel ? 2 : 1.4) * k, 'stroke-dasharray': isDraft ? `${8 * k} ${4 * k}` : 'none' }))
+    // cumbrera: al centro del ancho (X), a lo largo (Y) salvo un agua
+    const forma = t.forma || 'DOS_AGUAS'
+    if (forma === 'DOS_AGUAS' || forma === 'CUATRO_AGUAS') {
+      const midx = (rx + rx + rw) / 2
+      svg.appendChild(el('line', { x1: midx, y1: ry, x2: midx, y2: ry + rh, stroke: col, 'stroke-width': 1.6 * k, 'stroke-dasharray': `${9 * k} ${4 * k}` }))
+    }
+    if (!isDraft) {
+      const t2 = el('text', { x: rx + rw / 2, y: ry + rh / 2, 'font-size': 14 * k, fill: col, 'text-anchor': 'middle', 'dominant-baseline': 'middle' })
+      t2.textContent = `${t.id} · ${(Math.abs(x1 - x0) / 1000).toFixed(1)}×${(Math.abs(y1 - y0) / 1000).toFixed(1)}m`
+      svg.appendChild(t2)
+    }
+  }
+  techos.forEach((t) => drawTechoPlan(t, false))
+  if (techoDraft) drawTechoPlan(techoDraft, true)
+
   // T-connects: montante de respaldo en el encuentro (cuadrado + T)
   tconnects.forEach((tc) => {
     const v = planToVb(tc.point)
@@ -834,7 +893,7 @@ function drawPlanGrid(svg, gridMm, view) {
 // ── Dibujo ALZADO (0,0 local en la base izquierda) ─────────
 function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView, tconnects, extra) {
   if (!svg) return
-  const { cerchas = [], selectedCerchaId = null, pilares = [], selectedPilarId = null } = extra || {}
+  const { cerchas = [], selectedCerchaId = null, pilares = [], selectedPilarId = null, techos = [], selectedTechoId = null } = extra || {}
   svg.innerHTML = ''
   svg.appendChild(el('rect', { width: 1000, height: ELEV.h, fill: 'white' }))
 
@@ -844,11 +903,14 @@ function drawElevation(svg, panels, selectedId, selectedVertex, gridMm, elevView
   // si hay un pilar seleccionado, el alzado muestra su silueta vertical
   const pilar = pilares.find((x) => x.id === selectedPilarId)
   if (pilar) { drawPilarElevation(svg, pilar, elevView); return }
+  // si hay un techo seleccionado, el alzado muestra la sección de la cubierta
+  const techo = techos.find((t) => t.id === selectedTechoId)
+  if (techo) { drawTechoElevation(svg, techo, elevView); return }
 
   const panel = panels.find((p) => p.id === selectedId)
   if (!panel) {
     const t = el('text', { x: 500, y: ELEV.h / 2, 'font-size': 18, fill: '#bbb', 'text-anchor': 'middle' })
-    t.textContent = 'Seleccioná un muro, cercha o pilar en la pestaña Planta'
+    t.textContent = 'Seleccioná un muro, cercha, pilar o techo en la pestaña Planta'
     svg.appendChild(t)
     return
   }
@@ -1042,4 +1104,52 @@ function drawPilarElevation(svg, pilar, elevView) {
   const title = el('text', { x: cx, y: 40, 'font-size': 16, fill: '#999', 'text-anchor': 'middle' })
   title.textContent = `${pilar.id} · ${pilarArmadoDef(pilar.tipoArmado).name}`
   vg.appendChild(title)
+}
+
+// ── ALZADO del TECHO (sección de la cubierta con aleros) ───────
+function drawTechoElevation(svg, techo, elevView) {
+  const ev = elevView || { z: 1, tx: 0, ty: 0 }
+  const vg = el('g', { transform: `translate(${ev.tx} ${ev.ty}) scale(${ev.z})` })
+  svg.appendChild(vg)
+
+  const geo = roofGeometry(techo)
+  const { w } = roofDims(techo)
+  const al = techo.aleros || {}
+  const totalW = geo.totalW
+  const H = Math.max(1, techo.alturaPico || 1500)
+  const marginTop = 96, marginBot = 150, marginX = 90
+  const s = Math.min((1000 - marginX * 2) / totalW, (ELEV.h - marginTop - marginBot) / H)
+  const ox = (1000 - totalW * s) / 2
+  const oy = marginTop + (ELEV.h - marginTop - marginBot + H * s) / 2 // centrado vertical
+  const tx = ([x, y]) => [ox + x * s, oy - y * s]
+
+  // perfil de la cubierta
+  let pts
+  if ((techo.forma || 'DOS_AGUAS') === 'UN_AGUA') pts = [[0, 0], [totalW, H]]
+  else pts = [[0, 0], [totalW / 2, H], [totalW, 0]]
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = tx(pts[i]), b = tx(pts[i + 1])
+    vg.appendChild(el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#fe0000', 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }))
+  }
+  // marca de aleros (extremos que sobresalen de la huella)
+  const izq = al.izq || 0, der = al.der || 0
+  ;[izq > 0 ? izq : null, der > 0 ? totalW - der : null].forEach((xm) => {
+    if (xm == null) return
+    const yv = ((techo.forma || 'DOS_AGUAS') === 'UN_AGUA') ? (xm / totalW) * H : (xm <= totalW / 2 ? (xm / (totalW / 2)) * H : (1 - (xm - totalW / 2) / (totalW / 2)) * H)
+    const p = tx([xm, yv])
+    vg.appendChild(el('line', { x1: p[0], y1: p[1], x2: p[0], y2: oy, stroke: '#888', 'stroke-width': 1, 'stroke-dasharray': '5 4' }))
+  })
+  // base
+  vg.appendChild(el('line', { x1: tx([0, 0])[0], y1: oy, x2: tx([totalW, 0])[0], y2: oy, stroke: '#666', 'stroke-width': 1 }))
+
+  const at = el('text', { x: 500, y: tx([totalW / 2, H])[1] - 12, 'font-size': 16, fill: '#444', 'text-anchor': 'middle' })
+  at.textContent = `cumbrera ${(H / 1000).toFixed(2)} m · pend ${geo.ang.toFixed(0)}°`
+  vg.appendChild(at)
+  const lz = el('text', { x: 500, y: oy + 30, 'font-size': 16, fill: '#444', 'text-anchor': 'middle' })
+  lz.textContent = `luz ${(w / 1000).toFixed(2)} m + aleros → ${(totalW / 1000).toFixed(2)} m`
+  vg.appendChild(lz)
+  const ti = el('text', { x: 500, y: 40, 'font-size': 16, fill: '#999', 'text-anchor': 'middle' })
+  ti.textContent = `${techo.id} · ${roofFormaDef(techo.forma).name}${techo.esLimitador ? ' · limita muros' : ''}`
+  vg.appendChild(ti)
+  geo.alerts.forEach((a, i) => { const t = el('text', { x: 500, y: 62 + i * 20, 'font-size': 14, fill: '#fe0000', 'text-anchor': 'middle' }); t.textContent = a; vg.appendChild(t) })
 }

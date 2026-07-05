@@ -60,6 +60,9 @@ export default function DrawingTools() {
       st.selectPilar(null)
       st.setPilarConfig({ kind: 'reticulada' })
       st.setPilarSheet(true) // columna reticulada / acartelada
+    } else if (toolId === 'roof') {
+      st.selectTecho(null)
+      st.setTechoSheet(true) // forma + aleros + clavadores + chapa
     }
   }
 

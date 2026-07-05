@@ -154,7 +154,7 @@ export const useDrawingStore = create((set) => ({
   beamConfig: { type: 'back_to_back', normId: 'cu_1', secIdx: 0, level: 2400 },
   setBeamSheet: (v) => set({ beamSheet: v }),
   setBeamConfig: (patch) => set((s) => ({ beamConfig: { ...s.beamConfig, ...patch } })),
-  selectBeam: (id) => set({ selectedBeamId: id, selectedCerchaId: null, selectedPilarId: null, selectedId: null, selectedVertex: null }),
+  selectBeam: (id) => set({ selectedBeamId: id, selectedCerchaId: null, selectedPilarId: null, selectedTechoId: null, selectedId: null, selectedVertex: null }),
   startBeam: (pt) => set((s) => {
     const p = snapPoint(pt, s.gridMm, s.panels)
     return { beamDraft: { a: p, b: p } }
@@ -208,7 +208,7 @@ export const useDrawingStore = create((set) => ({
   },
   setCerchaSheet: (v) => set({ cerchaSheet: v }),
   setCerchaConfig: (patch) => set((s) => ({ cerchaConfig: { ...s.cerchaConfig, ...patch } })),
-  selectCercha: (id) => set({ selectedCerchaId: id, selectedBeamId: null, selectedPilarId: null, selectedId: null, selectedVertex: null }),
+  selectCercha: (id) => set({ selectedCerchaId: id, selectedBeamId: null, selectedPilarId: null, selectedTechoId: null, selectedId: null, selectedVertex: null }),
   startCercha: (pt) => set((s) => {
     const p = snapPoint(pt, s.gridMm, s.panels)
     return { cerchaDraft: { a: p, b: p } }
@@ -261,7 +261,7 @@ export const useDrawingStore = create((set) => ({
   },
   setPilarSheet: (v) => set({ pilarSheet: v }),
   setPilarConfig: (patch) => set((s) => ({ pilarConfig: { ...s.pilarConfig, ...patch } })),
-  selectPilar: (id) => set({ selectedPilarId: id, selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedVertex: null }),
+  selectPilar: (id) => set({ selectedPilarId: id, selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedTechoId: null, selectedVertex: null }),
   addPilar: (pt) => set((s) => {
     const p = snapPoint(pt, s.gridMm, s.panels)
     const used = new Set(s.pilares.map((x) => x.id))
@@ -275,6 +275,38 @@ export const useDrawingStore = create((set) => ({
     pilares: s.pilares.filter((x) => x.id !== id),
     selectedPilarId: s.selectedPilarId === id ? null : s.selectedPilarId,
   })),
+
+  // ── TECHOS / CUBIERTAS (Te1, Te2…) ─────────────────────────
+  // En planta se arrastra el rectángulo de huella; forma, altura, aleros,
+  // clavadores y chapa se editan en la hoja. Alzado muestra la sección.
+  techos: [],
+  techoDraft: null,
+  selectedTechoId: null,
+  techoSheet: false,
+  techoConfig: {
+    forma: 'DOS_AGUAS', alturaPico: 1500,
+    aleros: { frente: 600, fondo: 600, izq: 600, der: 600 },
+    clavadorSep: 600, tipoChapa: 'TRAPEZOIDAL',
+    perfilClavador: { normId: 'cu_1', secIdx: 0 }, esLimitador: true,
+  },
+  setTechoSheet: (v) => set({ techoSheet: v }),
+  setTechoConfig: (patch) => set((s) => ({ techoConfig: { ...s.techoConfig, ...patch } })),
+  selectTecho: (id) => set({ selectedTechoId: id, selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedPilarId: null, selectedVertex: null }),
+  startTecho: (pt) => set((s) => { const p = snapPoint(pt, s.gridMm, s.panels); return { techoDraft: { a: p, b: p } } }),
+  dragTecho: (pt) => set((s) => (s.techoDraft ? { techoDraft: { ...s.techoDraft, b: snapPoint(pt, s.gridMm, s.panels) } } : {})),
+  finishTecho: () => set((s) => {
+    if (!s.techoDraft) return {}
+    const { a, b } = s.techoDraft
+    if (Math.abs(b[0] - a[0]) < s.gridMm || Math.abs(b[1] - a[1]) < s.gridMm) return { techoDraft: null }
+    const used = new Set(s.techos.map((x) => x.id))
+    let n = 1
+    while (used.has('Te' + n)) n++
+    const techo = { id: 'Te' + n, a, b, ...s.techoConfig }
+    return { techos: [...s.techos, techo], techoDraft: null, selectedTechoId: techo.id, techoSheet: true }
+  }),
+  cancelTecho: () => set({ techoDraft: null }),
+  updateTecho: (id, patch) => set((s) => ({ techos: s.techos.map((x) => (x.id === id ? { ...x, ...patch } : x)) })),
+  removeTecho: (id) => set((s) => ({ techos: s.techos.filter((x) => x.id !== id), selectedTechoId: s.selectedTechoId === id ? null : s.selectedTechoId })),
 
   // ── T-CONNECT (encuentros de muros) ────────────────────────
   // Tap 1 = muro pasante · tap 2 = muro que llega. En el core suma un
@@ -438,7 +470,7 @@ export const useDrawingStore = create((set) => ({
   }),
   cancelWall: () => set({ draft: null }),
 
-  select: (id) => set({ selectedId: id, selectedBeamId: null, selectedCerchaId: null, selectedPilarId: null, selectedVertex: null }),
+  select: (id) => set({ selectedId: id, selectedBeamId: null, selectedCerchaId: null, selectedPilarId: null, selectedTechoId: null, selectedVertex: null }),
   deselect: () => set({ selectedId: null, selectedVertex: null }),
 
   // ── Historial ─────────────────────────────────────────────
@@ -503,7 +535,7 @@ export const useDrawingStore = create((set) => ({
     selectedId: s.selectedId === id ? null : s.selectedId,
     selectedVertex: null,
   })),
-  clearAll: () => set((s) => ({ ...histPatch(s, 'clear'), panels: [], beams: [], cerchas: [], pilares: [], tconnects: [], selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedPilarId: null, selectedVertex: null })),
+  clearAll: () => set((s) => ({ ...histPatch(s, 'clear'), panels: [], beams: [], cerchas: [], pilares: [], techos: [], tconnects: [], selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedPilarId: null, selectedTechoId: null, selectedVertex: null })),
 
   // ── PLANTA: ancho exacto (mueve B en la dirección del trazo) ──
   setWidth: (id, mm) => set((s) => ({
