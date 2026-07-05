@@ -603,7 +603,7 @@
                 <input class="form-input" id="nuevo-nombre" placeholder="Ej: Motor Industrial #45" onkeydown="if(event.key==='Enter')crearProyecto()">
             </div>
             <div class="form-group">
-                <label>Trabajo</label>
+                <label>Carpeta (opcional)</label>
                 <select class="form-input" id="nuevo-trabajo"></select>
             </div>
         </div>
@@ -1084,9 +1084,11 @@ function renderDashboard() {
     html = '<div class="proyectos-grid">';
     trabajos.forEach((t, k) => { html += trabajoCardHtml(t, proyectosDe(t.id).length, k); });
     const sueltos = proyectosDe('');
-    if (sueltos.length) html += trabajoCardHtml({ id: '', nombre: 'General' }, sueltos.length, trabajos.length);
+    // proyectos sin carpeta: se muestran directo como tarjetas en el dashboard (no encerrados en "General")
+    sueltos.forEach((x, k) => { html += cardHtml(x.p, x.i, trabajos.length + k); });
     html += '</div>';
     cont.innerHTML = html;
+    attachCardListeners(cont);
 
     cont.querySelectorAll('.trabajo-card').forEach(card => {
         const tid = card.dataset.tid;
@@ -1160,7 +1162,7 @@ function limpiarBusqueda() {
 
 // ===== TRABAJOS =====
 function poblarSelectTrabajos(sel, valor, conNuevo) {
-    let opts = `<option value="">General (sin trabajo)</option>`;
+    let opts = `<option value="">Sin carpeta</option>`;
     opts += trabajos.map(t => `<option value="${t.id}"${t.id === valor ? ' selected' : ''}>${esc(t.nombre)}</option>`).join('');
     if (conNuevo) opts += `<option value="__new">+ Nuevo trabajo...</option>`;
     sel.innerHTML = opts;
