@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --fondo:#F2F2F0;
@@ -19,19 +19,27 @@
     --gris:#7A7A7A;
     --linea:#DCDCD8;
     --rojo:#FE0000;
+    --plata:#C0C0C0;
     --op:#D4D4CE;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{
-    font-family:'Geist',system-ui,sans-serif;
+    font-family:'Exo',system-ui,sans-serif;
     background:var(--fondo);color:var(--tinta);
     display:flex;flex-direction:column;overflow:hidden;
     padding:14px 14px calc(14px + env(safe-area-inset-bottom));
   }
-  header{flex-shrink:0;padding:6px 4px 12px}
-  .titulo{font-size:1.05rem;font-weight:700;letter-spacing:-.02em}
-  .titulo span{color:var(--rojo)}
+  .mono{font-family:'Geist Mono',monospace}
+  header{flex-shrink:0;padding:6px 4px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .titulo{font-size:1.25rem;font-weight:800;letter-spacing:-.02em;color:var(--rojo);cursor:pointer}
+  .titulo span{color:var(--plata)}
+  .nav-ic{border:none;background:none;cursor:pointer;color:var(--rojo);width:44px;height:44px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .nav-ic svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  /* ── Calculadora ── */
+  #scr-calc{flex:1;display:flex;flex-direction:column;min-height:0}
   .pant{
     font-family:'Geist Mono',monospace;font-size:2.2rem;text-align:right;
     padding:18px 16px;background:var(--fondo-2);border-radius:14px;margin-bottom:12px;
@@ -46,23 +54,200 @@
   .grid button:active{filter:brightness(.94)}
   .grid button.op{background:var(--op);color:var(--rojo);font-weight:700}
   .grid button.ig{background:var(--rojo);color:#fff}
+
+  /* ── Área de Cálculos ── */
+  #scr-tools{flex:1;display:none;flex-direction:column;min-height:0}
+  .tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;flex-shrink:0;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{border:none;background:var(--fondo-2);color:var(--gris);border-radius:999px;
+    padding:10px 16px;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;
+    flex-shrink:0;font-family:inherit}
+  .tab.on{background:var(--rojo);color:#fff}
+  .tool-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:20px}
+  .tool{display:none}
+  .tool.on{display:block}
+  .tool-tit{font-size:17px;font-weight:700;margin-bottom:12px}
+  .subtabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none}
+  .subtabs::-webkit-scrollbar{display:none}
+  .sub{border:none;background:var(--fondo-2);color:var(--gris);border-radius:999px;
+    padding:8px 14px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;
+    flex-shrink:0;font-family:inherit}
+  .sub.on{background:var(--tinta);color:#fff}
+  .grp{margin-bottom:12px}
+  .grp label{display:block;font-size:13px;color:var(--gris);font-weight:600;margin-bottom:5px}
+  .grp input,.grp select{width:100%;font-family:'Geist Mono',monospace;font-size:17px;font-weight:600;
+    border:none;background:var(--fondo-2);border-radius:14px;padding:13px 16px;color:var(--tinta);
+    outline:none;appearance:none}
+  .grp input:focus{background:#fdeaea}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .fieldset{display:none}
+  .fieldset.on{display:block}
+  .res{margin-top:8px;background:var(--fondo-2);border-radius:16px;padding:8px 18px}
+  .res .r{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;font-size:15px;border-bottom:1px solid var(--linea)}
+  .res .r:last-child{border-bottom:none}
+  .res .r span{color:var(--gris);font-weight:600}
+  .res .r b{font-family:'Geist Mono',monospace;font-size:21px;color:var(--rojo);font-weight:700}
+  .btn{width:100%;border:none;background:var(--rojo);color:#fff;border-radius:14px;padding:13px;
+    font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+  .btn.ghost{background:var(--fondo-2);color:var(--tinta)}
+  .hint{font-size:13px;color:var(--gris);margin-top:12px;line-height:1.55}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="titulo" onclick="ilsxOpen()" style="cursor:pointer">iL<span>Calc</span></div>
+  <div class="titulo" onclick="ilsxOpen()">iL<span>Calc</span></div>
+  <button class="nav-ic" id="navTools" onclick="mostrar('tools')" title="Cálculos" aria-label="Cálculos">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+  </button>
+  <button class="nav-ic" id="navCalc" onclick="mostrar('calc')" title="Calculadora" aria-label="Calculadora" style="display:none">
+    <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8" y2="11"/><line x1="12" y1="11" x2="12" y2="11"/><line x1="16" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="19"/><line x1="8" y1="19" x2="12" y2="19"/></svg>
+  </button>
 </header>
 
-<div class="pant" id="pant">0</div>
-<div class="grid" id="grid"></div>
+<!-- ══════ Calculadora ══════ -->
+<section id="scr-calc">
+  <div class="pant" id="pant">0</div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<!-- ══════ Área de Cálculos ══════ -->
+<section id="scr-tools">
+  <div class="tabs" id="tabs"></div>
+  <div class="tool-body">
+
+    <!-- Geometría -->
+    <div class="tool" data-t="geo">
+      <div class="tool-tit">Áreas de geometría</div>
+      <div class="subtabs" id="geoSubs"></div>
+
+      <div class="fieldset" data-shape="rect">
+        <div class="row2">
+          <div class="grp"><label>Base</label><input inputmode="decimal" id="rc_b" oninput="geoCalc()"></div>
+          <div class="grp"><label>Altura</label><input inputmode="decimal" id="rc_h" oninput="geoCalc()"></div>
+        </div>
+      </div>
+      <div class="fieldset" data-shape="tri">
+        <div class="row2">
+          <div class="grp"><label>Base</label><input inputmode="decimal" id="tr_b" oninput="geoCalc()"></div>
+          <div class="grp"><label>Altura</label><input inputmode="decimal" id="tr_h" oninput="geoCalc()"></div>
+        </div>
+      </div>
+      <div class="fieldset" data-shape="cir">
+        <div class="grp"><label>Radio</label><input inputmode="decimal" id="ci_r" oninput="geoCalc()"></div>
+      </div>
+      <div class="fieldset" data-shape="trap">
+        <div class="row2">
+          <div class="grp"><label>Base mayor</label><input inputmode="decimal" id="tp_B" oninput="geoCalc()"></div>
+          <div class="grp"><label>Base menor</label><input inputmode="decimal" id="tp_b" oninput="geoCalc()"></div>
+        </div>
+        <div class="grp"><label>Altura</label><input inputmode="decimal" id="tp_h" oninput="geoCalc()"></div>
+      </div>
+
+      <div class="res" id="geoRes"></div>
+      <div class="hint">Usá las mismas unidades en todos los campos. El área queda en unidad², el perímetro en la misma unidad.</div>
+    </div>
+
+    <!-- Regla de 3 -->
+    <div class="tool" data-t="r3">
+      <div class="tool-tit">Regla de 3 simple</div>
+      <div class="subtabs" id="r3Subs"></div>
+      <div class="row2">
+        <div class="grp"><label>Si esto…</label><input inputmode="decimal" id="r3_a" oninput="r3Calc()"></div>
+        <div class="grp"><label>…es esto</label><input inputmode="decimal" id="r3_b" oninput="r3Calc()"></div>
+      </div>
+      <div class="grp"><label>¿Cuánto es esto…?</label><input inputmode="decimal" id="r3_c" oninput="r3Calc()"></div>
+      <div class="res" id="r3Res"></div>
+      <div class="hint" id="r3Hint"></div>
+    </div>
+
+    <!-- Pitágoras -->
+    <div class="tool" data-t="pit">
+      <div class="tool-tit">Teorema de Pitágoras</div>
+      <div class="subtabs" id="pitSubs"></div>
+      <div class="fieldset" data-m="hip">
+        <div class="row2">
+          <div class="grp"><label>Cateto a</label><input inputmode="decimal" id="pt_a" oninput="pitCalc()"></div>
+          <div class="grp"><label>Cateto b</label><input inputmode="decimal" id="pt_b" oninput="pitCalc()"></div>
+        </div>
+      </div>
+      <div class="fieldset" data-m="cat">
+        <div class="row2">
+          <div class="grp"><label>Hipotenusa c</label><input inputmode="decimal" id="pt_c" oninput="pitCalc()"></div>
+          <div class="grp"><label>Cateto conocido</label><input inputmode="decimal" id="pt_ca" oninput="pitCalc()"></div>
+        </div>
+      </div>
+      <div class="res" id="pitRes"></div>
+    </div>
+
+    <!-- Pendientes -->
+    <div class="tool" data-t="pen">
+      <div class="tool-tit">Cálculo de pendientes</div>
+      <div class="subtabs" id="penSubs"></div>
+      <div class="grp"><label>Longitud horizontal</label><input inputmode="decimal" id="pn_L" oninput="penCalc()"></div>
+      <div class="fieldset" data-m="pct">
+        <div class="grp"><label>Pendiente (%)</label><input inputmode="decimal" id="pn_p" oninput="penCalc()"></div>
+      </div>
+      <div class="fieldset" data-m="des">
+        <div class="grp"><label>Desnivel</label><input inputmode="decimal" id="pn_h" oninput="penCalc()"></div>
+      </div>
+      <div class="res" id="penRes"></div>
+      <div class="hint">Sanitaria: caños Ø110 ≈ 2% · Ø160 ≈ 1,5%. Techos livianos ≈ 5–10%.</div>
+    </div>
+
+    <!-- Conversión de medidas -->
+    <div class="tool" data-t="med">
+      <div class="tool-tit">Conversión de medidas</div>
+      <div class="row2">
+        <div class="grp"><label>Valor</label><input inputmode="decimal" id="md_v" oninput="medCalc()"></div>
+        <div class="grp"><label>Unidad</label>
+          <select id="md_u" onchange="medCalc()">
+            <option value="mm">Milímetros (mm)</option>
+            <option value="cm">Centímetros (cm)</option>
+            <option value="m" selected>Metros (m)</option>
+            <option value="in">Pulgadas (inch)</option>
+            <option value="ft">Pies (ft)</option>
+          </select>
+        </div>
+      </div>
+      <div class="res" id="medRes"></div>
+      <div class="hint">1 pulgada = 25,4 mm · 1 pie = 12 pulgadas = 304,8 mm.</div>
+    </div>
+
+    <!-- Moneda -->
+    <div class="tool" data-t="mon">
+      <div class="tool-tit">Conversor de moneda</div>
+      <div class="grp"><label>Monto</label><input inputmode="decimal" id="mn_v" value="1" oninput="monCalc()"></div>
+      <div class="row2">
+        <div class="grp"><label>De</label>
+          <select id="mn_de" onchange="monCalc()"></select>
+        </div>
+        <div class="grp"><label>A</label>
+          <select id="mn_a" onchange="monCalc()"></select>
+        </div>
+      </div>
+      <div class="res" id="monRes"></div>
+      <button class="btn ghost" onclick="monActualizar()" id="monBtn">Actualizar cotización</button>
+      <div class="hint" id="monHint"></div>
+    </div>
+
+  </div>
+</section>
 
 <script>
+/* ══════════ Navegación entre pantallas ══════════ */
+function mostrar(scr){
+  const tools = scr==='tools';
+  document.getElementById('scr-calc').style.display = tools?'none':'flex';
+  document.getElementById('scr-tools').style.display = tools?'flex':'none';
+  document.getElementById('navTools').style.display = tools?'none':'flex';
+  document.getElementById('navCalc').style.display = tools?'flex':'none';
+}
+
+/* ══════════ Calculadora ══════════ */
 const pant=document.getElementById('pant');
 let expr='';
-
 function render(){ pant.textContent=expr||'0'; }
-
 function pulsar(t){
   if(t==='C'){ expr=''; }
   else if(t==='⌫'){ expr=expr.slice(0,-1); }
@@ -80,7 +265,6 @@ function pulsar(t){
   else{ expr+=t; }
   render();
 }
-
 const teclas=['C','√','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','0','.','⌫','='];
 const grid=document.getElementById('grid');
 teclas.forEach(t=>{
@@ -92,9 +276,8 @@ teclas.forEach(t=>{
   b.onclick=()=>pulsar(t);
   grid.appendChild(b);
 });
-
-// teclado físico (para escritorio)
 document.addEventListener('keydown',e=>{
+  if(document.getElementById('scr-tools').style.display==='flex') return; // en Cálculos, teclado normal
   const k=e.key;
   if(/[0-9().]/.test(k)) pulsar(k);
   else if(k==='/') pulsar('÷');
@@ -105,34 +288,180 @@ document.addEventListener('keydown',e=>{
   else if(k==='Backspace') pulsar('⌫');
   else if(k==='Escape'||k.toLowerCase()==='c') pulsar('C');
 });
-
 render();
+
+/* ══════════ Helpers de Cálculos ══════════ */
+const V = id => { const el=document.getElementById(id); if(!el) return NaN;
+  const s=(el.value||'').replace(',','.').trim(); return s===''?NaN:parseFloat(s); };
+const F = n => { if(!isFinite(n)) return '—'; const r=Math.round(n*1e4)/1e4; return String(r); };
+const fila = (lbl,val,uni='') => '<div class="r"><span>'+lbl+'</span><b>'+val+(uni?' <small style="color:var(--gris);font-size:13px">'+uni+'</small>':'')+'</b></div>';
+
+/* Pestañas principales */
+const TABS=[['geo','Geometría'],['r3','Regla de 3'],['pit','Pitágoras'],['pen','Pendientes'],['med','Medidas'],['mon','Moneda']];
+const tabsC=document.getElementById('tabs');
+TABS.forEach(([id,nom],i)=>{
+  const b=document.createElement('button'); b.className='tab'+(i===0?' on':''); b.textContent=nom;
+  b.onclick=()=>{
+    document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    document.querySelectorAll('.tool').forEach(x=>x.classList.toggle('on', x.dataset.t===id));
+  };
+  tabsC.appendChild(b);
+});
+document.querySelector('.tool[data-t="geo"]').classList.add('on');
+
+/* Sub-pestañas genéricas: (contenedor, items, onSel) */
+function subPills(cont, items, cb, sel0){
+  const c=document.getElementById(cont); c.innerHTML='';
+  items.forEach(([val,nom],i)=>{
+    const b=document.createElement('button'); b.className='sub'+((sel0??0)===i?' on':''); b.textContent=nom;
+    b.onclick=()=>{ c.querySelectorAll('.sub').forEach(x=>x.classList.remove('on')); b.classList.add('on'); cb(val); };
+    c.appendChild(b);
+  });
+}
+
+/* ── Geometría ── */
+let geoShape='rect';
+subPills('geoSubs',[['rect','Rectángulo'],['tri','Triángulo'],['cir','Círculo'],['trap','Trapecio']],v=>{
+  geoShape=v;
+  document.querySelectorAll('.tool[data-t="geo"] .fieldset').forEach(f=>f.classList.toggle('on', f.dataset.shape===v));
+  geoCalc();
+});
+document.querySelector('.fieldset[data-shape="rect"]').classList.add('on');
+function geoCalc(){
+  let html='';
+  if(geoShape==='rect'){ const b=V('rc_b'),h=V('rc_h'); html=fila('Área',F(b*h))+fila('Perímetro',F(2*(b+h))); }
+  else if(geoShape==='tri'){ const b=V('tr_b'),h=V('tr_h'); html=fila('Área',F(b*h/2)); }
+  else if(geoShape==='cir'){ const r=V('ci_r'); html=fila('Área',F(Math.PI*r*r))+fila('Perímetro',F(2*Math.PI*r))+fila('Diámetro',F(2*r)); }
+  else if(geoShape==='trap'){ const B=V('tp_B'),b=V('tp_b'),h=V('tp_h'); html=fila('Área',F((B+b)/2*h)); }
+  document.getElementById('geoRes').innerHTML=html;
+}
+geoCalc();
+
+/* ── Regla de 3 ── */
+let r3Mode='dir';
+subPills('r3Subs',[['dir','Directa'],['inv','Inversa']],v=>{ r3Mode=v; r3Calc(); });
+function r3Calc(){
+  const a=V('r3_a'),b=V('r3_b'),c=V('r3_c');
+  const x = r3Mode==='dir' ? (b*c/a) : (a*b/c);
+  document.getElementById('r3Res').innerHTML=fila('Resultado (X)',F(x));
+  document.getElementById('r3Hint').textContent = r3Mode==='dir'
+    ? 'Directa: si A→B, entonces C→X. X = B·C / A. (Más de uno, más del otro.)'
+    : 'Inversa: si A→B, entonces C→X. X = A·B / C. (Más de uno, menos del otro.)';
+}
+r3Calc();
+
+/* ── Pitágoras ── */
+let pitMode='hip';
+subPills('pitSubs',[['hip','Hipotenusa'],['cat','Cateto']],v=>{
+  pitMode=v;
+  document.querySelectorAll('.tool[data-t="pit"] .fieldset').forEach(f=>f.classList.toggle('on', f.dataset.m===v));
+  pitCalc();
+});
+document.querySelector('.fieldset[data-m="hip"]').classList.add('on');
+function pitCalc(){
+  let html='';
+  if(pitMode==='hip'){ const a=V('pt_a'),b=V('pt_b'); html=fila('Hipotenusa c',F(Math.sqrt(a*a+b*b))); }
+  else{ const c=V('pt_c'),a=V('pt_ca'); const b2=c*c-a*a; html=fila('Otro cateto',(isFinite(b2)&&b2>=0)?F(Math.sqrt(b2)):'—'); }
+  document.getElementById('pitRes').innerHTML=html;
+}
+pitCalc();
+
+/* ── Pendientes ── */
+let penMode='pct';
+subPills('penSubs',[['pct','Sé la pendiente %'],['des','Sé el desnivel']],v=>{
+  penMode=v;
+  document.querySelectorAll('.tool[data-t="pen"] .fieldset').forEach(f=>f.classList.toggle('on', f.dataset.m===v));
+  penCalc();
+});
+document.querySelector('.fieldset[data-m="pct"]').classList.add('on');
+function penCalc(){
+  const L=V('pn_L'); let p,h,ang,html='';
+  if(penMode==='pct'){ p=V('pn_p'); h=L*p/100; ang=Math.atan(p/100)*180/Math.PI;
+    html=fila('Desnivel',F(h))+fila('Ángulo',F(ang),'°'); }
+  else{ h=V('pn_h'); p=h/L*100; ang=Math.atan(h/L)*180/Math.PI;
+    html=fila('Pendiente',F(p),'%')+fila('Ángulo',F(ang),'°'); }
+  document.getElementById('penRes').innerHTML=html;
+}
+penCalc();
+
+/* ── Conversión de medidas (base: mm) ── */
+const AmM={mm:1, cm:10, m:1000, in:25.4, ft:304.8};
+function medCalc(){
+  const v=V('md_v'), u=document.getElementById('md_u').value;
+  const mm = v*AmM[u];
+  const html =
+    fila('Milímetros', F(mm),'mm')+
+    fila('Centímetros', F(mm/10),'cm')+
+    fila('Metros', F(mm/1000),'m')+
+    fila('Pulgadas', F(mm/25.4),'in')+
+    fila('Pies', F(mm/304.8),'ft');
+  document.getElementById('medRes').innerHTML=html;
+}
+medCalc();
+
+/* ── Conversor de moneda ── */
+const MONEDAS=[['USD','Dólar (USD)'],['UYU','Peso uruguayo (UYU)'],['EUR','Euro (EUR)'],['ARS','Peso argentino (ARS)'],['BRL','Real (BRL)']];
+// cotizaciones por 1 USD (editables / actualizables). Valores base aproximados.
+const RATES_DEF={USD:1, UYU:40, EUR:0.92, ARS:1000, BRL:5.5};
+let rates, ratesFecha;
+try{ const g=JSON.parse(localStorage.getItem('ilcalc_rates')||'null'); rates=g&&g.rates?g.rates:Object.assign({},RATES_DEF); ratesFecha=g&&g.fecha?g.fecha:'valores base'; }
+catch(e){ rates=Object.assign({},RATES_DEF); ratesFecha='valores base'; }
+(function llenarMonedas(){
+  const de=document.getElementById('mn_de'), a=document.getElementById('mn_a');
+  MONEDAS.forEach(([c,n])=>{ de.appendChild(new Option(n,c)); a.appendChild(new Option(n,c)); });
+  de.value='USD'; a.value='UYU';
+})();
+function monCalc(){
+  const v=V('mn_v'), de=document.getElementById('mn_de').value, a=document.getElementById('mn_a').value;
+  const rd=rates[de], ra=rates[a];
+  const out = v * (ra/rd); // v en 'de' → USD → 'a'
+  document.getElementById('monRes').innerHTML =
+    fila(F(v)+' '+de+' =', F(out), a) +
+    fila('1 '+de+' equivale a', F(rates[a]/rates[de]), a);
+  document.getElementById('monHint').textContent='Cotización: '+ratesFecha+'. Tocá "Actualizar" con internet para traer valores del día.';
+}
+async function monActualizar(){
+  const btn=document.getElementById('monBtn'); const txt=btn.textContent; btn.textContent='Actualizando…'; btn.disabled=true;
+  try{
+    const r=await fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'});
+    const d=await r.json();
+    if(d&&d.rates){
+      MONEDAS.forEach(([c])=>{ if(typeof d.rates[c]==='number') rates[c]=d.rates[c]; });
+      ratesFecha = (d.time_last_update_utc||'actualizado').replace(/ \d{2}:\d{2}:\d{2}.*/,'');
+      localStorage.setItem('ilcalc_rates', JSON.stringify({rates, fecha:ratesFecha}));
+      monCalc();
+    } else throw 0;
+  }catch(e){ btn.textContent='Sin conexión — se usan valores guardados'; setTimeout(()=>{btn.textContent=txt;btn.disabled=false;},2200); return; }
+  btn.textContent='Cotización actualizada'; setTimeout(()=>{btn.textContent=txt;btn.disabled=false;},1600);
+}
+monCalc();
+
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
 </script>
 
 <!-- ===== iLStorage panel (estetico, additivo) ===== -->
-<link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
 #ilsx-ov{position:fixed;inset:0;background:rgba(20,20,20,.45);display:none;align-items:flex-end;justify-content:center;z-index:99999;font-family:'Exo',system-ui,sans-serif}
 #ilsx-ov.on{display:flex}
 #ilsx-sheet{background:#fff;width:100%;max-width:600px;border-radius:22px 22px 0 0;padding:8px 0 calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 40px rgba(0,0,0,.18);animation:ilsxUp .25s cubic-bezier(.3,1.1,.5,1)}
 @keyframes ilsxUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 #ilsx-grip{width:38px;height:4px;border-radius:2px;background:#e2e2e2;margin:6px auto 14px}
-.ilsx-app{font-size:20px;font-weight:700;color:#2b2b2b;padding:0 22px;letter-spacing:-.3px}
+.ilsx-app{font-size:20px;font-weight:800;color:#C0C0C0;padding:0 22px;letter-spacing:-.3px}
 .ilsx-app b{color:#fe0000;font-weight:800}
 .ilsx-ver{font-size:12px;color:#8a8a8a;padding:3px 22px 12px;font-weight:300}
 .ilsx-row{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #f0f0f0;padding:16px 22px;font-family:inherit;font-size:15px;font-weight:600;color:#2b2b2b;cursor:pointer;text-decoration:none}
-.ilsx-row svg{width:19px;height:19px;color:#8a8a8a;flex:none}
+.ilsx-row svg{width:22px;height:22px;color:#8a8a8a;flex:none}
 .ilsx-row:active{background:#fafafa}
 .ilsx-foot{text-align:center;font-size:11px;color:#c4c4c4;font-weight:800;letter-spacing:.14em;padding:16px 0 2px}
 </style>
 <div id="ilsx-ov" onclick="if(event.target===this)ilsxClose()">
   <div id="ilsx-sheet">
     <div id="ilsx-grip"></div>
-    <div class="ilsx-app">iL<b>Calc</b></div>
-    <div class="ilsx-ver">versión 1.0</div>
+    <div class="ilsx-app"><b>iL</b>Calc</div>
+    <div class="ilsx-ver">versión 2.0</div>
     <a class="ilsx-row" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</a>
     <div class="ilsx-foot">iLStorage</div>
   </div>
