@@ -25,6 +25,7 @@
             --ink-3: #6f6f6f;
             --ink-4: hsl(38, 7%, 78%);
             --red: #FE0000;
+            --escarlata: #FF2400;
             --red-hover: #d40000;
             --accent-soft: #f0f0f0;
             --code-bg: #F4F4F2;
@@ -205,7 +206,7 @@
         .fab {
             position: fixed; bottom: 28px; right: 24px;
             width: 56px; height: 56px; border-radius: 16px;
-            background: var(--red); color: white; border: none;
+            background: var(--escarlata); color: white; border: none;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             z-index: 800; transition: transform .18s cubic-bezier(.34,1.5,.64,1);
         }
@@ -224,16 +225,16 @@
         }
         .fab-opcion:nth-child(1) { animation-delay: .05s; }
         .fab-opcion .fab-label {
-            background: var(--surface); color: var(--ink);
-            font-family: 'Exo', sans-serif; font-size: 16px; font-weight: 600;
-            padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--escarlata);
+            font-family: 'Exo', sans-serif; font-size: 19px; font-weight: 600;
+            padding: 9px 16px; border-radius: 10px; border: 1px solid var(--border);
         }
         .fab-opcion .fab-mini {
-            width: 44px; height: 44px; border-radius: 14px;
+            width: 56px; height: 56px; border-radius: 16px;
             background: var(--surface); border: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center; color: var(--red);
+            display: flex; align-items: center; justify-content: center; color: var(--escarlata);
         }
-        .fab-opcion .fab-mini svg { width: 32px; height: 32px; stroke-width: 1.6; }
+        .fab-opcion .fab-mini svg { width: 45px; height: 45px; stroke-width: 1.6; }
         .fab-opcion:active { transform: scale(0.95); }
         @keyframes fabIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .fab-backdrop { position: fixed; inset: 0; z-index: 790; display: none; }
