@@ -224,6 +224,13 @@ const LS_PROJ = (id) => 'ilframe.project.' + id
 const SNAP_KEYS = ['project', 'panels', 'beams', 'cerchas', 'pilares', 'techos', 'losas', 'tconnects']
 const loadMeta = () => { try { return JSON.parse(localStorage.getItem(LS_META) || '[]') } catch { return [] } }
 const saveMeta = (m) => { try { localStorage.setItem(LS_META, JSON.stringify(m)) } catch { /* no-op */ } }
+
+// ── Core (GLOBAL, de la página principal) ─────────────────────
+// Aportes/impuestos + costos de materiales — compartidos por todos los
+// proyectos. Persisten aparte; más adelante se unen con Firebase.
+const LS_CORE = 'ilframe.core'
+const loadCore = () => { try { return JSON.parse(localStorage.getItem(LS_CORE) || 'null') || { aportes: [], materiales: [] } } catch { return { aportes: [], materiales: [] } } }
+const saveCore = (c) => { try { localStorage.setItem(LS_CORE, JSON.stringify(c)) } catch { /* no-op */ } }
 const genId = () => 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1e3)
 const emptyDraw = () => ({
   panels: [], beams: [], cerchas: [], pilares: [], techos: [], losas: [], tconnects: [],
@@ -507,6 +514,27 @@ export const useDrawingStore = create((set) => ({
     saveMeta(meta)
     try { localStorage.removeItem(LS_PROJ(id)) } catch { /* no-op */ }
     return { projects: meta, ...(s.currentProjectId === id ? { currentProjectId: null } : {}) }
+  }),
+
+  // ── Core global (aportes/impuestos + costos de materiales) ─────
+  core: loadCore(),
+  addCoreItem: (kind) => set((s) => {
+    const item = kind === 'aportes'
+      ? { id: genId(), name: '', pct: 0 }
+      : { id: genId(), name: '', unit: 'u', price: 0 }
+    const core = { ...s.core, [kind]: [...(s.core[kind] || []), item] }
+    saveCore(core)
+    return { core }
+  }),
+  updateCoreItem: (kind, id, patch) => set((s) => {
+    const core = { ...s.core, [kind]: (s.core[kind] || []).map((x) => (x.id === id ? { ...x, ...patch } : x)) }
+    saveCore(core)
+    return { core }
+  }),
+  removeCoreItem: (kind, id) => set((s) => {
+    const core = { ...s.core, [kind]: (s.core[kind] || []).filter((x) => x.id !== id) }
+    saveCore(core)
+    return { core }
   }),
 
   setAppView: (v) => set({ appView: v }),

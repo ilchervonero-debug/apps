@@ -6,6 +6,7 @@ import Landing from './components/Landing'
 import Iso3D from './components/Iso3D'
 import BomView from './components/BomView'
 import ExportView from './components/ExportView'
+import CoreView from './components/CoreView'
 import { useState } from 'react'
 import { useDrawingStore } from './store/drawingStore'
 
@@ -19,6 +20,8 @@ export default function App() {
   const [info, setInfo] = useState(false)
   const goHome = () => { saveCurrent(); setAppView('home') }
   const goProject = () => { saveCurrent(); setAppView('setup') }
+  const goExport = () => { saveCurrent(); setAppView('draw'); setTab('out') }
+  const subtitle = appView === 'home' ? 'Proyectos' : appView === 'core' ? 'Core' : projectName
 
   return (
     <div
@@ -41,14 +44,23 @@ export default function App() {
             <span style={{ color: '#fe0000' }}>iL</span><span style={{ color: '#888' }}>Frame</span>
           </div>
           <div style={{ color: '#999', fontSize: 9, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', marginTop: 3 }}>
-            {appView === 'home' ? 'Proyectos' : projectName}
+            {subtitle}
           </div>
         </div>
         <div style={{ flex: 1 }} />
+        {appView === 'setup' && (
+          <button onClick={goExport} title="Exportar / Salida"
+            style={{ height: 48, borderRadius: 10, background: '#fff', border: '1.5px solid #fe0000', color: '#fe0000', padding: '0 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 15 }}>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+            Exportar
+          </button>
+        )}
       </header>
 
       {appView === 'home' ? (
         <Landing />
+      ) : appView === 'core' ? (
+        <CoreView />
       ) : appView === 'setup' ? (
         <ProjectSetup />
       ) : (
@@ -89,7 +101,7 @@ export default function App() {
         </>
       )}
 
-      {/* ── Panel iLStorage (version + volver al hub) ── */}
+      {/* ── Panel de versión (sin enlaces externos) ── */}
       {info && (
         <div onClick={(e) => { if (e.target === e.currentTarget) setInfo(false) }}
           style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,20,0.45)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 99999 }}>
@@ -98,12 +110,7 @@ export default function App() {
             <div style={{ fontSize: 20, fontWeight: 700, color: '#2b2b2b', padding: '0 22px', letterSpacing: '-0.3px' }}>
               <span style={{ color: '#fe0000', fontWeight: 800 }}>iL</span>Frame
             </div>
-            <div style={{ fontSize: 12, color: '#8a8a8a', padding: '3px 22px 12px', fontWeight: 300 }}>versión 1.0</div>
-            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 13, borderTop: '1px solid #f0f0f0', padding: '16px 22px', fontSize: 15, fontWeight: 600, color: '#2b2b2b', textDecoration: 'none' }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8a8a8a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-              Volver a iLStorage
-            </a>
-            <div style={{ textAlign: 'center', fontSize: 11, color: '#c4c4c4', fontWeight: 800, letterSpacing: '0.14em', padding: '16px 0 2px' }}>iLStorage</div>
+            <div style={{ fontSize: 15, color: '#8a8a8a', padding: '3px 22px 8px' }}>versión 1.0</div>
           </div>
         </div>
       )}
