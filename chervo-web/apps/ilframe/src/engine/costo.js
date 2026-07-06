@@ -1,64 +1,70 @@
-// ── Costo del proyecto (APU) ───────────────────────────────────
+// ── Costo del proyecto (APU real) ──────────────────────────────
 // Valoriza el cómputo (cantidades reales de cada elemento) con lo definido
-// en el Core: jornales SUNCA + leyes sociales (BPS, Ley 14.411) + rendimiento
-// por grupo (unidades por jornal) + precio de materiales + aportes/impuestos.
-// El cómputo (computo.js) no cambia: esto solo lo valoriza.
+// en el Core: cuadrilla (SUNCA + BPS + desgaste de herramientas) + tarea
+// asignada a cada tipo de elemento (rendimiento m²/ml por día) + materiales
+// (precio por presentación comercial, compra en paquetes enteros) +
+// aportes/impuestos. El cómputo (computo.js) no cambia: esto solo lo valoriza.
 
 import { computoProyecto } from './computo'
+import { SEED_DESPERDICIO_PCT } from '../data/coreSeed'
 
 // Un grupo por tipo de elemento del cómputo, con la unidad en que se mide
-// su rendimiento de mano de obra (kg de acero montado, o m² de tabique).
+// su avance de mano de obra (m² de superficie o ml de pieza instalada).
 export const GRUPOS_APU = [
-  { tipo: 'muros', label: 'Muros', unidad: 'm²' },
-  { tipo: 'vigas', label: 'Vigas', unidad: 'kg' },
-  { tipo: 'cerchas', label: 'Cerchas', unidad: 'kg' },
-  { tipo: 'pilares', label: 'Pilares / Columnas', unidad: 'kg' },
-  { tipo: 'techos', label: 'Techos / Cubiertas', unidad: 'kg' },
-  { tipo: 'losas', label: 'Losas / Entrepisos', unidad: 'kg' },
+  { tipo: 'muros', label: 'Muros', unidad: 'm2' },
+  { tipo: 'vigas', label: 'Vigas', unidad: 'ml' },
+  { tipo: 'cerchas', label: 'Cerchas', unidad: 'ml' },
+  { tipo: 'pilares', label: 'Pilares / Columnas', unidad: 'ml' },
+  { tipo: 'techos', label: 'Techos / Cubiertas', unidad: 'm2' },
+  { tipo: 'losas', label: 'Losas / Entrepisos', unidad: 'm2' },
 ]
 
-function cantidadGrupo(grupo) {
-  return grupo.filas.reduce((a, f) => a + (grupo.tipo === 'muros' ? (f.m2 || 0) : (f.kg || 0)), 0)
+// Cantidad de un grupo, en la unidad que corresponda (m2 o ml) según fila
+function cantidadGrupo(grupo, unidad) {
+  return grupo.filas.reduce((a, f) => a + (unidad === 'm2' ? (f.m2 || 0) : (f.ml || 0)), 0)
 }
 
 export function costoProyecto(state, project, core) {
   const { grupos, materiales, totales } = computoProyecto(state, project)
-  const manoObra = core?.manoObra || []
+  const tareas = core?.tareas || []
   const rendimientos = core?.rendimientos || {}
   const materialesCore = core?.materiales || []
   const aportes = core?.aportes || []
-  const leyesPct = core?.leyesSocialesPct ?? 0
+  const cuadrilla = core?.cuadrilla || {}
+  const desperdicioPct = core?.desperdicioPct ?? SEED_DESPERDICIO_PCT
 
-  const jornalCon = (catId) => {
-    const cat = manoObra.find((c) => c.id === catId)
-    if (!cat || !cat.jornal) return 0
-    return cat.jornal * (1 + leyesPct / 100)
-  }
+  const costoDiarioReal = (cuadrilla.costoDiarioLiquido || 0) * (cuadrilla.multiplicadorBPS || 1)
+  const costoPorUnidad = (tarea) => (tarea && tarea.rendimiento ? costoDiarioReal / tarea.rendimiento : 0)
 
   const manoObraPorGrupo = grupos.map((g) => {
-    const meta = GRUPOS_APU.find((m) => m.tipo === g.tipo) || { unidad: 'kg' }
-    const cantidad = cantidadGrupo(g)
+    const meta = GRUPOS_APU.find((m) => m.tipo === g.tipo) || { unidad: 'm2' }
     const rend = rendimientos[g.tipo]
-    if (!rend || !rend.rendimiento || !rend.manoObraId) {
-      return { tipo: g.tipo, label: g.label, unidad: meta.unidad, cantidad: +cantidad.toFixed(2), jornales: 0, costo: 0, definido: false }
+    const tarea = rend?.tareaId ? tareas.find((t) => t.id === rend.tareaId) : null
+    const unidad = tarea?.unidad || meta.unidad
+    const cantidad = cantidadGrupo(g, unidad)
+    if (!tarea || !tarea.rendimiento) {
+      return { tipo: g.tipo, label: g.label, unidad, cantidad: +cantidad.toFixed(2), tarea: null, costo: 0, definido: false }
     }
-    const jornales = cantidad / rend.rendimiento
-    const costo = jornales * jornalCon(rend.manoObraId)
-    return { tipo: g.tipo, label: g.label, unidad: meta.unidad, cantidad: +cantidad.toFixed(2), jornales: +jornales.toFixed(2), costo: +costo.toFixed(0), definido: true }
+    const costoBase = cantidad * costoPorUnidad(tarea)
+    const costo = costoBase * (1 + (cuadrilla.factorHerramientas || 0))
+    return { tipo: g.tipo, label: g.label, unidad, cantidad: +cantidad.toFixed(2), tarea: tarea.nombre, costo: +costo.toFixed(0), definido: true }
   })
 
   const costoManoObra = manoObraPorGrupo.reduce((a, g) => a + g.costo, 0)
   const faltaManoObra = manoObraPorGrupo.some((g) => !g.definido && g.cantidad > 0)
 
+  // Materiales: se compran en paquetes enteros (redondeo hacia arriba),
+  // con el desperdicio global aplicado antes de convertir a paquetes.
   let costoMateriales = 0
   let faltaMateriales = false
   const materialesValorizados = materiales.map((m) => {
     const found = materialesCore.find((x) => x.name === m.name && x.unit === m.unit)
-    const price = found?.price || 0
-    if (!price) faltaMateriales = true
-    const monto = price * m.qty
+    if (!found || !found.price) { faltaMateriales = true; return { ...m, price: 0, paquetes: 0, monto: 0 } }
+    const qtyConDesperdicio = m.qty * (1 + desperdicioPct / 100)
+    const paquetes = Math.ceil(qtyConDesperdicio / (found.rendimientoPaquete || 1))
+    const monto = paquetes * found.price
     costoMateriales += monto
-    return { ...m, price, monto: +monto.toFixed(0) }
+    return { ...m, price: found.price, paquetes, monto: +monto.toFixed(0) }
   })
 
   const subtotal = costoManoObra + costoMateriales
@@ -68,6 +74,7 @@ export function costoProyecto(state, project, core) {
 
   return {
     totales,
+    costoDiarioReal: +costoDiarioReal.toFixed(0),
     manoObraPorGrupo,
     costoManoObra: +costoManoObra.toFixed(0),
     materialesValorizados,

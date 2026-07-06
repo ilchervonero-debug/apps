@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { LAYER_TEMPLATES } from '../data/layers'
 import { defaultRise } from '../engine/trusses'
+import { SEED_CUADRILLA, SEED_MATERIALES, SEED_TAREAS } from '../data/coreSeed'
 
 // Espesor de pared (mm) = núcleo (alto del montante) + capas de ambas caras
 export function wallThickness(type, profileSection) {
@@ -226,14 +227,22 @@ const loadMeta = () => { try { return JSON.parse(localStorage.getItem(LS_META) |
 const saveMeta = (m) => { try { localStorage.setItem(LS_META, JSON.stringify(m)) } catch { /* no-op */ } }
 
 // ── Core (GLOBAL, de la página principal) ─────────────────────
-// Aportes/impuestos + costos de materiales — compartidos por todos los
-// proyectos. Persisten aparte; más adelante se unen con Firebase.
+// APU real: cuadrilla (SUNCA + BPS + herramientas) + tareas (rendimiento
+// m²/ml por día) + materiales (precio por presentación comercial) +
+// aportes/impuestos. Compartido por todos los proyectos. Persiste aparte;
+// más adelante se une con Firebase.
 const LS_CORE = 'ilframe.core'
-// leyesSocialesPct: BPS (Ley 14.411) — monto imponible 85% de la mano de obra ×
-// 83% de aporte ≈ 70,55% adicional sobre el jornal. Valor de partida a
-// verificar con la planilla SUNCA vigente; queda editable en el Core.
-const CORE_DEFAULT = { aportes: [], materiales: [], manoObra: [], rendimientos: {}, leyesSocialesPct: 70.55 }
-const loadCore = () => { try { return { ...CORE_DEFAULT, ...(JSON.parse(localStorage.getItem(LS_CORE) || 'null') || {}) } } catch { return { ...CORE_DEFAULT } } }
+const CORE_DEFAULT = { aportes: [], materiales: [], tareas: [], rendimientos: {}, cuadrilla: SEED_CUADRILLA }
+// Completa con la base real (cuadrilla/tareas/materiales) SOLO lo que
+// falte — no pisa lo que Ángel ya haya cargado o editado.
+function withSeed(core) {
+  const c = { ...CORE_DEFAULT, ...core }
+  if (!c.materiales || !c.materiales.length) c.materiales = SEED_MATERIALES.map((m) => ({ ...m }))
+  if (!c.tareas || !c.tareas.length) c.tareas = SEED_TAREAS.map((t) => ({ ...t }))
+  if (!c.cuadrilla) c.cuadrilla = { ...SEED_CUADRILLA }
+  return c
+}
+const loadCore = () => { try { return withSeed(JSON.parse(localStorage.getItem(LS_CORE) || 'null') || {}) } catch { return withSeed({}) } }
 const saveCore = (c) => { try { localStorage.setItem(LS_CORE, JSON.stringify(c)) } catch { /* no-op */ } }
 const genId = () => 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1e3)
 const emptyDraw = () => ({
@@ -526,18 +535,18 @@ export const useDrawingStore = create((set) => ({
     return { projects: meta, ...(s.currentProjectId === id ? { currentProjectId: null } : {}) }
   }),
 
-  // ── Core global (mano de obra SUNCA + rendimientos + materiales + aportes) ──
+  // ── Core global: cuadrilla (SUNCA+BPS+herramientas) + tareas + materiales + aportes ──
   core: loadCore(),
   addCoreItem: (kind) => set((s) => {
     const item = kind === 'aportes' ? { id: genId(), name: '', pct: 0 }
-      : kind === 'manoObra' ? { id: genId(), name: '', jornal: 0 }
-        : { id: genId(), name: '', unit: 'u', price: 0, source: '' }
+      : kind === 'tareas' ? { id: genId(), nombre: '', unidad: 'm2', rendimiento: 0 }
+        : { id: genId(), categoria: '', name: '', unit: 'u', presentacion: '', rendimientoPaquete: 1, price: 0, source: '' }
     const core = { ...s.core, [kind]: [...(s.core[kind] || []), item] }
     saveCore(core)
     return { core }
   }),
-  setLeyesSociales: (pct) => set((s) => {
-    const core = { ...s.core, leyesSocialesPct: +pct || 0 }
+  setCuadrilla: (patch) => set((s) => {
+    const core = { ...s.core, cuadrilla: { ...s.core.cuadrilla, ...patch } }
     saveCore(core)
     return { core }
   }),

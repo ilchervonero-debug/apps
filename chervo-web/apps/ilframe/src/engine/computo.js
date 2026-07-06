@@ -81,7 +81,7 @@ export function computoProyecto(state, project) {
       addSteel(labelOf(t.perfilInferior), sI ? (g.lens.inf / 1000) * sI.kg : 0)
       addSteel(labelOf(t.perfilReticula), sR ? (g.lens.web / 1000) * sR.kg : 0)
       const kg = cerchaKg(cercha)
-      return { id: c.label, perfil: labelOf(t.perfilSuperior), det: `${cerchaTypeDef(c.modelo).name} · luz ${(span / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), extra: '' }
+      return { id: c.label, perfil: labelOf(t.perfilSuperior), det: `${cerchaTypeDef(c.modelo).name} · luz ${(span / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), ml: +(span / 1000).toFixed(2), extra: '' }
     })
     grupos.push({ tipo: 'cerchas', label: 'Cerchas', filas })
   }
@@ -94,7 +94,7 @@ export function computoProyecto(state, project) {
       const ref = { normId: t.normId, secIdx: t.secIdx }
       const kg = beamKg({ span, type: t.type || 'back_to_back', ...ref })
       addSteel(labelOf(ref), kg)
-      return { id: v.label, perfil: labelOf(ref), det: `Viga recta · luz ${(span / 1000).toFixed(2)} m${v.tipo ? ' · ' + v.tipo : ''}`, kg: +kg.toFixed(1), extra: '' }
+      return { id: v.label, perfil: labelOf(ref), det: `Viga recta · luz ${(span / 1000).toFixed(2)} m${v.tipo ? ' · ' + v.tipo : ''}`, kg: +kg.toFixed(1), ml: +(span / 1000).toFixed(2), extra: '' }
     })
     grupos.push({ tipo: 'vigas', label: 'Vigas', filas })
   }
@@ -109,7 +109,7 @@ export function computoProyecto(state, project) {
         perfil: t.perfil, perfilReticula: t.perfilReticula,
       }
       const kg = columnaKg(pilar)
-      return { id: c.label, perfil: labelOf(t.perfil), det: `Columna reticulada · alto ${(pilar.altura / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), extra: '' }
+      return { id: c.label, perfil: labelOf(t.perfil), det: `Columna reticulada · alto ${(pilar.altura / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), ml: +(pilar.altura / 1000).toFixed(2), extra: '' }
     })
     grupos.push({ tipo: 'pilares', label: 'Pilares / Columnas', filas })
   }
@@ -135,7 +135,8 @@ export function computoProyecto(state, project) {
       addSteel(labelOf(t.perfilClavador), clavKg)
       addMat(`Chapa ${(t.tipoChapa || 'trapezoidal').toString().toLowerCase()}`, 'm²', chapaM2)
       const label = r.label || `TE${i + 1}`
-      return { id: label, perfil: labelOf(t.perfilClavador), det: `Techo · ${(totalW / 1000).toFixed(1)}×${(totalD / 1000).toFixed(1)} m${r.tipo ? ' · ' + r.tipo : ''}`, kg: +clavKg.toFixed(1), extra: `${chapaM2.toFixed(1)} m² chapa · ${mlClavadores.toFixed(1)} ml` }
+      const areaM2 = +((totalW * totalD) / 1e6).toFixed(2)
+      return { id: label, perfil: labelOf(t.perfilClavador), det: `Techo · ${(totalW / 1000).toFixed(1)}×${(totalD / 1000).toFixed(1)} m${r.tipo ? ' · ' + r.tipo : ''}`, kg: +clavKg.toFixed(1), m2: areaM2, extra: `${chapaM2.toFixed(1)} m² chapa · ${mlClavadores.toFixed(1)} ml` }
     })
     grupos.push({ tipo: 'techos', label: 'Techos / Cubiertas', filas })
   }
