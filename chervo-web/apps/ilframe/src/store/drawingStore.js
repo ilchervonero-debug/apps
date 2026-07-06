@@ -148,7 +148,6 @@ export const TYPE_META = {
   cielo: { prefix: 'CR', label: 'Cielorrasos', arr: null }, // silueta por DXF (a futuro)
 }
 const TYPE_CATS = Object.keys(TYPE_META)
-const STARTER_NAME = { pilar: 'Pilar', columna: 'Columna', cercha: 'Cercha', viga: 'Viga', losa: 'Entrepiso', techo: 'Cubierta', cielo: 'Cielorraso' }
 
 // Material base (config) por categoría — sin id/code/name.
 function baseCfg(cat) {
@@ -164,9 +163,11 @@ function baseCfg(cat) {
     default: return {}
   }
 }
-function defaultTypes() {
+// El proyecto arranca VACÍO: no hay tipos precargados. Ángel crea y nombra
+// cada tipo con el "+" en la hoja de Componentes.
+function emptyTypes() {
   const out = {}
-  for (const cat of TYPE_CATS) out[cat] = [{ id: cat + '1', code: TYPE_META[cat].prefix + '1', name: STARTER_NAME[cat], ...baseCfg(cat) }]
+  for (const cat of TYPE_CATS) out[cat] = []
   return out
 }
 // Próximo código correlativo (P1, P2…) para una categoría
@@ -199,13 +200,11 @@ function defaultProject(name = 'Proyecto sin nombre') {
     profileNorm: 'cu_1',
     profileSection: '100_0.95',
     studSpacing: 400,
-    wallTypes: [
-      { id: 'ext', code: 'M1', name: 'Muro exterior', kind: 'exterior', faces: { interior: ['gyp_standard'], exterior: ['osb_11', 'mineral_wool_50'] } },
-      { id: 'int', code: 'M2', name: 'Muro interior', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } },
-    ],
+    // Sin muros precargados: los crea y nombra Ángel en Componentes.
+    wallTypes: [],
     // Tipos por categoría (Pilares, Columnas, Cerchas, Vigas, Losas, Techos,
-    // Cielorrasos) — se agregan/definen en la hoja de Componentes.
-    types: defaultTypes(),
+    // Cielorrasos) — todos vacíos: se definen en la hoja de Componentes.
+    types: emptyTypes(),
     elements: {
       muros: defaultElement(true, true),
       piso: defaultElement(false, false),
@@ -254,7 +253,8 @@ export const useDrawingStore = create((set) => ({
     if (!meta) return {}
     const list = s.project.types?.[cat] || []
     const id = cat + Date.now().toString(36)
-    const t = { id, code: nextTypeCode(list, meta.prefix), name: STARTER_NAME[cat] + ' nuevo', ...baseCfg(cat) }
+    // nombre en blanco: lo pone Ángel en el casillero
+    const t = { id, code: nextTypeCode(list, meta.prefix), name: '', ...baseCfg(cat) }
     return { project: { ...s.project, types: { ...s.project.types, [cat]: [...list, t] } }, currentType: { ...s.currentType, [cat]: id } }
   }),
   updateType: (cat, id, patch) => set((s) => ({
@@ -538,7 +538,8 @@ export const useDrawingStore = create((set) => ({
     // código correlativo M1, M2, M3… (los planos especifican el muro por tipo)
     const used = s.project.wallTypes.map((t) => parseInt((t.code || '').replace(/\D/g, ''), 10)).filter((n) => !isNaN(n))
     const n = (used.length ? Math.max(...used) : 0) + 1
-    const wt = { id, code: 'M' + n, name: 'Muro nuevo', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } }
+    // nombre en blanco y SIN capas: el espesor se arma con lo que cargue Ángel
+    const wt = { id, code: 'M' + n, name: '', kind: 'interior', faces: { interior: [], exterior: [] } }
     return { project: { ...s.project, wallTypes: [...s.project.wallTypes, wt] }, currentWallTypeId: id }
   }),
   updateWallType: (id, patch) => set((s) => ({

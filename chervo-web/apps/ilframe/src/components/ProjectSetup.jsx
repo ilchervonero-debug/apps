@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { useDrawingStore, wallThickness, TYPE_META } from '../store/drawingStore'
+import { useDrawingStore, TYPE_META } from '../store/drawingStore'
 import { PROFILE_NORMS, PROFILE_SECTIONS } from '../data/profiles'
 import { LAYER_TEMPLATES } from '../data/layers'
+import { projectSpec, specVacio, muroEspesor } from '../engine/spec'
 import { PILAR_ARMADOS, COLUMNA_PATRONES } from '../engine/pilares'
 import { CERCHA_TYPES } from '../engine/trusses'
 import { BEAM_TYPES } from '../engine/beams'
@@ -98,6 +99,9 @@ export default function ProjectSetup() {
             </Accordion>
           )
         })}
+
+        {/* Output de info para el plano (resumen de lo definido) */}
+        <SpecSummary project={project} open={open.resumen} onToggle={() => toggle('resumen')} />
       </div>
 
       {/* CTA */}
@@ -138,11 +142,58 @@ function AddBtn({ label, onClick }) {
   )
 }
 
+// Resumen de lo definido = el "output de info" que el plano consumirá
+function SpecSummary({ project, open, onToggle }) {
+  const spec = projectSpec(project)
+  const vacio = specVacio(spec)
+  const groups = [
+    ['Muros', spec.walls.map((w) => ({ code: w.code, name: w.name, info: `${w.kind} · ${(w.espesorMm / 10).toFixed(1)} cm${w.capasMm ? '' : ' · sin capas'}` }))],
+    ['Pilares', spec.pilares.map((x) => ({ code: x.code, name: x.name, info: [x.armado, x.perfil?.label].filter(Boolean).join(' · ') || '—' }))],
+    ['Columnas', spec.columnas.map((x) => ({ code: x.code, name: x.name, info: x.cordon?.label || '—' }))],
+    ['Cerchas', spec.cerchas.map((x) => ({ code: x.code, name: x.name, info: [x.modelo, x.superior?.label].filter(Boolean).join(' · ') || '—' }))],
+    ['Vigas', spec.vigas.map((x) => ({ code: x.code, name: x.name, info: x.perfil?.label || '—' }))],
+    ['Losas', spec.losas.map((x) => ({ code: x.code, name: x.name, info: x.vigueta?.label || '—' }))],
+    ['Techos', spec.techos.map((x) => ({ code: x.code, name: x.name, info: [x.chapa, x.clavador?.label].filter(Boolean).join(' · ') || '—' }))],
+    ['Cielorrasos', spec.cielos.map((x) => ({ code: x.code, name: x.name, info: x.perfil?.label || '—' }))],
+  ].filter(([, rows]) => rows.length)
+  const total = groups.reduce((a, [, r]) => a + r.length, 0)
+  return (
+    <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+      <button onClick={onToggle} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '14px 16px' }}>
+        <span style={{ fontSize: 18, color: '#1c1c1c' }}>Resumen para el plano</span>
+        {total > 0 && <span style={{ fontSize: 15, color: '#9a9a9a' }}>· {total}</span>}
+        <span style={{ fontSize: 16, color: '#c4c4c4', marginLeft: 'auto', display: 'inline-block', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>⌄</span>
+      </button>
+      {open && (
+        <div style={{ padding: '0 16px 16px' }}>
+          {vacio ? (
+            <div style={{ fontSize: 15, color: '#9a9a9a' }}>Todavía no definiste nada. Agregá tipos con el “+” de cada sección.</div>
+          ) : groups.map(([label, rows]) => (
+            <div key={label} style={{ marginTop: 10 }}>
+              <Sub>{label}</Sub>
+              {rows.map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '7px 0', borderTop: i ? '1px solid #f2f2f2' : 'none' }}>
+                  <span style={{ fontSize: 16, color: '#fe0000', minWidth: 42 }}>{r.code}</span>
+                  <span style={{ flex: 1, fontSize: 16, color: '#1c1c1c' }}>{r.name || <span style={{ color: '#bbb' }}>sin nombre</span>}</span>
+                  <span style={{ fontSize: 14, color: '#8a8a8a', textAlign: 'right' }}>{r.info}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+          <div style={{ fontSize: 14, color: '#9a9a9a', lineHeight: 1.5, marginTop: 12 }}>
+            Esto es lo que el plano va a usar: cada elemento con su código, nombre y material. En el canvas solo dibujás la silueta y elegís el tipo.
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Muro: composición por caras (define el espesor) ───────────
 function WallTypeCard({ type, profileSection, canDelete }) {
   const updateWallType = useDrawingStore((s) => s.updateWallType)
   const removeWallType = useDrawingStore((s) => s.removeWallType)
-  const th = wallThickness(type, profileSection)
+  const e = muroEspesor(type, profileSection)
   return (
     <div style={typeCard}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -162,7 +213,9 @@ function WallTypeCard({ type, profileSection, canDelete }) {
         {[['exterior', 'Exterior'], ['interior', 'Interior']].map(([k, lbl]) => (
           <button key={k} onClick={() => updateWallType(type.id, { kind: k })} style={pill(type.kind === k)}>{lbl}</button>
         ))}
-        <span style={{ marginLeft: 'auto', fontSize: 15, color: '#0a84ff' }}>espesor ≈ {(th / 10).toFixed(1)} cm</span>
+        <span style={{ marginLeft: 'auto', fontSize: 15, color: '#0a84ff' }}>
+          {e.capas ? `alma ${(e.core / 10).toFixed(1)} + capas → ${(e.espesor / 10).toFixed(1)} cm` : `alma ${(e.core / 10).toFixed(1)} cm · sumá capas`}
+        </span>
       </div>
       <TypeFaceStack typeId={type.id} face="interior" layers={type.faces?.interior || []} label="Cara interior" />
       <TypeFaceStack typeId={type.id} face="exterior" layers={type.faces?.exterior || []} label={type.kind === 'exterior' ? 'Cara exterior' : 'Otra cara'} />
