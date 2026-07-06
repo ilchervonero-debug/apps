@@ -3,7 +3,7 @@
 // perfiles extra, placas/aislante/revestimiento por cara, terminación por m²,
 // tornillos estructurales (montante-solera) y de placa, peso por kg/m del perfil.
 
-import { CU_SECTIONS } from '../data/profiles'
+import { PROFILE_SECTIONS } from '../data/profiles'
 import { LAYER_TEMPLATES } from '../data/layers'
 import { panelPolygon, polygonArea } from '../store/drawingStore'
 
@@ -20,7 +20,7 @@ function topYat(topPath, x) {
 }
 
 function sectionOf(project) {
-  const norm = CU_SECTIONS[project.profileNorm] || CU_SECTIONS.cu_1
+  const norm = PROFILE_SECTIONS[project.profileNorm] || PROFILE_SECTIONS.cu_1
   const [h, t] = (project.profileSection || '100_0.95').split('_')
   return (norm.C || []).find((c) => `${c.h}_${c.t}` === `${h}_${t}`) || norm.C[0]
 }
