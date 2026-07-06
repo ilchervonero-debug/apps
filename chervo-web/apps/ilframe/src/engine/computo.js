@@ -1,26 +1,46 @@
 // ── Cómputo consolidado del proyecto ──────────────────────────
-// Junta el acero y los materiales de TODOS los elementos (muros, vigas,
-// cerchas, pilares, columnas, techos, losas) reutilizando cada motor.
+// Lee lo dibujado en el plano (canvas studio) y lo valoriza con el material
+// definido en Componentes: cada pieza dibujada guarda el NOMBRE del tipo
+// elegido (muro/cercha/columna/techo); acá se busca ese tipo en
+// project.types (o project.wallTypes) para sacar los perfiles reales y
+// calcular kg con los mismos motores de siempre (bom/trusses/pilares/beams).
 // Devuelve { grupos, materiales, totales } para la pestaña Cómputo/Salida.
 
 import { PROFILE_SECTIONS } from '../data/profiles'
 import { panelBOM } from './bom'
-import { beamKg, beamTypeDef } from './beams'
+import { beamKg } from './beams'
 import { cerchaKg, cerchaTypeDef, trussGeometry } from './trusses'
-import { pilarKg, pilarTornillos, columnaKg, columnaGeometry, pilarSec, pilarArmadoDef } from './pilares'
-import { chapaM2, clavadorKg, clavadorMl, roofFormaDef, roofDims } from './roofs'
-import { slabKg, slabGeometry, deckDef } from './slabs'
+import { columnaKg } from './pilares'
 
 const secOf = (ref) => (PROFILE_SECTIONS[ref?.normId]?.C || [])[ref?.secIdx ?? 0]
 const labelOf = (ref) => { const s = secOf(ref); return s ? `${s.h}x${s.w}x${s.t}` : '—' }
+const findType = (list, name) => (list || []).find((t) => t.name === name) || (list && list[0])
+
+// El canvas usa sus propios nombres de retícula (WARREN/X_CROSS/LADDER);
+// el motor de columnas usa los de cercha (W/X/N…). Se traduce acá.
+const PATRON_MAP = { WARREN: 'W', X_CROSS: 'X', LADDER: 'N' }
+
+// Muro dibujado (studio) → shape que espera panelBOM
+function wallToPanel(w, project) {
+  const width = Math.max(1, Math.round(Math.hypot(w.pB[0] - w.pA[0], w.pB[1] - w.pA[1])))
+  const topPath = w.peak
+    ? [[0, w.hA || 2400], [Math.max(0, Math.min(width, Math.round(w.peak.x))), Math.round(w.peak.y)], [width, w.hB || 2400]]
+    : [[0, w.hA || 2400], [width, w.hB || 2400]]
+  const wt = (project.wallTypes || []).find((t) => t.name === w.tipo)
+  const openings = (w.aberturas || []).map((a) => ({
+    kind: a.type === 'puerta' ? 'door' : a.type === 'ventana' ? 'window' : 'other',
+    width: a.w, height: a.h, sill: a.y,
+  }))
+  return { id: w.label, width, topPath, openings, typeId: wt ? wt.id : project.wallTypes?.[0]?.id }
+}
 
 export function computoProyecto(state, project) {
-  const panels = state.panels || []
-  const beams = state.beams || []
-  const cerchas = state.cerchas || []
-  const pilares = state.pilares || []
-  const techos = state.techos || []
-  const losas = state.losas || []
+  const studio = state.studio || []
+  const walls = studio.filter((o) => o.type === 'wall')
+  const cerchasObj = studio.filter((o) => o.type === 'cercha' && o.modelo !== 'VIGA')
+  const vigasObj = studio.filter((o) => o.type === 'cercha' && o.modelo === 'VIGA')
+  const columnas = studio.filter((o) => o.type === 'columna')
+  const techos = studio.filter((o) => o.type === 'roof')
 
   const steel = {}   // label de perfil -> kg
   const mats = {}    // nombre|unidad -> { name, unit, qty }
@@ -31,78 +51,93 @@ export function computoProyecto(state, project) {
   const grupos = []
 
   // ── Muros ──
-  if (panels.length) {
-    const filas = panels.map((p) => {
-      const r = panelBOM(p, project)
+  if (walls.length) {
+    const filas = walls.map((w) => {
+      const panel = wallToPanel(w, project)
+      const r = panelBOM(panel, project)
       addSteel(r.perfil, r.aceroKg)
       for (const m of r.mats) addMat(m.name, m.unit, m.qty)
       tornillos += r.tornillos
-      return { id: r.id, perfil: r.perfil, det: `${r.netM2} m² · ${r.studs} mont.`, kg: r.aceroKg, m2: r.netM2, extra: `${r.placas} placas` }
+      return { id: w.label, perfil: r.perfil, det: `${r.netM2} m² · ${r.studs} mont.${w.tipo ? ' · ' + w.tipo : ''}`, kg: r.aceroKg, m2: r.netM2, extra: `${r.placas} placas` }
     })
     grupos.push({ tipo: 'muros', label: 'Muros', filas })
   }
 
-  // ── Vigas ──
-  if (beams.length) {
-    const filas = beams.map((b) => {
-      const kg = beamKg(b), lab = labelOf(b)
-      addSteel(lab, kg)
-      return { id: b.id, perfil: lab, det: `${beamTypeDef(b.type).name} · luz ${(b.span / 1000).toFixed(2)} m`, kg: +kg.toFixed(1), extra: '' }
-    })
-    grupos.push({ tipo: 'vigas', label: 'Vigas', filas })
-  }
-
-  // ── Cerchas (3 perfiles: superior/inferior/retícula) ──
-  if (cerchas.length) {
-    const filas = cerchas.map((c) => {
-      const g = trussGeometry(c)
-      const sS = secOf(c.perfilSuperior), sI = secOf(c.perfilInferior), sR = secOf(c.perfilReticula)
-      addSteel(labelOf(c.perfilSuperior), sS ? (g.lens.sup / 1000) * sS.kg : 0)
-      addSteel(labelOf(c.perfilInferior), sI ? (g.lens.inf / 1000) * sI.kg : 0)
-      addSteel(labelOf(c.perfilReticula), sR ? (g.lens.web / 1000) * sR.kg : 0)
-      const kg = cerchaKg(c)
-      return { id: c.id, perfil: labelOf(c.perfilSuperior), det: `${cerchaTypeDef(c.modelo).name} · luz ${(g.p.span / 1000).toFixed(2)} m`, kg: +kg.toFixed(1), extra: '' }
+  // ── Cerchas (tipo enlazado a Componentes → Cerchas) ──
+  if (cerchasObj.length) {
+    const filas = cerchasObj.map((c) => {
+      const t = findType(project.types?.cercha, c.tipo) || {}
+      const span = Math.max(1, Math.round(Math.hypot(c.pB[0] - c.pA[0], c.pB[1] - c.pA[1])))
+      const pico = (c.xPico ?? 0.5) * span
+      const baseAtPico = (c.hIzq || 0) + ((c.hDer || 0) - (c.hIzq || 0)) * (pico / span)
+      const rise = baseAtPico + (c.hPico || 0)
+      const cercha = {
+        span, pico, rise, hIzq: c.hIzq || 0, hDer: c.hDer || 0, modelo: c.modelo || 'PRATT', divisiones: c.divisiones || 6,
+        perfilSuperior: t.perfilSuperior, perfilInferior: t.perfilInferior, perfilReticula: t.perfilReticula,
+      }
+      const g = trussGeometry(cercha)
+      const sS = secOf(t.perfilSuperior), sI = secOf(t.perfilInferior), sR = secOf(t.perfilReticula)
+      addSteel(labelOf(t.perfilSuperior), sS ? (g.lens.sup / 1000) * sS.kg : 0)
+      addSteel(labelOf(t.perfilInferior), sI ? (g.lens.inf / 1000) * sI.kg : 0)
+      addSteel(labelOf(t.perfilReticula), sR ? (g.lens.web / 1000) * sR.kg : 0)
+      const kg = cerchaKg(cercha)
+      return { id: c.label, perfil: labelOf(t.perfilSuperior), det: `${cerchaTypeDef(c.modelo).name} · luz ${(span / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), extra: '' }
     })
     grupos.push({ tipo: 'cerchas', label: 'Cerchas', filas })
   }
 
-  // ── Pilares y Columnas ──
-  if (pilares.length) {
-    const filas = pilares.map((p) => {
-      if (p.kind === 'reticulada') {
-        const g = columnaGeometry(p)
-        const sC = pilarSec(p), sR = secOf(p.perfilReticula) || sC
-        addSteel(labelOf(p.perfil), sC ? (g.lens.cordon / 1000) * sC.kg : 0)
-        addSteel(labelOf(p.perfilReticula), sR ? (g.lens.reticula / 1000) * sR.kg : 0)
-        return { id: p.id, perfil: labelOf(p.perfil), det: `Columna reticulada · alto ${((p.altura || 2800) / 1000).toFixed(2)} m`, kg: +columnaKg(p).toFixed(1), extra: '' }
+  // ── Vigas (cercha dibujada con modelo VIGA = miembro recto; tipo → Componentes Vigas) ──
+  if (vigasObj.length) {
+    const filas = vigasObj.map((v) => {
+      const t = findType(project.types?.viga, v.tipo) || {}
+      const span = Math.max(1, Math.round(Math.hypot(v.pB[0] - v.pA[0], v.pB[1] - v.pA[1])))
+      const ref = { normId: t.normId, secIdx: t.secIdx }
+      const kg = beamKg({ span, type: t.type || 'back_to_back', ...ref })
+      addSteel(labelOf(ref), kg)
+      return { id: v.label, perfil: labelOf(ref), det: `Viga recta · luz ${(span / 1000).toFixed(2)} m${v.tipo ? ' · ' + v.tipo : ''}`, kg: +kg.toFixed(1), extra: '' }
+    })
+    grupos.push({ tipo: 'vigas', label: 'Vigas', filas })
+  }
+
+  // ── Columnas reticuladas (tipo enlazado a Componentes → Columnas) ──
+  if (columnas.length) {
+    const filas = columnas.map((c) => {
+      const t = findType(project.types?.columna, c.tipo) || {}
+      const pilar = {
+        altura: c.altura || 3000, anchoBase: c.anchoBase || 400, anchoTope: c.anchoTope || 400,
+        caraRecta: c.caraRecta || 'IZQ', divisiones: c.divisiones || 5, patron: PATRON_MAP[c.patron] || 'DA',
+        perfil: t.perfil, perfilReticula: t.perfilReticula,
       }
-      addSteel(labelOf(p.perfil), pilarKg(p))
-      const t = pilarTornillos(p); tornillos += t
-      return { id: p.id, perfil: labelOf(p.perfil), det: `${pilarArmadoDef(p.tipoArmado).name} · alto ${((p.altura || 2800) / 1000).toFixed(2)} m`, kg: +pilarKg(p).toFixed(1), extra: t ? `${t} torn.` : '' }
+      const kg = columnaKg(pilar)
+      return { id: c.label, perfil: labelOf(t.perfil), det: `Columna reticulada · alto ${(pilar.altura / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), extra: '' }
     })
     grupos.push({ tipo: 'pilares', label: 'Pilares / Columnas', filas })
   }
 
-  // ── Techos ──
+  // ── Techos (geometría propia del studio: slope %/fallDir; tipo → Componentes Techos) ──
   if (techos.length) {
-    const filas = techos.map((t) => {
-      addSteel(labelOf(t.perfilClavador), clavadorKg(t))
-      addMat(`Chapa ${(t.tipoChapa || 'trapezoidal').toLowerCase()}`, 'm²', chapaM2(t))
-      const d = roofDims(t)
-      return { id: t.id, perfil: labelOf(t.perfilClavador), det: `${roofFormaDef(t.forma).name} · ${(d.w / 1000).toFixed(1)}×${(d.d / 1000).toFixed(1)} m`, kg: +clavadorKg(t).toFixed(1), extra: `${chapaM2(t).toFixed(1)} m² chapa · ${clavadorMl(t).toFixed(1)} ml` }
+    const filas = techos.map((r, i) => {
+      const t = findType(project.types?.techo, r.tipo) || {}
+      const alero = r.alero || 0
+      const w = Math.max(1, Math.abs((r.p2?.[0] ?? 0) - (r.p1?.[0] ?? 0)))
+      const d = Math.max(1, Math.abs((r.p2?.[1] ?? 0) - (r.p1?.[1] ?? 0)))
+      const totalW = w + alero * 2, totalD = d + alero * 2
+      const enX = r.fallDir === 'der' || r.fallDir === 'izq'
+      const run = enX ? totalW : totalD
+      const perp = enX ? totalD : totalW
+      const hip = Math.hypot(run, run * ((r.slope || 0) / 100))
+      const area = (hip * perp) / 1e6
+      const chapaM2 = area * 1.10
+      const clavadorSep = 600
+      const mlClavadores = ((Math.ceil(hip / clavadorSep) + 1) * perp) / 1000
+      const secC = secOf(t.perfilClavador)
+      const clavKg = secC ? mlClavadores * secC.kg : 0
+      addSteel(labelOf(t.perfilClavador), clavKg)
+      addMat(`Chapa ${(t.tipoChapa || 'trapezoidal').toString().toLowerCase()}`, 'm²', chapaM2)
+      const label = r.label || `TE${i + 1}`
+      return { id: label, perfil: labelOf(t.perfilClavador), det: `Techo · ${(totalW / 1000).toFixed(1)}×${(totalD / 1000).toFixed(1)} m${r.tipo ? ' · ' + r.tipo : ''}`, kg: +clavKg.toFixed(1), extra: `${chapaM2.toFixed(1)} m² chapa · ${mlClavadores.toFixed(1)} ml` }
     })
     grupos.push({ tipo: 'techos', label: 'Techos / Cubiertas', filas })
-  }
-
-  // ── Losas / Entrepisos ──
-  if (losas.length) {
-    const filas = losas.map((lo) => {
-      addSteel(labelOf(lo.perfil), slabKg(lo))
-      const g = slabGeometry(lo)
-      addMat(deckDef(lo.deck).name, 'm²', g.deckM2)
-      return { id: lo.id, perfil: labelOf(lo.perfil), det: `${g.count} viguetas · luz ${(g.span / 1000).toFixed(2)} m`, kg: +slabKg(lo).toFixed(1), extra: `${g.deckM2.toFixed(1)} m² deck` }
-    })
-    grupos.push({ tipo: 'losas', label: 'Losas / Entrepisos', filas })
   }
 
   const aceroKg = Object.values(steel).reduce((a, b) => a + b, 0)

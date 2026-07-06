@@ -156,9 +156,20 @@ let guideData = { hitWall: false, angle: 0, startP: null };
 const kEnt = "if(event.key==='Enter'){ this.blur(); }";
 
 // ── Tipos definidos en Componentes (material de cada pieza) ─────
+// Solo viajan nombres; el cómputo (fuera de este iframe) resuelve los
+// perfiles reales buscando el tipo por nombre. Acá solo se elige y se
+// guarda el nombre en la pieza (tipo).
 let ilWalls = []; // [{ name, espesorMm }]
 let wallTypeIdx = 0;
 function ilSetWall(idx) { wallTypeIdx = +idx; const w = ilWalls[wallTypeIdx]; if (w && w.espesorMm) espesorActual = w.espesorMm; }
+let ilCerchas = [], cerchaTypeIdx = 0;
+function ilSetCercha(idx) { cerchaTypeIdx = +idx; }
+let ilColumnas = [], columnaTypeIdx = 0;
+function ilSetColumna(idx) { columnaTypeIdx = +idx; }
+let ilTechos = [], techoTypeIdx = 0;
+function ilSetTecho(idx) { techoTypeIdx = +idx; }
+let ilVigas = [];
+function modCerchaTipoViga(val) { if (!seleccionId) return; const c = objects.find(o => o.id === seleccionId); if (!c || c.type !== 'cercha') return; saveHistory(); c.tipo = val; render(); ilPersist(); }
 
 // ── Puente con la app (caja de proyectos) ──────────────────────
 let _saveT = null;
@@ -179,7 +190,14 @@ window.addEventListener('message', (e) => {
   } else if (d.ilframe === 'types') {
     ilWalls = Array.isArray(d.walls) ? d.walls : [];
     if (ilWalls.length) { if (wallTypeIdx >= ilWalls.length) wallTypeIdx = 0; const w = ilWalls[wallTypeIdx]; if (w && w.espesorMm) espesorActual = w.espesorMm; }
-    if (tool === 'wall') actualizarPropBar();
+    ilCerchas = Array.isArray(d.cerchas) ? d.cerchas : [];
+    if (cerchaTypeIdx >= ilCerchas.length) cerchaTypeIdx = 0;
+    ilColumnas = Array.isArray(d.columnas) ? d.columnas : [];
+    if (columnaTypeIdx >= ilColumnas.length) columnaTypeIdx = 0;
+    ilTechos = Array.isArray(d.techos) ? d.techos : [];
+    if (techoTypeIdx >= ilTechos.length) techoTypeIdx = 0;
+    ilVigas = Array.isArray(d.vigas) ? d.vigas : [];
+    if (['wall', 'cercha', 'columna', 'roof'].includes(tool)) actualizarPropBar();
   }
 });
 
@@ -550,7 +568,7 @@ function onDown(e) {
   else if (tool === 'cercha' && vistaActual === 'planta') { saveHistory(); drawing = true; dragStartW = {...wp}; }
   else if (tool === 'columna' && vistaActual === 'planta') {
     saveHistory();
-    objects.push({ type: 'columna', id: nextId++, label: 'P'+nextColNum++, pt: [wp.x, wp.y], angle: 0, altura: 3000, anchoBase: 400, anchoTope: 400, espesor: 100, caraRecta: 'IZQ', divisiones: 5, patron: 'WARREN' });
+    objects.push({ type: 'columna', id: nextId++, label: 'P'+nextColNum++, tipo: (ilColumnas[columnaTypeIdx]||{}).name||'', pt: [wp.x, wp.y], angle: 0, altura: 3000, anchoBase: 400, anchoTope: 400, espesor: 100, caraRecta: 'IZQ', divisiones: 5, patron: 'WARREN' });
     seleccionId = nextId-1; forceCardOpen = true; ST('select'); ilPersist();
   }
   else if (tool === 'roof' && vistaActual === 'techo') { saveHistory(); drawing = true; dragStartW = {...wp}; }
@@ -621,9 +639,9 @@ function onUp(e) {
   if (tool === 'wall' && drawing && vistaActual === 'planta') {
     if (hyp(dragCurW.x-dragStartW.x, dragCurW.y-dragStartW.y) > 100) { objects.push({type:'wall', id:nextId++, label:'M'+nextWallNum++, tipo:(ilWalls[wallTypeIdx]||{}).name||'', pA:[dragStartW.x, dragStartW.y], pB:[dragCurW.x, dragCurW.y], espesor:espesorActual, hA:2400, hB:2400, peak:null, proyectaTecho:false, aberturas:[]}); ilPersist(); } else { history.pop(); }
   } else if (tool === 'cercha' && drawing && vistaActual === 'planta') {
-    if (hyp(dragCurW.x-dragStartW.x, dragCurW.y-dragStartW.y) > 100) { objects.push({type:'cercha', id:nextId++, label:'C'+nextCerchaNum++, pA:[dragStartW.x, dragStartW.y], pB:[dragCurW.x, dragCurW.y], espesor:100, hIzq:2400, hDer:2400, hPico:1000, xPico:0.5, divisiones:4, modelo:'PRATT', soportaClavadores:false}); ilPersist(); } else { history.pop(); }
+    if (hyp(dragCurW.x-dragStartW.x, dragCurW.y-dragStartW.y) > 100) { objects.push({type:'cercha', id:nextId++, label:'C'+nextCerchaNum++, tipo:(ilCerchas[cerchaTypeIdx]||{}).name||'', pA:[dragStartW.x, dragStartW.y], pB:[dragCurW.x, dragCurW.y], espesor:100, hIzq:2400, hDer:2400, hPico:1000, xPico:0.5, divisiones:4, modelo:'PRATT', soportaClavadores:false}); ilPersist(); } else { history.pop(); }
   } else if (tool === 'roof' && drawing && vistaActual === 'techo') {
-    if (Math.abs(dragCurW.x-dragStartW.x) > 100) { objects.push({type:'roof', id:nextId++, p1:[dragStartW.x, dragStartW.y], p2:[dragCurW.x, dragCurW.y], hBase: 2400, slope: 15, fallDir: 'abajo', alero: 300}); ilPersist(); } else { history.pop(); }
+    if (Math.abs(dragCurW.x-dragStartW.x) > 100) { objects.push({type:'roof', id:nextId++, tipo:(ilTechos[techoTypeIdx]||{}).name||'', p1:[dragStartW.x, dragStartW.y], p2:[dragCurW.x, dragCurW.y], hBase: 2400, slope: 15, fallDir: 'abajo', alero: 300}); ilPersist(); } else { history.pop(); }
   } else if (tool === 'babeta' && vistaActual === 'techo') {
     shouldResetDrawing = false; if(!drawing) { saveHistory(); drawing = true; polyPts = [{...wp}]; forceCardOpen = true; actualizarPropBar(); } else { if(polyPts.length > 2 && hyp(wp.x - polyPts[0].x, wp.y - polyPts[0].y) < 30/vpZ) { polyPts.push({...polyPts[0]}); objects.push({type:'babeta', id:nextId++, pts: [...polyPts]}); drawing = false; polyPts = []; toast("Babeta cerrada"); ST('select'); ilPersist(); } else { polyPts.push({...wp}); } }
   } else if (tool === 'guide' && drawing) {
@@ -761,13 +779,31 @@ function actualizarPropBar() {
   }
   else if(tool === 'cercha') {
     barTool.textContent = 'ESTRUCTURA'; ind.textContent = 'Ayuda ▴';
-    if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVA CERCHA / VIGA'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá para trazar el eje estructural de apoyo.</p>`; }
+    if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVA CERCHA / VIGA';
+      const help = `<p style="font-size:14px; color:var(--label); text-align:center; margin-top:8px;">Arrastrá para trazar el eje estructural de apoyo.</p>`;
+      if (ilCerchas.length) {
+        const opts = ilCerchas.map((t,i)=>`<option value="${i}" ${i===cerchaTypeIdx?'selected':''}>${t.name||'sin nombre'}</option>`).join('');
+        content.innerHTML = `<div class="prop-row"><label>Tipo de cercha</label><select onchange="ilSetCercha(this.value)" style="width:180px;">${opts}</select></div>` + help;
+      } else { content.innerHTML = `<p style="font-size:13px; color:var(--label);">Definí tipos de cercha en Componentes para elegirlos acá.</p>` + help; }
+    }
   }
   else if(tool === 'columna') {
     barTool.textContent = 'NUEVO PILAR'; ind.textContent = 'Ayuda ▴';
-    if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVA COLUMNA'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá en la planta para insertar una nueva columna.</p>`; }
+    if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVA COLUMNA';
+      const help = `<p style="font-size:14px; color:var(--label); text-align:center; margin-top:8px;">Tocá en la planta para insertar una nueva columna.</p>`;
+      if (ilColumnas.length) {
+        const opts = ilColumnas.map((t,i)=>`<option value="${i}" ${i===columnaTypeIdx?'selected':''}>${t.name||'sin nombre'}</option>`).join('');
+        content.innerHTML = `<div class="prop-row"><label>Tipo de columna</label><select onchange="ilSetColumna(this.value)" style="width:180px;">${opts}</select></div>` + help;
+      } else { content.innerHTML = `<p style="font-size:13px; color:var(--label);">Definí tipos de columna en Componentes para elegirlos acá.</p>` + help; }
+    }
   }
-  else if(tool === 'roof') { barTool.textContent = 'DIBUJAR TECHO'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVO TECHO'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá en diagonal para dibujar el perímetro del techo.</p>`; } }
+  else if(tool === 'roof') { barTool.textContent = 'DIBUJAR TECHO'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVO TECHO';
+    const help = `<p style="font-size:14px; color:var(--label); text-align:center; margin-top:8px;">Arrastrá en diagonal para dibujar el perímetro del techo.</p>`;
+    if (ilTechos.length) {
+      const opts = ilTechos.map((t,i)=>`<option value="${i}" ${i===techoTypeIdx?'selected':''}>${t.name||'sin nombre'}</option>`).join('');
+      content.innerHTML = `<div class="prop-row"><label>Tipo de techo</label><select onchange="ilSetTecho(this.value)" style="width:180px;">${opts}</select></div>` + help;
+    } else { content.innerHTML = `<p style="font-size:13px; color:var(--label);">Definí tipos de techo en Componentes para elegirlos acá.</p>` + help; }
+  } }
   else if(tool === 'babeta') { barTool.textContent = 'DIBUJAR BABETA'; ind.textContent = 'Opciones ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'TRAZAR BABETA'; if(drawing) { content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá cerca del inicio para cerrar.</p><button class="prop-btn-full" onclick="finishPoly()">TERMINAR ABIERTA</button>`; } else { content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá puntos para trazar la restricción.</p>`; } } }
   else if(tool === 'guide') { barTool.textContent = 'LÍNEA GUÍA'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'CREAR GUÍA'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá desde un panel para crear una guía paralela (offset).</p>`; } }
   else if(tool === 'join') { barTool.textContent = 'UNIR MUROS'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'JERARQUÍAS T/L'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá desde Muro A hacia Muro B.</p>`; } }
@@ -798,17 +834,17 @@ function actualizarPropBar() {
         if(showCard) { card.style.display = 'flex'; title.textContent = `LÍNEA GUÍA`; content.innerHTML = `<div class="prop-row"><label>Desplazar Perpendicular (m)</label><input type="number" step="0.01" value="0" onchange="modGuide(this.value)" onkeydown="${kEnt}" placeholder="Ej: 0.50"></div><button class="prop-btn-full" style="background:var(--red);" onclick="ctxDo('delete')">ELIMINAR GUÍA</button>`; }
       }
       else if(o.type === 'roof') {
-        barTool.textContent = `CUBIERTA`; ind.textContent = 'Propiedades ▾';
+        barTool.textContent = `CUBIERTA${o.tipo ? ' · '+o.tipo : ''}`; ind.textContent = 'Propiedades ▾';
         if(showCard) {
-          card.style.display = 'flex'; title.textContent = `PROPIEDADES CUBIERTA`;
+          card.style.display = 'flex'; title.textContent = `CUBIERTA${o.tipo ? ' · '+o.tipo : ''}`;
           content.innerHTML = `<div class="prop-row"><label>Volado (m)</label><input type="number" step="0.01" value="${((o.alero||0)/1000).toFixed(2)}" onchange="modRoof('alero', this.value*1000)" onkeydown="${kEnt}"></div><div class="prop-row"><label>Altura Apoyo (m)</label><input type="number" step="0.01" value="${(o.hBase/1000).toFixed(2)}" onchange="modRoof('hBase', this.value*1000)" onkeydown="${kEnt}"></div><div class="prop-row"><label>Pendiente (%)</label><input type="number" step="1" value="${o.slope}" onchange="modRoof('slope', this.value)" onkeydown="${kEnt}"></div><div class="prop-row"><label>Caída</label><select onchange="modRoof('fallDir', this.value)"><option value="abajo" ${o.fallDir==='abajo'?'selected':''}>Hacia Abajo ↓</option><option value="arriba" ${o.fallDir==='arriba'?'selected':''}>Hacia Arriba ↑</option><option value="der" ${o.fallDir==='der'?'selected':''}>Hacia Derecha →</option><option value="izq" ${o.fallDir==='izq'?'selected':''}>Hacia Izquierda ←</option></select></div>`;
         }
       }
       else if(o.type === 'babeta') { barTool.textContent = `BABETA`; ind.textContent = 'Seleccionada ▾'; if(showCard) { card.style.display = 'flex'; title.textContent = `BABETA (PRETIL)`; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Línea de restricción para el techo. Usá el menú de mantener presionado para borrarla o moverla.</p>`; } }
       else if(o.type === 'columna') {
-        barTool.textContent = `COLUMNA ${o.label}`; ind.textContent = 'Propiedades ▾';
+        barTool.textContent = `COLUMNA ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; ind.textContent = 'Propiedades ▾';
         if(showCard) {
-          card.style.display = 'flex'; title.textContent = `Pilar ${o.label}`; const matrizHtml = getMatrizHtml(o.id);
+          card.style.display = 'flex'; title.textContent = `Columna ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; const matrizHtml = getMatrizHtml(o.id);
           if (vistaActual === 'planta') {
              content.innerHTML = matrizHtml + `<p style="font-size:14px; color:var(--label); text-align:center; margin-bottom:8px;">Pasá a la vista ALZADO para editar las dimensiones.</p><button class="prop-btn-full btn-outline" onclick="ST('rotate_edit')">ROTAR COLUMNA</button>`;
           } else {
@@ -824,14 +860,17 @@ function actualizarPropBar() {
         }
       }
       else if(o.type === 'cercha') {
-        barTool.textContent = `ESTRUCTURA ${o.label}`; ind.textContent = 'Propiedades ▾';
+        const esViga = o.modelo === 'VIGA';
+        barTool.textContent = `${esViga ? 'VIGA' : 'ESTRUCTURA'} ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; ind.textContent = 'Propiedades ▾';
         if(showCard) {
-          card.style.display = 'flex'; title.textContent = `CERCHA / VIGA ${o.label}`; const matrizHtml = getMatrizHtml(o.id);
+          card.style.display = 'flex'; title.textContent = `${esViga ? 'VIGA' : 'CERCHA'} ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; const matrizHtml = getMatrizHtml(o.id);
           if(vistaActual === 'planta' || vistaActual === 'techo') {
             let l = (hyp(o.pB[0]-o.pA[0], o.pB[1]-o.pA[1])/1000).toFixed(2); content.innerHTML = matrizHtml + `<div class="prop-row"><label>Largo (m)</label><input type="number" step="0.01" value="${l}" onchange="modCercha('largo', this.value)" onkeydown="${kEnt}"></div>`;
           } else if(vistaActual === 'alzado') {
+            const tipoVigaRow = esViga ? `<div class="prop-row"><label>Tipo (viga)</label><select onchange="modCerchaTipoViga(this.value)" style="width:150px;">${ilVigas.length ? ilVigas.map(t=>`<option value="${t.name}" ${o.tipo===t.name?'selected':''}>${t.name||'sin nombre'}</option>`).join('') : `<option value="">— definí en Componentes →Vigas —</option>`}</select></div>` : '';
             content.innerHTML = matrizHtml + `
               <div class="prop-row"><label>Modelo</label><select onchange="modCercha('modelo', this.value)"><option value="RECTA" ${o.modelo==='RECTA'?'selected':''}>Reticulada Recta</option><option value="FINK" ${o.modelo==='FINK'?'selected':''}>Fink (W)</option><option value="HOWE" ${o.modelo==='HOWE'?'selected':''}>Howe</option><option value="PRATT" ${o.modelo==='PRATT'?'selected':''}>Pratt</option><option value="TIJERA" ${o.modelo==='TIJERA'?'selected':''}>Tijera</option><option value="UN_AGUA" ${o.modelo==='UN_AGUA'?'selected':''}>Un Agua</option><option value="VIGA" ${o.modelo==='VIGA'?'selected':''}>Viga Maciza</option></select></div>
+              ${tipoVigaRow}
               <div class="prop-row"><label>Apoyo Izq (m)</label><input type="number" step="0.01" value="${(o.hIzq/1000).toFixed(2)}" onchange="modCercha('hIzq', this.value)" onkeydown="${kEnt}"></div>
               <div class="prop-row"><label>Apoyo Der (m)</label><input type="number" step="0.01" value="${(o.hDer/1000).toFixed(2)}" onchange="modCercha('hDer', this.value)" onkeydown="${kEnt}"></div>
               <div class="prop-row"><label>Altura Pico (m)</label><input type="number" step="0.01" value="${(o.hPico/1000).toFixed(2)}" onchange="modCercha('hPico', this.value)" onkeydown="${kEnt}"></div>
