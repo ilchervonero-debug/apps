@@ -22,14 +22,14 @@ const WALL_PRESETS = [
   'Húmedo - Húmedo',
 ]
 
-// orden y etiquetas de los elementos
+// Componentes de la casa, agrupados (Estructura · Losas/Entrepiso · Techos)
 const ELEMENTS = [
-  { key: 'techo', label: 'Techo', faces: ['interior', 'exterior'] },
-  { key: 'piso', label: 'Piso', faces: ['unica'] },
-  { key: 'losas', label: 'Losas / Entrepisos', faces: ['unica'] },
-  { key: 'cerchas', label: 'Cerchas', structural: true },
-  { key: 'columnas', label: 'Columnas / Pilares', structural: true },
+  { key: 'piso', label: 'Piso', faces: ['unica'], group: 'losas' },
+  { key: 'losas', label: 'Losas / Entrepiso', faces: ['unica'], group: 'losas' },
+  { key: 'techo', label: 'Techo / Cubierta', faces: ['interior', 'exterior'], group: 'techos' },
 ]
+// Chips de la estructura primaria (se desarrollan con las herramientas en el plano)
+const ESTRUCTURA = ['Muros', 'Pilares', 'Cerchas', 'Vigas']
 const FACE_LABEL = { interior: 'Cara interior', exterior: 'Cara exterior', unica: 'Capas' }
 
 export default function ProjectSetup() {
@@ -38,31 +38,39 @@ export default function ProjectSetup() {
   const toggleElement = useDrawingStore((s) => s.toggleElement)
   const setAppView = useDrawingStore((s) => s.setAppView)
 
+  const normName = PROFILE_NORMS.find((n) => n.id === project.profileNorm)?.name || 'IRAM-IAS-U500'
   const sections = PROFILE_SECTIONS[project.profileNorm]?.C || PROFILE_SECTIONS.cu_1.C
+  const byGroup = (g) => ELEMENTS.filter((e) => e.group === g)
 
   return (
     <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#f7f7f8', padding: '16px 16px 90px' }}>
       <div style={{ maxWidth: 580, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-        {/* Nombre */}
+        {/* Estándar (rótulo, no selector) */}
+        <div style={{ padding: '2px 6px' }}>
+          <div style={{ fontSize: 18, color: '#1c1c1c' }}>Steel Frame</div>
+          <div style={{ fontSize: 15, color: '#8a8a8a' }}>Estándar {normName} · medidas en mm</div>
+        </div>
+
+        {/* Proyecto */}
         <Card>
           <Label>Nombre del proyecto</Label>
           <input value={project.name} onChange={(e) => setProject({ name: e.target.value })}
             placeholder="Casa, Galpón, Depósito…" style={inp} />
         </Card>
 
-        {/* Estructura de acero (global) */}
+        <div style={{ fontSize: 13, fontWeight: 500, color: '#8a8a8a', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 4px 0' }}>Componentes</div>
+
+        {/* Estructura */}
         <Card>
-          <Label>Estructura — perfil de acero</Label>
-          <Sub>Norma</Sub>
-          <select value={project.profileNorm} onChange={(e) => setProject({ profileNorm: e.target.value })} style={inp}>
-            {PROFILE_NORMS.map((n) => (
-              <option key={n.id} value={n.id} disabled={!PROFILE_SECTIONS[n.id]}>
-                {n.name}{!PROFILE_SECTIONS[n.id] ? ' (próximamente)' : ''}
-              </option>
+          <Label>Estructura</Label>
+          <Sub>Se dibujan con las herramientas en el plano</Sub>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '8px 0 12px' }}>
+            {ESTRUCTURA.map((c) => (
+              <span key={c} style={{ fontSize: 15, color: '#fe0000', border: '1px solid #fe0000', borderRadius: 16, padding: '5px 13px' }}>{c}</span>
             ))}
-          </select>
-          <Sub>Montante C</Sub>
+          </div>
+          <Sub>Perfil base de los muros</Sub>
           <select value={project.profileSection} onChange={(e) => setProject({ profileSection: e.target.value })} style={inp}>
             {sections.map((c, i) => <option key={i} value={`${c.h}_${c.t}`}>{c.h}×{c.w}×{c.t}mm — {c.kg} kg/m</option>)}
           </select>
@@ -75,23 +83,21 @@ export default function ProjectSetup() {
           </div>
         </Card>
 
-        {/* Tipos de muro */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '4px 4px 0' }}>
-          <span style={{ fontSize: 12, fontWeight: 800, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tipos de muro</span>
-          <button onClick={() => useDrawingStore.getState().addWallType()}
-            style={{ marginLeft: 'auto', border: 'none', background: '#fe0000', color: '#fff', borderRadius: 8, fontSize: 12, fontWeight: 800, padding: '5px 12px', cursor: 'pointer' }}>
-            + Tipo
-          </button>
-        </div>
+        {/* Paredes */}
+        <GroupHeader label="Paredes" onAdd={() => useDrawingStore.getState().addWallType()} />
         {project.wallTypes.map((t) => (
           <WallTypeCard key={t.id} type={t} profileSection={project.profileSection} canDelete={project.wallTypes.length > 1} />
         ))}
 
-        {/* Elementos del proyecto */}
-        <div style={{ fontSize: 12, fontWeight: 800, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '8px 4px 0' }}>
-          Otros elementos
-        </div>
-        {ELEMENTS.map((el) => (
+        {/* Losas / Entrepiso */}
+        <GroupHeader label="Losas / Entrepiso" />
+        {byGroup('losas').map((el) => (
+          <ElementCard key={el.key} def={el} state={project.elements[el.key]} onToggle={() => toggleElement(el.key)} />
+        ))}
+
+        {/* Techos / Cubiertas */}
+        <GroupHeader label="Techos / Cubiertas" />
+        {byGroup('techos').map((el) => (
           <ElementCard key={el.key} def={el} state={project.elements[el.key]} onToggle={() => toggleElement(el.key)} />
         ))}
       </div>
@@ -287,6 +293,17 @@ const pill = (on) => ({
   background: on ? '#fe0000' : '#fff', color: on ? '#fff' : '#666',
 })
 
+function GroupHeader({ label, onAdd }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', padding: '6px 4px 0' }}>
+      <span style={{ fontSize: 15, fontWeight: 500, color: '#1c1c1c' }}>{label}</span>
+      {onAdd && (
+        <button onClick={onAdd} title={`Agregar ${label}`}
+          style={{ marginLeft: 'auto', border: '1px solid #fe0000', background: '#fff', color: '#fe0000', borderRadius: 8, fontSize: 20, fontWeight: 500, width: 34, height: 34, cursor: 'pointer', lineHeight: 1 }}>+</button>
+      )}
+    </div>
+  )
+}
 function Card({ children }) {
   return <div style={{ background: '#fff', borderRadius: 16, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 6 }}>{children}</div>
 }
