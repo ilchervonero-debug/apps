@@ -37,7 +37,7 @@ export function computoProyecto(state, project) {
       addSteel(r.perfil, r.aceroKg)
       for (const m of r.mats) addMat(m.name, m.unit, m.qty)
       tornillos += r.tornillos
-      return { id: r.id, perfil: r.perfil, det: `${r.netM2} m² · ${r.studs} mont.`, kg: r.aceroKg, extra: `${r.placas} placas` }
+      return { id: r.id, perfil: r.perfil, det: `${r.netM2} m² · ${r.studs} mont.`, kg: r.aceroKg, m2: r.netM2, extra: `${r.placas} placas` }
     })
     grupos.push({ tipo: 'muros', label: 'Muros', filas })
   }

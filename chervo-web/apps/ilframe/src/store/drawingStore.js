@@ -229,7 +229,11 @@ const saveMeta = (m) => { try { localStorage.setItem(LS_META, JSON.stringify(m))
 // Aportes/impuestos + costos de materiales — compartidos por todos los
 // proyectos. Persisten aparte; más adelante se unen con Firebase.
 const LS_CORE = 'ilframe.core'
-const loadCore = () => { try { return JSON.parse(localStorage.getItem(LS_CORE) || 'null') || { aportes: [], materiales: [] } } catch { return { aportes: [], materiales: [] } } }
+// leyesSocialesPct: BPS (Ley 14.411) — monto imponible 85% de la mano de obra ×
+// 83% de aporte ≈ 70,55% adicional sobre el jornal. Valor de partida a
+// verificar con la planilla SUNCA vigente; queda editable en el Core.
+const CORE_DEFAULT = { aportes: [], materiales: [], manoObra: [], rendimientos: {}, leyesSocialesPct: 70.55 }
+const loadCore = () => { try { return { ...CORE_DEFAULT, ...(JSON.parse(localStorage.getItem(LS_CORE) || 'null') || {}) } } catch { return { ...CORE_DEFAULT } } }
 const saveCore = (c) => { try { localStorage.setItem(LS_CORE, JSON.stringify(c)) } catch { /* no-op */ } }
 const genId = () => 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1e3)
 const emptyDraw = () => ({
@@ -522,13 +526,23 @@ export const useDrawingStore = create((set) => ({
     return { projects: meta, ...(s.currentProjectId === id ? { currentProjectId: null } : {}) }
   }),
 
-  // ── Core global (aportes/impuestos + costos de materiales) ─────
+  // ── Core global (mano de obra SUNCA + rendimientos + materiales + aportes) ──
   core: loadCore(),
   addCoreItem: (kind) => set((s) => {
-    const item = kind === 'aportes'
-      ? { id: genId(), name: '', pct: 0 }
-      : { id: genId(), name: '', unit: 'u', price: 0 }
+    const item = kind === 'aportes' ? { id: genId(), name: '', pct: 0 }
+      : kind === 'manoObra' ? { id: genId(), name: '', jornal: 0 }
+        : { id: genId(), name: '', unit: 'u', price: 0, source: '' }
     const core = { ...s.core, [kind]: [...(s.core[kind] || []), item] }
+    saveCore(core)
+    return { core }
+  }),
+  setLeyesSociales: (pct) => set((s) => {
+    const core = { ...s.core, leyesSocialesPct: +pct || 0 }
+    saveCore(core)
+    return { core }
+  }),
+  setRendimiento: (grupoTipo, patch) => set((s) => {
+    const core = { ...s.core, rendimientos: { ...s.core.rendimientos, [grupoTipo]: { ...(s.core.rendimientos[grupoTipo] || {}), ...patch } } }
     saveCore(core)
     return { core }
   }),
