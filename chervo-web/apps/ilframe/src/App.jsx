@@ -2,6 +2,7 @@
 import CommandBar from './components/CommandBar'
 import DrawingTools from './components/DrawingTools'
 import ProjectSetup from './components/ProjectSetup'
+import Landing from './components/Landing'
 import Iso3D from './components/Iso3D'
 import BomView from './components/BomView'
 import ExportView from './components/ExportView'
@@ -11,10 +12,13 @@ import { useDrawingStore } from './store/drawingStore'
 export default function App() {
   const appView = useDrawingStore((s) => s.appView)
   const setAppView = useDrawingStore((s) => s.setAppView)
+  const saveCurrent = useDrawingStore((s) => s.saveCurrent)
   const projectName = useDrawingStore((s) => s.project.name)
   const tab = useDrawingStore((s) => s.tab)
   const setTab = useDrawingStore((s) => s.setTab)
   const [info, setInfo] = useState(false)
+  const goHome = () => { saveCurrent(); setAppView('home') }
+  const goProject = () => { saveCurrent(); setAppView('setup') }
 
   return (
     <div
@@ -23,30 +27,29 @@ export default function App() {
 
       {/* ── Topbar ── */}
       <header style={{ height: 64, background: 'white', borderBottom: '1px solid #e0e0e0', flexShrink: 0, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12 }}>
-        {appView === 'draw' ? (
+        {appView !== 'home' ? (
           <button
-            onClick={() => setAppView('setup')}
-            title="Volver a la configuración"
+            onClick={appView === 'draw' ? goProject : goHome}
+            title={appView === 'draw' ? 'Volver al proyecto' : 'Volver a proyectos'}
             style={{ width: 48, height: 48, borderRadius: 8, background: '#f5f5f5', border: 'none', color: '#666', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}
           >
             ‹
           </button>
         ) : null}
-        <div style={{ paddingLeft: appView === 'draw' ? 0 : 6, cursor: 'pointer' }} onClick={() => setInfo(true)}>
+        <div style={{ paddingLeft: appView !== 'home' ? 0 : 6, cursor: 'pointer' }} onClick={() => setInfo(true)}>
           <div style={{ fontSize: 22, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.5px' }}>
             <span style={{ color: '#fe0000' }}>iL</span><span style={{ color: '#888' }}>Frame</span>
           </div>
           <div style={{ color: '#999', fontSize: 9, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase', marginTop: 3 }}>
-            {appView === 'draw' ? projectName : 'Acero estructural'}
+            {appView === 'home' ? 'Proyectos' : projectName}
           </div>
         </div>
         <div style={{ flex: 1 }} />
-        {appView === 'setup' && (
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Configuración</div>
-        )}
       </header>
 
-      {appView === 'setup' ? (
+      {appView === 'home' ? (
+        <Landing />
+      ) : appView === 'setup' ? (
         <ProjectSetup />
       ) : (
         <>

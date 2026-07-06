@@ -133,6 +133,43 @@ function defaultElement(on, twoFaces) {
   }
 }
 
+// Proyecto en blanco (configuración base)
+function defaultProject(name = 'Proyecto sin nombre') {
+  return {
+    name,
+    profileNorm: 'cu_1',
+    profileSection: '100_0.95',
+    studSpacing: 400,
+    wallTypes: [
+      { id: 'ext', name: 'Muro exterior', kind: 'exterior', faces: { interior: ['gyp_standard'], exterior: ['osb_11', 'mineral_wool_50'] } },
+      { id: 'int', name: 'Muro interior', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } },
+    ],
+    elements: {
+      muros: defaultElement(true, true),
+      piso: defaultElement(false, false),
+      techo: defaultElement(false, true),
+      cerchas: { on: false, structural: true },
+      columnas: { on: false, structural: true },
+      losas: defaultElement(false, false),
+    },
+  }
+}
+
+// ── Persistencia de proyectos (localStorage) ──────────────────
+// Cada proyecto guarda su configuración + todo lo dibujado. El landing
+// lista los proyectos; abrir uno carga su snapshot al store.
+const LS_META = 'ilframe.projects'
+const LS_PROJ = (id) => 'ilframe.project.' + id
+const SNAP_KEYS = ['project', 'panels', 'beams', 'cerchas', 'pilares', 'techos', 'losas', 'tconnects']
+const loadMeta = () => { try { return JSON.parse(localStorage.getItem(LS_META) || '[]') } catch { return [] } }
+const saveMeta = (m) => { try { localStorage.setItem(LS_META, JSON.stringify(m)) } catch { /* no-op */ } }
+const genId = () => 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1e3)
+const emptyDraw = () => ({
+  panels: [], beams: [], cerchas: [], pilares: [], techos: [], losas: [], tconnects: [],
+  past: [], future: [], selectedId: null, selectedBeamId: null, selectedCerchaId: null,
+  selectedPilarId: null, selectedTechoId: null, selectedLosaId: null, selectedVertex: null, tcFirst: null, draft: null,
+})
+
 export const useDrawingStore = create((set) => ({
   panels: [],
   past: [],
@@ -357,29 +394,46 @@ export const useDrawingStore = create((set) => ({
   })),
 
   // ── Configuración del proyecto (Etapa 2) ──────────────────
-  appView: 'setup', // 'setup' | 'draw'
+  appView: 'home', // 'home' (landing) | 'setup' (página del proyecto) | 'draw'
   tab: 'plan', // 'plan' | 'elev' — pestaña activa del dibujo
-  project: {
-    name: 'Proyecto sin nombre',
-    // estructura de acero (global)
-    profileNorm: 'cu_1',
-    profileSection: '100_0.95', // `${h}_${t}`
-    studSpacing: 400,
-    // tipos de muro: cada panel referencia uno → define espesor y materiales
-    wallTypes: [
-      { id: 'ext', name: 'Muro exterior', kind: 'exterior', faces: { interior: ['gyp_standard'], exterior: ['osb_11', 'mineral_wool_50'] } },
-      { id: 'int', name: 'Muro interior', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } },
-    ],
-    // elementos del proyecto; cada uno con su composición
-    elements: {
-      muros: defaultElement(true, true),
-      piso: defaultElement(false, false),
-      techo: defaultElement(false, true),
-      cerchas: { on: false, structural: true },
-      columnas: { on: false, structural: true },
-      losas: defaultElement(false, false),
-    },
-  },
+  project: defaultProject(),
+
+  // ── Proyectos (varios, con guardado local) ─────────────────
+  projects: loadMeta(),
+  currentProjectId: null,
+  newProject: (name) => set((s) => {
+    const id = genId()
+    const meta = [{ id, name: name || 'Proyecto sin nombre', updatedAt: Date.now() }, ...s.projects]
+    saveMeta(meta)
+    return { projects: meta, currentProjectId: id, appView: 'setup', tab: 'plan', project: defaultProject(name || 'Proyecto sin nombre'), ...emptyDraw() }
+  }),
+  openProject: (id) => set(() => {
+    let snap
+    try { snap = JSON.parse(localStorage.getItem(LS_PROJ(id)) || '{}') } catch { snap = {} }
+    return {
+      currentProjectId: id, appView: 'setup', tab: 'plan',
+      ...emptyDraw(),
+      project: snap.project || defaultProject(),
+      panels: snap.panels || [], beams: snap.beams || [], cerchas: snap.cerchas || [],
+      pilares: snap.pilares || [], techos: snap.techos || [], losas: snap.losas || [], tconnects: snap.tconnects || [],
+    }
+  }),
+  saveCurrent: () => set((s) => {
+    if (!s.currentProjectId) return {}
+    const snap = {}
+    SNAP_KEYS.forEach((k) => { snap[k] = s[k] })
+    try { localStorage.setItem(LS_PROJ(s.currentProjectId), JSON.stringify(snap)) } catch { /* no-op */ }
+    const meta = s.projects.map((p) => (p.id === s.currentProjectId ? { ...p, name: s.project.name, updatedAt: Date.now() } : p))
+    saveMeta(meta)
+    return { projects: meta }
+  }),
+  deleteProject: (id) => set((s) => {
+    const meta = s.projects.filter((p) => p.id !== id)
+    saveMeta(meta)
+    try { localStorage.removeItem(LS_PROJ(id)) } catch { /* no-op */ }
+    return { projects: meta, ...(s.currentProjectId === id ? { currentProjectId: null } : {}) }
+  }),
+
   setAppView: (v) => set({ appView: v }),
   setTab: (t) => set({ tab: t }),
   setProject: (patch) => set((s) => ({ project: { ...s.project, ...patch } })),
