@@ -155,6 +155,11 @@ let guideData = { hitWall: false, angle: 0, startP: null };
 
 const kEnt = "if(event.key==='Enter'){ this.blur(); }";
 
+// ── Tipos definidos en Componentes (material de cada pieza) ─────
+let ilWalls = []; // [{ name, espesorMm }]
+let wallTypeIdx = 0;
+function ilSetWall(idx) { wallTypeIdx = +idx; const w = ilWalls[wallTypeIdx]; if (w && w.espesorMm) espesorActual = w.espesorMm; }
+
 // ── Puente con la app (caja de proyectos) ──────────────────────
 let _saveT = null;
 function ilPersist() {
@@ -171,6 +176,10 @@ window.addEventListener('message', (e) => {
     nextId = m.nextId || (objects.reduce((a, o) => Math.max(a, o.id || 0), 0) + 1);
     nextWallNum = m.nextWallNum || 1; nextCerchaNum = m.nextCerchaNum || 1; nextColNum = m.nextColNum || 1;
     render();
+  } else if (d.ilframe === 'types') {
+    ilWalls = Array.isArray(d.walls) ? d.walls : [];
+    if (ilWalls.length) { if (wallTypeIdx >= ilWalls.length) wallTypeIdx = 0; const w = ilWalls[wallTypeIdx]; if (w && w.espesorMm) espesorActual = w.espesorMm; }
+    if (tool === 'wall') actualizarPropBar();
   }
 });
 
@@ -610,7 +619,7 @@ function onUp(e) {
   const wp = getW(e); dragCurW = {...wp}; let shouldResetDrawing = true;
 
   if (tool === 'wall' && drawing && vistaActual === 'planta') {
-    if (hyp(dragCurW.x-dragStartW.x, dragCurW.y-dragStartW.y) > 100) { objects.push({type:'wall', id:nextId++, label:'M'+nextWallNum++, pA:[dragStartW.x, dragStartW.y], pB:[dragCurW.x, dragCurW.y], espesor:espesorActual, hA:2400, hB:2400, peak:null, proyectaTecho:false, aberturas:[]}); ilPersist(); } else { history.pop(); }
+    if (hyp(dragCurW.x-dragStartW.x, dragCurW.y-dragStartW.y) > 100) { objects.push({type:'wall', id:nextId++, label:'M'+nextWallNum++, tipo:(ilWalls[wallTypeIdx]||{}).name||'', pA:[dragStartW.x, dragStartW.y], pB:[dragCurW.x, dragCurW.y], espesor:espesorActual, hA:2400, hB:2400, peak:null, proyectaTecho:false, aberturas:[]}); ilPersist(); } else { history.pop(); }
   } else if (tool === 'cercha' && drawing && vistaActual === 'planta') {
     if (hyp(dragCurW.x-dragStartW.x, dragCurW.y-dragStartW.y) > 100) { objects.push({type:'cercha', id:nextId++, label:'C'+nextCerchaNum++, pA:[dragStartW.x, dragStartW.y], pB:[dragCurW.x, dragCurW.y], espesor:100, hIzq:2400, hDer:2400, hPico:1000, xPico:0.5, divisiones:4, modelo:'PRATT', soportaClavadores:false}); ilPersist(); } else { history.pop(); }
   } else if (tool === 'roof' && drawing && vistaActual === 'techo') {
@@ -741,7 +750,14 @@ function actualizarPropBar() {
 
   if(tool === 'wall') {
     barTool.textContent = 'CREAR MURO'; ind.textContent = 'Opciones ▴';
-    if(showCard) { card.style.display = 'flex'; title.textContent = 'CREAR MURO'; content.innerHTML = `<div class="prop-row"><label>Espesor (mm)</label><select onchange="espesorActual = +this.value"><option value="90">PGC 90</option><option value="100" selected>PGC 100</option></select></div>`; }
+    if(showCard) { card.style.display = 'flex'; title.textContent = 'CREAR MURO';
+      if (ilWalls.length) {
+        const opts = ilWalls.map((w,i)=>`<option value="${i}" ${i===wallTypeIdx?'selected':''}>${(w.name||'sin nombre')} · ${((w.espesorMm||0)/10).toFixed(1)} cm</option>`).join('');
+        content.innerHTML = `<div class="prop-row"><label>Tipo de muro</label><select onchange="ilSetWall(this.value)" style="width:180px;">${opts}</select></div><p style="font-size:13px; color:var(--label);">Definidos en Componentes · el grosor sale de sus capas.</p>`;
+      } else {
+        content.innerHTML = `<div class="prop-row"><label>Espesor (mm)</label><select onchange="espesorActual = +this.value"><option value="90">PGC 90</option><option value="100" selected>PGC 100</option></select></div><p style="font-size:13px; color:var(--label);">Definí tipos de muro en Componentes para elegirlos acá.</p>`;
+      }
+    }
   }
   else if(tool === 'cercha') {
     barTool.textContent = 'ESTRUCTURA'; ind.textContent = 'Ayuda ▴';

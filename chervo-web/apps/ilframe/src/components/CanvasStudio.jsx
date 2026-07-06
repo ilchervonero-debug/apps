@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useDrawingStore } from '../store/drawingStore'
+import { projectSpec } from '../engine/spec'
 import canvasHtml from '../studio/canvas.html?raw'
 
 // Monta el canvas de dibujo (studio) y lo conecta con la caja de proyectos:
@@ -14,6 +15,12 @@ export default function CanvasStudio() {
     const sendLoad = () => {
       const s = useDrawingStore.getState()
       post({ ilframe: 'load', objects: s.studio || [], meta: s.studioMeta || {} })
+      // Tipos definidos en Componentes → el canvas los usa como material
+      const spec = projectSpec(s.project)
+      post({
+        ilframe: 'types',
+        walls: spec.walls.map((w) => ({ name: w.name, espesorMm: w.espesorMm })),
+      })
     }
     const onMsg = (e) => {
       const d = e.data || {}
