@@ -173,7 +173,6 @@ function SpecSummary({ project, open, onToggle }) {
               <Sub>{label}</Sub>
               {rows.map((r, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 10, padding: '7px 0', borderTop: i ? '1px solid #f2f2f2' : 'none' }}>
-                  <span style={{ fontSize: 16, color: '#fe0000', minWidth: 42 }}>{r.code}</span>
                   <span style={{ flex: 1, fontSize: 16, color: '#1c1c1c' }}>{r.name || <span style={{ color: '#bbb' }}>sin nombre</span>}</span>
                   <span style={{ fontSize: 14, color: '#8a8a8a', textAlign: 'right' }}>{r.info}</span>
                 </div>
@@ -197,17 +196,16 @@ function WallTypeCard({ type, profileSection, canDelete }) {
   return (
     <div style={typeCard}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={badge}>{type.code || 'M?'}</span>
         <input value={type.name} onChange={(e) => updateWallType(type.id, { name: e.target.value })}
-          placeholder="Ej: Interior - Exterior" style={{ ...inp, flex: 1 }} />
+          placeholder="Nombre del muro…" style={{ ...inp, flex: 1 }} />
         {canDelete && <button onClick={() => removeWallType(type.id)} style={delBtn}>×</button>}
       </div>
-      {/* Precargados de empacado — no quita el nombre libre de arriba */}
+      {/* Nombres típicos (opcional) — no quita el nombre libre de arriba */}
       <select value={WALL_PRESETS.includes(type.name) ? type.name : ''}
         onChange={(e) => e.target.value && updateWallType(type.id, { name: e.target.value })}
-        style={{ ...inp, color: '#fe0000' }}>
-        <option value="">Empacado precargado…</option>
-        {WALL_PRESETS.map((n) => <option key={n} value={n} style={{ color: '#222' }}>{n}</option>)}
+        style={inp}>
+        <option value="">Nombre típico (opcional)…</option>
+        {WALL_PRESETS.map((n) => <option key={n} value={n}>{n}</option>)}
       </select>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         {[['exterior', 'Exterior'], ['interior', 'Interior']].map(([k, lbl]) => (
@@ -243,8 +241,7 @@ function TypeCard({ cat, type, canDelete }) {
   return (
     <div style={typeCard}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={badge}>{type.code}</span>
-        <input value={type.name} onChange={(e) => up({ name: e.target.value })} placeholder="Nombre del elemento" style={{ ...inp, flex: 1 }} />
+        <input value={type.name} onChange={(e) => up({ name: e.target.value })} placeholder="Nombre del elemento…" style={{ ...inp, flex: 1 }} />
         {canDelete && <button onClick={() => removeType(cat, type.id)} style={delBtn}>×</button>}
       </div>
       <TypeMaterial cat={cat} type={type} up={up} />
@@ -417,7 +414,6 @@ const chip = (on) => ({
   background: '#fff', color: on ? '#fe0000' : '#666',
 })
 const typeCard = { background: '#fff', borderRadius: 16, padding: 14, border: '1.5px solid #ededed', display: 'flex', flexDirection: 'column', gap: 8 }
-const badge = { fontSize: 17, color: '#fe0000', minWidth: 34, textAlign: 'center' }
 const delBtn = { border: '1.5px solid #e6e6e6', background: '#fff', color: '#1c1c1c', borderRadius: 8, width: 34, height: 34, fontSize: 18, cursor: 'pointer', lineHeight: 1 }
 
 function Card({ children }) {

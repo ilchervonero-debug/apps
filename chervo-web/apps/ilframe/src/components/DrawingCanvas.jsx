@@ -521,7 +521,7 @@ export default function DrawingCanvas() {
               onChange={(e) => useDrawingStore.getState().setCurrentWallType(e.target.value)}
               title="Tipo de muro a dibujar" className="ct-btn"
               style={{ maxWidth: 150, fontSize: 15, padding: '4px 6px' }}>
-              {wallTypes.map((t) => <option key={t.id} value={t.id}>{t.code} · {t.name}</option>)}
+              {wallTypes.map((t) => <option key={t.id} value={t.id}>{t.name || 'sin nombre'}</option>)}
             </select>
           )}
           {tab === 'plan' && (() => {
@@ -533,7 +533,7 @@ export default function DrawingCanvas() {
                 onChange={(e) => useDrawingStore.getState().setCurrentType(cat, e.target.value)}
                 title="Tipo a dibujar (definido en Componentes)" className="ct-btn"
                 style={{ maxWidth: 150, fontSize: 15, padding: '4px 6px' }}>
-                {list.map((t) => <option key={t.id} value={t.id}>{t.code} · {t.name}</option>)}
+                {list.map((t) => <option key={t.id} value={t.id}>{t.name || 'sin nombre'}</option>)}
               </select>
             )
           })()}
