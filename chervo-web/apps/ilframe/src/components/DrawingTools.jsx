@@ -63,6 +63,9 @@ export default function DrawingTools() {
     } else if (toolId === 'roof') {
       st.selectTecho(null)
       st.setTechoSheet(true) // forma + aleros + clavadores + chapa
+    } else if (toolId === 'slab') {
+      st.selectLosa(null)
+      st.setLosaSheet(true) // dirección + separación + perfil + deck
     }
   }
 
