@@ -133,6 +133,65 @@ function defaultElement(on, twoFaces) {
   }
 }
 
+// ── Tipos de elemento definidos en la hoja de Componentes ─────
+// Toda la definición del proyecto (qué material lleva cada cosa) vive en
+// la página de Componentes. Cada categoría tiene TIPOS con CÓDIGO + nombre
+// + material. En el plano se dibuja solo la silueta y se elige el tipo;
+// cada pieza se nombra CÓDIGO-NN (P1-01, C1-01, TE1-01…), igual que los muros.
+export const TYPE_META = {
+  pilar: { prefix: 'P', label: 'Pilares', arr: 'pilares' },
+  columna: { prefix: 'CO', label: 'Columnas', arr: 'pilares' },
+  cercha: { prefix: 'C', label: 'Cerchas', arr: 'cerchas' },
+  viga: { prefix: 'V', label: 'Vigas', arr: 'beams' },
+  losa: { prefix: 'L', label: 'Losas / Entrepiso', arr: 'losas' },
+  techo: { prefix: 'TE', label: 'Techos / Cubiertas', arr: 'techos' },
+  cielo: { prefix: 'CR', label: 'Cielorrasos', arr: null }, // silueta por DXF (a futuro)
+}
+const TYPE_CATS = Object.keys(TYPE_META)
+const STARTER_NAME = { pilar: 'Pilar', columna: 'Columna', cercha: 'Cercha', viga: 'Viga', losa: 'Entrepiso', techo: 'Cubierta', cielo: 'Cielorraso' }
+
+// Material base (config) por categoría — sin id/code/name.
+function baseCfg(cat) {
+  const P = () => ({ normId: 'cu_1', secIdx: 0 })
+  switch (cat) {
+    case 'pilar': return { kind: 'armada', altura: 2800, tipoArmado: 'DOBLE_CAJON', perfil: P() }
+    case 'columna': return { kind: 'reticulada', altura: 2800, anchoBase: 400, anchoTope: 400, caraRecta: 'IZQ', divisiones: 5, patron: 'DA', verticales: true, perfil: P(), perfilReticula: P() }
+    case 'cercha': return { modelo: 'FINK', patron: 'DA', verticales: true, pico: null, rise: null, hIzq: 0, hDer: 0, divisiones: 6, perfilSuperior: P(), perfilInferior: P(), perfilReticula: P() }
+    case 'viga': return { type: 'back_to_back', normId: 'cu_1', secIdx: 0, level: 2400 }
+    case 'losa': return { dir: 'x', sep: 400, perfil: { normId: 'cu_1', secIdx: 8 }, deck: 'osb_18', nivel: 2800 }
+    case 'techo': return { forma: 'DOS_AGUAS', alturaPico: 1500, aleros: { frente: 600, fondo: 600, izq: 600, der: 600 }, clavadorSep: 600, tipoChapa: 'TRAPEZOIDAL', perfilClavador: { normId: 'cu_1', secIdx: 0 }, esLimitador: true }
+    case 'cielo': return { perfil: { normId: 'omega', secIdx: 0 }, placas: ['gyp_standard'] }
+    default: return {}
+  }
+}
+function defaultTypes() {
+  const out = {}
+  for (const cat of TYPE_CATS) out[cat] = [{ id: cat + '1', code: TYPE_META[cat].prefix + '1', name: STARTER_NAME[cat], ...baseCfg(cat) }]
+  return out
+}
+// Próximo código correlativo (P1, P2…) para una categoría
+function nextTypeCode(list, prefix) {
+  const used = list.map((t) => parseInt((t.code || '').replace(/\D/g, ''), 10)).filter((n) => !isNaN(n))
+  return prefix + ((used.length ? Math.max(...used) : 0) + 1)
+}
+// Nombre CÓDIGO-NN único para una pieza nueva de un tipo
+function pieceName(existing, code) {
+  const used = new Set(existing.map((x) => x.id))
+  let n = existing.filter((x) => typeof x.id === 'string' && x.id.startsWith(code + '-')).length + 1
+  let id = `${code}-${String(n).padStart(2, '0')}`
+  while (used.has(id)) { n++; id = `${code}-${String(n).padStart(2, '0')}` }
+  return id
+}
+// Config del tipo activo de una categoría (o el primero), sin id/code/name
+function activeTypeCfg(s, cat) {
+  const list = s.project.types?.[cat] || []
+  const t = list.find((x) => x.id === s.currentType?.[cat]) || list[0]
+  if (!t) return { cfg: {}, code: TYPE_META[cat].prefix + '1', typeId: null }
+  // eslint-disable-next-line no-unused-vars
+  const { id, code, name, ...cfg } = t
+  return { cfg, code: t.code, typeId: t.id }
+}
+
 // Proyecto en blanco (configuración base)
 function defaultProject(name = 'Proyecto sin nombre') {
   return {
@@ -144,6 +203,9 @@ function defaultProject(name = 'Proyecto sin nombre') {
       { id: 'ext', code: 'M1', name: 'Muro exterior', kind: 'exterior', faces: { interior: ['gyp_standard'], exterior: ['osb_11', 'mineral_wool_50'] } },
       { id: 'int', code: 'M2', name: 'Muro interior', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } },
     ],
+    // Tipos por categoría (Pilares, Columnas, Cerchas, Vigas, Losas, Techos,
+    // Cielorrasos) — se agregan/definen en la hoja de Componentes.
+    types: defaultTypes(),
     elements: {
       muros: defaultElement(true, true),
       piso: defaultElement(false, false),
@@ -183,6 +245,27 @@ export const useDrawingStore = create((set) => ({
   currentWallTypeId: null, // tipo de muro activo al dibujar (null = el primero)
   setCurrentWallType: (id) => set({ currentWallTypeId: id }),
 
+  // Tipo activo por categoría (pilar/columna/cercha/viga/losa/techo) al dibujar
+  currentType: {},
+  setCurrentType: (cat, id) => set((s) => ({ currentType: { ...s.currentType, [cat]: id } })),
+  // Agregar un tipo nuevo a una categoría (código correlativo + material base)
+  addType: (cat) => set((s) => {
+    const meta = TYPE_META[cat]
+    if (!meta) return {}
+    const list = s.project.types?.[cat] || []
+    const id = cat + Date.now().toString(36)
+    const t = { id, code: nextTypeCode(list, meta.prefix), name: STARTER_NAME[cat] + ' nuevo', ...baseCfg(cat) }
+    return { project: { ...s.project, types: { ...s.project.types, [cat]: [...list, t] } }, currentType: { ...s.currentType, [cat]: id } }
+  }),
+  updateType: (cat, id, patch) => set((s) => ({
+    project: { ...s.project, types: { ...s.project.types, [cat]: (s.project.types?.[cat] || []).map((t) => (t.id === id ? { ...t, ...patch } : t)) } },
+  })),
+  removeType: (cat, id) => set((s) => {
+    const list = s.project.types?.[cat] || []
+    if (list.length <= 1) return {}
+    return { project: { ...s.project, types: { ...s.project.types, [cat]: list.filter((t) => t.id !== id) } } }
+  }),
+
   // ── VIGAS (V1, V2…) ────────────────────────────────────────
   // Tipos SketchFramer: simple (1C) · back_to_back (2C alma con alma, sección I)
   // · box (2C boca con boca, cajón) · built_up_u (2C + 2U envolventes)
@@ -204,10 +287,8 @@ export const useDrawingStore = create((set) => ({
     const { a, b } = s.beamDraft
     const span = Math.round(dist(a, b))
     if (span < s.gridMm) return { beamDraft: null }
-    const used = new Set(s.beams.map((x) => x.id))
-    let n = 1
-    while (used.has('V' + n)) n++
-    const beam = { id: 'V' + n, a, b, span, ...s.beamConfig }
+    const { cfg, code, typeId } = activeTypeCfg(s, 'viga')
+    const beam = { id: pieceName(s.beams, code), typeId, a, b, span, ...cfg }
     return { beams: [...s.beams, beam], beamDraft: null, selectedBeamId: beam.id }
   }),
   cancelBeam: () => set({ beamDraft: null }),
@@ -258,11 +339,8 @@ export const useDrawingStore = create((set) => ({
     const { a, b } = s.cerchaDraft
     const span = Math.round(dist(a, b))
     if (span < s.gridMm) return { cerchaDraft: null }
-    const used = new Set(s.cerchas.map((x) => x.id))
-    let n = 1
-    while (used.has('C' + n)) n++
-    const cfg = { ...s.cerchaConfig }
-    const cercha = { id: 'C' + n, a, b, span, ...cfg, pico: cfg.pico ?? Math.round(span / 2), rise: cfg.rise ?? defaultRise(span) }
+    const { cfg, code, typeId } = activeTypeCfg(s, 'cercha')
+    const cercha = { id: pieceName(s.cerchas, code), typeId, a, b, span, ...cfg, pico: cfg.pico ?? Math.round(span / 2), rise: cfg.rise ?? defaultRise(span) }
     return { cerchas: [...s.cerchas, cercha], cerchaDraft: null, selectedCerchaId: cercha.id, cerchaSheet: true }
   }),
   cancelCercha: () => set({ cerchaDraft: null }),
@@ -303,10 +381,9 @@ export const useDrawingStore = create((set) => ({
   selectPilar: (id) => set({ selectedPilarId: id, selectedId: null, selectedBeamId: null, selectedCerchaId: null, selectedTechoId: null, selectedLosaId: null, selectedVertex: null }),
   addPilar: (pt) => set((s) => {
     const p = snapPoint(pt, s.gridMm, s.panels)
-    const used = new Set(s.pilares.map((x) => x.id))
-    let n = 1
-    while (used.has('P' + n)) n++
-    const pilar = { id: 'P' + n, pos: p, ...s.pilarConfig }
+    const cat = s.activeTool === 'columna' ? 'columna' : 'pilar'
+    const { cfg, code, typeId } = activeTypeCfg(s, cat)
+    const pilar = { id: pieceName(s.pilares, code), typeId, pos: p, ...cfg }
     return { pilares: [...s.pilares, pilar], selectedPilarId: pilar.id, pilarSheet: true }
   }),
   updatePilar: (id, patch) => set((s) => ({ pilares: s.pilares.map((x) => (x.id === id ? { ...x, ...patch } : x)) })),
@@ -337,10 +414,8 @@ export const useDrawingStore = create((set) => ({
     if (!s.techoDraft) return {}
     const { a, b } = s.techoDraft
     if (Math.abs(b[0] - a[0]) < s.gridMm || Math.abs(b[1] - a[1]) < s.gridMm) return { techoDraft: null }
-    const used = new Set(s.techos.map((x) => x.id))
-    let n = 1
-    while (used.has('Te' + n)) n++
-    const techo = { id: 'Te' + n, a, b, ...s.techoConfig }
+    const { cfg, code, typeId } = activeTypeCfg(s, 'techo')
+    const techo = { id: pieceName(s.techos, code), typeId, a, b, ...cfg }
     return { techos: [...s.techos, techo], techoDraft: null, selectedTechoId: techo.id, techoSheet: true }
   }),
   cancelTecho: () => set({ techoDraft: null }),
@@ -363,10 +438,8 @@ export const useDrawingStore = create((set) => ({
     if (!s.losaDraft) return {}
     const { a, b } = s.losaDraft
     if (Math.abs(b[0] - a[0]) < s.gridMm || Math.abs(b[1] - a[1]) < s.gridMm) return { losaDraft: null }
-    const used = new Set(s.losas.map((x) => x.id))
-    let n = 1
-    while (used.has('L' + n)) n++
-    const losa = { id: 'L' + n, a, b, ...s.losaConfig }
+    const { cfg, code, typeId } = activeTypeCfg(s, 'losa')
+    const losa = { id: pieceName(s.losas, code), typeId, a, b, ...cfg }
     return { losas: [...s.losas, losa], losaDraft: null, selectedLosaId: losa.id, losaSheet: true }
   }),
   cancelLosa: () => set({ losaDraft: null }),

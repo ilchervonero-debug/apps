@@ -76,6 +76,8 @@ export default function DrawingCanvas() {
   const draft = useDrawingStore((s) => s.draft)
   const wallTypes = useDrawingStore((s) => s.project.wallTypes)
   const currentWallTypeId = useDrawingStore((s) => s.currentWallTypeId)
+  const projTypes = useDrawingStore((s) => s.project.types)
+  const currentType = useDrawingStore((s) => s.currentType)
   const gridMm = useDrawingStore((s) => s.gridMm)
   const setGrid = useDrawingStore((s) => s.setGrid)
   const canUndo = useDrawingStore((s) => s.past.length > 0)
@@ -522,24 +524,19 @@ export default function DrawingCanvas() {
               {wallTypes.map((t) => <option key={t.id} value={t.id}>{t.code} · {t.name}</option>)}
             </select>
           )}
-          {tab === 'plan' && activeTool === 'viga' && (
-            <button onClick={() => { useDrawingStore.getState().selectBeam(null); useDrawingStore.getState().setBeamSheet(true) }} title="Tipo de viga" className="ct-btn">Tipo</button>
-          )}
-          {tab === 'plan' && activeTool === 'cercha' && (
-            <button onClick={() => { useDrawingStore.getState().setCerchaSheet(true) }} title="Estilo de cercha" className="ct-btn">Estilo</button>
-          )}
-          {tab === 'plan' && activeTool === 'pilar' && (
-            <button onClick={() => { useDrawingStore.getState().setPilarSheet(true) }} title="Armado del pilar" className="ct-btn">Armado</button>
-          )}
-          {tab === 'plan' && activeTool === 'columna' && (
-            <button onClick={() => { useDrawingStore.getState().setPilarConfig({ kind: 'reticulada' }); useDrawingStore.getState().setPilarSheet(true) }} title="Retícula de la columna" className="ct-btn">Retícula</button>
-          )}
-          {tab === 'plan' && activeTool === 'roof' && (
-            <button onClick={() => { useDrawingStore.getState().setTechoSheet(true) }} title="Forma de la cubierta" className="ct-btn">Forma</button>
-          )}
-          {tab === 'plan' && activeTool === 'slab' && (
-            <button onClick={() => { useDrawingStore.getState().setLosaSheet(true) }} title="Viguetas del entrepiso" className="ct-btn">Viguetas</button>
-          )}
+          {tab === 'plan' && (() => {
+            const cat = { viga: 'viga', cercha: 'cercha', pilar: 'pilar', columna: 'columna', roof: 'techo', slab: 'losa' }[activeTool]
+            const list = (cat && projTypes?.[cat]) || []
+            if (!cat || !list.length) return null
+            return (
+              <select value={currentType?.[cat] || list[0].id}
+                onChange={(e) => useDrawingStore.getState().setCurrentType(cat, e.target.value)}
+                title="Tipo a dibujar (definido en Componentes)" className="ct-btn"
+                style={{ maxWidth: 150, fontSize: 15, padding: '4px 6px' }}>
+                {list.map((t) => <option key={t.id} value={t.id}>{t.code} · {t.name}</option>)}
+              </select>
+            )
+          })()}
           <button onClick={() => useDrawingStore.getState().undo()} disabled={!canUndo} title="Deshacer" className="ct-btn">↶</button>
           <button onClick={() => useDrawingStore.getState().redo()} disabled={!canRedo} title="Rehacer" className="ct-btn">↷</button>
           {tab === 'plan' && <>
