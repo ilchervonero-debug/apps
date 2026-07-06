@@ -74,6 +74,8 @@ export default function DrawingCanvas() {
   const selectedVertex = useDrawingStore((s) => s.selectedVertex)
   const activeTool = useDrawingStore((s) => s.activeTool)
   const draft = useDrawingStore((s) => s.draft)
+  const wallTypes = useDrawingStore((s) => s.project.wallTypes)
+  const currentWallTypeId = useDrawingStore((s) => s.currentWallTypeId)
   const gridMm = useDrawingStore((s) => s.gridMm)
   const setGrid = useDrawingStore((s) => s.setGrid)
   const canUndo = useDrawingStore((s) => s.past.length > 0)
@@ -512,6 +514,14 @@ export default function DrawingCanvas() {
           })()}
         </span>
         <span className="ct-actions">
+          {tab === 'plan' && activeTool === 'wall' && wallTypes.length > 0 && (
+            <select value={currentWallTypeId || wallTypes[0].id}
+              onChange={(e) => useDrawingStore.getState().setCurrentWallType(e.target.value)}
+              title="Tipo de muro a dibujar" className="ct-btn"
+              style={{ maxWidth: 150, fontSize: 15, padding: '4px 6px' }}>
+              {wallTypes.map((t) => <option key={t.id} value={t.id}>{t.code} · {t.name}</option>)}
+            </select>
+          )}
           {tab === 'plan' && activeTool === 'viga' && (
             <button onClick={() => { useDrawingStore.getState().selectBeam(null); useDrawingStore.getState().setBeamSheet(true) }} title="Tipo de viga" className="ct-btn">Tipo</button>
           )}

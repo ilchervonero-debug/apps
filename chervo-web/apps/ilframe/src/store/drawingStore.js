@@ -141,8 +141,8 @@ function defaultProject(name = 'Proyecto sin nombre') {
     profileSection: '100_0.95',
     studSpacing: 400,
     wallTypes: [
-      { id: 'ext', name: 'Muro exterior', kind: 'exterior', faces: { interior: ['gyp_standard'], exterior: ['osb_11', 'mineral_wool_50'] } },
-      { id: 'int', name: 'Muro interior', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } },
+      { id: 'ext', code: 'M1', name: 'Muro exterior', kind: 'exterior', faces: { interior: ['gyp_standard'], exterior: ['osb_11', 'mineral_wool_50'] } },
+      { id: 'int', code: 'M2', name: 'Muro interior', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } },
     ],
     elements: {
       muros: defaultElement(true, true),
@@ -180,6 +180,8 @@ export const useDrawingStore = create((set) => ({
   gridMm: DEFAULT_GRID, // 400 o 600
   elevationHeight: 50, // % de alto del canvas superior
   draft: null, // { a:[mm,mm], b:[mm,mm] } mientras se arrastra en planta
+  currentWallTypeId: null, // tipo de muro activo al dibujar (null = el primero)
+  setCurrentWallType: (id) => set({ currentWallTypeId: id }),
 
   // ── VIGAS (V1, V2…) ────────────────────────────────────────
   // Tipos SketchFramer: simple (1C) · back_to_back (2C alma con alma, sección I)
@@ -460,8 +462,11 @@ export const useDrawingStore = create((set) => ({
   // ── Tipos de muro ─────────────────────────────────────────
   addWallType: () => set((s) => {
     const id = 't' + Date.now().toString(36)
-    const wt = { id, name: 'Muro nuevo', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } }
-    return { project: { ...s.project, wallTypes: [...s.project.wallTypes, wt] } }
+    // código correlativo M1, M2, M3… (los planos especifican el muro por tipo)
+    const used = s.project.wallTypes.map((t) => parseInt((t.code || '').replace(/\D/g, ''), 10)).filter((n) => !isNaN(n))
+    const n = (used.length ? Math.max(...used) : 0) + 1
+    const wt = { id, code: 'M' + n, name: 'Muro nuevo', kind: 'interior', faces: { interior: ['gyp_standard'], exterior: ['gyp_standard'] } }
+    return { project: { ...s.project, wallTypes: [...s.project.wallTypes, wt] }, currentWallTypeId: id }
   }),
   updateWallType: (id, patch) => set((s) => ({
     project: { ...s.project, wallTypes: s.project.wallTypes.map((t) => (t.id === id ? { ...t, ...patch } : t)) },
@@ -536,13 +541,19 @@ export const useDrawingStore = create((set) => ({
     const { a, b } = s.draft
     const width = Math.round(dist(a, b))
     if (width < s.gridMm) return { draft: null }
-    const id = nextCode(s.panels)
+    // tipo de muro activo (o el primero); el nombre = CÓDIGO-NN (M1-01, M1-02…)
+    const type = s.project.wallTypes.find((t) => t.id === s.currentWallTypeId) || s.project.wallTypes[0]
+    const code = type?.code || 'M1'
+    const used = new Set(s.panels.map((p) => p.id))
+    let n = s.panels.filter((p) => p.typeId === type?.id).length + 1
+    let id = `${code}-${String(n).padStart(2, '0')}`
+    while (used.has(id)) { n++; id = `${code}-${String(n).padStart(2, '0')}` }
     const panel = {
       id,
       a,
       b,
       width,
-      typeId: s.project.wallTypes[0]?.id || 'ext',
+      typeId: type?.id || 'ext',
       topPath: [[0, DEFAULT_HEIGHT], [width, DEFAULT_HEIGHT]],
       openings: [],
     }

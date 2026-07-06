@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useDrawingStore, wallThickness } from '../store/drawingStore'
 import { PROFILE_NORMS, PROFILE_SECTIONS } from '../data/profiles'
 import { LAYER_TEMPLATES } from '../data/layers'
@@ -28,8 +29,6 @@ const ELEMENTS = [
   { key: 'losas', label: 'Losas / Entrepiso', faces: ['unica'], group: 'losas' },
   { key: 'techo', label: 'Techo / Cubierta', faces: ['interior', 'exterior'], group: 'techos' },
 ]
-// Chips de la estructura primaria (se desarrollan con las herramientas en el plano)
-const ESTRUCTURA = ['Muros', 'Pilares', 'Cerchas', 'Vigas']
 const FACE_LABEL = { interior: 'Cara interior', exterior: 'Cara exterior', unica: 'Capas' }
 
 export default function ProjectSetup() {
@@ -37,14 +36,19 @@ export default function ProjectSetup() {
   const setProject = useDrawingStore((s) => s.setProject)
   const toggleElement = useDrawingStore((s) => s.toggleElement)
   const setAppView = useDrawingStore((s) => s.setAppView)
+  const [open, setOpen] = useState({}) // nada desplegado por defecto
+  const toggle = (k) => setOpen((o) => ({ ...o, [k]: !o[k] }))
+  const show = (k) => setOpen((o) => ({ ...o, [k]: true }))
 
   const normName = PROFILE_NORMS.find((n) => n.id === project.profileNorm)?.name || 'IRAM-IAS-U500'
   const sections = PROFILE_SECTIONS[project.profileNorm]?.C || PROFILE_SECTIONS.cu_1.C
   const byGroup = (g) => ELEMENTS.filter((e) => e.group === g)
 
+  const nota = (txt) => <div style={{ fontSize: 15, color: '#8a8a8a', lineHeight: 1.4 }}>{txt}</div>
+
   return (
     <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#f7f7f8', padding: '16px 16px 90px' }}>
-      <div style={{ maxWidth: 580, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ maxWidth: 580, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
         {/* Estándar (rótulo, no selector) */}
         <div style={{ padding: '2px 6px' }}>
@@ -59,58 +63,90 @@ export default function ProjectSetup() {
             placeholder="Casa, Galpón, Depósito…" style={inp} />
         </Card>
 
-        <div style={{ fontSize: 13, fontWeight: 500, color: '#8a8a8a', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 4px 0' }}>Componentes</div>
+        <div style={{ fontSize: 13, fontWeight: 500, color: '#8a8a8a', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '8px 4px 2px' }}>Componentes</div>
 
-        {/* Estructura */}
-        <Card>
-          <Label>Estructura</Label>
-          <Sub>Se dibujan con las herramientas en el plano</Sub>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '8px 0 12px' }}>
-            {ESTRUCTURA.map((c) => (
-              <span key={c} style={{ fontSize: 15, color: '#fe0000', border: '1px solid #fe0000', borderRadius: 16, padding: '5px 13px' }}>{c}</span>
-            ))}
-          </div>
+        {/* Paredes / Muros */}
+        <Accordion label="Muros / Paredes" count={project.wallTypes.length} open={open.paredes} onToggle={() => toggle('paredes')}
+          onAdd={() => { useDrawingStore.getState().addWallType(); show('paredes') }}>
           <Sub>Perfil base de los muros</Sub>
           <select value={project.profileSection} onChange={(e) => setProject({ profileSection: e.target.value })} style={inp}>
             {sections.map((c, i) => <option key={i} value={`${c.h}_${c.t}`}>{c.h}×{c.w}×{c.t}mm — {c.kg} kg/m</option>)}
           </select>
           <Sub>Separación entre montantes</Sub>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
             {[300, 400, 600].map((s) => (
-              <button key={s} onClick={() => setProject({ studSpacing: s })}
-                style={pill(project.studSpacing === s)}>{s}mm</button>
+              <button key={s} onClick={() => setProject({ studSpacing: s })} style={pill(project.studSpacing === s)}>{s}mm</button>
             ))}
           </div>
-        </Card>
+          <Sub>Tipos de pared (se eligen al dibujar en el plano)</Sub>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
+            {project.wallTypes.map((t) => (
+              <WallTypeCard key={t.id} type={t} profileSection={project.profileSection} canDelete={project.wallTypes.length > 1} />
+            ))}
+          </div>
+        </Accordion>
 
-        {/* Paredes */}
-        <GroupHeader label="Paredes" onAdd={() => useDrawingStore.getState().addWallType()} />
-        {project.wallTypes.map((t) => (
-          <WallTypeCard key={t.id} type={t} profileSection={project.profileSection} canDelete={project.wallTypes.length > 1} />
-        ))}
+        {/* Pilares · Cerchas · Vigas (estructura de acero, se dibuja en el plano) */}
+        <Accordion label="Pilares" open={open.pilares} onToggle={() => toggle('pilares')}>
+          {nota('Se colocan con la herramienta Pilar en el plano; el armado y el perfil se eligen ahí.')}
+        </Accordion>
+        <Accordion label="Columnas" open={open.columnas} onToggle={() => toggle('columnas')}>
+          {nota('Columnas reticuladas / acarteladas — con la herramienta Columna en el plano.')}
+        </Accordion>
+        <Accordion label="Cerchas" open={open.cerchas} onToggle={() => toggle('cerchas')}>
+          {nota('Se dibujan con la herramienta Cercha en el plano (luz, estilo, perfiles y medidas ahí).')}
+        </Accordion>
+        <Accordion label="Vigas" open={open.vigas} onToggle={() => toggle('vigas')}>
+          {nota('Se dibujan con la herramienta Viga en el plano (luz, armado y perfil ahí).')}
+        </Accordion>
 
         {/* Losas / Entrepiso */}
-        <GroupHeader label="Losas / Entrepiso" />
-        {byGroup('losas').map((el) => (
-          <ElementCard key={el.key} def={el} state={project.elements[el.key]} onToggle={() => toggleElement(el.key)} />
-        ))}
+        <Accordion label="Losas / Entrepiso" open={open.losas} onToggle={() => toggle('losas')}>
+          {byGroup('losas').map((el) => (
+            <ElementCard key={el.key} def={el} state={project.elements[el.key]} onToggle={() => toggleElement(el.key)} />
+          ))}
+          {nota('El entrepiso se dibuja con la herramienta Losa en el plano; el deck y la vigueta se eligen ahí.')}
+        </Accordion>
 
         {/* Techos / Cubiertas */}
-        <GroupHeader label="Techos / Cubiertas" />
-        {byGroup('techos').map((el) => (
-          <ElementCard key={el.key} def={el} state={project.elements[el.key]} onToggle={() => toggleElement(el.key)} />
-        ))}
+        <Accordion label="Techos / Cubiertas" open={open.techos} onToggle={() => toggle('techos')}>
+          {byGroup('techos').map((el) => (
+            <ElementCard key={el.key} def={el} state={project.elements[el.key]} onToggle={() => toggleElement(el.key)} />
+          ))}
+          {nota('La cubierta se dibuja con la herramienta Techo en el plano (forma, aleros, chapa ahí).')}
+        </Accordion>
       </div>
 
       {/* CTA */}
       <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '12px 16px', background: 'linear-gradient(to top, #f7f7f8 70%, transparent)', zIndex: 20 }}>
         <div style={{ maxWidth: 580, margin: '0 auto' }}>
           <button onClick={() => setAppView('draw')}
-            style={{ width: '100%', padding: 16, borderRadius: 14, border: 'none', cursor: 'pointer', background: '#fe0000', color: '#fff', fontWeight: 800, fontSize: 16, boxShadow: '0 4px 16px rgba(254,0,0,0.35)' }}>
+            style={{ width: '100%', padding: 16, borderRadius: 14, border: 'none', cursor: 'pointer', background: '#fe0000', color: '#fff', fontWeight: 500, fontSize: 17, boxShadow: '0 4px 16px rgba(254,0,0,0.35)' }}>
             Ir al plano →
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Sección colapsable (acordeón). Colapsada por defecto; el "+" (crear) va al
+// final de la fila para ver lo que se crea sin scroll largo.
+function Accordion({ label, count, open, onToggle, onAdd, children }) {
+  return (
+    <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px' }}>
+        <button onClick={onToggle} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
+          <span style={{ fontSize: 18, color: '#1c1c1c' }}>{label}</span>
+          {count > 0 && <span style={{ fontSize: 15, color: '#9a9a9a' }}>· {count}</span>}
+          <span style={{ fontSize: 16, color: '#c4c4c4', marginLeft: 6, display: 'inline-block', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>⌄</span>
+        </button>
+        {onAdd && (
+          <button onClick={onAdd} title={`Agregar ${label}`}
+            style={{ marginLeft: 12, border: '1px solid #fe0000', background: '#fff', color: '#fe0000', borderRadius: 8, width: 34, height: 34, fontSize: 20, fontWeight: 500, cursor: 'pointer', lineHeight: 1 }}>+</button>
+        )}
+      </div>
+      {open && <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>{children}</div>}
     </div>
   )
 }
@@ -126,11 +162,12 @@ function WallTypeCard({ type, profileSection, canDelete }) {
   return (
     <div style={{ background: '#fff', borderRadius: 16, padding: 14, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 17, color: '#fe0000', minWidth: 32, textAlign: 'center' }}>{type.code || 'M?'}</span>
         <input value={type.name} onChange={(e) => updateWallType(type.id, { name: e.target.value })}
-          placeholder="Nombre del muro (o elegí abajo)"
-          style={{ ...inp, fontWeight: 600, flex: 1 }} />
+          placeholder="Ej: Interior - Exterior"
+          style={{ ...inp, fontWeight: 500, flex: 1 }} />
         {canDelete && <button onClick={() => removeWallType(type.id)}
-          style={{ border: '1px solid #ffd0d0', background: '#fff', color: '#fe0000', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontWeight: 700 }}>×</button>}
+          style={{ border: '1px solid #ffd0d0', background: '#fff', color: '#fe0000', borderRadius: 8, width: 32, height: 32, cursor: 'pointer' }}>×</button>}
       </div>
       {/* Precargados de empacado — no quita el nombre libre de arriba */}
       <select value={WALL_PRESETS.includes(type.name) ? type.name : ''}
@@ -143,7 +180,7 @@ function WallTypeCard({ type, profileSection, canDelete }) {
         {[['exterior', 'Exterior'], ['interior', 'Interior']].map(([k, lbl]) => (
           <button key={k} onClick={() => updateWallType(type.id, { kind: k })} style={pill(type.kind === k)}>{lbl}</button>
         ))}
-        <span style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: 12, fontWeight: 800, color: '#0a84ff' }}>espesor ≈ {(th / 10).toFixed(1)} cm</span>
+        <span style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: 15, fontWeight: 500, color: '#0a84ff' }}>espesor ≈ {(th / 10).toFixed(1)} cm</span>
       </div>
       <TypeFaceStack typeId={type.id} face="interior" layers={type.faces?.interior || []} label="Cara interior" />
       <TypeFaceStack typeId={type.id} face="exterior" layers={type.faces?.exterior || []} label={type.kind === 'exterior' ? 'Cara exterior' : 'Otra cara'} />
@@ -293,17 +330,6 @@ const pill = (on) => ({
   background: on ? '#fe0000' : '#fff', color: on ? '#fff' : '#666',
 })
 
-function GroupHeader({ label, onAdd }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', padding: '6px 4px 0' }}>
-      <span style={{ fontSize: 15, fontWeight: 500, color: '#1c1c1c' }}>{label}</span>
-      {onAdd && (
-        <button onClick={onAdd} title={`Agregar ${label}`}
-          style={{ marginLeft: 'auto', border: '1px solid #fe0000', background: '#fff', color: '#fe0000', borderRadius: 8, fontSize: 20, fontWeight: 500, width: 34, height: 34, cursor: 'pointer', lineHeight: 1 }}>+</button>
-      )}
-    </div>
-  )
-}
 function Card({ children }) {
   return <div style={{ background: '#fff', borderRadius: 16, padding: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', display: 'flex', flexDirection: 'column', gap: 6 }}>{children}</div>
 }
