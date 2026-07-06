@@ -29,7 +29,14 @@ export default function CanvasStudio() {
     }
     const onMsg = (e) => {
       const d = e.data || {}
-      if (d.ilframe === 'ready') { readyRef.current = true; sendLoad() }
+      if (d.ilframe === 'ready') {
+        readyRef.current = true
+        sendLoad()
+        // El plano queda conectado al elemento desde el que se abrió
+        // (herramienta + tipo elegidos, y centrado si ya hay piezas de ese tipo).
+        const focus = useDrawingStore.getState().pendingFocus
+        if (focus) { post({ ilframe: 'focus', ...focus }); useDrawingStore.getState().clearPendingFocus() }
+      }
       else if (d.ilframe === 'studio') {
         useDrawingStore.getState().setStudio(d.objects || [])
         if (d.meta) useDrawingStore.setState({ studioMeta: d.meta })

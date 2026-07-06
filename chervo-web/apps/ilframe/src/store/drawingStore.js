@@ -498,6 +498,14 @@ export const useDrawingStore = create((set) => ({
   tab: 'plan', // 'plan' | 'elev' — pestaña activa del dibujo
   project: defaultProject(),
 
+  // El plano no es una pantalla aislada: cada elemento de Componentes abre
+  // el plano YA conectado a él (herramienta + tipo elegidos, vista centrada
+  // en lo ya dibujado de ese tipo si existe). CanvasStudio consume esto una
+  // vez y lo limpia.
+  pendingFocus: null, // { tool: 'wall'|'cercha'|'columna'|'roof', typeName }
+  focusElement: (tool, typeName) => set({ pendingFocus: { tool, typeName }, appView: 'draw', tab: 'plan' }),
+  clearPendingFocus: () => set({ pendingFocus: null }),
+
   // ── Proyectos (varios, con guardado local) ─────────────────
   projects: loadMeta(),
   currentProjectId: null,

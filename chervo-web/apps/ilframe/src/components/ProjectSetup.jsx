@@ -32,12 +32,17 @@ const WALL_PRESETS = [
 // Orden de las secciones de tipo (Componentes). Todo se define acá.
 const TYPE_ORDER = ['pilar', 'columna', 'cercha', 'viga', 'losa', 'techo', 'cielo']
 
+// Categorías con herramienta propia en el plano (para el ícono "Dibujar").
+// Pilar armado, Losa y Cielorraso todavía no tienen herramienta.
+const CAT_TOOL = { columna: 'columna', cercha: 'cercha', viga: 'cercha', techo: 'roof' }
+
 export default function ProjectSetup() {
   const project = useDrawingStore((s) => s.project)
   const setProject = useDrawingStore((s) => s.setProject)
   const setAppView = useDrawingStore((s) => s.setAppView)
   const addWallType = useDrawingStore((s) => s.addWallType)
   const addType = useDrawingStore((s) => s.addType)
+  const focusElement = useDrawingStore((s) => s.focusElement)
   const [open, setOpen] = useState({}) // nada desplegado por defecto
   const toggle = (k) => setOpen((o) => ({ ...o, [k]: !o[k] }))
   const show = (k) => setOpen((o) => ({ ...o, [k]: true }))
@@ -79,7 +84,7 @@ export default function ProjectSetup() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
             {project.wallTypes.map((t) => (
-              <WallTypeCard key={t.id} type={t} profileSection={project.profileSection} canDelete={project.wallTypes.length > 1} />
+              <WallTypeCard key={t.id} type={t} profileSection={project.profileSection} canDelete={project.wallTypes.length > 1} onDraw={() => focusElement('wall', t.name)} />
             ))}
           </div>
           <AddBtn label="Agregar tipo de muro" onClick={() => { addWallType(); show('paredes') }} />
@@ -92,7 +97,8 @@ export default function ProjectSetup() {
             <Accordion key={cat} label={TYPE_META[cat].label} count={list.length} open={open[cat]} onToggle={() => toggle(cat)}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {list.map((t) => (
-                  <TypeCard key={t.id} cat={cat} type={t} canDelete={list.length > 1} />
+                  <TypeCard key={t.id} cat={cat} type={t} canDelete={list.length > 1}
+                    onDraw={CAT_TOOL[cat] ? () => focusElement(CAT_TOOL[cat], t.name) : null} />
                 ))}
               </div>
               <AddBtn label={`Agregar tipo de ${TYPE_META[cat].label.split(' ')[0].toLowerCase()}`} onClick={() => { addType(cat); show(cat) }} />
@@ -109,7 +115,7 @@ export default function ProjectSetup() {
         <div style={{ maxWidth: 580, margin: '0 auto' }}>
           <button onClick={() => setAppView('draw')}
             style={{ width: '100%', padding: 16, borderRadius: 14, border: 'none', cursor: 'pointer', background: '#fe0000', color: '#fff', fontWeight: 500, fontSize: 17, boxShadow: '0 4px 16px rgba(254,0,0,0.35)' }}>
-            Ir al plano →
+            Ver plano →
           </button>
         </div>
       </div>
@@ -189,7 +195,7 @@ function SpecSummary({ project, open, onToggle }) {
 }
 
 // ── Muro: composición por caras (define el espesor) ───────────
-function WallTypeCard({ type, profileSection, canDelete }) {
+function WallTypeCard({ type, profileSection, canDelete, onDraw }) {
   const updateWallType = useDrawingStore((s) => s.updateWallType)
   const removeWallType = useDrawingStore((s) => s.removeWallType)
   const e = muroEspesor(type, profileSection)
@@ -198,6 +204,7 @@ function WallTypeCard({ type, profileSection, canDelete }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <input value={type.name} onChange={(e) => updateWallType(type.id, { name: e.target.value })}
           placeholder="Nombre del muro…" style={{ ...inp, flex: 1 }} />
+        <DrawIcon onClick={onDraw} />
         {canDelete && <button onClick={() => removeWallType(type.id)} style={delBtn}>×</button>}
       </div>
       {/* Nombres típicos (opcional) — no quita el nombre libre de arriba */}
@@ -234,7 +241,7 @@ function TypeFaceStack({ typeId, face, layers, label }) {
 }
 
 // ── Tipo genérico (Pilar/Columna/Cercha/Viga/Losa/Techo/Cielorraso) ──
-function TypeCard({ cat, type, canDelete }) {
+function TypeCard({ cat, type, canDelete, onDraw }) {
   const updateType = useDrawingStore((s) => s.updateType)
   const removeType = useDrawingStore((s) => s.removeType)
   const up = (patch) => updateType(cat, type.id, patch)
@@ -242,10 +249,24 @@ function TypeCard({ cat, type, canDelete }) {
     <div style={typeCard}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <input value={type.name} onChange={(e) => up({ name: e.target.value })} placeholder="Nombre del elemento…" style={{ ...inp, flex: 1 }} />
+        {onDraw && <DrawIcon onClick={onDraw} />}
         {canDelete && <button onClick={() => removeType(cat, type.id)} style={delBtn}>×</button>}
       </div>
       <TypeMaterial cat={cat} type={type} up={up} />
     </div>
+  )
+}
+
+// Ícono "Dibujar" — abre el plano ya conectado a este elemento (herramienta
+// + tipo elegidos, centrado en lo ya dibujado si existe). Rojo = acción principal.
+function DrawIcon({ onClick }) {
+  return (
+    <button onClick={onClick} title="Dibujar"
+      style={{ border: '1.5px solid #fe0000', background: '#fff', color: '#fe0000', borderRadius: 8, width: 34, height: 34, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      </svg>
+    </button>
   )
 }
 

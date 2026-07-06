@@ -198,6 +198,29 @@ window.addEventListener('message', (e) => {
     if (techoTypeIdx >= ilTechos.length) techoTypeIdx = 0;
     ilVigas = Array.isArray(d.vigas) ? d.vigas : [];
     if (['wall', 'cercha', 'columna', 'roof'].includes(tool)) actualizarPropBar();
+  } else if (d.ilframe === 'focus') {
+    // El plano llega ya conectado al elemento: herramienta + tipo elegidos,
+    // y centrado sobre lo ya dibujado de ese tipo (si existe) — nada de
+    // arrancar en blanco a buscarlo.
+    const ftool = d.tool, typeName = d.typeName;
+    if (ftool === 'wall') { const idx = ilWalls.findIndex((w) => w.name === typeName); if (idx >= 0) { wallTypeIdx = idx; if (ilWalls[idx].espesorMm) espesorActual = ilWalls[idx].espesorMm; } }
+    else if (ftool === 'cercha') { const idx = ilCerchas.findIndex((w) => w.name === typeName); if (idx >= 0) cerchaTypeIdx = idx; }
+    else if (ftool === 'columna') { const idx = ilColumnas.findIndex((w) => w.name === typeName); if (idx >= 0) columnaTypeIdx = idx; }
+    else if (ftool === 'roof') { const idx = ilTechos.findIndex((w) => w.name === typeName); if (idx >= 0) techoTypeIdx = idx; }
+
+    const targetVista = ftool === 'roof' ? 'techo' : 'planta';
+    document.querySelectorAll('.phb').forEach((e) => e.style.display = 'none');
+    vistaActual = targetVista; vpZ = 0.1;
+    document.body.dataset.vista = targetVista;
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    document.getElementById(targetVista === 'techo' ? 'tabTecho' : 'tabPlanta').classList.add('active');
+    document.querySelectorAll(targetVista === 'techo' ? '.phb-techo' : '.phb-planta').forEach((e) => e.style.display = 'flex');
+
+    const objType = ftool === 'roof' ? 'roof' : ftool === 'columna' ? 'columna' : ftool === 'cercha' ? 'cercha' : 'wall';
+    const match = objects.find((o) => o.type === objType && o.tipo === typeName);
+    if (match) centerCameraOnWall(match); else { vpX = cv.width / 2; vpY = cv.height / 2; }
+
+    ST(ftool);
   }
 });
 
@@ -243,6 +266,8 @@ function getRoofZ(r, px, py) {
 function centerCameraOnWall(muro) {
   if (muro.type === 'columna') {
     vpX = cv.width/2 - muro.pt[0]*vpZ; vpY = cv.height/2 - muro.pt[1]*vpZ;
+  } else if (muro.type === 'roof') {
+    vpX = cv.width/2 - ((muro.p1[0]+muro.p2[0])/2)*vpZ; vpY = cv.height/2 - ((muro.p1[1]+muro.p2[1])/2)*vpZ;
   } else {
     vpX = cv.width/2 - ((muro.pA[0]+muro.pB[0])/2)*vpZ; vpY = cv.height/2 - ((muro.pA[1]+muro.pB[1])/2)*vpZ;
   }
