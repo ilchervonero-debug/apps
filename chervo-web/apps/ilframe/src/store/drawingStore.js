@@ -221,7 +221,7 @@ function defaultProject(name = 'Proyecto sin nombre') {
 // lista los proyectos; abrir uno carga su snapshot al store.
 const LS_META = 'ilframe.projects'
 const LS_PROJ = (id) => 'ilframe.project.' + id
-const SNAP_KEYS = ['project', 'panels', 'beams', 'cerchas', 'pilares', 'techos', 'losas', 'tconnects']
+const SNAP_KEYS = ['project', 'panels', 'beams', 'cerchas', 'pilares', 'techos', 'losas', 'tconnects', 'studio', 'studioMeta']
 const loadMeta = () => { try { return JSON.parse(localStorage.getItem(LS_META) || '[]') } catch { return [] } }
 const saveMeta = (m) => { try { localStorage.setItem(LS_META, JSON.stringify(m)) } catch { /* no-op */ } }
 
@@ -234,11 +234,16 @@ const saveCore = (c) => { try { localStorage.setItem(LS_CORE, JSON.stringify(c))
 const genId = () => 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1e3)
 const emptyDraw = () => ({
   panels: [], beams: [], cerchas: [], pilares: [], techos: [], losas: [], tconnects: [],
+  studio: [], studioMeta: {}, // objetos del canvas nuevo + conteo de nombres
   past: [], future: [], selectedId: null, selectedBeamId: null, selectedCerchaId: null,
   selectedPilarId: null, selectedTechoId: null, selectedLosaId: null, selectedVertex: null, tcFirst: null, draft: null,
 })
 
 export const useDrawingStore = create((set) => ({
+  // Objetos del canvas nuevo (studio), guardados por proyecto
+  studio: [],
+  studioMeta: {},
+  setStudio: (objs) => set({ studio: Array.isArray(objs) ? objs : [] }),
   panels: [],
   past: [],
   future: [],
@@ -498,6 +503,7 @@ export const useDrawingStore = create((set) => ({
       project: snap.project || defaultProject(),
       panels: snap.panels || [], beams: snap.beams || [], cerchas: snap.cerchas || [],
       pilares: snap.pilares || [], techos: snap.techos || [], losas: snap.losas || [], tconnects: snap.tconnects || [],
+      studio: snap.studio || [], studioMeta: snap.studioMeta || {},
     }
   }),
   saveCurrent: () => set((s) => {

@@ -1,12 +1,9 @@
-﻿import DrawingCanvas from './components/DrawingCanvas'
-import CommandBar from './components/CommandBar'
-import DrawingTools from './components/DrawingTools'
-import ProjectSetup from './components/ProjectSetup'
+﻿import ProjectSetup from './components/ProjectSetup'
 import Landing from './components/Landing'
-import Iso3D from './components/Iso3D'
 import BomView from './components/BomView'
 import ExportView from './components/ExportView'
 import CoreView from './components/CoreView'
+import CanvasStudio from './components/CanvasStudio'
 import { useState } from 'react'
 import { useDrawingStore } from './store/drawingStore'
 
@@ -67,7 +64,7 @@ export default function App() {
         <>
           {/* Pestañas — grandes y legibles */}
           <div style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid #e0e0e0', background: '#fff', overflowX: 'auto' }}>
-            {[['plan', 'PLANTA'], ['elev', 'ALZADO'], ['3d', '3D'], ['bom', 'CÓMPUTO'], ['out', 'SALIDA']].map(([id, label]) => {
+            {[['plan', 'PLANO'], ['bom', 'CÓMPUTO'], ['out', 'SALIDA']].map(([id, label]) => {
               const on = tab === id
               return (
                 <button key={id} onClick={() => setTab(id)}
@@ -84,18 +81,12 @@ export default function App() {
           </div>
 
           <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', display: 'flex' }}>
-            {tab === '3d' ? (
-              <Iso3D />
-            ) : tab === 'bom' ? (
+            {tab === 'bom' ? (
               <BomView />
             ) : tab === 'out' ? (
               <ExportView />
             ) : (
-              <>
-                <DrawingCanvas />
-                <DrawingTools />
-                <CommandBar />
-              </>
+              <CanvasStudio />
             )}
           </div>
         </>

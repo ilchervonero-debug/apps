@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>iLFrame - Canvas</title>
+<style>
+:root{
+  --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
+  --accent:#FE0000;--red:#FE0000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
+  --tb:48px;--prop:44px;
+  --font:'Exo',-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;touch-action:none;user-select:none;font-family:var(--font);background:#fff;}
+body{display:flex;flex-direction:column;}
+
+#tabs { display: flex; height: 44px; background: #fff; border-bottom: 1px solid #e5e5ea; flex-shrink: 0;}
+.tab { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; color: var(--label); text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; border-bottom: 3px solid transparent; transition:0.2s; }
+.tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+
+.bar{ height:var(--tb); background:#fff; border-bottom:1px solid #e5e5ea; display:flex; align-items:center; padding:0 8px; flex-shrink:0; }
+.tg{ display:flex; align-items:center; gap:2px; padding:0 6px; height:100%; border-right:1px solid rgba(0,0,0,.06); }
+.tg:last-child{ border-right:none; }
+.tb{ width:38px; height:38px; border-radius:8px; background:transparent; border:none; color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.tb svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.1; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+.tb.on{ background:var(--accent); color:#fff; }
+.tb:active{ background:rgba(0,0,0,.08); }
+
+#btn-herr { position:fixed; right:16px; top:110px; width:56px; height:56px; border-radius:50%; background:var(--accent); border:none; color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(254,0,0,.3); z-index:160; }
+#btn-herr svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round; pointer-events:none;}
+#panel-herr { position:fixed; right:16px; top:174px; background:#fff; border:1px solid #e5e5ea; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,.1); z-index:150; display:none; flex-direction:column; padding:8px; gap:6px; }
+#panel-herr.open { display:flex; }
+.phb { display: none; width:48px; height:48px; border-radius:10px; background:#f2f2f7; border:none; color:var(--ink); cursor:pointer; align-items:center; justify-content:center; }
+.phb svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.1; stroke-linecap:round; stroke-linejoin:round; pointer-events:none;}
+.phb.on { background:var(--accent); color:#fff; }
+
+body[data-vista="planta"] .phb-planta { display: flex; }
+body[data-vista="alzado"] .phb-alzado { display: flex; }
+body[data-vista="techo"]  .phb-techo  { display: flex; }
+
+#wrap{flex:1;position:relative;overflow:hidden;background:#f9f9f9;}
+#cv{position:absolute;top:0;left:0;}
+
+#propbar { height: var(--prop); background: #fff; border-top: 1px solid #e5e5ea; display: flex; align-items: center; padding: 0 16px; justify-content: space-between; cursor: pointer; flex-shrink: 0; z-index: 190; }
+#pbTool { font-size: 14px; font-weight: 500; color: var(--accent); text-transform: uppercase; }
+.pb-open-indicator { font-size: 13px; font-weight: 500; color: var(--label); text-transform: uppercase; letter-spacing: 0.5px;}
+
+#prop-card { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e5e5ea; border-radius: 12px 12px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,0.06); display: none; flex-direction: column; padding: 12px 16px 20px 16px; z-index: 200; max-height: 48vh; overflow-y: auto; }
+.prop-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 2px solid #f2f2f7; padding-bottom: 6px; }
+.prop-head { font-size: 14px; font-weight: 500; color: var(--accent); text-transform: uppercase; }
+
+.prop-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.prop-row label { font-size: 14px; font-weight: 500; color: var(--label); text-transform: uppercase; }
+.prop-row input[type="number"], .prop-row select { width: 120px; text-align: right; background: #f2f2f7; border: 1px solid #e5e5ea; border-radius: 6px; padding: 8px 10px; font-size: 16px; font-weight: 500; font-family: var(--font); color: var(--ink); outline: none; }
+.prop-row input:focus { border-color: var(--accent); background: #fff;}
+.prop-row input:disabled { opacity: 0.5; cursor: not-allowed; }
+.prop-row select { text-align: left; }
+.prop-row input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); }
+
+.prop-btn-full { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-weight: 500; font-size: 14px; font-family: var(--font); cursor: pointer; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
+.btn-outline { background: #fff; color: var(--accent); border: 1.5px solid var(--accent); }
+.btn-outline:active { background: #f2f2f7; }
+
+#ctx{display:none; position:fixed; z-index:300; background:rgba(255,255,255,.95); border:1px solid #e5e5ea; border-radius:12px; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,.15); min-width:150px;}
+#ctx.show{display:block;}
+.ci{display:flex; align-items:center; gap:10px; padding:13px 16px; font-size:16px; font-weight:500; color:var(--ink); cursor:pointer; border-bottom:1px solid rgba(0,0,0,.06);}
+.ci:last-child{border-bottom:none;}
+.ci:active{background:rgba(254,0,0,.08);}
+.ci svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.4;}
+.ci.danger{color:var(--red);}
+#toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(28,28,30,.9);color:#fff;padding:9px 18px;border-radius:20px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999;}
+#toast.show{opacity:1;}
+</style>
+</head>
+<body data-vista="planta">
+
+<div id="tabs">
+  <div class="tab active" id="tabPlanta" onclick="setVista('planta')">Planta</div>
+  <div class="tab" id="tabAlzado" onclick="setVista('alzado')">Alzado</div>
+  <div class="tab" id="tabTecho" onclick="setVista('techo')">Techo</div>
+  <div class="tab" id="tab3D" onclick="setVista('3d')">3D</div>
+</div>
+
+<div class="bar">
+  <div class="tg">
+    <button class="tb" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
+  </div>
+  <div class="tg">
+    <button class="tb on" id="snapBtn" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+  </div>
+  <div style="flex:1"></div>
+  <div class="tg" style="border:none">
+    <button class="tb" onclick="descargarVista()" title="Descargar Imagen"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    <button class="tb on" data-t="select" id="escBtn" onclick="ST('select')"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
+  </div>
+</div>
+
+<button id="btn-herr" onclick="toggleTools()"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="1"/></svg></button>
+<div id="panel-herr">
+  <button class="phb phb-planta" data-t="wall" onclick="ST('wall');toggleTools()"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="1"/></svg></button>
+  <button class="phb phb-planta" data-t="cercha" onclick="ST('cercha');toggleTools()"><svg viewBox="0 0 24 24"><path d="M2 22 L12 2 L22 22 Z M2 22 L22 22 M12 2 L12 22 M7 12 L17 12"/></svg></button>
+  <button class="phb phb-planta" data-t="columna" onclick="ST('columna');toggleTools()"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="18" rx="1"/></svg></button>
+  <button class="phb phb-planta" data-t="join" onclick="ST('join');toggleTools()"><svg viewBox="0 0 24 24"><path d="M4 14h6v6"/><path d="M14 4v6h6"/><path d="M10 14L4 20"/><path d="M20 4l-6 6"/></svg></button>
+  <button class="phb phb-planta phb-alzado phb-techo" data-t="guide" onclick="ST('guide');toggleTools()"><svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="4 4"/><line x1="2" y1="12" x2="22" y2="12" stroke-dasharray="4 4"/></svg></button>
+
+  <button class="phb phb-alzado" data-t="puerta" onclick="ST('puerta');toggleTools()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg></button>
+  <button class="phb phb-alzado" data-t="ventana" onclick="ST('ventana');toggleTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg></button>
+  <button class="phb phb-alzado" data-t="vano" onclick="ST('vano');toggleTools()"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="4 4"></rect></svg></button>
+
+  <button class="phb phb-techo" data-t="roof" onclick="ST('roof');toggleTools()"><svg viewBox="0 0 24 24"><polygon points="2,12 12,2 22,12"/><rect x="4" y="12" width="16" height="10"/></svg></button>
+  <button class="phb phb-techo" data-t="babeta" onclick="ST('babeta');toggleTools()"><svg viewBox="0 0 24 24"><polyline points="4,20 10,12 16,16 22,6"/></svg></button>
+</div>
+
+<div id="wrap"><canvas id="cv"></canvas></div>
+
+<div id="ctx">
+  <div class="ci" onclick="ctxDo('move')"><svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg> Mover</div>
+  <div class="ci" onclick="ctxDo('copy')"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/></svg> Copiar</div>
+  <div class="ci" onclick="ctxDo('rotate')"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg> Rotar</div>
+  <div class="ci danger" onclick="ctxDo('delete')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/></svg> Borrar</div>
+</div>
+
+<div id="propbar" onclick="abrirPanelDesdeBarra()">
+  <span id="pbTool">Select</span>
+  <span class="pb-open-indicator" id="pb-indicator">Editar Medidas ▴</span>
+</div>
+
+<div id="prop-card">
+  <div class="prop-header-row">
+    <div class="prop-head" id="pc-title">PROPIEDADES</div>
+    <button onclick="cerrarPanelCard()" style="background:none; border:none; color:var(--label); font-weight:500; padding:4px; cursor:pointer; font-size:13px;">CERRAR</button>
+  </div>
+  <div id="pc-content"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d'), wrap = document.getElementById('wrap');
+
+let vpX = 0, vpY = 0, vpZ = 0.1, cellPx = 400, snapOn = true, tool = 'wall';
+let objects = [], nextId = 1, history = [];
+let drawing = false, dragStartW = null, dragCurW = null;
+let startObjId = null, polyPts = [];
+
+let nextWallNum = 1, nextCerchaNum = 1, nextColNum = 1, espesorActual = 100;
+let seleccionId = null, seleccionAbId = null, vistaActual = 'planta', muroAlzadoId = null;
+
+let panning = false, panRef = null, pinching = false, pinch0 = null, touches = {};
+let longTimer = null, forceCardOpen = false;
+
+let lastCopyData = null;
+let guideData = { hitWall: false, angle: 0, startP: null };
+
+const kEnt = "if(event.key==='Enter'){ this.blur(); }";
+
+// ── Puente con la app (caja de proyectos) ──────────────────────
+let _saveT = null;
+function ilPersist() {
+  clearTimeout(_saveT);
+  _saveT = setTimeout(() => {
+    try { parent.postMessage({ ilframe: 'studio', objects, meta: { nextId, nextWallNum, nextCerchaNum, nextColNum } }, '*'); } catch (e) {}
+  }, 400);
+}
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.ilframe === 'load' && Array.isArray(d.objects)) {
+    objects = d.objects;
+    const m = d.meta || {};
+    nextId = m.nextId || (objects.reduce((a, o) => Math.max(a, o.id || 0), 0) + 1);
+    nextWallNum = m.nextWallNum || 1; nextCerchaNum = m.nextCerchaNum || 1; nextColNum = m.nextColNum || 1;
+    render();
+  }
+});
+
+const w2s = (wx, wy) => vistaActual === 'alzado' ? {x: wx*vpZ + vpX, y: vpY - wy*vpZ} : {x: wx*vpZ + vpX, y: wy*vpZ + vpY};
+const s2w = (sx, sy) => vistaActual === 'alzado' ? {x: (sx - vpX)/vpZ, y: (vpY - sy)/vpZ} : {x: (sx - vpX)/vpZ, y: (sy - vpY)/vpZ};
+const hyp = (a, b) => Math.sqrt(a*a + b*b);
+function getS(e) { let t = e; if (e.touches && e.touches.length > 0) t = e.touches[0]; else if (e.changedTouches && e.changedTouches.length > 0) t = e.changedTouches[0]; const r = cv.getBoundingClientRect(); return {x: t.clientX - r.left, y: t.clientY - r.top}; }
+function snp(v) { return snapOn ? Math.round(v/cellPx)*cellPx : v; }
+
+function getLineDistance(p, lineStart, lineAngle) { return (p.x - lineStart.x) * -Math.sin(lineAngle) + (p.y - lineStart.y) * Math.cos(lineAngle); }
+
+function getW(e) {
+  const raw = s2w(getS(e).x, getS(e).y);
+  if (!snapOn || vistaActual === '3d') return raw;
+  let bestSnap = null; let bestD = 20 / vpZ;
+  for (const obj of objects) {
+    if (obj.type === 'guide' && obj.env === vistaActual) {
+      const uX = Math.cos(obj.angle), uY = Math.sin(obj.angle);
+      const dx = raw.x - obj.pt[0], dy = raw.y - obj.pt[1];
+      const dist = Math.abs(dx * (-uY) + dy * uX);
+      if (dist < bestD) { bestD = dist; const projL = dx * uX + dy * uY; bestSnap = { x: obj.pt[0] + projL * uX, y: obj.pt[1] + projL * uY }; }
+    }
+  }
+  if (bestSnap) return { x: Math.round(bestSnap.x), y: Math.round(bestSnap.y) };
+  return {x: snp(raw.x), y: snp(raw.y)};
+}
+
+function intersect(x1, y1, x2, y2, x3, y3, x4, y4) { const denom = (y4-y3)*(x2-x1) - (x4-x3)*(y2-y1); if (denom === 0) return null; const ua = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / denom; return {x: x1 + ua*(x2-x1), y: y1 + ua*(y2-y1)}; }
+function distPS(p, a, b) { const dx=b[0]-a[0], dy=b[1]-a[1], l2=dx*dx+dy*dy; if(!l2) return hyp(p.x-a[0], p.y-a[1]); const t=Math.max(0, Math.min(1, ((p.x-a[0])*dx+(p.y-a[1])*dy)/l2)); return hyp(p.x-(a[0]+t*dx), p.y-(a[1]+t*dy)); }
+function isPointOnSegment(p, a, b, tol=100) { const d1 = hyp(p.x-a[0], p.y-a[1]), d2 = hyp(p.x-b[0], p.y-b[1]), l = hyp(a[0]-b[0], a[1]-b[1]); return Math.abs((d1+d2) - l) <= tol; }
+
+function resize() { cv.width = wrap.clientWidth; cv.height = wrap.clientHeight; if(vpX === 0 && vpY === 0) { vpX = cv.width/2; vpY = cv.height/2; } render(); }
+window.addEventListener('resize', resize);
+
+function getRoofZ(r, px, py) {
+  const alero = r.alero || 0; const x1 = Math.min(r.p1[0], r.p2[0]) - alero, y1 = Math.min(r.p1[1], r.p2[1]) - alero;
+  const w = Math.abs(r.p2[0] - r.p1[0]) + alero*2, h = Math.abs(r.p2[1] - r.p1[1]) + alero*2;
+  const x2 = x1+w, y2 = y1+h; let z = r.hBase;
+  if(r.fallDir === 'abajo') z += (y2 - py) * (r.slope/100); else if(r.fallDir === 'arriba') z += (py - y1) * (r.slope/100);
+  else if(r.fallDir === 'der') z += (x2 - px) * (r.slope/100); else if(r.fallDir === 'izq') z += (px - x1) * (r.slope/100); return z;
+}
+
+function centerCameraOnWall(muro) {
+  if (muro.type === 'columna') {
+    vpX = cv.width/2 - muro.pt[0]*vpZ; vpY = cv.height/2 - muro.pt[1]*vpZ;
+  } else {
+    vpX = cv.width/2 - ((muro.pA[0]+muro.pB[0])/2)*vpZ; vpY = cv.height/2 - ((muro.pA[1]+muro.pB[1])/2)*vpZ;
+  }
+}
+
+function autoFitAlzado(muro) {
+  let l = 1000, hMax = 3000;
+  if (muro.type === 'wall') { l = hyp(muro.pB[0]-muro.pA[0], muro.pB[1]-muro.pA[1]); hMax = Math.max(muro.hA, muro.hB, muro.peak ? muro.peak.y : 0); }
+  else if (muro.type === 'cercha') { l = hyp(muro.pB[0]-muro.pA[0], muro.pB[1]-muro.pA[1]); hMax = Math.max(muro.hIzq, muro.hDer) + muro.hPico; }
+  else if (muro.type === 'columna') { l = Math.max(muro.anchoBase, muro.anchoTope); hMax = muro.altura; }
+
+  const zoomX = (cv.width * 0.75) / l, zoomY = (cv.height * 0.60) / hMax;
+  vpZ = Math.min(zoomX, zoomY, 0.4); vpX = (cv.width - (l * vpZ)) / 2; vpY = cv.height - ((cv.height - (hMax * vpZ)) / 2);
+}
+
+function setVista(vista) {
+  document.querySelectorAll('.phb').forEach(e => e.style.display = 'none');
+  let targetMuro = null;
+  if(seleccionId) { const m = objects.find(o=>o.id===seleccionId); if(m && (m.type==='wall'||m.type==='cercha'||m.type==='columna')) targetMuro = m; }
+  if(!targetMuro && muroAlzadoId) { const m = objects.find(o=>o.id===muroAlzadoId); if(m) targetMuro = m; }
+
+  if (vista === 'alzado') {
+    if (!targetMuro) { toast("Seleccioná un Panel/Cercha/Columna en Planta"); return; }
+    muroAlzadoId = targetMuro.id; seleccionId = targetMuro.id; vistaActual = 'alzado';
+    document.querySelectorAll('.phb-alzado, .phb-alzado.phb-techo').forEach(e => e.style.display = 'flex'); autoFitAlzado(targetMuro);
+  } else if (vista === '3d') {
+    vistaActual = '3d'; vpZ = 0.05; vpX = cv.width/2; vpY = cv.height/2;
+  } else if (vista === 'techo') {
+    vistaActual = 'techo'; vpZ = 0.1; if(targetMuro) centerCameraOnWall(targetMuro); else { vpX = cv.width/2; vpY = cv.height/2; }
+    document.querySelectorAll('.phb-techo').forEach(e => e.style.display = 'flex');
+  } else {
+    vistaActual = 'planta'; vpZ = 0.1; if(targetMuro) centerCameraOnWall(targetMuro); else { vpX = cv.width/2; vpY = cv.height/2; }
+    document.querySelectorAll('.phb-planta').forEach(e => e.style.display = 'flex');
+  }
+
+  document.body.dataset.vista = vista; document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(vista === '3d' ? 'tab3D' : (vista === 'alzado' ? 'tabAlzado' : (vista === 'techo' ? 'tabTecho' : 'tabPlanta'))).classList.add('active');
+  forceCardOpen = false; drawing = false; polyPts = []; ST('select'); render();
+}
+
+function descargarVista() {
+  render();
+  const tempCanvas = document.createElement('canvas'); tempCanvas.width = cv.width; tempCanvas.height = cv.height; const tCtx = tempCanvas.getContext('2d');
+  tCtx.fillStyle = '#ffffff'; tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height); tCtx.drawImage(cv, 0, 0);
+  const a = document.createElement('a'); let name = vistaActual; if (vistaActual === 'alzado' && muroAlzadoId) { const m = objects.find(o=>o.id===muroAlzadoId); name += `_${m ? m.label : ''}`; }
+  a.download = `iLFrame_${name}.png`; a.href = tempCanvas.toDataURL('image/png'); a.click(); toast("Plano exportado");
+}
+
+function render() {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  if (vistaActual === '3d') { draw3D(); } else {
+    drawGrid(); objects.filter(o => o.type === 'guide' && o.env === vistaActual).forEach(drawObj);
+    if (vistaActual === 'planta') { objects.filter(o => o.type !== 'guide' && o.type !== 'roof' && o.type !== 'babeta').forEach(drawObj); drawPreview(); }
+    else if (vistaActual === 'alzado' && muroAlzadoId) {
+      const m=objects.find(o=>o.id===muroAlzadoId);
+      if(m) { if (m.type === 'wall') drawAlzado(m); else if (m.type === 'cercha') drawCerchaAlzado(m); else if (m.type === 'columna') drawColumnaAlzado(m); }
+      drawPreview();
+    }
+    else if (vistaActual === 'techo') {
+      ctx.globalAlpha = 0.25; objects.filter(o => o.type === 'wall' || o.type === 'cercha' || o.type === 'columna').forEach(drawObj); ctx.globalAlpha = 1.0;
+      objects.filter(o => o.type === 'roof' || o.type === 'babeta').forEach(drawObj); drawPreview();
+    }
+  }
+}
+
+function drawGrid() {
+  const cs = cellPx * vpZ; if (cs < 5) return; const ox = ((vpX%cs)+cs)%cs, oy = ((vpY%cs)+cs)%cs;
+  ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.05)'; ctx.lineWidth = 1;
+  for (let x=ox; x<cv.width; x+=cs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,cv.height); ctx.stroke(); }
+  for (let y=oy; y<cv.height; y+=cs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cv.width,y); ctx.stroke(); } ctx.restore();
+}
+
+function cloneAndDrawGhost(obj, dx, dy) {
+  const ghost = JSON.parse(JSON.stringify(obj));
+  if(ghost.type === 'wall' || ghost.type === 'cercha') { ghost.pA[0]+=dx; ghost.pA[1]+=dy; ghost.pB[0]+=dx; ghost.pB[1]+=dy; }
+  else if (ghost.type === 'columna') { ghost.pt[0]+=dx; ghost.pt[1]+=dy; }
+  else if (ghost.type === 'roof') { ghost.p1[0]+=dx; ghost.p1[1]+=dy; ghost.p2[0]+=dx; ghost.p2[1]+=dy; }
+  else if (ghost.type === 'babeta') { ghost.pts.forEach(p => { p.x+=dx; p.y+=dy; }); }
+  ctx.globalAlpha = 0.5; drawObj(ghost); ctx.globalAlpha = 1.0;
+}
+
+function getMuroPts(muro) { const l = hyp(muro.pB[0]-muro.pA[0], muro.pB[1]-muro.pA[1]); let pts = [{x:0, y:0}, {x:0, y:muro.hA}]; if(muro.peak) pts.push({x:muro.peak.x, y:muro.peak.y}); pts.push({x:l, y:muro.hB}, {x:l, y:0}); return pts; }
+
+function drawColumnaAlzado(c) {
+  ctx.save();
+  ctx.strokeStyle = (seleccionId===c.id) ? '#FE0000' : '#1c1c1e'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+  const h = c.altura; let bxL, bxR, txL, txR;
+  if (c.caraRecta === 'IZQ') { bxL = 0; bxR = c.anchoBase; txL = 0; txR = c.anchoTope; }
+  else if (c.caraRecta === 'DER') { bxL = -c.anchoBase; bxR = 0; txL = -c.anchoTope; txR = 0; }
+  else { bxL = -c.anchoBase/2; bxR = c.anchoBase/2; txL = -c.anchoTope/2; txR = c.anchoTope/2; }
+
+  ctx.beginPath();
+  const sbL = w2s(bxL, 0), sbR = w2s(bxR, 0), stL = w2s(txL, h), stR = w2s(txR, h);
+  ctx.moveTo(sbL.x, sbL.y); ctx.lineTo(sbR.x, sbR.y); ctx.lineTo(stR.x, stR.y); ctx.lineTo(stL.x, stL.y); ctx.closePath();
+  ctx.fillStyle = (seleccionId===c.id) ? 'rgba(254, 0, 0, 0.05)' : 'rgba(235, 235, 240, 0.5)'; ctx.fill(); ctx.stroke();
+
+  ctx.beginPath(); ctx.lineWidth = 1.5; ctx.strokeStyle = (seleccionId===c.id) ? '#FE0000' : '#8e8e93';
+  const divs = c.divisiones > 0 ? c.divisiones : 1;
+  for(let i=1; i<divs; i++) {
+    const y = (h / divs) * i; const nxL = bxL + (txL - bxL) * (y / h); const nxR = bxR + (txR - bxR) * (y / h);
+    const snL = w2s(nxL, y), snR = w2s(nxR, y);
+    if (c.patron === 'LADDER') { ctx.moveTo(snL.x, snL.y); ctx.lineTo(snR.x, snR.y); }
+    else if (c.patron === 'WARREN') {
+      const prevY = (h / divs) * (i-1); const pnxL = bxL + (txL - bxL) * (prevY / h), pnxR = bxR + (txR - bxR) * (prevY / h);
+      const spnL = w2s(pnxL, prevY), spnR = w2s(pnxR, prevY);
+      if (i % 2 !== 0) { ctx.moveTo(spnL.x, spnL.y); ctx.lineTo(snR.x, snR.y); } else { ctx.moveTo(spnR.x, spnR.y); ctx.lineTo(snL.x, snL.y); }
+    }
+    else if (c.patron === 'X_CROSS') {
+      const prevY = (h / divs) * (i-1); const pnxL = bxL + (txL - bxL) * (prevY / h), pnxR = bxR + (txR - bxR) * (prevY / h);
+      const spnL = w2s(pnxL, prevY), spnR = w2s(pnxR, prevY);
+      ctx.moveTo(spnL.x, spnL.y); ctx.lineTo(snR.x, snR.y); ctx.moveTo(spnR.x, spnR.y); ctx.lineTo(snL.x, snL.y);
+    }
+  }
+  ctx.stroke();
+  const p0 = w2s(0,0); ctx.beginPath(); ctx.moveTo(0, p0.y); ctx.lineTo(cv.width, p0.y); ctx.strokeStyle='#333'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle='#FE0000'; ctx.font = `500 ${Math.max(13, 15 * vpZ)}px var(--font, sans-serif)`; ctx.textAlign='left'; ctx.fillText(`COLUMNA: ${c.label} (H: ${(h/1000).toFixed(2)}m)`, p0.x + 10, p0.y + 24); ctx.restore();
+}
+
+function drawCerchaAlzado(c) {
+  const l = hyp(c.pB[0]-c.pA[0], c.pB[1]-c.pA[1]); ctx.save();
+  ctx.strokeStyle = (seleccionId===c.id) ? '#FE0000' : '#1c1c1e'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+  const baseY = (x) => c.hIzq + (c.hDer - c.hIzq) * (x / l); const pX = l * c.xPico; const pY = baseY(pX) + c.hPico;
+  ctx.beginPath(); const sBL = w2s(0, c.hIzq), sBR = w2s(l, c.hDer), sTop = w2s(pX, pY); ctx.moveTo(sBL.x, sBL.y); ctx.lineTo(sBR.x, sBR.y);
+
+  if (c.modelo === 'VIGA') {
+    const sTL = w2s(0, c.hIzq + c.hPico), sTR = w2s(l, c.hDer + c.hPico); ctx.lineTo(sTR.x, sTR.y); ctx.lineTo(sTL.x, sTL.y); ctx.closePath(); ctx.stroke();
+  } else {
+    ctx.lineTo(sTop.x, sTop.y); ctx.closePath(); ctx.stroke();
+    ctx.beginPath(); ctx.lineWidth = 1.5; ctx.strokeStyle = (seleccionId===c.id) ? '#FE0000' : '#8e8e93';
+    const divs = c.divisiones > 0 ? c.divisiones : 1;
+    for(let i=1; i<divs; i++) {
+      const nx = (l / divs) * i; const nyBase = baseY(nx);
+      let nyTop; if (nx <= pX) { nyTop = c.hIzq + (pY - c.hIzq) * (nx / pX); } else { nyTop = pY + (c.hDer - pY) * ((nx - pX) / (l - pX)); }
+      const sBNode = w2s(nx, nyBase), sTNode = w2s(nx, nyTop); ctx.moveTo(sBNode.x, sBNode.y); ctx.lineTo(sTNode.x, sTNode.y);
+      if (c.modelo === 'PRATT' || c.modelo === 'FINK') {
+        if (i > 1) {
+          const prevX = (l / divs) * (i-1); const prevYBase = baseY(prevX); const sPrevBase = w2s(prevX, prevYBase);
+          if (nx <= pX) { ctx.moveTo(sTNode.x, sTNode.y); ctx.lineTo(sPrevBase.x, sPrevBase.y); } else { const sPrevTop = w2s(prevX, c.hIzq + (pY - c.hIzq)*(prevX/pX)); ctx.moveTo(sBNode.x, sBNode.y); ctx.lineTo(sPrevTop.x, sPrevTop.y); }
+        }
+      }
+    } ctx.stroke();
+  }
+  const p0 = w2s(0,0); ctx.beginPath(); ctx.moveTo(0, p0.y); ctx.lineTo(cv.width, p0.y); ctx.strokeStyle='#333'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle='#FE0000'; ctx.font = `500 ${Math.max(13, 15 * vpZ)}px var(--font, sans-serif)`; ctx.textAlign='left'; ctx.fillText(`ESTRUCTURA: ${c.label} (L: ${(l/1000).toFixed(2)}m)`, p0.x + 10, p0.y + 24); ctx.restore();
+}
+
+function drawAlzado(muro) {
+  const pts = getMuroPts(muro); const l = pts[pts.length-2].x; ctx.save();
+  ctx.fillStyle = (seleccionId===muro.id && !seleccionAbId) ? 'rgba(254, 0, 0, 0.05)' : 'rgba(235, 235, 240, 0.5)'; ctx.strokeStyle = (seleccionId===muro.id && !seleccionAbId) ? '#FE0000' : '#1c1c1e'; ctx.lineWidth = 2;
+  ctx.beginPath(); pts.forEach((p, i) => { const sp = w2s(p.x, p.y); i===0 ? ctx.moveTo(sp.x, sp.y) : ctx.lineTo(sp.x, sp.y); }); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+  const techos = objects.filter(o => o.type === 'roof');
+  techos.forEach(t => {
+    const zA = getRoofZ(t, muro.pA[0], muro.pA[1]); const zB = getRoofZ(t, muro.pB[0], muro.pB[1]); const spA = w2s(0, zA), spB = w2s(l, zB);
+    ctx.beginPath(); ctx.moveTo(spA.x, spA.y); ctx.lineTo(spB.x, spB.y); ctx.strokeStyle = '#ff9f0a'; ctx.lineWidth = 2; ctx.setLineDash([12*vpZ, 8*vpZ]); ctx.stroke(); ctx.setLineDash([]);
+  });
+
+  if (muro.proyectaTecho) {
+    ctx.beginPath(); ctx.setLineDash([8, 8]); ctx.strokeStyle = 'rgba(254, 0, 0, 0.6)'; ctx.lineWidth = 2;
+    pts.slice(1, pts.length-1).forEach(p => { const sp = w2s(p.x, p.y); ctx.moveTo(sp.x, sp.y); ctx.lineTo(sp.x, sp.y - 100); }); ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  muro.aberturas.forEach(ab => {
+    const s1 = w2s(ab.x, ab.y + ab.h), s2 = w2s(ab.x + ab.w, ab.y); const isSel = seleccionAbId === ab.id;
+    ctx.fillStyle = isSel ? 'rgba(254, 0, 0, 0.2)' : '#fff'; ctx.strokeStyle = isSel ? '#FE0000' : '#333'; ctx.lineWidth = isSel ? 3 : 2;
+    if (ab.type === 'vano') { ctx.setLineDash([5,5]); ctx.fillRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y); ctx.strokeRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y); ctx.setLineDash([]); }
+    else {
+      ctx.fillRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y); ctx.strokeRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y); ctx.beginPath(); ctx.setLineDash([4,4]); ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1;
+      const midY = s1.y + (s2.y - s1.y)/2;
+      if (ab.subType === 'batiente') { const handleX = ab.flipX ? s1.x : s2.x, hingeX = ab.flipX ? s2.x : s1.x; ctx.moveTo(hingeX, s1.y); ctx.lineTo(handleX, midY); ctx.lineTo(hingeX, s2.y); }
+      else if (ab.subType === 'doble') { const midX = s1.x + (s2.x - s1.x)/2; ctx.moveTo(s1.x, s1.y); ctx.lineTo(midX, midY); ctx.lineTo(s1.x, s2.y); ctx.moveTo(s2.x, s1.y); ctx.lineTo(midX, midY); ctx.lineTo(s2.x, s2.y); }
+      else if (ab.subType === 'corrediza') { ctx.setLineDash([]); ctx.moveTo(s1.x + 8, midY); ctx.lineTo(s2.x - 8, midY); } ctx.stroke(); ctx.setLineDash([]);
+    }
+  });
+  const p0 = w2s(0,0); ctx.beginPath(); ctx.moveTo(0, p0.y); ctx.lineTo(cv.width, p0.y); ctx.strokeStyle='#333'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle='#FE0000'; ctx.font = `500 ${Math.max(13, 15 * vpZ)}px var(--font, sans-serif)`; ctx.textAlign='left'; ctx.fillText(`PANEL: ${muro.label} (L: ${(l/1000).toFixed(2)}m)`, p0.x + 10, p0.y + 24); ctx.restore();
+}
+
+function drawObj(obj) {
+  if (obj.type === 'guide') {
+    const isSel = (obj.id === seleccionId); const dirX = Math.cos(obj.angle) * 10000, dirY = Math.sin(obj.angle) * 10000;
+    const s1 = w2s(obj.pt[0] - dirX, obj.pt[1] - dirY), s2 = w2s(obj.pt[0] + dirX, obj.pt[1] + dirY);
+    ctx.save(); ctx.strokeStyle = isSel ? '#FE0000' : '#00b3b3'; ctx.lineWidth = isSel ? 2 : 1.5; ctx.setLineDash([15*vpZ, 10*vpZ]); ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(s1.x, s1.y); ctx.lineTo(s2.x, s2.y); ctx.stroke(); ctx.restore();
+  }
+  else if (obj.type === 'columna') {
+    const isSel = (obj.id === seleccionId); ctx.save();
+    ctx.translate(w2s(obj.pt[0], obj.pt[1]).x, w2s(obj.pt[0], obj.pt[1]).y); ctx.rotate(obj.angle);
+    const ab = obj.anchoBase * vpZ; const esp = obj.espesor * vpZ;
+
+    ctx.fillStyle = isSel ? 'rgba(254, 0, 0, 0.2)' : 'rgba(150, 150, 150, 0.9)'; ctx.strokeStyle = isSel ? '#FE0000' : '#1c1c1e'; ctx.lineWidth = isSel ? 2 : 1.5;
+    ctx.fillRect(-ab/2, -esp/2, ab, esp); ctx.strokeRect(-ab/2, -esp/2, ab, esp);
+
+    if (obj.anchoBase !== obj.anchoTope) {
+      const diff = Math.abs(obj.anchoTope - obj.anchoBase) * vpZ;
+      ctx.beginPath(); ctx.setLineDash([4, 4]);
+      if (obj.caraRecta === 'IZQ') { ctx.rect(ab/2, -esp/2, diff, esp); }
+      else if (obj.caraRecta === 'DER') { ctx.rect(-ab/2 - diff, -esp/2, diff, esp); }
+      else { ctx.rect(ab/2, -esp/2, diff/2, esp); ctx.rect(-ab/2 - diff/2, -esp/2, diff/2, esp); }
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.fillStyle = isSel ? '#FE0000' : '#fff'; ctx.font = `500 ${Math.max(10, 12*vpZ)}px var(--font, sans-serif)`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(obj.label, 0, 0); ctx.restore();
+  }
+  else if (obj.type === 'cercha') {
+    const isSel = (obj.id === seleccionId); const sA = w2s(obj.pA[0], obj.pA[1]), sB = w2s(obj.pB[0], obj.pB[1]);
+    ctx.save(); ctx.strokeStyle = isSel ? '#FE0000' : '#34c759'; ctx.lineWidth = isSel ? 3 : 2; ctx.setLineDash([15*vpZ, 5*vpZ, 3*vpZ, 5*vpZ]);
+    ctx.beginPath(); ctx.moveTo(sA.x, sA.y); ctx.lineTo(sB.x, sB.y); ctx.stroke(); ctx.setLineDash([]);
+    const cx = (sA.x+sB.x)/2, cy = (sA.y+sB.y)/2; ctx.fillStyle = isSel ? '#FE0000' : '#34c759'; ctx.font = `500 ${Math.max(12, 14*vpZ)}px var(--font, sans-serif)`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(obj.label, cx, cy - 12*vpZ); ctx.restore();
+  }
+  else if (obj.type === 'roof') {
+    const alero = obj.alero || 0; const x1 = Math.min(obj.p1[0], obj.p2[0]) - alero, y1 = Math.min(obj.p1[1], obj.p2[1]) - alero; const w = Math.abs(obj.p2[0] - obj.p1[0]) + alero*2, h = Math.abs(obj.p2[1] - obj.p1[1]) + alero*2;
+    const s1 = w2s(x1, y1), s2 = w2s(x1+w, y1+h); const isSel = (obj.id === seleccionId);
+    ctx.save(); ctx.strokeStyle = isSel ? '#FE0000' : '#ff9f0a'; ctx.lineWidth = isSel ? 3 : 2; ctx.setLineDash([8*vpZ, 8*vpZ]); ctx.strokeRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y);
+    ctx.setLineDash([]); ctx.fillStyle = isSel ? '#FE0000' : '#ff9f0a'; ctx.beginPath(); const cx = s1.x + (s2.x-s1.x)/2, cy = s1.y + (s2.y-s1.y)/2; const as = 20 * vpZ;
+    if (obj.fallDir === 'abajo') { ctx.moveTo(cx, cy+as); ctx.lineTo(cx-as/2, cy); ctx.lineTo(cx+as/2, cy); } else if (obj.fallDir === 'arriba') { ctx.moveTo(cx, cy-as); ctx.lineTo(cx-as/2, cy); ctx.lineTo(cx+as/2, cy); } else if (obj.fallDir === 'der') { ctx.moveTo(cx+as, cy); ctx.lineTo(cx, cy-as/2); ctx.lineTo(cx, cy+as/2); } else if (obj.fallDir === 'izq') { ctx.moveTo(cx-as, cy); ctx.lineTo(cx, cy-as/2); ctx.lineTo(cx, cy+as/2); }
+    ctx.fill(); ctx.restore();
+  }
+  else if (obj.type === 'babeta') {
+    const isSel = (obj.id === seleccionId); ctx.save(); ctx.strokeStyle = isSel ? '#FE0000' : '#1c1c1e'; ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath(); obj.pts.forEach((p, i) => { const sp = w2s(p.x, p.y); if(i===0) ctx.moveTo(sp.x, sp.y); else ctx.lineTo(sp.x, sp.y); }); ctx.stroke(); ctx.restore();
+  }
+  else if (obj.type === 'wall') {
+    const sA = w2s(obj.pA[0], obj.pA[1]), sB = w2s(obj.pB[0], obj.pB[1]); const l = hyp(sB.x-sA.x, sB.y-sA.y), angle = Math.atan2(sB.y-sA.y, sB.x-sA.x), g = obj.espesor*vpZ; const isSel = (obj.id === seleccionId) && !seleccionAbId;
+    ctx.save(); ctx.translate(sA.x, sA.y); ctx.rotate(angle); let tramos = [{s: 0, e: l / vpZ}];
+    obj.aberturas.forEach(ab => { let nT = []; tramos.forEach(t => { if (ab.x > t.s && ab.x < t.e) nT.push({s: t.s, e: ab.x}); if (ab.x+ab.w > t.s && ab.x+ab.w < t.e) nT.push({s: ab.x+ab.w, e: t.e}); if (ab.x >= t.e || ab.x+ab.w <= t.s) nT.push(t); }); tramos = nT; });
+    ctx.fillStyle = isSel ? 'rgba(254, 0, 0, 0.2)' : 'rgba(200, 200, 205, 0.9)'; ctx.strokeStyle = isSel ? '#FE0000' : '#1c1c1e'; ctx.lineWidth = isSel ? 2 : 1.5;
+    tramos.forEach(t => { ctx.fillRect(t.s*vpZ, -g/2, (t.e-t.s)*vpZ, g); ctx.strokeRect(t.s*vpZ, -g/2, (t.e-t.s)*vpZ, g); });
+    obj.aberturas.forEach(ab => {
+      if (ab.type === 'vano') return;
+      const sX = ab.x * vpZ, sW = ab.w * vpZ; const isAbSel = (seleccionAbId === ab.id); ctx.strokeStyle = isAbSel ? '#FE0000' : '#8e8e93'; ctx.lineWidth = isAbSel ? 2.5 : 1.5;
+      const hx = ab.flipX ? sX + sW : sX, hy = ab.flipY ? -g/2 : g/2, dirY = ab.flipY ? -1 : 1;
+      if (ab.subType === 'batiente') { ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx, hy + sW * dirY); ctx.stroke(); ctx.beginPath(); ctx.setLineDash([2,2]); if (!ab.flipX && !ab.flipY) ctx.arc(hx, hy, sW, 0, Math.PI/2, false); if ( ab.flipX && !ab.flipY) ctx.arc(hx, hy, sW, Math.PI/2, Math.PI, false); if (!ab.flipX &&  ab.flipY) ctx.arc(hx, hy, sW, -Math.PI/2, 0, false); if ( ab.flipX &&  ab.flipY) ctx.arc(hx, hy, sW, Math.PI, Math.PI*1.5, false); ctx.stroke(); ctx.setLineDash([]); }
+      else if (ab.subType === 'doble') { const sw2 = sW/2, hyL = ab.flipY ? -g/2 : g/2, hxR = sX + sW; ctx.beginPath(); ctx.moveTo(sX, hyL); ctx.lineTo(sX, hyL + sw2 * dirY); ctx.stroke(); ctx.beginPath(); ctx.setLineDash([2,2]); if (!ab.flipY) ctx.arc(sX, hyL, sw2, 0, Math.PI/2, false); else ctx.arc(sX, hyL, sw2, -Math.PI/2, 0, false); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(hxR, hyL); ctx.lineTo(hxR, hyL + sw2 * dirY); ctx.stroke(); ctx.beginPath(); ctx.setLineDash([2,2]); if (!ab.flipY) ctx.arc(hxR, hyL, sw2, Math.PI/2, Math.PI, false); else ctx.arc(hxR, hyL, sw2, Math.PI, Math.PI*1.5, false); ctx.stroke(); ctx.setLineDash([]); }
+      else if (ab.subType === 'corrediza') { ctx.strokeRect(sX, -g/2, sW, g); ctx.beginPath(); ctx.moveTo(sX, 2); ctx.lineTo(sX + sW/2 + 3, 2); ctx.moveTo(sX + sW/2 - 3, -2); ctx.lineTo(sX + sW, -2); ctx.stroke(); }
+      else { ctx.strokeRect(sX, -g/2, sW, g); ctx.beginPath(); ctx.moveTo(sX, 0); ctx.lineTo(sX + sW, 0); ctx.stroke(); }
+    });
+    ctx.fillStyle = isSel ? '#FE0000' : '#FE0000'; ctx.font = `500 ${Math.max(12, 14*vpZ)}px var(--font, sans-serif)`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    if (angle > Math.PI/2 || angle < -Math.PI/2) { ctx.scale(-1,-1); ctx.fillText(obj.label, -l/2, 0); } else { ctx.fillText(obj.label, l/2, 0); } ctx.restore();
+  }
+}
+
+function draw3D() {
+  const isoProj = (x, y, z) => ({ x: (x - y) * 0.866 * vpZ + vpX, y: ((x + y) * 0.5 - z) * vpZ + vpY }); ctx.save();
+  const muros = objects.filter(o => o.type === 'wall').sort((a,b) => Math.min(a.pA[1], a.pB[1]) - Math.min(b.pA[1], b.pB[1]));
+  muros.forEach(m => {
+    const ang = Math.atan2(m.pB[1]-m.pA[1], m.pB[0]-m.pA[0]), dx = Math.cos(ang + Math.PI/2) * (m.espesor/2), dy = Math.sin(ang + Math.PI/2) * (m.espesor/2);
+    const bA1 = isoProj(m.pA[0]-dx, m.pA[1]-dy, 0), bB1 = isoProj(m.pB[0]-dx, m.pB[1]-dy, 0); const pts2D = getMuroPts(m), topPts1 = [], topPts2 = [];
+    pts2D.forEach(p => { if(p.y > 0) { const mx = m.pA[0] + Math.cos(ang)*p.x, my = m.pA[1] + Math.sin(ang)*p.x; topPts1.push(isoProj(mx-dx, my-dy, p.y)); topPts2.push(isoProj(mx+dx, my+dy, p.y)); } });
+    ctx.fillStyle = 'rgba(200, 200, 205, 0.7)'; ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bA1.x, bA1.y); ctx.lineTo(bB1.x, bB1.y); topPts1.reverse().forEach(p => ctx.lineTo(p.x,p.y)); topPts1.reverse(); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(230, 230, 235, 0.9)'; ctx.beginPath(); ctx.moveTo(topPts1[0].x, topPts1[0].y); topPts1.forEach(p=>ctx.lineTo(p.x,p.y)); topPts2.slice().reverse().forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath(); ctx.fill(); ctx.stroke();
+  });
+
+  const techos = objects.filter(o => o.type === 'roof');
+  techos.forEach(t => {
+    const alero = t.alero || 0; const x1 = Math.min(t.p1[0], t.p2[0]) - alero, y1 = Math.min(t.p1[1], t.p2[1]) - alero; const w = Math.abs(t.p2[0] - t.p1[0]) + alero*2, h = Math.abs(t.p2[1] - t.p1[1]) + alero*2;
+    const x2 = x1 + w, y2 = y1 + h; const dzX = (w * (t.slope/100)), dzY = (h * (t.slope/100)); let z1=t.hBase, z2=t.hBase, z3=t.hBase, z4=t.hBase;
+    if (t.fallDir === 'abajo') { z1+=dzY; z2+=dzY; } else if (t.fallDir === 'arriba') { z3+=dzY; z4+=dzY; } else if (t.fallDir === 'der') { z1+=dzX; z4+=dzX; } else if (t.fallDir === 'izq') { z2+=dzX; z3+=dzX; }
+    const c1 = isoProj(x1, y1, z1), c2 = isoProj(x2, y1, z2), c3 = isoProj(x2, y2, z3), c4 = isoProj(x1, y2, z4);
+    ctx.fillStyle = 'rgba(255, 159, 10, 0.6)'; ctx.strokeStyle = '#c27600'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y); ctx.lineTo(c4.x, c4.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }); ctx.restore();
+}
+
+function drawPreview() {
+  if (!dragCurW || !drawing) return;
+  if (tool === 'wall' && dragStartW && vistaActual === 'planta') {
+    const a = w2s(dragStartW.x, dragStartW.y), b = w2s(dragCurW.x, dragCurW.y); const l = hyp(b.x - a.x, b.y - a.y), ang = Math.atan2(b.y - a.y, b.x - a.x), g = espesorActual * vpZ;
+    ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(ang); ctx.fillStyle='rgba(254,0,0,0.15)'; ctx.strokeStyle='#FE0000'; ctx.setLineDash([4,4]); ctx.fillRect(0,-g/2,l,g); ctx.strokeRect(0,-g/2,l,g); ctx.restore();
+  } else if (tool === 'cercha' && dragStartW && vistaActual === 'planta') {
+    const a = w2s(dragStartW.x, dragStartW.y), b = w2s(dragCurW.x, dragCurW.y); ctx.save(); ctx.strokeStyle='#34c759'; ctx.lineWidth=2; ctx.setLineDash([15*vpZ, 5*vpZ, 3*vpZ, 5*vpZ]); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore();
+  } else if (tool === 'roof' && dragStartW && vistaActual === 'techo') {
+    const p1 = w2s(dragStartW.x, dragStartW.y), p2 = w2s(dragCurW.x, dragCurW.y); ctx.save(); ctx.fillStyle='rgba(255, 159, 10, 0.1)'; ctx.strokeStyle='#ff9f0a'; ctx.setLineDash([8,8]); ctx.lineWidth=2; ctx.fillRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y); ctx.strokeRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y); ctx.restore();
+  } else if (tool === 'babeta' && polyPts.length > 0 && vistaActual === 'techo') {
+    ctx.save(); ctx.strokeStyle = '#FE0000'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.beginPath(); polyPts.forEach((p, i) => { const sp = w2s(p.x, p.y); if(i===0) ctx.moveTo(sp.x, sp.y); else ctx.lineTo(sp.x, sp.y); });
+    const cp = w2s(dragCurW.x, dragCurW.y); ctx.lineTo(cp.x, cp.y); ctx.stroke(); const sp0 = w2s(polyPts[0].x, polyPts[0].y); ctx.beginPath(); ctx.arc(sp0.x, sp0.y, 10, 0, Math.PI*2); ctx.fillStyle = 'rgba(254, 0, 0, 0.3)'; ctx.fill(); ctx.stroke(); ctx.restore();
+  } else if (tool === 'guide' && dragStartW) {
+    if (guideData.hitWall) {
+      let dist = getLineDistance(dragCurW, guideData.startP, guideData.angle); if(snapOn) dist = Math.round(dist / 50) * 50;
+      const offX = -Math.sin(guideData.angle) * dist, offY = Math.cos(guideData.angle) * dist; const pt = {x: guideData.startP.x + offX, y: guideData.startP.y + offY}; const dirX = Math.cos(guideData.angle)*10000, dirY = Math.sin(guideData.angle)*10000;
+      ctx.save(); ctx.strokeStyle='#FE0000'; ctx.lineWidth=1.5; ctx.setLineDash([15*vpZ,10*vpZ]); ctx.beginPath(); ctx.moveTo(w2s(pt.x-dirX, pt.y-dirY).x, w2s(pt.x-dirX, pt.y-dirY).y); ctx.lineTo(w2s(pt.x+dirX, pt.y+dirY).x, w2s(pt.x+dirX, pt.y+dirY).y); ctx.stroke();
+      ctx.setLineDash([]); ctx.strokeStyle='#ff9f0a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(w2s(guideData.startP.x, guideData.startP.y).x, w2s(guideData.startP.x, guideData.startP.y).y); ctx.lineTo(w2s(pt.x, pt.y).x, w2s(pt.x, pt.y).y); ctx.stroke(); ctx.fillStyle='#ff9f0a'; ctx.font='500 15px var(--font, sans-serif)'; ctx.fillText(Math.abs(dist/1000).toFixed(2)+'m', w2s(pt.x, pt.y).x + 10, w2s(pt.x, pt.y).y - 10); ctx.restore();
+    } else {
+      let dist = getLineDistance(dragCurW, dragStartW, guideData.angle); if(snapOn) dist = Math.round(dist / 50) * 50;
+      const cx = dragStartW.x - Math.sin(guideData.angle)*dist, cy = dragStartW.y + Math.cos(guideData.angle)*dist; const dirX = Math.cos(guideData.angle)*10000, dirY = Math.sin(guideData.angle)*10000; const s1 = w2s(cx-dirX, cy-dirY), s2 = w2s(cx+dirX, cy+dirY);
+      ctx.save(); ctx.strokeStyle='#00b3b3'; ctx.lineWidth=1.5; ctx.setLineDash([15*vpZ,10*vpZ]); ctx.globalAlpha=0.6; ctx.beginPath(); ctx.moveTo(s1.x, s1.y); ctx.lineTo(s2.x, s2.y); ctx.stroke(); ctx.restore();
+    }
+  } else if ((tool === 'puerta' || tool === 'ventana' || tool === 'vano') && dragStartW && vistaActual === 'alzado') {
+    const x1 = Math.min(dragStartW.x, dragCurW.x), x2 = Math.max(dragStartW.x, dragCurW.x); const p1 = w2s(x1, Math.max(dragStartW.y, dragCurW.y)), p2 = w2s(x2, Math.min(dragStartW.y, dragCurW.y));
+    ctx.save(); ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.strokeStyle = '#FE0000'; ctx.lineWidth = 2; if(tool === 'vano') ctx.setLineDash([5,5]); ctx.fillRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y); ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y); ctx.restore();
+  } else if (tool === 'move' && dragStartW && seleccionId) { const obj = objects.find(o => o.id === seleccionId); if(obj) cloneAndDrawGhost(obj, dragCurW.x - dragStartW.x, dragCurW.y - dragStartW.y);
+  } else if (tool === 'copy' && dragStartW && seleccionId) { const obj = objects.find(o => o.id === seleccionId); if(obj) { const dx = dragCurW.x-dragStartW.x, dy = dragCurW.y-dragStartW.y; cloneAndDrawGhost(obj, dx, dy); }
+  } else if (tool === 'join' && dragStartW && startObjId && vistaActual === 'planta') {
+    const a = w2s(dragStartW.x, dragStartW.y), b = w2s(dragCurW.x, dragCurW.y); ctx.save(); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.strokeStyle = '#FE0000'; ctx.lineWidth = 2; ctx.setLineDash([5,5]); ctx.stroke(); ctx.restore();
+  }
+}
+
+function startLP(wp, scrn) {
+  longTimer = setTimeout(() => {
+    let bestD = 25/vpZ, foundId = null;
+    for(const obj of objects) {
+      if(obj.type === 'wall' && vistaActual === 'planta' && distPS(wp, obj.pA, obj.pB) < bestD) { bestD = distPS(wp, obj.pA, obj.pB); foundId = obj.id; }
+      else if(obj.type === 'cercha' && vistaActual === 'planta' && distPS(wp, obj.pA, obj.pB) < bestD) { bestD = distPS(wp, obj.pA, obj.pB); foundId = obj.id; }
+      else if(obj.type === 'columna' && vistaActual === 'planta' && hyp(wp.x - obj.pt[0], wp.y - obj.pt[1]) < Math.max(obj.anchoTope, obj.anchoBase)/2 + 20/vpZ) { bestD = 0; foundId = obj.id; }
+      else if(obj.type === 'guide' && obj.env === vistaActual && Math.abs(getLineDistance(wp, {x:obj.pt[0], y:obj.pt[1]}, obj.angle)) < bestD) { bestD = Math.abs(getLineDistance(wp, {x:obj.pt[0], y:obj.pt[1]}, obj.angle)); foundId = obj.id; }
+      else if(obj.type === 'roof' && vistaActual === 'techo') { const x1=Math.min(obj.p1[0],obj.p2[0])-obj.alero, y1=Math.min(obj.p1[1],obj.p2[1])-obj.alero, w=Math.abs(obj.p2[0]-obj.p1[0])+obj.alero*2, h=Math.abs(obj.p2[1]-obj.p1[1])+obj.alero*2; if(wp.x>=x1 && wp.x<=x1+w && wp.y>=y1 && wp.y<=y1+h) { foundId = obj.id; bestD = 0; } }
+      else if(obj.type === 'babeta' && vistaActual === 'techo') { for(let i=0; i<obj.pts.length-1; i++) { const d = distPS(wp, [obj.pts[i].x, obj.pts[i].y], [obj.pts[i+1].x, obj.pts[i+1].y]); if(d < bestD) { bestD = d; foundId = obj.id; } } }
+    }
+    if(foundId) { seleccionId = foundId; const m = document.getElementById('ctx'); m.style.left = scrn.x + 'px'; m.style.top = (scrn.y-10) + 'px'; m.classList.add('show'); navigator.vibrate && navigator.vibrate(50); }
+  }, 450);
+}
+document.addEventListener('pointerdown', e => { if(!document.getElementById('ctx').contains(e.target)) document.getElementById('ctx').classList.remove('show'); }, {capture: true});
+function ctxDo(action) { document.getElementById('ctx').classList.remove('show'); if(!seleccionId) return; if(action === 'delete') { saveHistory(); objects = objects.filter(o=>o.id!==seleccionId); seleccionId=null; lastCopyData=null; ST('select'); } else if(action === 'move') { ST('move'); toast("Arrastrá para mover"); } else if(action === 'copy') { ST('copy'); toast("Arrastrá para copiar"); } else if(action === 'rotate') { ST('rotate_edit'); } }
+
+function onDown(e) {
+  e.preventDefault(); const isMouse = e.type.includes('mouse'); if(isMouse) touches[1] = {x: e.clientX, y: e.clientY}; else for(const t of e.changedTouches) touches[t.identifier] = {x: t.clientX, y: t.clientY};
+  if(Object.keys(touches).length >= 2) {
+    clearTimeout(longTimer); pinching = true; drawing = false; panning = true;
+    const ids = Object.keys(touches); const t0=touches[ids[0]], t1=touches[ids[1]]; const r=cv.getBoundingClientRect(); const mx=(t0.x+t1.x)/2-r.left, my=(t0.y+t1.y)/2-r.top;
+    pinch0={dist:hyp(t1.x-t0.x,t1.y-t0.y), z:vpZ, mx, my, vx:vpX, vy:vpY}; panRef={sx:mx, sy:my, vx:vpX, vy:vpY}; return;
+  }
+  if(pinching || vistaActual === '3d') return;
+  const scrn = getS(e); const wp = getW(e); dragCurW = {...wp};
+
+  if (tool === 'wall' && vistaActual === 'planta') { saveHistory(); drawing = true; dragStartW = {...wp}; }
+  else if (tool === 'cercha' && vistaActual === 'planta') { saveHistory(); drawing = true; dragStartW = {...wp}; }
+  else if (tool === 'columna' && vistaActual === 'planta') {
+    saveHistory();
+    objects.push({ type: 'columna', id: nextId++, label: 'P'+nextColNum++, pt: [wp.x, wp.y], angle: 0, altura: 3000, anchoBase: 400, anchoTope: 400, espesor: 100, caraRecta: 'IZQ', divisiones: 5, patron: 'WARREN' });
+    seleccionId = nextId-1; forceCardOpen = true; ST('select'); ilPersist();
+  }
+  else if (tool === 'roof' && vistaActual === 'techo') { saveHistory(); drawing = true; dragStartW = {...wp}; }
+  else if (tool === 'babeta' && vistaActual === 'techo') { dragStartW = {...wp}; }
+  else if (tool === 'guide') {
+    saveHistory(); drawing = true; dragStartW = {...wp}; let bestD = 30/vpZ, hitWall = null;
+    for(const obj of objects) { if(obj.type === 'wall' || obj.type === 'cercha') { let d = distPS(wp, obj.pA, obj.pB); if(d < bestD) { bestD = d; hitWall = obj; } } }
+    if (hitWall) { let ang = Math.atan2(hitWall.pB[1]-hitWall.pA[1], hitWall.pB[0]-hitWall.pA[0]); guideData = { hitWall: true, angle: ang, startP: {...dragStartW} }; } else { guideData = { hitWall: false, angle: 0, startP: {...dragStartW} }; }
+  }
+  else if ((tool === 'puerta' || tool === 'ventana' || tool === 'vano') && vistaActual === 'alzado') { saveHistory(); drawing = true; dragStartW = {...wp}; }
+  else if ((tool === 'move' || tool === 'copy') && seleccionId) { drawing = true; dragStartW = {...wp}; }
+  else if (tool === 'join' && vistaActual === 'planta') { let bestD = 25/vpZ; startObjId = null; for(const obj of objects) { if(obj.type==='wall' && distPS(wp, obj.pA, obj.pB)<bestD) { bestD=distPS(wp,obj.pA,obj.pB); startObjId=obj.id; }} if(startObjId) { drawing = true; dragStartW = {...wp}; } }
+  else if (tool === 'select') {
+    startLP(wp, scrn); let detectado = false;
+    if(vistaActual === 'planta') {
+      let bestD = 20/vpZ; seleccionId = null; seleccionAbId = null;
+      for(const obj of objects) {
+        if((obj.type==='wall' || obj.type==='cercha') && distPS(wp, obj.pA, obj.pB)<bestD) {
+          if (obj.type === 'wall') {
+            const l = hyp(obj.pB[0]-obj.pA[0], obj.pB[1]-obj.pA[1]); const ang = Math.atan2(obj.pB[1]-obj.pA[1], obj.pB[0]-obj.pA[0]); const dx = wp.x - obj.pA[0], dy = wp.y - obj.pA[1]; const localX = dx*Math.cos(ang) + dy*Math.sin(ang);
+            let foundAb = null; for(const ab of obj.aberturas) { if(localX >= ab.x && localX <= ab.x + ab.w) { foundAb = ab; break; } }
+            if(foundAb) { seleccionId = obj.id; seleccionAbId = foundAb.id; detectado = true; break; }
+          }
+          bestD = distPS(wp, obj.pA, obj.pB); seleccionId = obj.id; detectado=true;
+        }
+        else if (obj.type==='columna' && hyp(wp.x - obj.pt[0], wp.y - obj.pt[1]) < Math.max(obj.anchoTope, obj.anchoBase)/2 + 20/vpZ) { seleccionId = obj.id; detectado = true; }
+        else if(obj.type==='guide' && obj.env===vistaActual && Math.abs(getLineDistance(wp, {x:obj.pt[0], y:obj.pt[1]}, obj.angle)) < bestD) { bestD = Math.abs(getLineDistance(wp, {x:obj.pt[0], y:obj.pt[1]}, obj.angle)); seleccionId=obj.id; detectado=true; seleccionAbId=null; }
+      }
+    } else if(vistaActual === 'techo') {
+      let bestD = 20/vpZ; seleccionId = null;
+      for(const obj of objects) {
+        if(obj.type==='babeta') { for(let i=0; i<obj.pts.length-1; i++) { const d = distPS(wp, [obj.pts[i].x, obj.pts[i].y], [obj.pts[i+1].x, obj.pts[i+1].y]); if(d < bestD) { bestD = d; seleccionId = obj.id; detectado = true; } } }
+        else if(obj.type==='roof') { const x1=Math.min(obj.p1[0],obj.p2[0])-obj.alero, y1=Math.min(obj.p1[1],obj.p2[1])-obj.alero, w=Math.abs(obj.p2[0]-obj.p1[0])+obj.alero*2, h=Math.abs(obj.p2[1]-obj.p1[1])+obj.alero*2; if(wp.x>=x1 && wp.x<=x1+w && wp.y>=y1 && wp.y<=y1+h) { seleccionId=obj.id; detectado=true; } }
+      }
+    } else if(vistaActual === 'alzado' && muroAlzadoId) {
+      let bestD = 20/vpZ; const m = objects.find(o=>o.id===muroAlzadoId); seleccionAbId = null;
+      if (m.type === 'wall') {
+        for(const ab of m.aberturas) { if(wp.x >= ab.x && wp.x <= ab.x+ab.w && wp.y >= ab.y && wp.y <= ab.y+ab.h) { seleccionAbId = ab.id; detectado=true; break; }}
+        if(!detectado) { const l = hyp(m.pB[0]-m.pA[0], m.pB[1]-m.pA[1]); const maxH = Math.max(m.hA, m.hB, m.peak ? m.peak.y : 0); if(wp.x >= 0 && wp.x <= l && wp.y >= 0 && wp.y <= maxH) detectado = true; }
+      } else if (m.type === 'cercha') {
+        const l = hyp(m.pB[0]-m.pA[0], m.pB[1]-m.pA[1]); const maxH = Math.max(m.hIzq, m.hDer) + m.hPico; if(wp.x >= 0 && wp.x <= l && wp.y >= 0 && wp.y <= maxH) detectado = true;
+      } else if (m.type === 'columna') {
+        const l = Math.max(m.anchoBase, m.anchoTope); const maxH = m.altura; if(wp.x >= -l && wp.x <= l && wp.y >= 0 && wp.y <= maxH) detectado = true;
+      }
+      for(const obj of objects) { if(obj.type==='guide' && obj.env===vistaActual && Math.abs(getLineDistance(wp, {x:obj.pt[0], y:obj.pt[1]}, obj.angle)) < bestD) { bestD = Math.abs(getLineDistance(wp, {x:obj.pt[0], y:obj.pt[1]}, obj.angle)); seleccionId=obj.id; detectado=true; seleccionAbId=null; } }
+      if(detectado && !seleccionAbId && (!seleccionId || objects.find(o=>o.id===seleccionId).type !== 'guide')) seleccionId = muroAlzadoId;
+    }
+
+    if(!detectado) { panning = true; panRef = {sx: scrn.x, sy: scrn.y, vx: vpX, vy: vpY}; lastCopyData = null; }
+    forceCardOpen = detectado; actualizarPropBar(); render();
+  }
+}
+
+function onMove(e) {
+  e.preventDefault(); clearTimeout(longTimer);
+  const isMouse = e.type.includes('mouse'); if(isMouse && !touches[1]) return; if(!isMouse) for(const t of e.changedTouches) touches[t.identifier] = {x: t.clientX, y: t.clientY};
+  if (pinching && pinch0) { const ids=Object.keys(touches); if(ids.length >= 2){ const t0=touches[ids[0]], t1=touches[ids[1]], r=cv.getBoundingClientRect(); const dist=hyp(t1.x-t0.x, t1.y-t0.y), mx=(t0.x+t1.x)/2-r.left, my=(t0.y+t1.y)/2-r.top; const nz=Math.max(0.01, Math.min(pinch0.z * (dist / pinch0.dist), 10)); vpX = pinch0.mx - (pinch0.mx - pinch0.vx) * (nz / pinch0.z) + (mx - pinch0.mx); vpY = pinch0.my - (pinch0.my - pinch0.vy) * (nz / pinch0.z) + (my - pinch0.my); vpZ = nz; render(); } return; }
+  if (panning && panRef) { const s = getS(e); vpX = panRef.vx + s.x - panRef.sx; vpY = panRef.vy + s.y - panRef.sy; render(); return; }
+  dragCurW = getW(e); if (tool === 'guide' && drawing && !guideData.hitWall) { const dx = Math.abs(dragCurW.x - dragStartW.x), dy = Math.abs(dragCurW.y - dragStartW.y); guideData.angle = dx > dy ? 0 : Math.PI/2; } render();
+}
+
+function onUp(e) {
+  e.preventDefault(); clearTimeout(longTimer);
+  const isMouse = e.type.includes('mouse'); if(isMouse) delete touches[1]; else for (const t of e.changedTouches) delete touches[t.identifier];
+  const tLen = Object.keys(touches).length; if (tLen < 2) { pinching = false; pinch0 = null; } if (tLen === 0) { panning = false; panRef = null; }
+  const wp = getW(e); dragCurW = {...wp}; let shouldResetDrawing = true;
+
+  if (tool === 'wall' && drawing && vistaActual === 'planta') {
+    if (hyp(dragCurW.x-dragStartW.x, dragCurW.y-dragStartW.y) > 100) { objects.push({type:'wall', id:nextId++, label:'M'+nextWallNum++, pA:[dragStartW.x, dragStartW.y], pB:[dragCurW.x, dragCurW.y], espesor:espesorActual, hA:2400, hB:2400, peak:null, proyectaTecho:false, aberturas:[]}); ilPersist(); } else { history.pop(); }
+  } else if (tool === 'cercha' && drawing && vistaActual === 'planta') {
+    if (hyp(dragCurW.x-dragStartW.x, dragCurW.y-dragStartW.y) > 100) { objects.push({type:'cercha', id:nextId++, label:'C'+nextCerchaNum++, pA:[dragStartW.x, dragStartW.y], pB:[dragCurW.x, dragCurW.y], espesor:100, hIzq:2400, hDer:2400, hPico:1000, xPico:0.5, divisiones:4, modelo:'PRATT', soportaClavadores:false}); ilPersist(); } else { history.pop(); }
+  } else if (tool === 'roof' && drawing && vistaActual === 'techo') {
+    if (Math.abs(dragCurW.x-dragStartW.x) > 100) { objects.push({type:'roof', id:nextId++, p1:[dragStartW.x, dragStartW.y], p2:[dragCurW.x, dragCurW.y], hBase: 2400, slope: 15, fallDir: 'abajo', alero: 300}); ilPersist(); } else { history.pop(); }
+  } else if (tool === 'babeta' && vistaActual === 'techo') {
+    shouldResetDrawing = false; if(!drawing) { saveHistory(); drawing = true; polyPts = [{...wp}]; forceCardOpen = true; actualizarPropBar(); } else { if(polyPts.length > 2 && hyp(wp.x - polyPts[0].x, wp.y - polyPts[0].y) < 30/vpZ) { polyPts.push({...polyPts[0]}); objects.push({type:'babeta', id:nextId++, pts: [...polyPts]}); drawing = false; polyPts = []; toast("Babeta cerrada"); ST('select'); ilPersist(); } else { polyPts.push({...wp}); } }
+  } else if (tool === 'guide' && drawing) {
+    let finalPt, finalAng;
+    if (guideData.hitWall) { let dist = getLineDistance(dragCurW, guideData.startP, guideData.angle); if(snapOn) dist = Math.round(dist / 50) * 50; const offX = -Math.sin(guideData.angle) * dist, offY = Math.cos(guideData.angle) * dist; finalPt = [guideData.startP.x + offX, guideData.startP.y + offY]; finalAng = guideData.angle; } else { let dist = getLineDistance(dragCurW, dragStartW, guideData.angle); if(snapOn) dist = Math.round(dist / 50) * 50; const cx = dragStartW.x - Math.sin(guideData.angle)*dist, cy = dragStartW.y + Math.cos(guideData.angle)*dist; finalPt = [cx, cy]; finalAng = guideData.angle; }
+    objects.push({type:'guide', id:nextId++, env: vistaActual, angle: finalAng, pt: finalPt}); seleccionId = nextId-1; forceCardOpen = true; ST('select'); ilPersist();
+  } else if ((tool === 'puerta' || tool === 'ventana' || tool === 'vano') && drawing && vistaActual === 'alzado' && muroAlzadoId) {
+    const m = objects.find(o => o.id === muroAlzadoId);
+    if(m && m.type === 'wall') { const x1 = Math.min(dragStartW.x, dragCurW.x), w = Math.abs(dragCurW.x - dragStartW.x), y1 = Math.min(dragStartW.y, dragCurW.y), h = Math.abs(dragCurW.y - dragStartW.y); if(w > 120 && h > 120) { const nId = nextId++; let subType=tool==='puerta'?'batiente':(tool==='ventana'?'corrediza':'vano'); m.aberturas.push({id: nId, type: tool, subType: subType, x: x1, y: y1, w: w, h: h, flipX: false, flipY: false}); seleccionAbId = nId; forceCardOpen = true; ST('select'); ilPersist(); } else { history.pop(); } }
+  } else if (tool === 'move' && drawing && seleccionId) {
+    const obj = objects.find(o=>o.id===seleccionId);
+    if(obj) { saveHistory(); const dx = dragCurW.x-dragStartW.x, dy = dragCurW.y-dragStartW.y; if(obj.type==='wall' || obj.type==='cercha'){ obj.pA[0]+=dx; obj.pA[1]+=dy; obj.pB[0]+=dx; obj.pB[1]+=dy; } else if(obj.type==='columna') { obj.pt[0]+=dx; obj.pt[1]+=dy; } else if(obj.type==='roof'){ obj.p1[0]+=dx; obj.p1[1]+=dy; obj.p2[0]+=dx; obj.p2[1]+=dy; } else if(obj.type==='babeta'){ obj.pts.forEach(p=>{p.x+=dx;p.y+=dy;}); } ilPersist(); } ST('select');
+  } else if (tool === 'copy' && drawing && seleccionId) {
+    const m = objects.find(o=>o.id===seleccionId);
+    if(m && (m.type==='wall' || m.type==='cercha' || m.type==='columna')) {
+      saveHistory(); const dx = dragCurW.x-dragStartW.x, dy = dragCurW.y-dragStartW.y; const clon = JSON.parse(JSON.stringify(m)); clon.id = nextId++;
+      if (m.type === 'columna') { clon.label = 'P'+nextColNum++; clon.pt[0]+=dx; clon.pt[1]+=dy; } else { clon.label = (m.type==='wall'?'M':'C')+(m.type==='wall'?nextWallNum++:nextCerchaNum++); clon.pA[0]+=dx; clon.pA[1]+=dy; clon.pB[0]+=dx; clon.pB[1]+=dy; }
+      objects.push(clon); seleccionId = clon.id; lastCopyData = { srcId: m.id, newId: clon.id, dx: dx, dy: dy }; forceCardOpen = true; ilPersist();
+    } ST('select');
+  } else if (tool === 'join' && drawing && startObjId && vistaActual === 'planta') {
+    let targetId = null; let bestD = 25/vpZ; for(const obj of objects) { if(obj.type==='wall' && obj.id !== startObjId && distPS(wp, obj.pA, obj.pB)<bestD) { bestD=distPS(wp,obj.pA,obj.pB); targetId=obj.id; }}
+    if(targetId) { const mA = objects.find(o=>o.id===startObjId), mB = objects.find(o=>o.id===targetId); const I = intersect(mA.pA[0], mA.pA[1], mA.pB[0], mA.pB[1], mB.pA[0], mB.pA[1], mB.pB[0], mB.pB[1]); if(I) { saveHistory(); const dAa = hyp(I.x-mA.pA[0], I.y-mA.pA[1]), dAb = hyp(I.x-mA.pB[0], I.y-mA.pB[1]); if(dAa < dAb) { mA.pA = [I.x, I.y]; } else { mA.pB = [I.x, I.y]; } if(!isPointOnSegment(I, mB.pA, mB.pB, 200)) { const dBa = hyp(I.x-mB.pA[0], I.y-mB.pA[1]), dBb = hyp(I.x-mB.pB[0], I.y-mB.pB[1]); if(dBa < dBb) { mB.pA = [I.x, I.y]; } else { mB.pB = [I.x, I.y]; } } toast("Unión Completada"); ilPersist(); } } ST('select');
+  }
+  if(shouldResetDrawing && tool !== 'columna') { drawing = false; dragStartW = null; dragCurW = null; startObjId = null; }
+  render();
+}
+
+function onCancel(e) { touches = {}; pinching = false; pinch0 = null; panning = false; panRef = null; drawing = false; dragStartW = null; render(); }
+cv.addEventListener('touchstart', onDown, {passive: false}); cv.addEventListener('touchmove', onMove, {passive: false}); cv.addEventListener('touchend', onUp, {passive: false}); cv.addEventListener('touchcancel', onCancel, {passive: false});
+cv.addEventListener('mousedown', e => { if(e.button===0) onDown(e); }); cv.addEventListener('mousemove', onMove); cv.addEventListener('mouseup', onUp); cv.addEventListener('mouseleave', onCancel);
+cv.addEventListener('wheel', e => { e.preventDefault(); const nz = Math.max(0.01, Math.min(vpZ * (e.deltaY<0 ? 1.08 : 0.92), 10)); const s = getS(e); vpX = s.x - (s.x - vpX) * (nz/vpZ); vpY = s.y - (s.y - vpY) * (nz/vpZ); vpZ = nz; render(); }, {passive:false});
+
+function finishPoly() { if(polyPts.length > 1) { objects.push({type:'babeta', id:nextId++, pts: [...polyPts]}); toast("Babeta Guardada"); ilPersist(); } drawing = false; polyPts = []; ST('select'); }
+
+function ejecutarMatriz(tipo, valor) {
+  if (!lastCopyData) return; const num = parseInt(valor); if (isNaN(num) || num < 2) return; const src = objects.find(o => o.id === lastCopyData.srcId); if (!src) return;
+  saveHistory(); objects = objects.filter(o => o.id !== lastCopyData.newId);
+  if (tipo === 'repetir') {
+    for (let i = 1; i <= num; i++) {
+      const clon = JSON.parse(JSON.stringify(src)); clon.id = nextId++;
+      if (src.type === 'columna') { clon.label = 'P'+nextColNum++; clon.pt[0] += lastCopyData.dx * i; clon.pt[1] += lastCopyData.dy * i; }
+      else { clon.label = (src.type==='wall'?'M':'C')+(src.type==='wall'?nextWallNum++:nextCerchaNum++); clon.pA[0] += lastCopyData.dx * i; clon.pA[1] += lastCopyData.dy * i; clon.pB[0] += lastCopyData.dx * i; clon.pB[1] += lastCopyData.dy * i; }
+      objects.push(clon);
+    } toast(`Matriz: ${num} repeticiones`);
+  } else if (tipo === 'dividir') {
+    for (let i = 1; i < num; i++) {
+      const stepX = (lastCopyData.dx / num) * i, stepY = (lastCopyData.dy / num) * i;
+      const clon = JSON.parse(JSON.stringify(src)); clon.id = nextId++;
+      if (src.type === 'columna') { clon.label = 'P'+nextColNum++; clon.pt[0] += stepX; clon.pt[1] += stepY; }
+      else { clon.label = (src.type==='wall'?'M':'C')+(src.type==='wall'?nextWallNum++:nextCerchaNum++); clon.pA[0] += stepX; clon.pA[1] += stepY; clon.pB[0] += stepX; clon.pB[1] += stepY; }
+      objects.push(clon);
+    }
+    const finalClon = JSON.parse(JSON.stringify(src)); finalClon.id = nextId++;
+    if (src.type === 'columna') { finalClon.label = 'P'+nextColNum++; finalClon.pt[0] += lastCopyData.dx; finalClon.pt[1] += lastCopyData.dy; }
+    else { finalClon.label = (src.type==='wall'?'M':'C')+(src.type==='wall'?nextWallNum++:nextCerchaNum++); finalClon.pA[0] += lastCopyData.dx; finalClon.pA[1] += lastCopyData.dy; finalClon.pB[0] += lastCopyData.dx; finalClon.pB[1] += lastCopyData.dy; }
+    objects.push(finalClon); toast(`Copia dividida en ${num} espacios`);
+  } lastCopyData = null; seleccionId = null; forceCardOpen = false; ST('select'); ilPersist();
+}
+
+function modRoof(prop, val) { if(!seleccionId) return; const r = objects.find(o=>o.id===seleccionId); if(!r || r.type!=='roof') return; saveHistory(); if(prop === 'hBase' || prop === 'slope' || prop === 'alero') r[prop] = parseFloat(val); else if(prop === 'fallDir') r.fallDir = val; render(); ilPersist(); }
+function modAb(prop, val) { if(!seleccionId || !seleccionAbId) return; const m = objects.find(o=>o.id===seleccionId); if(!m) return; const ab = m.aberturas.find(a=>a.id===seleccionAbId); if(!ab) return; saveHistory(); let v = parseFloat(val)*1000; let align = document.getElementById('selAbAlign') ? document.getElementById('selAbAlign').value : 'dintel'; if (prop === 'y_align') { if (align === 'dintel') ab.y = v - ab.h; else ab.y = v; } else if (prop === 'h') { if (align === 'dintel') { let currDintel = ab.y + ab.h; ab.h = v; ab.y = currDintel - ab.h; } else { ab.h = v; } } else { ab[prop] = v; } render(); ilPersist(); }
+function modAbSubType(val) { if(!seleccionId || !seleccionAbId) return; const ab = objects.find(o=>o.id===seleccionId).aberturas.find(a=>a.id===seleccionAbId); saveHistory(); ab.subType = val; render(); ilPersist(); }
+function flipAb(axis) { if(!seleccionId || !seleccionAbId) return; const ab = objects.find(o=>o.id===seleccionId).aberturas.find(a=>a.id===seleccionAbId); saveHistory(); if(axis === 'x') ab.flipX = !ab.flipX; if(axis === 'y') ab.flipY = !ab.flipY; render(); ilPersist(); }
+function modGuide(val) { if(!seleccionId) return; const g = objects.find(o=>o.id===seleccionId); if(!g || g.type!=='guide') return; saveHistory(); const dist = parseFloat(val)*1000; g.pt[0] += -Math.sin(g.angle) * dist; g.pt[1] += Math.cos(g.angle) * dist; render(); ilPersist(); }
+
+function modColumna(prop, val) {
+  if(!seleccionId) return; const c = objects.find(o=>o.id===seleccionId); if(!c || c.type!=='columna') return; saveHistory();
+  if(prop === 'caraRecta' || prop === 'patron') c[prop] = val;
+  else if(prop === 'divisiones') c.divisiones = parseInt(val);
+  else if(prop === 'ang') { c.angle = parseFloat(val)*(Math.PI/180); ST('select'); }
+  else c[prop] = parseFloat(val)*1000; render(); ilPersist();
+}
+
+function modMuro(prop, val) {
+  if(!seleccionId) return; const m = objects.find(o=>o.id===seleccionId); if(!m || m.type!=='wall') return; saveHistory();
+  if(prop === 'largo') { const v = parseFloat(val)*1000; const a = Math.atan2(m.pB[1]-m.pA[1], m.pB[0]-m.pA[0]); m.pB=[m.pA[0]+Math.cos(a)*v, m.pA[1]+Math.sin(a)*v]; }
+  else if(prop === 'hA' || prop === 'hB') m[prop] = parseFloat(val)*1000; else if(prop === 'techo') m.proyectaTecho = val;
+  else if(prop === 'ang') { const ang = parseFloat(val)*(Math.PI/180); const cx=(m.pA[0]+m.pB[0])/2, cy=(m.pA[1]+m.pB[1])/2, l=hyp(m.pB[0]-m.pA[0], m.pB[1]-m.pA[1]); m.pA=[cx-Math.cos(ang)*l/2, cy-Math.sin(ang)*l/2]; m.pB=[cx+Math.cos(ang)*l/2, cy+Math.sin(ang)*l/2]; ST('select'); }
+  else if(prop === 'addPeak') { const l = hyp(m.pB[0]-m.pA[0], m.pB[1]-m.pA[1]); m.peak = {x: l/2, y: 3000}; forceCardOpen=true; actualizarPropBar(); }
+  else if(prop === 'removePeak') { m.peak = null; forceCardOpen=true; actualizarPropBar(); }
+  else if(prop === 'peakX') m.peak.x = parseFloat(val)*1000; else if(prop === 'peakY') m.peak.y = parseFloat(val)*1000; render(); ilPersist();
+}
+
+function modCercha(prop, val) {
+  if(!seleccionId) return; const c = objects.find(o=>o.id===seleccionId); if(!c || c.type!=='cercha') return; saveHistory();
+  if(prop === 'largo') { const v = parseFloat(val)*1000; const a = Math.atan2(c.pB[1]-c.pA[1], c.pB[0]-c.pA[0]); c.pB=[c.pA[0]+Math.cos(a)*v, c.pA[1]+Math.sin(a)*v]; }
+  else if(prop === 'modelo') c.modelo = val; else if(prop === 'soportaClavadores') c.soportaClavadores = val;
+  else if(prop === 'xPico') c.xPico = Math.max(0, Math.min(1, parseFloat(val))); else if(prop === 'divisiones') c.divisiones = parseInt(val);
+  else c[prop] = parseFloat(val)*1000; render(); ilPersist();
+}
+
+function cerrarPanelCard() { document.getElementById('prop-card').style.display = 'none'; document.getElementById('pb-indicator').textContent = 'Editar Medidas ▴'; }
+function abrirPanelDesdeBarra() { forceCardOpen = true; actualizarPropBar(); }
+function saveHistory() { history.push(JSON.parse(JSON.stringify(objects))); if(history.length>40) history.shift(); }
+function undo() { if(!history.length) return; objects = history.pop(); seleccionId=null; seleccionAbId=null; lastCopyData=null; ST('select'); ilPersist(); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+function toggleTools(){ document.getElementById('panel-herr').classList.toggle('open'); }
+function toggleSnap() { snapOn = !snapOn; document.getElementById('snapBtn').classList.toggle('on', snapOn); }
+
+function ST(t) {
+  tool = t; document.querySelectorAll('.tb[data-t], .phb[data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  document.getElementById('escBtn').classList.toggle('on', t === 'select');
+  const sBtn = document.querySelector(`.phb[data-t="${t}"]`), fab = document.getElementById('btn-herr');
+  if(sBtn) fab.innerHTML = sBtn.innerHTML; else if(t === 'select') fab.innerHTML = '<svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
+  else if(t === 'rotate_edit') fab.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg>';
+  actualizarPropBar(); render();
+}
+
+function getMatrizHtml(objId) {
+  if (lastCopyData && lastCopyData.newId === objId) {
+    return `<div style="background:#f2f2f7; padding:10px; border-radius:8px; margin-bottom:12px;">
+              <label style="font-size:12px; font-weight:500; color:var(--accent); text-transform:uppercase; display:block; margin-bottom:8px;">MATRIZ (COPIA MÚLTIPLE)</label>
+              <div style="display:flex; gap:8px;">
+                <div style="flex:1;"><label style="font-size:12px; display:block;">Multiplicar (Veces)</label><input type="number" id="inpMatrizRep" style="width:100%;" onchange="ejecutarMatriz('repetir', this.value)" onkeydown="${kEnt}" placeholder="Ej: 3"></div>
+                <div style="flex:1;"><label style="font-size:12px; display:block;">Dividir (Espacios)</label><input type="number" id="inpMatrizDiv" style="width:100%;" onchange="ejecutarMatriz('dividir', this.value)" onkeydown="${kEnt}" placeholder="Ej: 4"></div>
+              </div>
+            </div>`;
+  } return '';
+}
+
+function actualizarPropBar() {
+  const card = document.getElementById('prop-card'), title = document.getElementById('pc-title'), content = document.getElementById('pc-content'), barTool = document.getElementById('pbTool'), ind = document.getElementById('pb-indicator');
+  content.innerHTML = ''; let showCard = forceCardOpen; forceCardOpen = false;
+
+  if(tool === 'wall') {
+    barTool.textContent = 'CREAR MURO'; ind.textContent = 'Opciones ▴';
+    if(showCard) { card.style.display = 'flex'; title.textContent = 'CREAR MURO'; content.innerHTML = `<div class="prop-row"><label>Espesor (mm)</label><select onchange="espesorActual = +this.value"><option value="90">PGC 90</option><option value="100" selected>PGC 100</option></select></div>`; }
+  }
+  else if(tool === 'cercha') {
+    barTool.textContent = 'ESTRUCTURA'; ind.textContent = 'Ayuda ▴';
+    if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVA CERCHA / VIGA'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá para trazar el eje estructural de apoyo.</p>`; }
+  }
+  else if(tool === 'columna') {
+    barTool.textContent = 'NUEVO PILAR'; ind.textContent = 'Ayuda ▴';
+    if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVA COLUMNA'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá en la planta para insertar una nueva columna.</p>`; }
+  }
+  else if(tool === 'roof') { barTool.textContent = 'DIBUJAR TECHO'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVO TECHO'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá en diagonal para dibujar el perímetro del techo.</p>`; } }
+  else if(tool === 'babeta') { barTool.textContent = 'DIBUJAR BABETA'; ind.textContent = 'Opciones ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'TRAZAR BABETA'; if(drawing) { content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá cerca del inicio para cerrar.</p><button class="prop-btn-full" onclick="finishPoly()">TERMINAR ABIERTA</button>`; } else { content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá puntos para trazar la restricción.</p>`; } } }
+  else if(tool === 'guide') { barTool.textContent = 'LÍNEA GUÍA'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'CREAR GUÍA'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá desde un panel para crear una guía paralela (offset).</p>`; } }
+  else if(tool === 'join') { barTool.textContent = 'UNIR MUROS'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'JERARQUÍAS T/L'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá desde Muro A hacia Muro B.</p>`; } }
+  else if(tool === 'puerta' || tool === 'ventana' || tool === 'vano') { barTool.textContent = 'DIBUJAR ' + tool; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVA ' + tool; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá en el panel para trazar el hueco.</p>`; } }
+  else if(tool === 'rotate_edit') { barTool.textContent = 'ROTAR OBJETO'; ind.textContent = 'Ángulo ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'ROTAR ELEMENTO';
+    const isCol = (seleccionId && objects.find(o=>o.id===seleccionId).type === 'columna');
+    content.innerHTML = `<div class="prop-row"><label>Ángulo (°)</label><input type="number" step="1" value="0" onchange="${isCol ? 'modColumna' : 'modMuro'}('ang', this.value)" onkeydown="${kEnt}"></div>`;
+  } }
+  else if(tool === 'select') {
+    if(seleccionId && seleccionAbId) {
+      const m = objects.find(o=>o.id===seleccionId); const ab = m ? m.aberturas.find(a=>a.id===seleccionAbId) : null; if(!ab) return;
+      barTool.textContent = ab.type; ind.textContent = 'Medidas ▾';
+      if(showCard) {
+        card.style.display = 'flex'; title.textContent = ab.type + ' SELECCIONADA';
+        let subTypeOptions = '';
+        if(ab.type === 'puerta') subTypeOptions = `<select id="selAbSubType" style="width:100%; margin-bottom:12px;" onchange="modAbSubType(this.value)"><option value="batiente" ${ab.subType==='batiente'?'selected':''}>Batiente Simple</option><option value="doble" ${ab.subType==='doble'?'selected':''}>Batiente Doble</option><option value="corrediza" ${ab.subType==='corrediza'?'selected':''}>Corrediza</option></select>`;
+        else if(ab.type === 'ventana') subTypeOptions = `<select id="selAbSubType" style="width:100%; margin-bottom:12px;" onchange="modAbSubType(this.value)"><option value="corrediza" ${ab.subType==='corrediza'?'selected':''}>Corrediza</option><option value="batiente" ${ab.subType==='batiente'?'selected':''}>Batiente</option><option value="fijo" ${ab.subType==='fijo'?'selected':''}>Paño Fijo</option></select>`;
+        let alignOptions = `<select id="selAbAlign"><option value="dintel" selected>Dintel</option><option value="antepecho">Antepecho</option></select>`; let vY = ((ab.y + ab.h)/1000).toFixed(2); let storedAlign = window.lastAlign || 'dintel'; if(storedAlign === 'antepecho') { alignOptions = `<select id="selAbAlign"><option value="dintel">Dintel</option><option value="antepecho" selected>Antepecho</option></select>`; vY = (ab.y/1000).toFixed(2); }
+        let flipBtns = ab.type !== 'vano' ? `<div style="display:flex; gap:8px; margin-top:4px;"><button class="prop-btn-full btn-outline" style="margin-top:0;" onclick="flipAb('x')">Mano ⇄</button><button class="prop-btn-full btn-outline" style="margin-top:0;" onclick="flipAb('y')">Giro ↕</button></div>` : '';
+        content.innerHTML = `${subTypeOptions}<div class="prop-row"><label>Posición X (m)</label><input type="number" step="0.01" value="${(ab.x/1000).toFixed(2)}" onchange="modAb('x', this.value)" onkeydown="${kEnt}"></div><div class="prop-row">${alignOptions}<input type="number" step="0.01" value="${vY}" onchange="modAb('y_align', this.value)" onkeydown="${kEnt}"></div><div class="prop-row"><label>Ancho (m)</label><input type="number" step="0.01" value="${(ab.w/1000).toFixed(2)}" onchange="modAb('w', this.value)" onkeydown="${kEnt}"></div><div class="prop-row"><label>Alto (m)</label><input type="number" step="0.01" value="${(ab.h/1000).toFixed(2)}" onchange="modAb('h', this.value)" onkeydown="${kEnt}"></div>${flipBtns}`;
+        document.getElementById('selAbAlign').addEventListener('change', function(){ window.lastAlign = this.value; forceCardOpen=true; actualizarPropBar(); });
+      }
+    }
+    else if(seleccionId) {
+      const o = objects.find(ob=>ob.id===seleccionId); if(!o) return;
+      if(o.type === 'guide') {
+        barTool.textContent = `LÍNEA GUÍA`; ind.textContent = 'Propiedades ▾';
+        if(showCard) { card.style.display = 'flex'; title.textContent = `LÍNEA GUÍA`; content.innerHTML = `<div class="prop-row"><label>Desplazar Perpendicular (m)</label><input type="number" step="0.01" value="0" onchange="modGuide(this.value)" onkeydown="${kEnt}" placeholder="Ej: 0.50"></div><button class="prop-btn-full" style="background:var(--red);" onclick="ctxDo('delete')">ELIMINAR GUÍA</button>`; }
+      }
+      else if(o.type === 'roof') {
+        barTool.textContent = `CUBIERTA`; ind.textContent = 'Propiedades ▾';
+        if(showCard) {
+          card.style.display = 'flex'; title.textContent = `PROPIEDADES CUBIERTA`;
+          content.innerHTML = `<div class="prop-row"><label>Volado (m)</label><input type="number" step="0.01" value="${((o.alero||0)/1000).toFixed(2)}" onchange="modRoof('alero', this.value*1000)" onkeydown="${kEnt}"></div><div class="prop-row"><label>Altura Apoyo (m)</label><input type="number" step="0.01" value="${(o.hBase/1000).toFixed(2)}" onchange="modRoof('hBase', this.value*1000)" onkeydown="${kEnt}"></div><div class="prop-row"><label>Pendiente (%)</label><input type="number" step="1" value="${o.slope}" onchange="modRoof('slope', this.value)" onkeydown="${kEnt}"></div><div class="prop-row"><label>Caída</label><select onchange="modRoof('fallDir', this.value)"><option value="abajo" ${o.fallDir==='abajo'?'selected':''}>Hacia Abajo ↓</option><option value="arriba" ${o.fallDir==='arriba'?'selected':''}>Hacia Arriba ↑</option><option value="der" ${o.fallDir==='der'?'selected':''}>Hacia Derecha →</option><option value="izq" ${o.fallDir==='izq'?'selected':''}>Hacia Izquierda ←</option></select></div>`;
+        }
+      }
+      else if(o.type === 'babeta') { barTool.textContent = `BABETA`; ind.textContent = 'Seleccionada ▾'; if(showCard) { card.style.display = 'flex'; title.textContent = `BABETA (PRETIL)`; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Línea de restricción para el techo. Usá el menú de mantener presionado para borrarla o moverla.</p>`; } }
+      else if(o.type === 'columna') {
+        barTool.textContent = `COLUMNA ${o.label}`; ind.textContent = 'Propiedades ▾';
+        if(showCard) {
+          card.style.display = 'flex'; title.textContent = `Pilar ${o.label}`; const matrizHtml = getMatrizHtml(o.id);
+          if (vistaActual === 'planta') {
+             content.innerHTML = matrizHtml + `<p style="font-size:14px; color:var(--label); text-align:center; margin-bottom:8px;">Pasá a la vista ALZADO para editar las dimensiones.</p><button class="prop-btn-full btn-outline" onclick="ST('rotate_edit')">ROTAR COLUMNA</button>`;
+          } else {
+             content.innerHTML = matrizHtml + `
+              <div class="prop-row"><label>Altura Total (m)</label><input type="number" step="0.01" value="${(o.altura/1000).toFixed(2)}" onchange="modColumna('altura', this.value)" onkeydown="${kEnt}"></div>
+              <div class="prop-row"><label>Ancho Base (m)</label><input type="number" step="0.01" value="${(o.anchoBase/1000).toFixed(2)}" onchange="modColumna('anchoBase', this.value)" onkeydown="${kEnt}"></div>
+              <div class="prop-row"><label>Ancho Tope (m)</label><input type="number" step="0.01" value="${(o.anchoTope/1000).toFixed(2)}" onchange="modColumna('anchoTope', this.value)" onkeydown="${kEnt}"></div>
+              <div class="prop-row"><label>Cara a Plomo</label><select onchange="modColumna('caraRecta', this.value)"><option value="IZQ" ${o.caraRecta==='IZQ'?'selected':''}>Izquierda</option><option value="DER" ${o.caraRecta==='DER'?'selected':''}>Derecha</option><option value="CENTRO" ${o.caraRecta==='CENTRO'?'selected':''}>Centro (Simétrica)</option></select></div>
+              <div class="prop-row"><label>Retícula</label><select onchange="modColumna('patron', this.value)"><option value="WARREN" ${o.patron==='WARREN'?'selected':''}>Warren (Zig-Zag)</option><option value="X_CROSS" ${o.patron==='X_CROSS'?'selected':''}>Cruces</option><option value="LADDER" ${o.patron==='LADDER'?'selected':''}>Escalera</option></select></div>
+              <div class="prop-row"><label>Divisiones Verticales</label><input type="number" step="1" value="${o.divisiones}" onchange="modColumna('divisiones', this.value)" onkeydown="${kEnt}"></div>
+             `;
+          }
+        }
+      }
+      else if(o.type === 'cercha') {
+        barTool.textContent = `ESTRUCTURA ${o.label}`; ind.textContent = 'Propiedades ▾';
+        if(showCard) {
+          card.style.display = 'flex'; title.textContent = `CERCHA / VIGA ${o.label}`; const matrizHtml = getMatrizHtml(o.id);
+          if(vistaActual === 'planta' || vistaActual === 'techo') {
+            let l = (hyp(o.pB[0]-o.pA[0], o.pB[1]-o.pA[1])/1000).toFixed(2); content.innerHTML = matrizHtml + `<div class="prop-row"><label>Largo (m)</label><input type="number" step="0.01" value="${l}" onchange="modCercha('largo', this.value)" onkeydown="${kEnt}"></div>`;
+          } else if(vistaActual === 'alzado') {
+            content.innerHTML = matrizHtml + `
+              <div class="prop-row"><label>Modelo</label><select onchange="modCercha('modelo', this.value)"><option value="RECTA" ${o.modelo==='RECTA'?'selected':''}>Reticulada Recta</option><option value="FINK" ${o.modelo==='FINK'?'selected':''}>Fink (W)</option><option value="HOWE" ${o.modelo==='HOWE'?'selected':''}>Howe</option><option value="PRATT" ${o.modelo==='PRATT'?'selected':''}>Pratt</option><option value="TIJERA" ${o.modelo==='TIJERA'?'selected':''}>Tijera</option><option value="UN_AGUA" ${o.modelo==='UN_AGUA'?'selected':''}>Un Agua</option><option value="VIGA" ${o.modelo==='VIGA'?'selected':''}>Viga Maciza</option></select></div>
+              <div class="prop-row"><label>Apoyo Izq (m)</label><input type="number" step="0.01" value="${(o.hIzq/1000).toFixed(2)}" onchange="modCercha('hIzq', this.value)" onkeydown="${kEnt}"></div>
+              <div class="prop-row"><label>Apoyo Der (m)</label><input type="number" step="0.01" value="${(o.hDer/1000).toFixed(2)}" onchange="modCercha('hDer', this.value)" onkeydown="${kEnt}"></div>
+              <div class="prop-row"><label>Altura Pico (m)</label><input type="number" step="0.01" value="${(o.hPico/1000).toFixed(2)}" onchange="modCercha('hPico', this.value)" onkeydown="${kEnt}"></div>
+              <div class="prop-row"><label>Posición Pico (0-1)</label><input type="number" step="0.1" value="${o.xPico}" onchange="modCercha('xPico', this.value)" onkeydown="${kEnt}"></div>
+              <div class="prop-row"><label>Divisiones Inf.</label><input type="number" step="1" value="${o.divisiones}" onchange="modCercha('divisiones', this.value)" onkeydown="${kEnt}"></div>
+              <div class="prop-row" style="margin-top:12px; background:#f2f2f7; padding:8px; border-radius:6px;"><label style="color:var(--accent);">Soporta Clavadores</label><input type="checkbox" ${o.soportaClavadores ? 'checked' : ''} onchange="modCercha('soportaClavadores', this.checked)"></div>
+            `;
+          }
+        }
+      }
+      else if(o.type === 'wall') {
+        barTool.textContent = `PANEL ${o.label}`; ind.textContent = 'Propiedades ▾';
+        if(showCard) {
+          card.style.display = 'flex'; title.textContent = `PANEL ${o.label}`; const matrizHtml = getMatrizHtml(o.id);
+          if(vistaActual === 'planta' || vistaActual === 'techo') {
+            let l = (hyp(o.pB[0]-o.pA[0], o.pB[1]-o.pA[1])/1000).toFixed(2); content.innerHTML = matrizHtml + `<div class="prop-row"><label>Largo Muro (m)</label><input type="number" step="0.01" value="${l}" onchange="modMuro('largo', this.value)" onkeydown="${kEnt}"></div>`;
+          } else if(vistaActual === 'alzado') {
+            let isTecho = o.proyectaTecho ? 'checked' : ''; let state = o.proyectaTecho ? 'disabled' : '';
+            let base = matrizHtml + `<div class="prop-row" style="margin-bottom:12px; background:#f2f2f7; padding:8px; border-radius:6px;"><label style="color:var(--accent);">Proyectar a Techo</label><input type="checkbox" ${isTecho} onchange="modMuro('techo', this.checked)"></div><div class="prop-row"><label>Alto Izq (m)</label><input type="number" step="0.01" value="${(o.hA/1000).toFixed(2)}" onchange="modMuro('hA', this.value)" onkeydown="${kEnt}" ${state}></div><div class="prop-row"><label>Alto Der (m)</label><input type="number" step="0.01" value="${(o.hB/1000).toFixed(2)}" onchange="modMuro('hB', this.value)" onkeydown="${kEnt}" ${state}></div>`;
+            if (!o.proyectaTecho) { if(o.peak) { base += `<div class="prop-row" style="margin-top:8px; border-top:1px solid #eee; padding-top:8px;"><label style="color:var(--accent);">X Cúspide (m)</label><input type="number" step="0.01" value="${(o.peak.x/1000).toFixed(2)}" onchange="modMuro('peakX', this.value)" onkeydown="${kEnt}"></div><div class="prop-row"><label style="color:var(--accent);">Alto Cúspide (m)</label><input type="number" step="0.01" value="${(o.peak.y/1000).toFixed(2)}" onchange="modMuro('peakY', this.value)" onkeydown="${kEnt}"></div><button class="prop-btn-full" style="background:var(--red);" onclick="modMuro('removePeak')">QUITAR CÚSPIDE</button>`; } else { base += `<button class="prop-btn-full" onclick="modMuro('addPeak')">AÑADIR CÚSPIDE CENTRAL</button>`; } } content.innerHTML = base;
+          }
+        }
+      }
+    } else { barTool.textContent = 'SELECT'; ind.textContent = 'Toca un objeto'; card.style.display = 'none'; }
+  }
+}
+
+ST('wall'); setTimeout(resize, 100);
+try { parent.postMessage({ ilframe: 'ready' }, '*'); } catch (e) {}
+</script>
+</body>
+</html>
