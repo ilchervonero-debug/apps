@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { LAYER_TEMPLATES } from '../data/layers'
 import { defaultRise } from '../engine/trusses'
-import { SEED_CUADRILLA, SEED_MATERIALES, SEED_TAREAS } from '../data/coreSeed'
+import { SEED_CUADRILLA, SEED_MATERIALES, SEED_TAREAS, SEED_RENDIMIENTOS } from '../data/coreSeed'
 
 // Espesor de pared (mm) = núcleo (alto del montante) + capas de ambas caras
 export function wallThickness(type, profileSection) {
@@ -240,6 +240,14 @@ function withSeed(core) {
   if (!c.materiales || !c.materiales.length) c.materiales = SEED_MATERIALES.map((m) => ({ ...m }))
   if (!c.tareas || !c.tareas.length) c.tareas = SEED_TAREAS.map((t) => ({ ...t }))
   if (!c.cuadrilla) c.cuadrilla = { ...SEED_CUADRILLA }
+  // Auto-vincular grupo→tarea por defecto (se deduce del nombre de la
+  // tarea) — solo donde Ángel todavía no eligió nada.
+  c.rendimientos = { ...c.rendimientos }
+  for (const [grupo, tareaNombre] of Object.entries(SEED_RENDIMIENTOS)) {
+    if (c.rendimientos[grupo]?.tareaId) continue
+    const t = c.tareas.find((x) => x.nombre === tareaNombre)
+    if (t) c.rendimientos[grupo] = { ...c.rendimientos[grupo], tareaId: t.id }
+  }
   return c
 }
 const loadCore = () => { try { return withSeed(JSON.parse(localStorage.getItem(LS_CORE) || 'null') || {}) } catch { return withSeed({}) } }
