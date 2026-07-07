@@ -41,8 +41,8 @@ const normUnit = (u) => {
 const normName = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
 const ACERO_RE = /^acero perfil ([\d.]+)x([\d.]+)x([\d.]+)$/
 
-// kg/m real de un perfil h\u00d7w\u00d7t (buscado en cualquier norma) \u2014 para poder
-// convertir el acero de KG (como lo computa el c\u00f3mputo) a ML (como lo
+// kg/m real de un perfil h,w,t (buscado en cualquier norma) - para poder
+// convertir el acero de KG (como lo computa el computo) a ML (como lo
 // vende la barraca) antes de armar los paquetes.
 function kgPorMetro(h, w, t) {
   for (const norm of Object.values(PROFILE_SECTIONS)) {
@@ -71,6 +71,36 @@ function matchMaterial(m, materialesCore) {
   return materialesCore.find((x) => normUnit(x.unit) === um && (normName(x.name).includes(nm) || nm.includes(normName(x.name))))
 }
 
+// Grupos que se costean pieza por pieza contando operaciones reales
+// (cortes de perfil + tornillos o soldadura) en vez de una tarea m²/ml.
+export const GRUPOS_RETICULADOS = ['cerchas', 'pilares']
+
+// Costo de mano de obra de UNA pieza reticulada (cercha o columna),
+// contando cortes + conexiones (tornillos, o soldadura con piso de
+// jornal del herrero). horasJornada convierte el costo diario en $/hora.
+function costoPiezaReticulada(fila, cuadrilla, operaciones) {
+  const horasJornada = cuadrilla.horasJornada || 8
+  const costoDiarioReal = (cuadrilla.costoDiarioLiquido || 0) * (cuadrilla.multiplicadorBPS || 1)
+  const costoHora = costoDiarioReal / horasJornada
+  const rendCortes = operaciones.cortesPorHora || 0
+  const rendTornillos = operaciones.tornillosPorHora || 0
+  if (!rendCortes || !rendTornillos) return { horas: 0, costo: 0, definido: false }
+
+  const { cortes, conexiones } = fila.ops || { cortes: 0, conexiones: 0 }
+  const horasCortes = cortes / rendCortes
+  if (fila.soldada) {
+    const tornillosEquiv = conexiones * (operaciones.soldaduraEquivTornillos || 5)
+    const horas = horasCortes + tornillosEquiv / rendTornillos
+    const costoCalc = horas * costoHora * (1 + (cuadrilla.factorHerramientas || 0))
+    const piso = operaciones.jornalHerrero || costoDiarioReal
+    return { horas: +horas.toFixed(2), costo: +Math.max(costoCalc, piso).toFixed(0), definido: true }
+  }
+  const tornillos = conexiones * (operaciones.tornillosPorConexion || 4)
+  const horas = horasCortes + tornillos / rendTornillos
+  const costo = horas * costoHora * (1 + (cuadrilla.factorHerramientas || 0))
+  return { horas: +horas.toFixed(2), costo: +costo.toFixed(0), definido: true }
+}
+
 export function costoProyecto(state, project, core) {
   const { grupos, materiales, totales } = computoProyecto(state, project)
   const tareas = core?.tareas || []
@@ -78,12 +108,25 @@ export function costoProyecto(state, project, core) {
   const materialesCore = core?.materiales || []
   const aportes = core?.aportes || []
   const cuadrilla = core?.cuadrilla || {}
+  const operaciones = core?.operaciones || {}
   const desperdicioPct = core?.desperdicioPct ?? SEED_DESPERDICIO_PCT
 
   const costoDiarioReal = (cuadrilla.costoDiarioLiquido || 0) * (cuadrilla.multiplicadorBPS || 1)
   const costoPorUnidad = (tarea) => (tarea && tarea.rendimiento ? costoDiarioReal / tarea.rendimiento : 0)
 
   const manoObraPorGrupo = grupos.map((g) => {
+    // Cerchas y columnas reticuladas: costo por pieza (cortes + conexiones),
+    // no por tarea m²/ml — ya no hace falta vincularlas en el Core.
+    if (GRUPOS_RETICULADOS.includes(g.tipo)) {
+      let costo = 0, definido = true, cortesTotal = 0
+      for (const f of g.filas) {
+        const r = costoPiezaReticulada(f, cuadrilla, operaciones)
+        if (!r.definido) definido = false
+        costo += r.costo
+        cortesTotal += (f.ops || {}).cortes || 0
+      }
+      return { tipo: g.tipo, label: g.label, unidad: 'cortes', cantidad: cortesTotal, tarea: 'Por pieza (cortes + conexiones)', costo: +costo.toFixed(0), definido }
+    }
     const meta = GRUPOS_APU.find((m) => m.tipo === g.tipo) || { unidad: 'm2' }
     const rend = rendimientos[g.tipo]
     const tarea = rend?.tareaId ? tareas.find((t) => t.id === rend.tareaId) : null

@@ -288,6 +288,7 @@ function TypeMaterial({ cat, type, up }) {
         <Pills options={COLUMNA_PATRONES.map((r) => [r.id, r.name])} value={type.patron} onSet={(v) => up({ patron: v })} />
         <PerfilRow label="Cordones" value={type.perfil} onChange={(v) => up({ perfil: v })} />
         <PerfilRow label="Retícula (alma)" value={type.perfilReticula} onChange={(v) => up({ perfilReticula: v })} />
+        <SoldadaToggle value={type.soldada} onSet={(v) => up({ soldada: v })} />
       </>
     )
   }
@@ -299,6 +300,7 @@ function TypeMaterial({ cat, type, up }) {
         <PerfilRow label="Cordón superior" value={type.perfilSuperior} onChange={(v) => up({ perfilSuperior: v })} />
         <PerfilRow label="Cordón inferior" value={type.perfilInferior} onChange={(v) => up({ perfilInferior: v })} />
         <PerfilRow label="Retícula (alma)" value={type.perfilReticula} onChange={(v) => up({ perfilReticula: v })} />
+        <SoldadaToggle value={type.soldada} onSet={(v) => up({ soldada: v })} />
       </>
     )
   }
@@ -386,6 +388,17 @@ function Pills({ options, value, onSet }) {
         <button key={id} onClick={() => onSet(id)} style={chip(value === id)}>{label}</button>
       ))}
     </div>
+  )
+}
+
+// Unión soldada vs atornillada — cambia cómo se cuenta la mano de obra
+// (soldadura tiene un piso de jornal de herrero; atornillada no).
+function SoldadaToggle({ value, onSet }) {
+  return (
+    <>
+      <Sub>Unión</Sub>
+      <Pills options={[[false, 'Atornillada'], [true, 'Soldada']]} value={!!value} onSet={onSet} />
+    </>
   )
 }
 

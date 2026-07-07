@@ -11,6 +11,25 @@ export const SEED_CUADRILLA = {
   costoDiarioLiquido: 6200,
   multiplicadorBPS: 1.75,
   factorHerramientas: 0.04,
+  horasJornada: 8,
+}
+
+// Rendimiento por OPERACIÓN (no por m²) — para piezas reticuladas (cercha,
+// columna reticulada) el costo se arma contando cortes de perfil y
+// conexiones (tornillos o soldadura) reales de cada pieza, no una tasa
+// genérica. Derivado de lo ya cargado:
+// - tornillos: 25 m²/día (Aislación+Yeso) × 20 tornillos/m² = 500/jornal
+//   ÷ 8h = 62.5/hora (mismo tornillo-en-metal que en la placa).
+// - cortes: estimado desde Montaje Estructura (15 m²/día) en un muro
+//   típico — más aproximado, ajustable.
+// - soldaduraEquivTornillos: una soldadura de ~5cm ≈ 5 tornillos en tiempo.
+// - jornalHerrero: si no se carga, se usa el costoDiarioReal general como piso.
+export const SEED_OPERACIONES = {
+  tornillosPorHora: 62.5,
+  cortesPorHora: 2.75,
+  tornillosPorConexion: 4,
+  soldaduraEquivTornillos: 5,
+  jornalHerrero: null,
 }
 
 // Desperdicio global de materiales al comprar (10%), aplicado antes de

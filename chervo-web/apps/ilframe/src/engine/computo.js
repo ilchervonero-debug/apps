@@ -10,11 +10,19 @@ import { PROFILE_SECTIONS } from '../data/profiles'
 import { panelBOM } from './bom'
 import { beamKg } from './beams'
 import { cerchaKg, cerchaTypeDef, trussGeometry } from './trusses'
-import { columnaKg } from './pilares'
+import { columnaKg, columnaGeometry } from './pilares'
 
 const secOf = (ref) => (PROFILE_SECTIONS[ref?.normId]?.C || [])[ref?.secIdx ?? 0]
 const labelOf = (ref) => { const s = secOf(ref); return s ? `${s.h}x${s.w}x${s.t}` : '—' }
 const findType = (list, name) => (list || []).find((t) => t.name === name) || (list && list[0])
+
+// Cortes (1 por miembro) y conexiones (2 extremos por miembro) de una
+// pieza reticulada — base real para el costo por operación (no por m²).
+function contarOperaciones(g) {
+  const cordones = g.chordTop ? g.chordTop.length + g.chordBot.length : g.chords.length
+  const miembros = cordones + g.web.length
+  return { cortes: miembros, conexiones: miembros * 2 }
+}
 
 // El canvas usa sus propios nombres de retícula (WARREN/X_CROSS/LADDER);
 // el motor de columnas usa los de cercha (W/X/N…). Se traduce acá.
@@ -81,7 +89,8 @@ export function computoProyecto(state, project) {
       addSteel(labelOf(t.perfilInferior), sI ? (g.lens.inf / 1000) * sI.kg : 0)
       addSteel(labelOf(t.perfilReticula), sR ? (g.lens.web / 1000) * sR.kg : 0)
       const kg = cerchaKg(cercha)
-      return { id: c.label, perfil: labelOf(t.perfilSuperior), det: `${cerchaTypeDef(c.modelo).name} · luz ${(span / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), ml: +(span / 1000).toFixed(2), extra: '' }
+      const ops = contarOperaciones(g)
+      return { id: c.label, perfil: labelOf(t.perfilSuperior), det: `${cerchaTypeDef(c.modelo).name} · luz ${(span / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), ml: +(span / 1000).toFixed(2), ops, soldada: !!t.soldada, extra: '' }
     })
     grupos.push({ tipo: 'cerchas', label: 'Cerchas', filas })
   }
@@ -109,7 +118,8 @@ export function computoProyecto(state, project) {
         perfil: t.perfil, perfilReticula: t.perfilReticula,
       }
       const kg = columnaKg(pilar)
-      return { id: c.label, perfil: labelOf(t.perfil), det: `Columna reticulada · alto ${(pilar.altura / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), ml: +(pilar.altura / 1000).toFixed(2), extra: '' }
+      const ops = contarOperaciones(columnaGeometry(pilar))
+      return { id: c.label, perfil: labelOf(t.perfil), det: `Columna reticulada · alto ${(pilar.altura / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), ml: +(pilar.altura / 1000).toFixed(2), ops, soldada: !!t.soldada, extra: '' }
     })
     grupos.push({ tipo: 'pilares', label: 'Pilares / Columnas', filas })
   }

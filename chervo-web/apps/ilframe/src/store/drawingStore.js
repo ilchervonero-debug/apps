@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { LAYER_TEMPLATES } from '../data/layers'
 import { defaultRise } from '../engine/trusses'
-import { SEED_CUADRILLA, SEED_MATERIALES, SEED_TAREAS, SEED_RENDIMIENTOS } from '../data/coreSeed'
+import { SEED_CUADRILLA, SEED_MATERIALES, SEED_TAREAS, SEED_RENDIMIENTOS, SEED_OPERACIONES } from '../data/coreSeed'
 
 // Espesor de pared (mm) = núcleo (alto del montante) + capas de ambas caras
 export function wallThickness(type, profileSection) {
@@ -155,8 +155,8 @@ function baseCfg(cat) {
   const P = () => ({ normId: 'cu_1', secIdx: 0 })
   switch (cat) {
     case 'pilar': return { kind: 'armada', altura: 2800, tipoArmado: 'DOBLE_CAJON', perfil: P() }
-    case 'columna': return { kind: 'reticulada', altura: 2800, anchoBase: 400, anchoTope: 400, caraRecta: 'IZQ', divisiones: 5, patron: 'DA', verticales: true, perfil: P(), perfilReticula: P() }
-    case 'cercha': return { modelo: 'FINK', patron: 'DA', verticales: true, pico: null, rise: null, hIzq: 0, hDer: 0, divisiones: 6, perfilSuperior: P(), perfilInferior: P(), perfilReticula: P() }
+    case 'columna': return { kind: 'reticulada', altura: 2800, anchoBase: 400, anchoTope: 400, caraRecta: 'IZQ', divisiones: 5, patron: 'DA', verticales: true, perfil: P(), perfilReticula: P(), soldada: false }
+    case 'cercha': return { modelo: 'FINK', patron: 'DA', verticales: true, pico: null, rise: null, hIzq: 0, hDer: 0, divisiones: 6, perfilSuperior: P(), perfilInferior: P(), perfilReticula: P(), soldada: false }
     case 'viga': return { type: 'back_to_back', normId: 'cu_1', secIdx: 0, level: 2400 }
     case 'losa': return { dir: 'x', sep: 400, perfil: { normId: 'cu_1', secIdx: 8 }, deck: 'osb_18', nivel: 2800 }
     case 'techo': return { forma: 'DOS_AGUAS', alturaPico: 1500, aleros: { frente: 600, fondo: 600, izq: 600, der: 600 }, clavadorSep: 600, tipoChapa: 'TRAPEZOIDAL', perfilClavador: { normId: 'cu_1', secIdx: 0 }, esLimitador: true }
@@ -232,7 +232,7 @@ const saveMeta = (m) => { try { localStorage.setItem(LS_META, JSON.stringify(m))
 // aportes/impuestos. Compartido por todos los proyectos. Persiste aparte;
 // más adelante se une con Firebase.
 const LS_CORE = 'ilframe.core'
-const CORE_DEFAULT = { aportes: [], materiales: [], tareas: [], rendimientos: {}, cuadrilla: SEED_CUADRILLA }
+const CORE_DEFAULT = { aportes: [], materiales: [], tareas: [], rendimientos: {}, cuadrilla: SEED_CUADRILLA, operaciones: SEED_OPERACIONES }
 // Completa con la base real (cuadrilla/tareas/materiales) SOLO lo que
 // falte — no pisa lo que Ángel ya haya cargado o editado.
 function withSeed(core) {
@@ -240,6 +240,7 @@ function withSeed(core) {
   if (!c.materiales || !c.materiales.length) c.materiales = SEED_MATERIALES.map((m) => ({ ...m }))
   if (!c.tareas || !c.tareas.length) c.tareas = SEED_TAREAS.map((t) => ({ ...t }))
   if (!c.cuadrilla) c.cuadrilla = { ...SEED_CUADRILLA }
+  if (!c.operaciones) c.operaciones = { ...SEED_OPERACIONES }
   // Auto-vincular grupo→tarea por defecto (se deduce del nombre de la
   // tarea) — solo donde Ángel todavía no eligió nada.
   c.rendimientos = { ...c.rendimientos }
@@ -563,6 +564,11 @@ export const useDrawingStore = create((set) => ({
   }),
   setCuadrilla: (patch) => set((s) => {
     const core = { ...s.core, cuadrilla: { ...s.core.cuadrilla, ...patch } }
+    saveCore(core)
+    return { core }
+  }),
+  setOperaciones: (patch) => set((s) => {
+    const core = { ...s.core, operaciones: { ...s.core.operaciones, ...patch } }
     saveCore(core)
     return { core }
   }),

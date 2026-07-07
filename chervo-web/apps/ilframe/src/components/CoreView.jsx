@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useDrawingStore } from '../store/drawingStore'
-import { GRUPOS_APU } from '../engine/costo'
+import { GRUPOS_APU, GRUPOS_RETICULADOS } from '../engine/costo'
 
 // Core GLOBAL de la página principal: acá se arma el APU real — cuadrilla
 // (SUNCA + BPS + herramientas) + tareas (rendimiento m²/ml por día) +
@@ -15,6 +15,7 @@ export default function CoreView() {
   const updateCoreItem = useDrawingStore((s) => s.updateCoreItem)
   const removeCoreItem = useDrawingStore((s) => s.removeCoreItem)
   const setCuadrilla = useDrawingStore((s) => s.setCuadrilla)
+  const setOperaciones = useDrawingStore((s) => s.setOperaciones)
   const setRendimiento = useDrawingStore((s) => s.setRendimiento)
   const [tab, setTab] = useState('cuadrilla')
 
@@ -40,7 +41,7 @@ export default function CoreView() {
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 16px 40px' }}>
         <div style={{ maxWidth: 580, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {tab === 'cuadrilla' && <CuadrillaTab core={core} setCuadrilla={setCuadrilla} />}
+          {tab === 'cuadrilla' && <CuadrillaTab core={core} setCuadrilla={setCuadrilla} setOperaciones={setOperaciones} />}
           {tab === 'tareas' && <TareasTab core={core} addCoreItem={addCoreItem} updateCoreItem={updateCoreItem} removeCoreItem={removeCoreItem} />}
           {tab === 'vincular' && <VincularTab core={core} setRendimiento={setRendimiento} />}
           {tab === 'materiales' && <MaterialesTab core={core} addCoreItem={addCoreItem} updateCoreItem={updateCoreItem} removeCoreItem={removeCoreItem} />}
@@ -51,8 +52,9 @@ export default function CoreView() {
   )
 }
 
-function CuadrillaTab({ core, setCuadrilla }) {
+function CuadrillaTab({ core, setCuadrilla, setOperaciones }) {
   const c = core.cuadrilla || {}
+  const op = core.operaciones || {}
   const costoDiarioReal = (c.costoDiarioLiquido || 0) * (c.multiplicadorBPS || 1)
   return (
     <>
@@ -62,10 +64,20 @@ function CuadrillaTab({ core, setCuadrilla }) {
       <Field label="Costo diario líquido (SUNCA)" value={c.costoDiarioLiquido} onChange={(v) => setCuadrilla({ costoDiarioLiquido: v })} suffix="$/día" />
       <Field label="Multiplicador BPS (cargas sociales)" value={c.multiplicadorBPS} onChange={(v) => setCuadrilla({ multiplicadorBPS: v })} step="0.01" />
       <Field label="Factor herramientas (desgaste equipo)" value={c.factorHerramientas} onChange={(v) => setCuadrilla({ factorHerramientas: v })} step="0.01" />
+      <Field label="Horas por jornada" value={c.horasJornada} onChange={(v) => setCuadrilla({ horasJornada: v })} suffix="hs" />
       <div style={typeCard}>
         <div style={{ fontSize: 15, color: '#8a8a8a' }}>Costo diario real (calculado)</div>
         <div style={{ fontSize: 22, color: '#fe0000' }}>{money(costoDiarioReal)}</div>
       </div>
+
+      <div style={{ fontSize: 15, color: '#8a8a8a', lineHeight: 1.4, padding: '14px 4px 4px' }}>
+        Rendimiento por operación — para cerchas y columnas reticuladas el costo se arma contando cortes de perfil y conexiones (tornillos o soldadura) de cada pieza, no por m².
+      </div>
+      <Field label="Tornillos por hora" value={op.tornillosPorHora} onChange={(v) => setOperaciones({ tornillosPorHora: v })} step="0.5" />
+      <Field label="Cortes de perfil por hora" value={op.cortesPorHora} onChange={(v) => setOperaciones({ cortesPorHora: v })} step="0.25" />
+      <Field label="Tornillos por conexión" value={op.tornillosPorConexion} onChange={(v) => setOperaciones({ tornillosPorConexion: v })} />
+      <Field label="Soldadura (5cm) equivale a" value={op.soldaduraEquivTornillos} onChange={(v) => setOperaciones({ soldaduraEquivTornillos: v })} suffix="tornillos" />
+      <Field label="Jornal del herrero — vacío usa el de la cuadrilla" value={op.jornalHerrero ?? ''} onChange={(v) => setOperaciones({ jornalHerrero: v || null })} suffix="$/día" />
     </>
   )
 }
@@ -99,6 +111,8 @@ function TareasTab({ core, addCoreItem, updateCoreItem, removeCoreItem }) {
 function VincularTab({ core, setRendimiento }) {
   const tareas = core.tareas || []
   const rend = core.rendimientos || {}
+  const gruposConTarea = GRUPOS_APU.filter((g) => !GRUPOS_RETICULADOS.includes(g.tipo))
+  const gruposAuto = GRUPOS_APU.filter((g) => GRUPOS_RETICULADOS.includes(g.tipo))
   return (
     <>
       <div style={{ fontSize: 15, color: '#8a8a8a', lineHeight: 1.4, padding: '0 4px 4px' }}>
@@ -109,7 +123,7 @@ function VincularTab({ core, setRendimiento }) {
           Cargá primero tareas en <span style={{ color: '#fe0000' }}>Tareas</span> para poder vincularlas acá.
         </div>
       )}
-      {GRUPOS_APU.map((g) => {
+      {gruposConTarea.map((g) => {
         const r = rend[g.tipo] || {}
         const opciones = tareas.filter((t) => t.unidad === g.unidad)
         return (
@@ -123,6 +137,12 @@ function VincularTab({ core, setRendimiento }) {
           </div>
         )
       })}
+      {gruposAuto.map((g) => (
+        <div key={g.tipo} style={{ ...typeCard, opacity: 0.8 }}>
+          <div style={{ fontSize: 16, color: '#1c1c1c' }}>{g.label}</div>
+          <div style={{ fontSize: 14, color: '#8a8a8a' }}>Cálculo automático por pieza (cortes + conexiones) — ver Cuadrilla → Rendimiento por operación.</div>
+        </div>
+      ))}
     </>
   )
 }
