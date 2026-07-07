@@ -26,6 +26,8 @@ export default function CanvasStudio() {
         pilares: spec.pilares.map((c) => ({ name: c.name })),
         techos: spec.techos.map((c) => ({ name: c.name })),
         vigas: spec.vigas.map((c) => ({ name: c.name })),
+        losas: spec.losas.map((c) => ({ name: c.name })),
+        cielos: spec.cielos.map((c) => ({ name: c.name })),
       })
     }
     const onMsg = (e) => {

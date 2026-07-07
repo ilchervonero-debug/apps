@@ -157,14 +157,16 @@ export const SEED_TAREAS = [
 // Vínculo por defecto grupo→tarea: se deduce de los nombres que ya están
 // cargados (no hay motivo para pedirle a Ángel que elija algo obvio a
 // mano). Se usa la tarea de ESTRUCTURA/armado de cada grupo como base —
-// Muros y Techos en realidad suman varias tareas reales (estructura +
-// terminación); acá se linkea la principal como punto de partida, 100%
-// editable en Vincular. Cerchas queda sin vínculo: no hay tarea propia
-// todavía (falta el rendimiento típico, con perfil liviano).
+// Muros, Techos y Cielorrasos en realidad suman varias tareas reales
+// (estructura + terminación); acá se linkea la principal como punto de
+// partida, 100% editable en Vincular. Cerchas y Columnas reticuladas
+// quedan sin vínculo: se costean por pieza (cortes + conexiones), no por
+// tarea — ver GRUPOS_RETICULADOS en engine/costo.js.
 export const SEED_RENDIMIENTOS = {
   muros: 'Montaje Estructura (muro base 90mm)',
   vigas: 'Armado Pilar/Viga Tubo (puro steel)',
   pilares: 'Armado Pilar/Viga Tubo (puro steel)',
   techos: 'Montaje de Chapa y Zinguería',
   losas: 'Armado Entrepiso/Cercha PGC 200',
+  cielos: 'Armado Estructura Suspendida/Directa (cielorraso)',
 }

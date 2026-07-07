@@ -19,6 +19,7 @@ export const GRUPOS_APU = [
   { tipo: 'columnas', label: 'Columnas reticuladas', unidad: 'ml' },
   { tipo: 'techos', label: 'Techos / Cubiertas', unidad: 'm2' },
   { tipo: 'losas', label: 'Losas / Entrepisos', unidad: 'm2' },
+  { tipo: 'cielos', label: 'Cielorrasos', unidad: 'm2' },
 ]
 
 // Cantidad de un grupo, en la unidad que corresponda (m2 o ml) según fila

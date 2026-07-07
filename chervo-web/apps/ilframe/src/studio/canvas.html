@@ -7,7 +7,7 @@
 <style>
 :root{
   --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
-  --accent:#FE0000;--red:#FE0000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
+  --accent:#FE0000;--red:#FE0000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;--losa:#5856d6;--cielo:#b8860b;
   --tb:48px;--prop:44px;
   --font:'Exo',-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
 }
@@ -34,8 +34,16 @@ body{display:flex;flex-direction:column;}
 .phb { display: none; width:48px; height:48px; border-radius:10px; background:#f2f2f7; border:none; color:var(--ink); cursor:pointer; align-items:center; justify-content:center; }
 .phb svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.1; stroke-linecap:round; stroke-linejoin:round; pointer-events:none;}
 .phb.on { background:var(--accent); color:#fff; }
+/* Botones de rotación 3D: NO usan .phb — setVista() oculta TODOS los .phb
+   al cambiar de vista y solo reactiva .phb-<vista>; como no hay .phb-3d,
+   quedarían ocultos para siempre. Clase propia, siempre visible dentro
+   de su contenedor (que sí se muestra/oculta según la vista). */
+.r3d { display:flex; width:36px; height:36px; border-radius:10px; background:#f2f2f7; border:none; color:var(--ink); cursor:pointer; align-items:center; justify-content:center; font-size:13px; font-weight:500; font-family:var(--font); }
+.r3d:active { background:rgba(0,0,0,.08); }
 
 body[data-vista="planta"] .phb-planta { display: flex; }
+body[data-vista="entrepiso"] .phb-entrepiso { display: flex; }
+body[data-vista="cielorraso"] .phb-cielorraso { display: flex; }
 body[data-vista="alzado"] .phb-alzado { display: flex; }
 body[data-vista="techo"]  .phb-techo  { display: flex; }
 
@@ -77,6 +85,8 @@ body[data-vista="techo"]  .phb-techo  { display: flex; }
 
 <div id="tabs">
   <div class="tab active" id="tabPlanta" onclick="setVista('planta')">Planta</div>
+  <div class="tab" id="tabEntrepiso" onclick="setVista('entrepiso')">Entrepiso</div>
+  <div class="tab" id="tabCielorraso" onclick="setVista('cielorraso')">Cielo</div>
   <div class="tab" id="tabAlzado" onclick="setVista('alzado')">Alzado</div>
   <div class="tab" id="tabTecho" onclick="setVista('techo')">Techo</div>
   <div class="tab" id="tab3D" onclick="setVista('3d')">3D</div>
@@ -102,7 +112,13 @@ body[data-vista="techo"]  .phb-techo  { display: flex; }
   <button class="phb phb-planta" data-t="cercha" onclick="ST('cercha');toggleTools()"><svg viewBox="0 0 24 24"><path d="M2 22 L12 2 L22 22 Z M2 22 L22 22 M12 2 L12 22 M7 12 L17 12"/></svg></button>
   <button class="phb phb-planta" data-t="columna" onclick="ST('columna');toggleTools()"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="18" rx="1"/></svg></button>
   <button class="phb phb-planta" data-t="join" onclick="ST('join');toggleTools()"><svg viewBox="0 0 24 24"><path d="M4 14h6v6"/><path d="M14 4v6h6"/><path d="M10 14L4 20"/><path d="M20 4l-6 6"/></svg></button>
-  <button class="phb phb-planta phb-alzado phb-techo" data-t="guide" onclick="ST('guide');toggleTools()"><svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="4 4"/><line x1="2" y1="12" x2="22" y2="12" stroke-dasharray="4 4"/></svg></button>
+  <button class="phb phb-planta phb-alzado phb-techo phb-entrepiso phb-cielorraso" data-t="guide" onclick="ST('guide');toggleTools()"><svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="4 4"/><line x1="2" y1="12" x2="22" y2="12" stroke-dasharray="4 4"/></svg></button>
+
+  <button class="phb phb-entrepiso" data-t="losa" onclick="ST('losa');toggleTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 4"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg></button>
+
+  <button class="phb phb-cielorraso" data-t="cielorraso" onclick="ST('cielorraso');toggleTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="2 2"/><line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="16" x2="21" y2="16"/></svg></button>
+
+  <button class="phb phb-entrepiso phb-techo phb-cielorraso" data-t="lapiz" onclick="ST('lapiz');toggleTools()"><svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg></button>
 
   <button class="phb phb-alzado" data-t="puerta" onclick="ST('puerta');toggleTools()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg></button>
   <button class="phb phb-alzado" data-t="ventana" onclick="ST('ventana');toggleTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line></svg></button>
@@ -113,6 +129,20 @@ body[data-vista="techo"]  .phb-techo  { display: flex; }
 </div>
 
 <div id="wrap"><canvas id="cv"></canvas></div>
+
+<div id="controles-3d" style="display:none; position:fixed; bottom:80px; right:16px; background:#fff; border:1px solid #e5e5ea; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,.1); z-index:180; padding:6px;">
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; text-align:center;">
+    <button class="r3d" onclick="rotar3D(45)">NO</button>
+    <button class="r3d" onclick="rotar3D(0)">N</button>
+    <button class="r3d" onclick="rotar3D(315)">NE</button>
+    <button class="r3d" onclick="rotar3D(90)">O</button>
+    <div style="display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--label);">3D</div>
+    <button class="r3d" onclick="rotar3D(270)">E</button>
+    <button class="r3d" onclick="rotar3D(135)">SO</button>
+    <button class="r3d" onclick="rotar3D(180)">S</button>
+    <button class="r3d" onclick="rotar3D(225)">SE</button>
+  </div>
+</div>
 
 <div id="ctx">
   <div class="ci" onclick="ctxDo('move')"><svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg> Mover</div>
@@ -144,7 +174,7 @@ let objects = [], nextId = 1, history = [];
 let drawing = false, dragStartW = null, dragCurW = null;
 let startObjId = null, polyPts = [];
 
-let nextWallNum = 1, nextCerchaNum = 1, nextColNum = 1, espesorActual = 100;
+let nextWallNum = 1, nextCerchaNum = 1, nextColNum = 1, nextLosaNum = 1, nextCieloNum = 1, espesorActual = 100;
 let seleccionId = null, seleccionAbId = null, vistaActual = 'planta', muroAlzadoId = null;
 
 let panning = false, panRef = null, pinching = false, pinch0 = null, touches = {};
@@ -152,6 +182,7 @@ let longTimer = null, forceCardOpen = false;
 
 let lastCopyData = null;
 let guideData = { hitWall: false, angle: 0, startP: null };
+let angulo3D = 45;
 
 const kEnt = "if(event.key==='Enter'){ this.blur(); }";
 
@@ -173,13 +204,17 @@ let ilTechos = [], techoTypeIdx = 0;
 function ilSetTecho(idx) { techoTypeIdx = +idx; }
 let ilVigas = [];
 function modCerchaTipoViga(val) { if (!seleccionId) return; const c = objects.find(o => o.id === seleccionId); if (!c || c.type !== 'cercha') return; saveHistory(); c.tipo = val; render(); ilPersist(); }
+let ilLosas = [], losaTypeIdx = 0;
+function ilSetLosa(idx) { losaTypeIdx = +idx; }
+let ilCielos = [], cieloTypeIdx = 0;
+function ilSetCielo(idx) { cieloTypeIdx = +idx; }
 
 // ── Puente con la app (caja de proyectos) ──────────────────────
 let _saveT = null;
 function ilPersist() {
   clearTimeout(_saveT);
   _saveT = setTimeout(() => {
-    try { parent.postMessage({ ilframe: 'studio', objects, meta: { nextId, nextWallNum, nextCerchaNum, nextColNum } }, '*'); } catch (e) {}
+    try { parent.postMessage({ ilframe: 'studio', objects, meta: { nextId, nextWallNum, nextCerchaNum, nextColNum, nextLosaNum, nextCieloNum } }, '*'); } catch (e) {}
   }, 400);
 }
 window.addEventListener('message', (e) => {
@@ -189,6 +224,7 @@ window.addEventListener('message', (e) => {
     const m = d.meta || {};
     nextId = m.nextId || (objects.reduce((a, o) => Math.max(a, o.id || 0), 0) + 1);
     nextWallNum = m.nextWallNum || 1; nextCerchaNum = m.nextCerchaNum || 1; nextColNum = m.nextColNum || 1;
+    nextLosaNum = m.nextLosaNum || 1; nextCieloNum = m.nextCieloNum || 1;
     render();
   } else if (d.ilframe === 'types') {
     ilWalls = Array.isArray(d.walls) ? d.walls : [];
@@ -202,7 +238,11 @@ window.addEventListener('message', (e) => {
     ilTechos = Array.isArray(d.techos) ? d.techos : [];
     if (techoTypeIdx >= ilTechos.length) techoTypeIdx = 0;
     ilVigas = Array.isArray(d.vigas) ? d.vigas : [];
-    if (['wall', 'cercha', 'columna', 'roof'].includes(tool)) actualizarPropBar();
+    ilLosas = Array.isArray(d.losas) ? d.losas : [];
+    if (losaTypeIdx >= ilLosas.length) losaTypeIdx = 0;
+    ilCielos = Array.isArray(d.cielos) ? d.cielos : [];
+    if (cieloTypeIdx >= ilCielos.length) cieloTypeIdx = 0;
+    if (['wall', 'cercha', 'columna', 'roof', 'losa', 'cielorraso'].includes(tool)) actualizarPropBar();
   } else if (d.ilframe === 'focus') {
     // El plano llega ya conectado al elemento: herramienta + tipo elegidos,
     // y centrado sobre lo ya dibujado de ese tipo (si existe) — nada de
@@ -212,16 +252,19 @@ window.addEventListener('message', (e) => {
     else if (ftool === 'cercha') { const idx = ilCerchas.findIndex((w) => w.name === typeName); if (idx >= 0) cerchaTypeIdx = idx; }
     else if (ftool === 'columna') { const idx = ilColumnas.findIndex((w) => w.name === typeName); if (idx >= 0) columnaTypeIdx = idx; }
     else if (ftool === 'roof') { const idx = ilTechos.findIndex((w) => w.name === typeName); if (idx >= 0) techoTypeIdx = idx; }
+    else if (ftool === 'losa') { const idx = ilLosas.findIndex((w) => w.name === typeName); if (idx >= 0) losaTypeIdx = idx; }
+    else if (ftool === 'cielorraso') { const idx = ilCielos.findIndex((w) => w.name === typeName); if (idx >= 0) cieloTypeIdx = idx; }
 
-    const targetVista = ftool === 'roof' ? 'techo' : 'planta';
+    const targetVista = ftool === 'roof' ? 'techo' : ftool === 'losa' ? 'entrepiso' : ftool === 'cielorraso' ? 'cielorraso' : 'planta';
+    const targetTab = { techo: 'tabTecho', entrepiso: 'tabEntrepiso', cielorraso: 'tabCielorraso', planta: 'tabPlanta' }[targetVista];
     document.querySelectorAll('.phb').forEach((e) => e.style.display = 'none');
     vistaActual = targetVista; vpZ = 0.1;
     document.body.dataset.vista = targetVista;
     document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
-    document.getElementById(targetVista === 'techo' ? 'tabTecho' : 'tabPlanta').classList.add('active');
-    document.querySelectorAll(targetVista === 'techo' ? '.phb-techo' : '.phb-planta').forEach((e) => e.style.display = 'flex');
+    document.getElementById(targetTab).classList.add('active');
+    document.querySelectorAll(`.phb-${targetVista}`).forEach((e) => e.style.display = 'flex');
 
-    const objType = ftool === 'roof' ? 'roof' : ftool === 'columna' ? 'columna' : ftool === 'cercha' ? 'cercha' : 'wall';
+    const objType = ftool === 'roof' ? 'roof' : ftool === 'columna' ? 'columna' : ftool === 'cercha' ? 'cercha' : ftool === 'losa' ? 'losa' : ftool === 'cielorraso' ? 'cielorraso' : 'wall';
     const match = objects.find((o) => o.type === objType && o.tipo === typeName);
     if (match) centerCameraOnWall(match); else { vpX = cv.width / 2; vpY = cv.height / 2; }
 
@@ -248,6 +291,16 @@ function getW(e) {
       const dist = Math.abs(dx * (-uY) + dy * uX);
       if (dist < bestD) { bestD = dist; const projL = dx * uX + dy * uY; bestSnap = { x: obj.pt[0] + projL * uX, y: obj.pt[1] + projL * uY }; }
     }
+    if ((obj.type === 'losa' || obj.type === 'cielorraso') && obj.env === vistaActual) {
+      if (obj.pts) { obj.pts.forEach((p) => { const d = hyp(raw.x - p.x, raw.y - p.y); if (d < bestD) { bestD = d; bestSnap = { x: p.x, y: p.y }; } }); }
+      else if (obj.p1 && obj.p2) {
+        const pts = [{ x: obj.p1[0], y: obj.p1[1] }, { x: obj.p2[0], y: obj.p1[1] }, { x: obj.p2[0], y: obj.p2[1] }, { x: obj.p1[0], y: obj.p2[1] }];
+        pts.forEach((p) => { const d = hyp(raw.x - p.x, raw.y - p.y); if (d < bestD) { bestD = d; bestSnap = { x: p.x, y: p.y }; } });
+      }
+    }
+    if (obj.type === 'wall' && vistaActual === 'planta') {
+      [{ x: obj.pA[0], y: obj.pA[1] }, { x: obj.pB[0], y: obj.pB[1] }].forEach((p) => { const d = hyp(raw.x - p.x, raw.y - p.y); if (d < bestD) { bestD = d; bestSnap = p; } });
+    }
   }
   if (bestSnap) return { x: Math.round(bestSnap.x), y: Math.round(bestSnap.y) };
   return {x: snp(raw.x), y: snp(raw.y)};
@@ -271,8 +324,10 @@ function getRoofZ(r, px, py) {
 function centerCameraOnWall(muro) {
   if (muro.type === 'columna') {
     vpX = cv.width/2 - muro.pt[0]*vpZ; vpY = cv.height/2 - muro.pt[1]*vpZ;
-  } else if (muro.type === 'roof') {
+  } else if (muro.type === 'roof' || muro.type === 'losa') {
     vpX = cv.width/2 - ((muro.p1[0]+muro.p2[0])/2)*vpZ; vpY = cv.height/2 - ((muro.p1[1]+muro.p2[1])/2)*vpZ;
+  } else if (muro.type === 'cielorraso') {
+    vpX = cv.width/2 - muro.pts[0].x*vpZ; vpY = cv.height/2 - muro.pts[0].y*vpZ;
   } else {
     vpX = cv.width/2 - ((muro.pA[0]+muro.pB[0])/2)*vpZ; vpY = cv.height/2 - ((muro.pA[1]+muro.pB[1])/2)*vpZ;
   }
@@ -290,6 +345,7 @@ function autoFitAlzado(muro) {
 
 function setVista(vista) {
   document.querySelectorAll('.phb').forEach(e => e.style.display = 'none');
+  document.getElementById('controles-3d').style.display = (vista === '3d') ? 'block' : 'none';
   let targetMuro = null;
   if(seleccionId) { const m = objects.find(o=>o.id===seleccionId); if(m && (m.type==='wall'||m.type==='cercha'||m.type==='columna')) targetMuro = m; }
   if(!targetMuro && muroAlzadoId) { const m = objects.find(o=>o.id===muroAlzadoId); if(m) targetMuro = m; }
@@ -300,18 +356,18 @@ function setVista(vista) {
     document.querySelectorAll('.phb-alzado, .phb-alzado.phb-techo').forEach(e => e.style.display = 'flex'); autoFitAlzado(targetMuro);
   } else if (vista === '3d') {
     vistaActual = '3d'; vpZ = 0.05; vpX = cv.width/2; vpY = cv.height/2;
-  } else if (vista === 'techo') {
-    vistaActual = 'techo'; vpZ = 0.1; if(targetMuro) centerCameraOnWall(targetMuro); else { vpX = cv.width/2; vpY = cv.height/2; }
-    document.querySelectorAll('.phb-techo').forEach(e => e.style.display = 'flex');
-  } else {
-    vistaActual = 'planta'; vpZ = 0.1; if(targetMuro) centerCameraOnWall(targetMuro); else { vpX = cv.width/2; vpY = cv.height/2; }
-    document.querySelectorAll('.phb-planta').forEach(e => e.style.display = 'flex');
+  } else if (vista === 'techo' || vista === 'entrepiso' || vista === 'cielorraso' || vista === 'planta') {
+    vistaActual = vista; vpZ = 0.1; if(targetMuro) centerCameraOnWall(targetMuro); else { vpX = cv.width/2; vpY = cv.height/2; }
+    document.querySelectorAll(`.phb-${vista}`).forEach(e => e.style.display = 'flex');
   }
 
   document.body.dataset.vista = vista; document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(vista === '3d' ? 'tab3D' : (vista === 'alzado' ? 'tabAlzado' : (vista === 'techo' ? 'tabTecho' : 'tabPlanta'))).classList.add('active');
+  const tid = { '3d': 'tab3D', alzado: 'tabAlzado', techo: 'tabTecho', entrepiso: 'tabEntrepiso', cielorraso: 'tabCielorraso', planta: 'tabPlanta' }[vista] || 'tabPlanta';
+  document.getElementById(tid).classList.add('active');
   forceCardOpen = false; drawing = false; polyPts = []; ST('select'); render();
 }
+
+function rotar3D(grados) { angulo3D = grados; render(); }
 
 function descargarVista() {
   render();
@@ -325,7 +381,14 @@ function render() {
   ctx.clearRect(0, 0, cv.width, cv.height);
   if (vistaActual === '3d') { draw3D(); } else {
     drawGrid(); objects.filter(o => o.type === 'guide' && o.env === vistaActual).forEach(drawObj);
-    if (vistaActual === 'planta') { objects.filter(o => o.type !== 'guide' && o.type !== 'roof' && o.type !== 'babeta').forEach(drawObj); drawPreview(); }
+    if (vistaActual === 'planta') { objects.filter(o => o.type !== 'guide' && o.type !== 'roof' && o.type !== 'babeta' && o.type !== 'losa' && o.type !== 'cielorraso' && o.type !== 'hueco').forEach(drawObj); drawPreview(); }
+    else if (vistaActual === 'entrepiso' || vistaActual === 'cielorraso') {
+      ctx.save(); ctx.globalAlpha = vistaActual === 'entrepiso' ? 0.3 : 0.2;
+      objects.filter(o => o.type === 'wall' || o.type === 'cercha' || o.type === 'columna').forEach(drawObj);
+      ctx.restore();
+      objects.filter(o => o.env === vistaActual).forEach(drawObj);
+      drawPreview();
+    }
     else if (vistaActual === 'alzado' && muroAlzadoId) {
       const m=objects.find(o=>o.id===muroAlzadoId);
       if(m) { if (m.type === 'wall') drawAlzado(m); else if (m.type === 'cercha') drawCerchaAlzado(m); else if (m.type === 'columna') drawColumnaAlzado(m); }
@@ -333,7 +396,7 @@ function render() {
     }
     else if (vistaActual === 'techo') {
       ctx.globalAlpha = 0.25; objects.filter(o => o.type === 'wall' || o.type === 'cercha' || o.type === 'columna').forEach(drawObj); ctx.globalAlpha = 1.0;
-      objects.filter(o => o.type === 'roof' || o.type === 'babeta').forEach(drawObj); drawPreview();
+      objects.filter(o => o.type === 'roof' || o.type === 'babeta' || (o.type === 'hueco' && o.env === 'techo')).forEach(drawObj); drawPreview();
     }
   }
 }
@@ -349,8 +412,8 @@ function cloneAndDrawGhost(obj, dx, dy) {
   const ghost = JSON.parse(JSON.stringify(obj));
   if(ghost.type === 'wall' || ghost.type === 'cercha') { ghost.pA[0]+=dx; ghost.pA[1]+=dy; ghost.pB[0]+=dx; ghost.pB[1]+=dy; }
   else if (ghost.type === 'columna') { ghost.pt[0]+=dx; ghost.pt[1]+=dy; }
-  else if (ghost.type === 'roof') { ghost.p1[0]+=dx; ghost.p1[1]+=dy; ghost.p2[0]+=dx; ghost.p2[1]+=dy; }
-  else if (ghost.type === 'babeta') { ghost.pts.forEach(p => { p.x+=dx; p.y+=dy; }); }
+  else if (ghost.type === 'roof' || ghost.type === 'losa') { ghost.p1[0]+=dx; ghost.p1[1]+=dy; ghost.p2[0]+=dx; ghost.p2[1]+=dy; }
+  else if (ghost.type === 'babeta' || ghost.type === 'hueco' || ghost.type === 'cielorraso') { ghost.pts.forEach(p => { p.x+=dx; p.y+=dy; }); }
   ctx.globalAlpha = 0.5; drawObj(ghost); ctx.globalAlpha = 1.0;
 }
 
@@ -375,8 +438,8 @@ function drawColumnaAlzado(c) {
   for(let i=1; i<divs; i++) {
     const y = (h / divs) * i; const nxL = bxL + (txL - bxL) * (y / h); const nxR = bxR + (txR - bxR) * (y / h);
     const snL = w2s(nxL, y), snR = w2s(nxR, y);
-    if (c.patron === 'LADDER') { ctx.moveTo(snL.x, snL.y); ctx.lineTo(snR.x, snR.y); }
-    else if (c.patron === 'WARREN') {
+    if (c.patron === 'LADDER' || c.montantesHorizontales) { ctx.moveTo(snL.x, snL.y); ctx.lineTo(snR.x, snR.y); }
+    if (c.patron === 'WARREN') {
       const prevY = (h / divs) * (i-1); const pnxL = bxL + (txL - bxL) * (prevY / h), pnxR = bxR + (txR - bxR) * (prevY / h);
       const spnL = w2s(pnxL, prevY), spnR = w2s(pnxR, prevY);
       if (i % 2 !== 0) { ctx.moveTo(spnL.x, spnL.y); ctx.lineTo(snR.x, snR.y); } else { ctx.moveTo(spnR.x, spnR.y); ctx.lineTo(snL.x, snL.y); }
@@ -437,6 +500,19 @@ function drawAlzado(muro) {
     pts.slice(1, pts.length-1).forEach(p => { const sp = w2s(p.x, p.y); ctx.moveTo(sp.x, sp.y); ctx.lineTo(sp.x, sp.y - 100); }); ctx.stroke(); ctx.setLineDash([]);
   }
 
+  const losas = objects.filter(o => o.type === 'losa');
+  if (losas.length) {
+    const hMax = Math.max(muro.hA, muro.hB); const sL = w2s(0, hMax), sR = w2s(l, hMax + 250);
+    ctx.fillStyle = 'rgba(88, 86, 214, 0.12)'; ctx.strokeStyle = 'var(--losa)'; ctx.setLineDash([6*vpZ, 6*vpZ]); ctx.lineWidth = 2;
+    ctx.fillRect(sL.x, sR.y, w2s(l, hMax).x - sL.x, sL.y - sR.y); ctx.strokeRect(sL.x, sR.y, w2s(l, hMax).x - sL.x, sL.y - sR.y); ctx.setLineDash([]);
+  }
+
+  const cielos = objects.filter(o => o.type === 'cielorraso');
+  cielos.forEach(c => {
+    const sA = w2s(0, c.hBase), sB = w2s(l, c.hBase); ctx.beginPath(); ctx.moveTo(sA.x, sA.y); ctx.lineTo(sB.x, sB.y);
+    ctx.strokeStyle = 'var(--cielo)'; ctx.lineWidth = 2; ctx.setLineDash([10*vpZ, 5*vpZ]); ctx.stroke(); ctx.setLineDash([]);
+  });
+
   muro.aberturas.forEach(ab => {
     const s1 = w2s(ab.x, ab.y + ab.h), s2 = w2s(ab.x + ab.w, ab.y); const isSel = seleccionAbId === ab.id;
     ctx.fillStyle = isSel ? 'rgba(254, 0, 0, 0.2)' : '#fff'; ctx.strokeStyle = isSel ? '#FE0000' : '#333'; ctx.lineWidth = isSel ? 3 : 2;
@@ -495,6 +571,62 @@ function drawObj(obj) {
     const isSel = (obj.id === seleccionId); ctx.save(); ctx.strokeStyle = isSel ? '#FE0000' : '#1c1c1e'; ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.beginPath(); obj.pts.forEach((p, i) => { const sp = w2s(p.x, p.y); if(i===0) ctx.moveTo(sp.x, sp.y); else ctx.lineTo(sp.x, sp.y); }); ctx.stroke(); ctx.restore();
   }
+  else if (obj.type === 'losa') {
+    const x1 = Math.min(obj.p1[0], obj.p2[0]), y1 = Math.min(obj.p1[1], obj.p2[1]), w = Math.abs(obj.p2[0] - obj.p1[0]), h = Math.abs(obj.p2[1] - obj.p1[1]);
+    const s1 = w2s(x1, y1), s2 = w2s(x1+w, y1+h); const isSel = (obj.id === seleccionId);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y);
+    const huecos = objects.filter((o) => o.type === 'hueco' && o.env === vistaActual);
+    huecos.forEach((hu) => {
+      if (hu.pts.length > 2) {
+        ctx.moveTo(w2s(hu.pts[0].x, hu.pts[0].y).x, w2s(hu.pts[0].x, hu.pts[0].y).y);
+        for (let i = hu.pts.length - 1; i >= 0; i--) ctx.lineTo(w2s(hu.pts[i].x, hu.pts[i].y).x, w2s(hu.pts[i].x, hu.pts[i].y).y);
+        ctx.closePath();
+      }
+    });
+    ctx.clip('evenodd');
+    ctx.strokeStyle = isSel ? '#FE0000' : 'var(--losa)'; ctx.lineWidth = isSel ? 3 : 2; ctx.strokeRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y);
+    ctx.beginPath(); ctx.lineWidth = 1; ctx.strokeStyle = isSel ? 'rgba(254,0,0,0.5)' : 'rgba(88,86,214,0.5)';
+    const sep = obj.sep || 400;
+    if (obj.dir === 'y') { for (let py = y1 + sep; py < y1 + h; py += sep) { const sp = w2s(x1, py), ep = w2s(x1+w, py); ctx.moveTo(sp.x, sp.y); ctx.lineTo(ep.x, ep.y); } }
+    else { for (let px = x1 + sep; px < x1 + w; px += sep) { const sp = w2s(px, y1), ep = w2s(px, y1+h); ctx.moveTo(sp.x, sp.y); ctx.lineTo(ep.x, ep.y); } }
+    ctx.stroke();
+    ctx.fillStyle = isSel ? '#FE0000' : 'var(--losa)'; ctx.font = `500 ${Math.max(12, 14*vpZ)}px var(--font, sans-serif)`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(obj.label, (s1.x+s2.x)/2, s1.y - 12);
+    ctx.restore();
+  }
+  else if (obj.type === 'cielorraso') {
+    const isSel = (obj.id === seleccionId); ctx.save();
+    ctx.beginPath(); obj.pts.forEach((p, i) => { const sp = w2s(p.x, p.y); i===0 ? ctx.moveTo(sp.x, sp.y) : ctx.lineTo(sp.x, sp.y); }); ctx.closePath();
+    const huecos = objects.filter((o) => o.type === 'hueco' && o.env === vistaActual);
+    huecos.forEach((hu) => {
+      if (hu.pts.length > 2) {
+        ctx.moveTo(w2s(hu.pts[0].x, hu.pts[0].y).x, w2s(hu.pts[0].x, hu.pts[0].y).y);
+        for (let i = hu.pts.length - 1; i >= 0; i--) ctx.lineTo(w2s(hu.pts[i].x, hu.pts[i].y).x, w2s(hu.pts[i].x, hu.pts[i].y).y);
+        ctx.closePath();
+      }
+    });
+    ctx.clip('evenodd');
+    ctx.strokeStyle = isSel ? '#FE0000' : 'var(--cielo)'; ctx.lineWidth = isSel ? 3 : 2; ctx.setLineDash([8*vpZ, 6*vpZ]); ctx.stroke(); ctx.setLineDash([]);
+    let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+    obj.pts.forEach((p) => { if(p.x<minX)minX=p.x; if(p.x>maxX)maxX=p.x; if(p.y<minY)minY=p.y; if(p.y>maxY)maxY=p.y; });
+    ctx.beginPath(); ctx.lineWidth = 1; ctx.strokeStyle = isSel ? 'rgba(254,0,0,0.4)' : 'rgba(184,134,11,0.35)';
+    const sep = obj.modulacion || 400;
+    if (obj.sentidoVigas === 'Y') { for (let px = minX + sep; px < maxX; px += sep) { ctx.moveTo(w2s(px, minY).x, w2s(px, minY).y); ctx.lineTo(w2s(px, maxY).x, w2s(px, maxY).y); } }
+    else { for (let py = minY + sep; py < maxY; py += sep) { ctx.moveTo(w2s(minX, py).x, w2s(minX, py).y); ctx.lineTo(w2s(maxX, py).x, w2s(maxX, py).y); } }
+    ctx.stroke();
+    ctx.fillStyle = isSel ? '#FE0000' : 'var(--cielo)'; ctx.font = `500 ${Math.max(12, 14*vpZ)}px var(--font, sans-serif)`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(obj.label, w2s((minX+maxX)/2, minY).x, w2s((minX+maxX)/2, minY).y - 12);
+    ctx.restore();
+  }
+  else if (obj.type === 'hueco') {
+    const isSel = (obj.id === seleccionId); ctx.save();
+    const isCenefa = obj.env === 'cielorraso';
+    ctx.strokeStyle = isSel ? '#FE0000' : (isCenefa ? '#af52de' : '#8e8e93'); ctx.lineWidth = isSel ? 3 : 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.setLineDash([8*vpZ, 6*vpZ]); ctx.fillStyle = isSel ? 'rgba(254,0,0,0.1)' : (isCenefa ? 'rgba(175,82,222,0.15)' : 'rgba(142,142,147,0.2)');
+    ctx.beginPath(); obj.pts.forEach((p, i) => { const sp = w2s(p.x, p.y); if(i===0) ctx.moveTo(sp.x, sp.y); else ctx.lineTo(sp.x, sp.y); });
+    ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+  }
   else if (obj.type === 'wall') {
     const sA = w2s(obj.pA[0], obj.pA[1]), sB = w2s(obj.pB[0], obj.pB[1]); const l = hyp(sB.x-sA.x, sB.y-sA.y), angle = Math.atan2(sB.y-sA.y, sB.x-sA.x), g = obj.espesor*vpZ; const isSel = (obj.id === seleccionId) && !seleccionAbId;
     ctx.save(); ctx.translate(sA.x, sA.y); ctx.rotate(angle); let tramos = [{s: 0, e: l / vpZ}];
@@ -516,24 +648,67 @@ function drawObj(obj) {
 }
 
 function draw3D() {
-  const isoProj = (x, y, z) => ({ x: (x - y) * 0.866 * vpZ + vpX, y: ((x + y) * 0.5 - z) * vpZ + vpY }); ctx.save();
-  const muros = objects.filter(o => o.type === 'wall').sort((a,b) => Math.min(a.pA[1], a.pB[1]) - Math.min(b.pA[1], b.pB[1]));
-  muros.forEach(m => {
-    const ang = Math.atan2(m.pB[1]-m.pA[1], m.pB[0]-m.pA[0]), dx = Math.cos(ang + Math.PI/2) * (m.espesor/2), dy = Math.sin(ang + Math.PI/2) * (m.espesor/2);
-    const bA1 = isoProj(m.pA[0]-dx, m.pA[1]-dy, 0), bB1 = isoProj(m.pB[0]-dx, m.pB[1]-dy, 0); const pts2D = getMuroPts(m), topPts1 = [], topPts2 = [];
-    pts2D.forEach(p => { if(p.y > 0) { const mx = m.pA[0] + Math.cos(ang)*p.x, my = m.pA[1] + Math.sin(ang)*p.x; topPts1.push(isoProj(mx-dx, my-dy, p.y)); topPts2.push(isoProj(mx+dx, my+dy, p.y)); } });
-    ctx.fillStyle = 'rgba(200, 200, 205, 0.7)'; ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bA1.x, bA1.y); ctx.lineTo(bB1.x, bB1.y); topPts1.reverse().forEach(p => ctx.lineTo(p.x,p.y)); topPts1.reverse(); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = 'rgba(230, 230, 235, 0.9)'; ctx.beginPath(); ctx.moveTo(topPts1[0].x, topPts1[0].y); topPts1.forEach(p=>ctx.lineTo(p.x,p.y)); topPts2.slice().reverse().forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath(); ctx.fill(); ctx.stroke();
-  });
+  const rad = angulo3D * Math.PI / 180;
+  const rot = (x, y) => ({ rx: x * Math.cos(rad) - y * Math.sin(rad), ry: x * Math.sin(rad) + y * Math.cos(rad) });
+  const isoProj = (rx, ry, z) => ({ x: (rx - ry) * 0.866 * vpZ + vpX, y: ((rx + ry) * 0.5 - z) * vpZ + vpY });
+  ctx.save();
 
-  const techos = objects.filter(o => o.type === 'roof');
-  techos.forEach(t => {
-    const alero = t.alero || 0; const x1 = Math.min(t.p1[0], t.p2[0]) - alero, y1 = Math.min(t.p1[1], t.p2[1]) - alero; const w = Math.abs(t.p2[0] - t.p1[0]) + alero*2, h = Math.abs(t.p2[1] - t.p1[1]) + alero*2;
-    const x2 = x1 + w, y2 = y1 + h; const dzX = (w * (t.slope/100)), dzY = (h * (t.slope/100)); let z1=t.hBase, z2=t.hBase, z3=t.hBase, z4=t.hBase;
-    if (t.fallDir === 'abajo') { z1+=dzY; z2+=dzY; } else if (t.fallDir === 'arriba') { z3+=dzY; z4+=dzY; } else if (t.fallDir === 'der') { z1+=dzX; z4+=dzX; } else if (t.fallDir === 'izq') { z2+=dzX; z3+=dzX; }
-    const c1 = isoProj(x1, y1, z1), c2 = isoProj(x2, y1, z2), c3 = isoProj(x2, y2, z3), c4 = isoProj(x1, y2, z4);
-    ctx.fillStyle = 'rgba(255, 159, 10, 0.6)'; ctx.strokeStyle = '#c27600'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y); ctx.lineTo(c4.x, c4.y); ctx.closePath(); ctx.fill(); ctx.stroke();
-  }); ctx.restore();
+  const renderList = seleccionId ? objects.filter(o => o.id === seleccionId) : objects.filter(o => o.type !== 'guide' && o.type !== 'hueco' && o.type !== 'babeta');
+  renderList.forEach(o => {
+    let cx = 0, cy = 0;
+    if (o.type === 'wall' || o.type === 'cercha') { cx = (o.pA[0] + o.pB[0]) / 2; cy = (o.pA[1] + o.pB[1]) / 2; }
+    else if (o.type === 'columna') { cx = o.pt[0]; cy = o.pt[1]; }
+    else if (o.type === 'losa' || o.type === 'roof') { cx = (o.p1[0] + o.p2[0]) / 2; cy = (o.p1[1] + o.p2[1]) / 2; }
+    else if (o.type === 'cielorraso') { cx = o.pts[0].x; cy = o.pts[0].y; }
+    const r = rot(cx, cy); o.zOrder = -(r.rx + r.ry);
+  });
+  renderList.sort((a, b) => a.zOrder - b.zOrder);
+
+  renderList.forEach(m => {
+    if (m.type === 'wall' || m.type === 'cercha') {
+      const esViga = m.type === 'cercha' && m.modelo === 'VIGA';
+      const hB = 0, hT = m.type === 'wall' ? Math.max(m.hA||0, m.hB||0) : (esViga ? Math.max(m.hIzq||0, m.hDer||0) + (m.hPico||0) : Math.max(m.hIzq||0, m.hDer||0) + (m.hPico||0));
+      const esp = m.espesor || 100;
+      const ang = Math.atan2(m.pB[1] - m.pA[1], m.pB[0] - m.pA[0]); const dx = Math.cos(ang + Math.PI / 2) * (esp / 2), dy = Math.sin(ang + Math.PI / 2) * (esp / 2);
+      const rA1 = rot(m.pA[0] - dx, m.pA[1] - dy), rB1 = rot(m.pB[0] - dx, m.pB[1] - dy); const rA2 = rot(m.pA[0] + dx, m.pA[1] + dy), rB2 = rot(m.pB[0] + dx, m.pB[1] + dy);
+      const bA1 = isoProj(rA1.rx, rA1.ry, hB), bB1 = isoProj(rB1.rx, rB1.ry, hB); const tA1 = isoProj(rA1.rx, rA1.ry, hT), tB1 = isoProj(rB1.rx, rB1.ry, hT); const tA2 = isoProj(rA2.rx, rA2.ry, hT), tB2 = isoProj(rB2.rx, rB2.ry, hT);
+      const isEstructura = m.type === 'cercha';
+      ctx.fillStyle = isEstructura ? 'rgba(255, 159, 10, 0.8)' : 'rgba(200, 200, 205, 0.9)'; ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(bA1.x, bA1.y); ctx.lineTo(bB1.x, bB1.y); ctx.lineTo(tB1.x, tB1.y); ctx.lineTo(tA1.x, tA1.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = isEstructura ? 'rgba(255, 180, 50, 0.9)' : 'rgba(230, 230, 235, 0.9)'; ctx.beginPath(); ctx.moveTo(tA1.x, tA1.y); ctx.lineTo(tB1.x, tB1.y); ctx.lineTo(tB2.x, tB2.y); ctx.lineTo(tA2.x, tA2.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    else if (m.type === 'losa' || m.type === 'roof') {
+      const isLosa = m.type === 'losa';
+      if (isLosa) {
+        const x1 = Math.min(m.p1[0], m.p2[0]), y1 = Math.min(m.p1[1], m.p2[1]), x2 = Math.max(m.p1[0], m.p2[0]), y2 = Math.max(m.p1[1], m.p2[1]);
+        const r1 = rot(x1, y1), r2 = rot(x2, y1), r3 = rot(x2, y2), r4 = rot(x1, y2); const z = 2400;
+        const c1 = isoProj(r1.rx, r1.ry, z), c2 = isoProj(r2.rx, r2.ry, z), c3 = isoProj(r3.rx, r3.ry, z), c4 = isoProj(r4.rx, r4.ry, z);
+        ctx.fillStyle = 'rgba(88, 86, 214, 0.7)'; ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y); ctx.lineTo(c4.x, c4.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+      } else {
+        const alero = m.alero || 0; const x1 = Math.min(m.p1[0], m.p2[0]) - alero, y1 = Math.min(m.p1[1], m.p2[1]) - alero; const w = Math.abs(m.p2[0] - m.p1[0]) + alero*2, h = Math.abs(m.p2[1] - m.p1[1]) + alero*2;
+        const x2 = x1 + w, y2 = y1 + h; const dzX = (w * (m.slope/100)), dzY = (h * (m.slope/100)); let z1=m.hBase, z2=m.hBase, z3=m.hBase, z4=m.hBase;
+        if (m.fallDir === 'abajo') { z1+=dzY; z2+=dzY; } else if (m.fallDir === 'arriba') { z3+=dzY; z4+=dzY; } else if (m.fallDir === 'der') { z1+=dzX; z4+=dzX; } else if (m.fallDir === 'izq') { z2+=dzX; z3+=dzX; }
+        const r1 = rot(x1, y1), r2 = rot(x2, y1), r3 = rot(x2, y2), r4 = rot(x1, y2);
+        const c1 = isoProj(r1.rx, r1.ry, z1), c2 = isoProj(r2.rx, r2.ry, z2), c3 = isoProj(r3.rx, r3.ry, z3), c4 = isoProj(r4.rx, r4.ry, z4);
+        ctx.fillStyle = 'rgba(255, 159, 10, 0.6)'; ctx.strokeStyle = '#c27600'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(c1.x, c1.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(c3.x, c3.y); ctx.lineTo(c4.x, c4.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+    }
+    else if (m.type === 'cielorraso') {
+      const z = m.hBase || 2600;
+      ctx.fillStyle = 'rgba(184, 134, 11, 0.6)'; ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath();
+      m.pts.forEach((p, i) => { const rp = rot(p.x, p.y); const ip = isoProj(rp.rx, rp.ry, z); i===0 ? ctx.moveTo(ip.x, ip.y) : ctx.lineTo(ip.x, ip.y); });
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    else if (m.type === 'columna') {
+      const e2 = (m.espesor||100) / 2, a2 = (m.anchoBase||400) / 2;
+      const rA1 = rot(m.pt[0]-a2, m.pt[1]-e2), rB1 = rot(m.pt[0]+a2, m.pt[1]-e2); const rA2 = rot(m.pt[0]-a2, m.pt[1]+e2), rB2 = rot(m.pt[0]+a2, m.pt[1]+e2);
+      const bA1 = isoProj(rA1.rx, rA1.ry, 0), bB1 = isoProj(rB1.rx, rB1.ry, 0); const tA1 = isoProj(rA1.rx, rA1.ry, m.altura), tB1 = isoProj(rB1.rx, rB1.ry, m.altura); const tA2 = isoProj(rA2.rx, rA2.ry, m.altura), tB2 = isoProj(rB2.rx, rB2.ry, m.altura);
+      ctx.fillStyle = 'rgba(150, 150, 150, 0.9)'; ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bA1.x, bA1.y); ctx.lineTo(bB1.x, bB1.y); ctx.lineTo(tB1.x, tB1.y); ctx.lineTo(tA1.x, tA1.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = 'rgba(180, 180, 180, 0.9)'; ctx.beginPath(); ctx.moveTo(tA1.x, tA1.y); ctx.lineTo(tB1.x, tB1.y); ctx.lineTo(tB2.x, tB2.y); ctx.lineTo(tA2.x, tA2.y); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+  });
+  ctx.restore();
 }
 
 function drawPreview() {
@@ -545,9 +720,13 @@ function drawPreview() {
     const a = w2s(dragStartW.x, dragStartW.y), b = w2s(dragCurW.x, dragCurW.y); ctx.save(); ctx.strokeStyle='#34c759'; ctx.lineWidth=2; ctx.setLineDash([15*vpZ, 5*vpZ, 3*vpZ, 5*vpZ]); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore();
   } else if (tool === 'roof' && dragStartW && vistaActual === 'techo') {
     const p1 = w2s(dragStartW.x, dragStartW.y), p2 = w2s(dragCurW.x, dragCurW.y); ctx.save(); ctx.fillStyle='rgba(255, 159, 10, 0.1)'; ctx.strokeStyle='#ff9f0a'; ctx.setLineDash([8,8]); ctx.lineWidth=2; ctx.fillRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y); ctx.strokeRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y); ctx.restore();
-  } else if (tool === 'babeta' && polyPts.length > 0 && vistaActual === 'techo') {
-    ctx.save(); ctx.strokeStyle = '#FE0000'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.beginPath(); polyPts.forEach((p, i) => { const sp = w2s(p.x, p.y); if(i===0) ctx.moveTo(sp.x, sp.y); else ctx.lineTo(sp.x, sp.y); });
-    const cp = w2s(dragCurW.x, dragCurW.y); ctx.lineTo(cp.x, cp.y); ctx.stroke(); const sp0 = w2s(polyPts[0].x, polyPts[0].y); ctx.beginPath(); ctx.arc(sp0.x, sp0.y, 10, 0, Math.PI*2); ctx.fillStyle = 'rgba(254, 0, 0, 0.3)'; ctx.fill(); ctx.stroke(); ctx.restore();
+  } else if (tool === 'losa' && dragStartW && vistaActual === 'entrepiso') {
+    const p1 = w2s(dragStartW.x, dragStartW.y), p2 = w2s(dragCurW.x, dragCurW.y); ctx.save(); ctx.fillStyle='rgba(88, 86, 214, 0.1)'; ctx.strokeStyle='var(--losa)'; ctx.setLineDash([8,8]); ctx.lineWidth=2; ctx.fillRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y); ctx.strokeRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y); ctx.restore();
+  } else if ((tool === 'babeta' || tool === 'lapiz' || tool === 'cielorraso') && polyPts.length > 0) {
+    let strokeCol = '#FE0000'; if (tool === 'cielorraso') strokeCol = 'var(--cielo)'; else if (tool === 'lapiz' && vistaActual === 'cielorraso') strokeCol = '#af52de'; else if (tool === 'lapiz') strokeCol = '#8e8e93';
+    ctx.save(); ctx.strokeStyle = strokeCol; ctx.lineWidth = 3; ctx.lineJoin = 'round'; if (tool === 'cielorraso') ctx.setLineDash([8*vpZ, 6*vpZ]);
+    ctx.beginPath(); polyPts.forEach((p, i) => { const sp = w2s(p.x, p.y); if(i===0) ctx.moveTo(sp.x, sp.y); else ctx.lineTo(sp.x, sp.y); });
+    const cp = w2s(dragCurW.x, dragCurW.y); ctx.lineTo(cp.x, cp.y); ctx.stroke(); const sp0 = w2s(polyPts[0].x, polyPts[0].y); ctx.beginPath(); ctx.arc(sp0.x, sp0.y, 10, 0, Math.PI*2); ctx.fillStyle = tool === 'cielorraso' ? 'rgba(184,134,11,0.3)' : 'rgba(254, 0, 0, 0.3)'; ctx.fill(); ctx.stroke(); ctx.restore();
   } else if (tool === 'guide' && dragStartW) {
     if (guideData.hitWall) {
       let dist = getLineDistance(dragCurW, guideData.startP, guideData.angle); if(snapOn) dist = Math.round(dist / 50) * 50;
@@ -578,7 +757,8 @@ function startLP(wp, scrn) {
       else if(obj.type === 'columna' && vistaActual === 'planta' && hyp(wp.x - obj.pt[0], wp.y - obj.pt[1]) < Math.max(obj.anchoTope, obj.anchoBase)/2 + 20/vpZ) { bestD = 0; foundId = obj.id; }
       else if(obj.type === 'guide' && obj.env === vistaActual && Math.abs(getLineDistance(wp, {x:obj.pt[0], y:obj.pt[1]}, obj.angle)) < bestD) { bestD = Math.abs(getLineDistance(wp, {x:obj.pt[0], y:obj.pt[1]}, obj.angle)); foundId = obj.id; }
       else if(obj.type === 'roof' && vistaActual === 'techo') { const x1=Math.min(obj.p1[0],obj.p2[0])-obj.alero, y1=Math.min(obj.p1[1],obj.p2[1])-obj.alero, w=Math.abs(obj.p2[0]-obj.p1[0])+obj.alero*2, h=Math.abs(obj.p2[1]-obj.p1[1])+obj.alero*2; if(wp.x>=x1 && wp.x<=x1+w && wp.y>=y1 && wp.y<=y1+h) { foundId = obj.id; bestD = 0; } }
-      else if(obj.type === 'babeta' && vistaActual === 'techo') { for(let i=0; i<obj.pts.length-1; i++) { const d = distPS(wp, [obj.pts[i].x, obj.pts[i].y], [obj.pts[i+1].x, obj.pts[i+1].y]); if(d < bestD) { bestD = d; foundId = obj.id; } } }
+      else if(obj.type === 'losa' && vistaActual === 'entrepiso') { const x1=Math.min(obj.p1[0],obj.p2[0]), y1=Math.min(obj.p1[1],obj.p2[1]), w=Math.abs(obj.p2[0]-obj.p1[0]), h=Math.abs(obj.p2[1]-obj.p1[1]); if(wp.x>=x1 && wp.x<=x1+w && wp.y>=y1 && wp.y<=y1+h) { foundId = obj.id; bestD = 0; } }
+      else if((obj.type === 'babeta' || obj.type === 'hueco' || obj.type === 'cielorraso') && obj.env === vistaActual) { for(let i=0; i<obj.pts.length-1; i++) { const d = distPS(wp, [obj.pts[i].x, obj.pts[i].y], [obj.pts[i+1].x, obj.pts[i+1].y]); if(d < bestD) { bestD = d; foundId = obj.id; } } }
     }
     if(foundId) { seleccionId = foundId; const m = document.getElementById('ctx'); m.style.left = scrn.x + 'px'; m.style.top = (scrn.y-10) + 'px'; m.classList.add('show'); navigator.vibrate && navigator.vibrate(50); }
   }, 450);
@@ -600,11 +780,13 @@ function onDown(e) {
   else if (tool === 'cercha' && vistaActual === 'planta') { saveHistory(); drawing = true; dragStartW = {...wp}; }
   else if (tool === 'columna' && vistaActual === 'planta') {
     saveHistory();
-    objects.push({ type: 'columna', id: nextId++, label: 'P'+nextColNum++, kind: 'reticulada', tipo: (ilColumnas[columnaTypeIdx]||{}).name||'', pt: [wp.x, wp.y], angle: 0, altura: 3000, anchoBase: 400, anchoTope: 400, espesor: 100, caraRecta: 'IZQ', divisiones: 5, patron: 'WARREN' });
+    objects.push({ type: 'columna', id: nextId++, label: 'P'+nextColNum++, kind: 'reticulada', tipo: (ilColumnas[columnaTypeIdx]||{}).name||'', pt: [wp.x, wp.y], angle: 0, altura: 3000, anchoBase: 400, anchoTope: 400, espesor: 100, caraRecta: 'IZQ', divisiones: 5, patron: 'WARREN', montantesHorizontales: false });
     seleccionId = nextId-1; forceCardOpen = true; ST('select'); ilPersist();
   }
   else if (tool === 'roof' && vistaActual === 'techo') { saveHistory(); drawing = true; dragStartW = {...wp}; }
+  else if (tool === 'losa' && vistaActual === 'entrepiso') { saveHistory(); drawing = true; dragStartW = {...wp}; }
   else if (tool === 'babeta' && vistaActual === 'techo') { dragStartW = {...wp}; }
+  else if (tool === 'lapiz' || tool === 'cielorraso') { dragStartW = {...wp}; }
   else if (tool === 'guide') {
     saveHistory(); drawing = true; dragStartW = {...wp}; let bestD = 30/vpZ, hitWall = null;
     for(const obj of objects) { if(obj.type === 'wall' || obj.type === 'cercha') { let d = distPS(wp, obj.pA, obj.pB); if(d < bestD) { bestD = d; hitWall = obj; } } }
@@ -632,8 +814,15 @@ function onDown(e) {
     } else if(vistaActual === 'techo') {
       let bestD = 20/vpZ; seleccionId = null;
       for(const obj of objects) {
-        if(obj.type==='babeta') { for(let i=0; i<obj.pts.length-1; i++) { const d = distPS(wp, [obj.pts[i].x, obj.pts[i].y], [obj.pts[i+1].x, obj.pts[i+1].y]); if(d < bestD) { bestD = d; seleccionId = obj.id; detectado = true; } } }
+        if((obj.type==='babeta' || obj.type==='hueco') && obj.env === vistaActual) { for(let i=0; i<obj.pts.length-1; i++) { const d = distPS(wp, [obj.pts[i].x, obj.pts[i].y], [obj.pts[i+1].x, obj.pts[i+1].y]); if(d < bestD) { bestD = d; seleccionId = obj.id; detectado = true; } } }
         else if(obj.type==='roof') { const x1=Math.min(obj.p1[0],obj.p2[0])-obj.alero, y1=Math.min(obj.p1[1],obj.p2[1])-obj.alero, w=Math.abs(obj.p2[0]-obj.p1[0])+obj.alero*2, h=Math.abs(obj.p2[1]-obj.p1[1])+obj.alero*2; if(wp.x>=x1 && wp.x<=x1+w && wp.y>=y1 && wp.y<=y1+h) { seleccionId=obj.id; detectado=true; } }
+      }
+    } else if(vistaActual === 'entrepiso' || vistaActual === 'cielorraso') {
+      let bestD = 20/vpZ; seleccionId = null;
+      for(const obj of objects) {
+        if(obj.env !== vistaActual) continue;
+        if(obj.type==='babeta' || obj.type==='hueco' || obj.type==='cielorraso') { for(let i=0; i<obj.pts.length-1; i++) { const d = distPS(wp, [obj.pts[i].x, obj.pts[i].y], [obj.pts[i+1].x, obj.pts[i+1].y]); if(d < bestD) { bestD = d; seleccionId = obj.id; detectado = true; } } }
+        else if(obj.type==='losa') { const x1=Math.min(obj.p1[0],obj.p2[0]), y1=Math.min(obj.p1[1],obj.p2[1]), w=Math.abs(obj.p2[0]-obj.p1[0]), h=Math.abs(obj.p2[1]-obj.p1[1]); if(wp.x>=x1 && wp.x<=x1+w && wp.y>=y1 && wp.y<=y1+h) { seleccionId=obj.id; detectado=true; } }
       }
     } else if(vistaActual === 'alzado' && muroAlzadoId) {
       let bestD = 20/vpZ; const m = objects.find(o=>o.id===muroAlzadoId); seleccionAbId = null;
@@ -674,8 +863,19 @@ function onUp(e) {
     if (hyp(dragCurW.x-dragStartW.x, dragCurW.y-dragStartW.y) > 100) { objects.push({type:'cercha', id:nextId++, label:'C'+nextCerchaNum++, tipo:(ilCerchas[cerchaTypeIdx]||{}).name||'', pA:[dragStartW.x, dragStartW.y], pB:[dragCurW.x, dragCurW.y], espesor:100, hIzq:2400, hDer:2400, hPico:1000, xPico:0.5, divisiones:4, modelo:'PRATT', soportaClavadores:false}); ilPersist(); } else { history.pop(); }
   } else if (tool === 'roof' && drawing && vistaActual === 'techo') {
     if (Math.abs(dragCurW.x-dragStartW.x) > 100) { objects.push({type:'roof', id:nextId++, tipo:(ilTechos[techoTypeIdx]||{}).name||'', p1:[dragStartW.x, dragStartW.y], p2:[dragCurW.x, dragCurW.y], hBase: 2400, slope: 15, fallDir: 'abajo', alero: 300}); ilPersist(); } else { history.pop(); }
-  } else if (tool === 'babeta' && vistaActual === 'techo') {
-    shouldResetDrawing = false; if(!drawing) { saveHistory(); drawing = true; polyPts = [{...wp}]; forceCardOpen = true; actualizarPropBar(); } else { if(polyPts.length > 2 && hyp(wp.x - polyPts[0].x, wp.y - polyPts[0].y) < 30/vpZ) { polyPts.push({...polyPts[0]}); objects.push({type:'babeta', id:nextId++, pts: [...polyPts]}); drawing = false; polyPts = []; toast("Babeta cerrada"); ST('select'); ilPersist(); } else { polyPts.push({...wp}); } }
+  } else if (tool === 'losa' && drawing && vistaActual === 'entrepiso') {
+    if (Math.abs(dragCurW.x-dragStartW.x) > 100) { objects.push({type:'losa', id:nextId++, label:'L'+nextLosaNum++, env:'entrepiso', tipo:(ilLosas[losaTypeIdx]||{}).name||'', p1:[dragStartW.x, dragStartW.y], p2:[dragCurW.x, dragCurW.y]}); seleccionId = nextId-1; forceCardOpen = true; ST('select'); ilPersist(); } else { history.pop(); }
+  } else if (tool === 'babeta' || tool === 'lapiz' || tool === 'cielorraso') {
+    shouldResetDrawing = false;
+    if(!drawing) { saveHistory(); drawing = true; polyPts = [{...wp}]; forceCardOpen = true; actualizarPropBar(); }
+    else if(polyPts.length > 2 && hyp(wp.x - polyPts[0].x, wp.y - polyPts[0].y) < 30/vpZ) {
+      polyPts.push({...polyPts[0]});
+      let objType = tool === 'lapiz' ? 'hueco' : tool;
+      let newObj = { type: objType, id: nextId++, env: vistaActual, pts: [...polyPts] };
+      if (tool === 'cielorraso') { newObj.label = 'CR'+nextCieloNum++; newObj.tipo = (ilCielos[cieloTypeIdx]||{}).name||''; newObj.hBase = 2600; newObj.modulacion = 400; newObj.sentidoVigas = 'X'; }
+      objects.push(newObj); drawing = false; polyPts = [];
+      toast(tool==='lapiz' ? "Hueco guardado" : (tool==='cielorraso' ? "Cielorraso cerrado" : "Babeta cerrada")); ST('select'); ilPersist();
+    } else { polyPts.push({...wp}); }
   } else if (tool === 'guide' && drawing) {
     let finalPt, finalAng;
     if (guideData.hitWall) { let dist = getLineDistance(dragCurW, guideData.startP, guideData.angle); if(snapOn) dist = Math.round(dist / 50) * 50; const offX = -Math.sin(guideData.angle) * dist, offY = Math.cos(guideData.angle) * dist; finalPt = [guideData.startP.x + offX, guideData.startP.y + offY]; finalAng = guideData.angle; } else { let dist = getLineDistance(dragCurW, dragStartW, guideData.angle); if(snapOn) dist = Math.round(dist / 50) * 50; const cx = dragStartW.x - Math.sin(guideData.angle)*dist, cy = dragStartW.y + Math.cos(guideData.angle)*dist; finalPt = [cx, cy]; finalAng = guideData.angle; }
@@ -685,7 +885,7 @@ function onUp(e) {
     if(m && m.type === 'wall') { const x1 = Math.min(dragStartW.x, dragCurW.x), w = Math.abs(dragCurW.x - dragStartW.x), y1 = Math.min(dragStartW.y, dragCurW.y), h = Math.abs(dragCurW.y - dragStartW.y); if(w > 120 && h > 120) { const nId = nextId++; let subType=tool==='puerta'?'batiente':(tool==='ventana'?'corrediza':'vano'); m.aberturas.push({id: nId, type: tool, subType: subType, x: x1, y: y1, w: w, h: h, flipX: false, flipY: false}); seleccionAbId = nId; forceCardOpen = true; ST('select'); ilPersist(); } else { history.pop(); } }
   } else if (tool === 'move' && drawing && seleccionId) {
     const obj = objects.find(o=>o.id===seleccionId);
-    if(obj) { saveHistory(); const dx = dragCurW.x-dragStartW.x, dy = dragCurW.y-dragStartW.y; if(obj.type==='wall' || obj.type==='cercha'){ obj.pA[0]+=dx; obj.pA[1]+=dy; obj.pB[0]+=dx; obj.pB[1]+=dy; } else if(obj.type==='columna') { obj.pt[0]+=dx; obj.pt[1]+=dy; } else if(obj.type==='roof'){ obj.p1[0]+=dx; obj.p1[1]+=dy; obj.p2[0]+=dx; obj.p2[1]+=dy; } else if(obj.type==='babeta'){ obj.pts.forEach(p=>{p.x+=dx;p.y+=dy;}); } ilPersist(); } ST('select');
+    if(obj) { saveHistory(); const dx = dragCurW.x-dragStartW.x, dy = dragCurW.y-dragStartW.y; if(obj.type==='wall' || obj.type==='cercha'){ obj.pA[0]+=dx; obj.pA[1]+=dy; obj.pB[0]+=dx; obj.pB[1]+=dy; } else if(obj.type==='columna') { obj.pt[0]+=dx; obj.pt[1]+=dy; } else if(obj.type==='roof' || obj.type==='losa'){ obj.p1[0]+=dx; obj.p1[1]+=dy; obj.p2[0]+=dx; obj.p2[1]+=dy; } else if(obj.type==='babeta' || obj.type==='hueco' || obj.type==='cielorraso'){ obj.pts.forEach(p=>{p.x+=dx;p.y+=dy;}); } ilPersist(); } ST('select');
   } else if (tool === 'copy' && drawing && seleccionId) {
     const m = objects.find(o=>o.id===seleccionId);
     if(m && (m.type==='wall' || m.type==='cercha' || m.type==='columna')) {
@@ -706,7 +906,15 @@ cv.addEventListener('touchstart', onDown, {passive: false}); cv.addEventListener
 cv.addEventListener('mousedown', e => { if(e.button===0) onDown(e); }); cv.addEventListener('mousemove', onMove); cv.addEventListener('mouseup', onUp); cv.addEventListener('mouseleave', onCancel);
 cv.addEventListener('wheel', e => { e.preventDefault(); const nz = Math.max(0.01, Math.min(vpZ * (e.deltaY<0 ? 1.08 : 0.92), 10)); const s = getS(e); vpX = s.x - (s.x - vpX) * (nz/vpZ); vpY = s.y - (s.y - vpY) * (nz/vpZ); vpZ = nz; render(); }, {passive:false});
 
-function finishPoly() { if(polyPts.length > 1) { objects.push({type:'babeta', id:nextId++, pts: [...polyPts]}); toast("Babeta Guardada"); ilPersist(); } drawing = false; polyPts = []; ST('select'); }
+function finishPoly() {
+  if(polyPts.length > 1) {
+    let objType = tool === 'lapiz' ? 'hueco' : tool;
+    let newObj = { type: objType, id: nextId++, env: vistaActual, pts: [...polyPts] };
+    if (tool === 'cielorraso') { newObj.label = 'CR'+nextCieloNum++; newObj.tipo = (ilCielos[cieloTypeIdx]||{}).name||''; newObj.hBase = 2600; newObj.modulacion = 400; newObj.sentidoVigas = 'X'; }
+    objects.push(newObj); toast("Guardado"); ilPersist();
+  }
+  drawing = false; polyPts = []; ST('select');
+}
 
 function ejecutarMatriz(tipo, valor) {
   if (!lastCopyData) return; const num = parseInt(valor); if (isNaN(num) || num < 2) return; const src = objects.find(o => o.id === lastCopyData.srcId); if (!src) return;
@@ -734,6 +942,9 @@ function ejecutarMatriz(tipo, valor) {
 }
 
 function modRoof(prop, val) { if(!seleccionId) return; const r = objects.find(o=>o.id===seleccionId); if(!r || r.type!=='roof') return; saveHistory(); if(prop === 'hBase' || prop === 'slope' || prop === 'alero') r[prop] = parseFloat(val); else if(prop === 'fallDir') r.fallDir = val; render(); ilPersist(); }
+function modLosaTipo(val) { if (!seleccionId) return; const l = objects.find(o => o.id === seleccionId); if (!l || l.type !== 'losa') return; saveHistory(); l.tipo = val; render(); ilPersist(); }
+function modCieloTipo(val) { if (!seleccionId) return; const c = objects.find(o => o.id === seleccionId); if (!c || c.type !== 'cielorraso') return; saveHistory(); c.tipo = val; render(); ilPersist(); }
+function modCielo(prop, val) { if(!seleccionId) return; const c = objects.find(o=>o.id===seleccionId); if(!c || c.type!=='cielorraso') return; saveHistory(); if(prop === 'hBase') c.hBase = parseFloat(val)*1000; else if(prop === 'modulacion') c.modulacion = parseFloat(val); else c[prop] = val; render(); ilPersist(); }
 function modAb(prop, val) { if(!seleccionId || !seleccionAbId) return; const m = objects.find(o=>o.id===seleccionId); if(!m) return; const ab = m.aberturas.find(a=>a.id===seleccionAbId); if(!ab) return; saveHistory(); let v = parseFloat(val)*1000; let align = document.getElementById('selAbAlign') ? document.getElementById('selAbAlign').value : 'dintel'; if (prop === 'y_align') { if (align === 'dintel') ab.y = v - ab.h; else ab.y = v; } else if (prop === 'h') { if (align === 'dintel') { let currDintel = ab.y + ab.h; ab.h = v; ab.y = currDintel - ab.h; } else { ab.h = v; } } else { ab[prop] = v; } render(); ilPersist(); }
 function modAbSubType(val) { if(!seleccionId || !seleccionAbId) return; const ab = objects.find(o=>o.id===seleccionId).aberturas.find(a=>a.id===seleccionAbId); saveHistory(); ab.subType = val; render(); ilPersist(); }
 function flipAb(axis) { if(!seleccionId || !seleccionAbId) return; const ab = objects.find(o=>o.id===seleccionId).aberturas.find(a=>a.id===seleccionAbId); saveHistory(); if(axis === 'x') ab.flipX = !ab.flipX; if(axis === 'y') ab.flipY = !ab.flipY; render(); ilPersist(); }
@@ -744,6 +955,7 @@ function modColumna(prop, val) {
   if(prop === 'caraRecta' || prop === 'patron') c[prop] = val;
   else if(prop === 'kind') { c.kind = val; c.tipo = ''; forceCardOpen = true; actualizarPropBar(); }
   else if(prop === 'divisiones') c.divisiones = parseInt(val);
+  else if(prop === 'montantesHorizontales') c.montantesHorizontales = val;
   else if(prop === 'ang') { c.angle = parseFloat(val)*(Math.PI/180); ST('select'); }
   else c[prop] = parseFloat(val)*1000; render(); ilPersist();
 }
@@ -838,6 +1050,21 @@ function actualizarPropBar() {
     } else { content.innerHTML = `<p style="font-size:13px; color:var(--label);">Definí tipos de techo en Componentes para elegirlos acá.</p>` + help; }
   } }
   else if(tool === 'babeta') { barTool.textContent = 'DIBUJAR BABETA'; ind.textContent = 'Opciones ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'TRAZAR BABETA'; if(drawing) { content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá cerca del inicio para cerrar.</p><button class="prop-btn-full" onclick="finishPoly()">TERMINAR ABIERTA</button>`; } else { content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá puntos para trazar la restricción.</p>`; } } }
+  else if(tool === 'losa') { barTool.textContent = 'NUEVO ENTREPISO'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVA LOSA';
+    const help = `<p style="font-size:14px; color:var(--label); text-align:center; margin-top:8px;">Arrastrá en diagonal para dibujar el perímetro del entrepiso.</p>`;
+    if (ilLosas.length) {
+      const opts = ilLosas.map((t,i)=>`<option value="${i}" ${i===losaTypeIdx?'selected':''}>${t.name||'sin nombre'}</option>`).join('');
+      content.innerHTML = `<div class="prop-row"><label>Tipo de losa</label><select onchange="ilSetLosa(this.value)" style="width:180px;">${opts}</select></div>` + help;
+    } else { content.innerHTML = `<p style="font-size:13px; color:var(--label);">Definí tipos de losa en Componentes para elegirlos acá.</p>` + help; }
+  } }
+  else if(tool === 'cielorraso') { barTool.textContent = 'NUEVO CIELORRASO'; ind.textContent = 'Opciones ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'TRAZAR CIELORRASO';
+    if(drawing) { content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá cerca del inicio para cerrar el polígono.</p><button class="prop-btn-full" onclick="finishPoly()">CERRAR FORMA</button>`; }
+    else if (ilCielos.length) {
+      const opts = ilCielos.map((t,i)=>`<option value="${i}" ${i===cieloTypeIdx?'selected':''}>${t.name||'sin nombre'}</option>`).join('');
+      content.innerHTML = `<div class="prop-row"><label>Tipo de cielorraso</label><select onchange="ilSetCielo(this.value)" style="width:180px;">${opts}</select></div><p style="font-size:14px; color:var(--label); text-align:center;">Tocá los rincones del ambiente para trazarlo.</p>`;
+    } else { content.innerHTML = `<p style="font-size:13px; color:var(--label);">Definí tipos de cielorraso en Componentes para elegirlos acá.</p><p style="font-size:14px; color:var(--label); text-align:center;">Tocá los rincones del ambiente para trazarlo.</p>`; }
+  } }
+  else if(tool === 'lapiz') { barTool.textContent = 'LÁPIZ DE RECORTES'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'HUECOS Y PASES'; if(drawing) { content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Trazá la forma del pase de escalera o ducto.</p><button class="prop-btn-full" onclick="finishPoly()">CERRAR HUECO</button>`; } else { content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Tocá para iniciar el recorte en la losa, techo o cielorraso.</p>`; } } }
   else if(tool === 'guide') { barTool.textContent = 'LÍNEA GUÍA'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'CREAR GUÍA'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá desde un panel para crear una guía paralela (offset).</p>`; } }
   else if(tool === 'join') { barTool.textContent = 'UNIR MUROS'; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'JERARQUÍAS T/L'; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá desde Muro A hacia Muro B.</p>`; } }
   else if(tool === 'puerta' || tool === 'ventana' || tool === 'vano') { barTool.textContent = 'DIBUJAR ' + tool; ind.textContent = 'Ayuda ▴'; if(showCard) { card.style.display = 'flex'; title.textContent = 'NUEVA ' + tool; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Arrastrá en el panel para trazar el hueco.</p>`; } }
@@ -874,6 +1101,29 @@ function actualizarPropBar() {
         }
       }
       else if(o.type === 'babeta') { barTool.textContent = `BABETA`; ind.textContent = 'Seleccionada ▾'; if(showCard) { card.style.display = 'flex'; title.textContent = `BABETA (PRETIL)`; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Línea de restricción para el techo. Usá el menú de mantener presionado para borrarla o moverla.</p>`; } }
+      else if(o.type === 'hueco') { barTool.textContent = `HUECO / PASE`; ind.textContent = 'Seleccionado ▾'; if(showCard) { card.style.display = 'flex'; title.textContent = `RECORTE`; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Recorte estructural (hueco de escalera, ducto, etc.) en la losa, techo o cielorraso.</p><button class="prop-btn-full" style="background:var(--red);" onclick="ctxDo('delete')">ELIMINAR RECORTE</button>`; } }
+      else if(o.type === 'losa') {
+        barTool.textContent = `ENTREPISO ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; ind.textContent = 'Propiedades ▾';
+        if(showCard) {
+          card.style.display = 'flex'; title.textContent = `LOSA ${o.label}${o.tipo ? ' · '+o.tipo : ''}`;
+          const opts = ilLosas.length ? ilLosas.map(t=>`<option value="${t.name}" ${o.tipo===t.name?'selected':''}>${t.name||'sin nombre'}</option>`).join('') : `<option value="">— definí en Componentes → Losas —</option>`;
+          content.innerHTML = `<div class="prop-row"><label>Tipo de losa</label><select onchange="modLosaTipo(this.value)" style="width:150px;">${opts}</select></div><p style="font-size:13px; color:var(--label); margin-top:8px;">Dirección de viguetas y separación salen del tipo elegido en Componentes.</p>`;
+        }
+      }
+      else if(o.type === 'cielorraso') {
+        barTool.textContent = `CIELORRASO ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; ind.textContent = 'Propiedades ▾';
+        if(showCard) {
+          card.style.display = 'flex'; title.textContent = `CIELORRASO ${o.label}${o.tipo ? ' · '+o.tipo : ''}`;
+          const opts = ilCielos.length ? ilCielos.map(t=>`<option value="${t.name}" ${o.tipo===t.name?'selected':''}>${t.name||'sin nombre'}</option>`).join('') : `<option value="">— definí en Componentes → Cielorrasos —</option>`;
+          content.innerHTML = `
+            <div class="prop-row"><label>Tipo de cielorraso</label><select onchange="modCieloTipo(this.value)" style="width:150px;">${opts}</select></div>
+            <div class="prop-row"><label>Montaje</label><select onchange="modCielo('tipoMontaje', this.value)"><option value="VELAS" ${o.tipoMontaje==='VELAS'?'selected':''}>Suspendido (velas)</option><option value="PEGADO" ${o.tipoMontaje==='PEGADO'?'selected':''}>Pegado a losa</option><option value="INCLINADO" ${o.tipoMontaje==='INCLINADO'?'selected':''}>Acompaña caída de techo</option></select></div>
+            <div class="prop-row"><label>Altura (NPT, m)</label><input type="number" step="0.01" value="${(o.hBase/1000).toFixed(2)}" onchange="modCielo('hBase', this.value)" onkeydown="${kEnt}"></div>
+            <div class="prop-row"><label>Modulación (omegas)</label><select onchange="modCielo('modulacion', this.value)"><option value="400" ${o.modulacion===400?'selected':''}>Cada 400 mm</option><option value="600" ${o.modulacion===600?'selected':''}>Cada 600 mm</option></select></div>
+            <div class="prop-row"><label>Sentido</label><select onchange="modCielo('sentidoVigas', this.value)"><option value="X" ${o.sentidoVigas==='X'?'selected':''}>Eje X</option><option value="Y" ${o.sentidoVigas==='Y'?'selected':''}>Eje Y</option></select></div>
+          `;
+        }
+      }
       else if(o.type === 'columna') {
         const esArmada = o.kind === 'armada';
         barTool.textContent = `${esArmada ? 'PILAR' : 'COLUMNA'} ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; ind.textContent = 'Propiedades ▾';
@@ -894,6 +1144,7 @@ function actualizarPropBar() {
                 <div class="prop-row"><label>Cara a Plomo</label><select onchange="modColumna('caraRecta', this.value)"><option value="IZQ" ${o.caraRecta==='IZQ'?'selected':''}>Izquierda</option><option value="DER" ${o.caraRecta==='DER'?'selected':''}>Derecha</option><option value="CENTRO" ${o.caraRecta==='CENTRO'?'selected':''}>Centro (Simétrica)</option></select></div>
                 <div class="prop-row"><label>Retícula</label><select onchange="modColumna('patron', this.value)"><option value="WARREN" ${o.patron==='WARREN'?'selected':''}>Warren (Zig-Zag)</option><option value="X_CROSS" ${o.patron==='X_CROSS'?'selected':''}>Cruces</option><option value="LADDER" ${o.patron==='LADDER'?'selected':''}>Escalera</option></select></div>
                 <div class="prop-row"><label>Divisiones Verticales</label><input type="number" step="1" value="${o.divisiones}" onchange="modColumna('divisiones', this.value)" onkeydown="${kEnt}"></div>
+                <div class="prop-row" style="margin-top:12px; background:#f2f2f7; padding:8px; border-radius:6px;"><label style="color:var(--accent);">+ Montantes horizontales</label><input type="checkbox" ${o.montantesHorizontales ? 'checked' : ''} onchange="modColumna('montantesHorizontales', this.checked)"></div>
                `;
              }
           }

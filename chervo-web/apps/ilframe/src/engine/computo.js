@@ -7,14 +7,25 @@
 // Devuelve { grupos, materiales, totales } para la pestaña Cómputo/Salida.
 
 import { PROFILE_SECTIONS } from '../data/profiles'
+import { LAYER_TEMPLATES } from '../data/layers'
 import { panelBOM } from './bom'
 import { beamKg } from './beams'
 import { cerchaKg, cerchaTypeDef, trussGeometry } from './trusses'
 import { columnaKg, columnaGeometry, pilarKg } from './pilares'
+import { slabGeometry, deckDef } from './slabs'
 
 const secOf = (ref) => (PROFILE_SECTIONS[ref?.normId]?.C || [])[ref?.secIdx ?? 0]
 const labelOf = (ref) => { const s = secOf(ref); return s ? `${s.h}x${s.w}x${s.t}` : '—' }
 const findType = (list, name) => (list || []).find((t) => t.name === name) || (list && list[0])
+const layerName = (id) => LAYER_TEMPLATES.find((l) => l.id === id)?.name || id
+
+// Área real del polígono (shoelace) — para el cielorraso, dibujado a mano
+// libre (no siempre un rectángulo).
+function polyArea(pts) {
+  let a = 0
+  for (let i = 0; i < pts.length - 1; i++) a += pts[i].x * pts[i + 1].y - pts[i + 1].x * pts[i].y
+  return Math.abs(a) / 2
+}
 
 // Cortes (1 por miembro) y conexiones (2 extremos por miembro) de una
 // pieza reticulada — base real para el costo por operación (no por m²).
@@ -49,6 +60,8 @@ export function computoProyecto(state, project) {
   const vigasObj = studio.filter((o) => o.type === 'cercha' && o.modelo === 'VIGA')
   const columnas = studio.filter((o) => o.type === 'columna')
   const techos = studio.filter((o) => o.type === 'roof')
+  const losasObj = studio.filter((o) => o.type === 'losa')
+  const cielosObj = studio.filter((o) => o.type === 'cielorraso')
 
   const steel = {}   // label de perfil -> kg
   const mats = {}    // nombre|unidad -> { name, unit, qty }
@@ -167,6 +180,42 @@ export function computoProyecto(state, project) {
       return { id: label, perfil: labelOf(t.perfilClavador), det: `Techo · ${(totalW / 1000).toFixed(1)}×${(totalD / 1000).toFixed(1)} m${r.tipo ? ' · ' + r.tipo : ''}`, kg: +clavKg.toFixed(1), m2: areaM2, extra: `${chapaM2.toFixed(1)} m² chapa · ${mlClavadores.toFixed(1)} ml` }
     })
     grupos.push({ tipo: 'techos', label: 'Techos / Cubiertas', filas })
+  }
+
+  // ── Losas / Entrepisos (tipo enlazado a Componentes → Losas) ──
+  if (losasObj.length) {
+    const filas = losasObj.map((l) => {
+      const t = findType(project.types?.losa, l.tipo) || {}
+      const losa = { a: l.p1, b: l.p2, dir: t.dir || 'x', sep: t.sep || 400, perfil: t.perfil }
+      const g = slabGeometry(losa)
+      const sec = secOf(t.perfil)
+      const kg = sec ? g.ml * sec.kg : 0
+      addSteel(labelOf(t.perfil), kg)
+      addMat(`Deck ${deckDef(t.deck).name}`, 'm²', g.deckM2)
+      return { id: l.label, perfil: labelOf(t.perfil), det: `Losa · ${(g.w / 1000).toFixed(1)}×${(g.d / 1000).toFixed(1)} m${l.tipo ? ' · ' + l.tipo : ''}`, kg: +kg.toFixed(1), m2: +g.deckM2.toFixed(2), extra: `${g.count} viguetas · ${g.ml.toFixed(1)} ml` }
+    })
+    grupos.push({ tipo: 'losas', label: 'Losas / Entrepisos', filas })
+  }
+
+  // ── Cielorrasos (tipo enlazado a Componentes → Cielorrasos; polígono libre) ──
+  if (cielosObj.length) {
+    const filas = cielosObj.map((c) => {
+      const t = findType(project.types?.cielo, c.tipo) || {}
+      const xs = c.pts.map((p) => p.x), ys = c.pts.map((p) => p.y)
+      const w = Math.max(1, Math.max(...xs) - Math.min(...xs)), d = Math.max(1, Math.max(...ys) - Math.min(...ys))
+      const areaM2 = polyArea(c.pts) / 1e6
+      const sep = c.modulacion || 400
+      const enY = c.sentidoVigas === 'Y'
+      const span = enY ? d : w, reparto = enY ? w : d
+      const count = Math.floor(reparto / sep) + 1
+      const ml = (count * span) / 1000
+      const sec = secOf(t.perfil)
+      const kg = sec ? ml * sec.kg : 0
+      addSteel(labelOf(t.perfil), kg)
+      for (const layerId of (t.placas || [])) addMat(layerName(layerId), 'm²', areaM2)
+      return { id: c.label, perfil: labelOf(t.perfil), det: `Cielorraso · ${(w / 1000).toFixed(1)}×${(d / 1000).toFixed(1)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), m2: +areaM2.toFixed(2), extra: `${count} perfiles · ${ml.toFixed(1)} ml` }
+    })
+    grupos.push({ tipo: 'cielos', label: 'Cielorrasos', filas })
   }
 
   const aceroKg = Object.values(steel).reduce((a, b) => a + b, 0)

@@ -33,8 +33,10 @@ const WALL_PRESETS = [
 const TYPE_ORDER = ['pilar', 'columna', 'cercha', 'viga', 'losa', 'techo', 'cielo']
 
 // Categorías con herramienta propia en el plano (para el ícono "Dibujar").
-// Pilar armado, Losa y Cielorraso todavía no tienen herramienta.
-const CAT_TOOL = { columna: 'columna', cercha: 'cercha', viga: 'cercha', techo: 'roof' }
+// Pilar armado comparte la herramienta de Columna (toggle Reticulada/Armado
+// en Alzado); al venir desde acá arranca en Reticulada y hay que tocar el
+// toggle una vez — igual centra la cámara si ya hay piezas de ese tipo.
+const CAT_TOOL = { pilar: 'columna', columna: 'columna', cercha: 'cercha', viga: 'cercha', techo: 'roof', losa: 'losa', cielo: 'cielorraso' }
 
 export default function ProjectSetup() {
   const project = useDrawingStore((s) => s.project)
