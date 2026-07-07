@@ -1,4 +1,8 @@
-# iLFrame — Visión y flujo de trabajo (fuente de verdad)
+# iLFrame — Visión y flujo de trabajo (histórico)
+
+> **Desactualizado.** La fuente de verdad vigente es `ARQUITECTURA.md`. Esto
+> queda como bitácora de una etapa anterior (previa a Core/Componentes por
+> proyecto, cómputo consolidado y el resto de los elementos ya construidos).
 
 > Documento para no perder de vista el funcionamiento deseado.
 > Magnitudes siempre reales (mm). Objetivo final: una sola app de dibujo

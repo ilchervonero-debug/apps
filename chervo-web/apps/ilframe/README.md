@@ -40,4 +40,5 @@ ilframe/
 
 - Nada de emojis. Usar siempre icon flats (SVG de línea, `stroke=currentColor`).
 
-Ver `ROADMAP.md` para la visión y el flujo de trabajo completos.
+Ver `ARQUITECTURA.md` para la visión y el flujo de trabajo completos
+(fuente de verdad vigente).
