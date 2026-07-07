@@ -166,6 +166,9 @@ let ilCerchas = [], cerchaTypeIdx = 0;
 function ilSetCercha(idx) { cerchaTypeIdx = +idx; }
 let ilColumnas = [], columnaTypeIdx = 0;
 function ilSetColumna(idx) { columnaTypeIdx = +idx; }
+let ilPilares = [], pilarTypeIdx = 0;
+function ilSetPilar(idx) { pilarTypeIdx = +idx; }
+function modColumnaTipoArmado(val) { if (!seleccionId) return; const c = objects.find(o => o.id === seleccionId); if (!c || c.type !== 'columna') return; saveHistory(); c.tipo = val; render(); ilPersist(); }
 let ilTechos = [], techoTypeIdx = 0;
 function ilSetTecho(idx) { techoTypeIdx = +idx; }
 let ilVigas = [];
@@ -194,6 +197,8 @@ window.addEventListener('message', (e) => {
     if (cerchaTypeIdx >= ilCerchas.length) cerchaTypeIdx = 0;
     ilColumnas = Array.isArray(d.columnas) ? d.columnas : [];
     if (columnaTypeIdx >= ilColumnas.length) columnaTypeIdx = 0;
+    ilPilares = Array.isArray(d.pilares) ? d.pilares : [];
+    if (pilarTypeIdx >= ilPilares.length) pilarTypeIdx = 0;
     ilTechos = Array.isArray(d.techos) ? d.techos : [];
     if (techoTypeIdx >= ilTechos.length) techoTypeIdx = 0;
     ilVigas = Array.isArray(d.vigas) ? d.vigas : [];
@@ -364,6 +369,7 @@ function drawColumnaAlzado(c) {
   ctx.moveTo(sbL.x, sbL.y); ctx.lineTo(sbR.x, sbR.y); ctx.lineTo(stR.x, stR.y); ctx.lineTo(stL.x, stL.y); ctx.closePath();
   ctx.fillStyle = (seleccionId===c.id) ? 'rgba(254, 0, 0, 0.05)' : 'rgba(235, 235, 240, 0.5)'; ctx.fill(); ctx.stroke();
 
+  if (c.kind !== 'armada') {
   ctx.beginPath(); ctx.lineWidth = 1.5; ctx.strokeStyle = (seleccionId===c.id) ? '#FE0000' : '#8e8e93';
   const divs = c.divisiones > 0 ? c.divisiones : 1;
   for(let i=1; i<divs; i++) {
@@ -382,8 +388,9 @@ function drawColumnaAlzado(c) {
     }
   }
   ctx.stroke();
+  }
   const p0 = w2s(0,0); ctx.beginPath(); ctx.moveTo(0, p0.y); ctx.lineTo(cv.width, p0.y); ctx.strokeStyle='#333'; ctx.lineWidth=3; ctx.stroke();
-  ctx.fillStyle='#FE0000'; ctx.font = `500 ${Math.max(13, 15 * vpZ)}px var(--font, sans-serif)`; ctx.textAlign='left'; ctx.fillText(`COLUMNA: ${c.label} (H: ${(h/1000).toFixed(2)}m)`, p0.x + 10, p0.y + 24); ctx.restore();
+  ctx.fillStyle='#FE0000'; ctx.font = `500 ${Math.max(13, 15 * vpZ)}px var(--font, sans-serif)`; ctx.textAlign='left'; ctx.fillText(`${c.kind === 'armada' ? 'PILAR' : 'COLUMNA'}: ${c.label} (H: ${(h/1000).toFixed(2)}m)`, p0.x + 10, p0.y + 24); ctx.restore();
 }
 
 function drawCerchaAlzado(c) {
@@ -593,7 +600,7 @@ function onDown(e) {
   else if (tool === 'cercha' && vistaActual === 'planta') { saveHistory(); drawing = true; dragStartW = {...wp}; }
   else if (tool === 'columna' && vistaActual === 'planta') {
     saveHistory();
-    objects.push({ type: 'columna', id: nextId++, label: 'P'+nextColNum++, tipo: (ilColumnas[columnaTypeIdx]||{}).name||'', pt: [wp.x, wp.y], angle: 0, altura: 3000, anchoBase: 400, anchoTope: 400, espesor: 100, caraRecta: 'IZQ', divisiones: 5, patron: 'WARREN' });
+    objects.push({ type: 'columna', id: nextId++, label: 'P'+nextColNum++, kind: 'reticulada', tipo: (ilColumnas[columnaTypeIdx]||{}).name||'', pt: [wp.x, wp.y], angle: 0, altura: 3000, anchoBase: 400, anchoTope: 400, espesor: 100, caraRecta: 'IZQ', divisiones: 5, patron: 'WARREN' });
     seleccionId = nextId-1; forceCardOpen = true; ST('select'); ilPersist();
   }
   else if (tool === 'roof' && vistaActual === 'techo') { saveHistory(); drawing = true; dragStartW = {...wp}; }
@@ -735,6 +742,7 @@ function modGuide(val) { if(!seleccionId) return; const g = objects.find(o=>o.id
 function modColumna(prop, val) {
   if(!seleccionId) return; const c = objects.find(o=>o.id===seleccionId); if(!c || c.type!=='columna') return; saveHistory();
   if(prop === 'caraRecta' || prop === 'patron') c[prop] = val;
+  else if(prop === 'kind') { c.kind = val; c.tipo = ''; forceCardOpen = true; actualizarPropBar(); }
   else if(prop === 'divisiones') c.divisiones = parseInt(val);
   else if(prop === 'ang') { c.angle = parseFloat(val)*(Math.PI/180); ST('select'); }
   else c[prop] = parseFloat(val)*1000; render(); ilPersist();
@@ -867,20 +875,27 @@ function actualizarPropBar() {
       }
       else if(o.type === 'babeta') { barTool.textContent = `BABETA`; ind.textContent = 'Seleccionada ▾'; if(showCard) { card.style.display = 'flex'; title.textContent = `BABETA (PRETIL)`; content.innerHTML = `<p style="font-size:14px; color:var(--label); text-align:center;">Línea de restricción para el techo. Usá el menú de mantener presionado para borrarla o moverla.</p>`; } }
       else if(o.type === 'columna') {
-        barTool.textContent = `COLUMNA ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; ind.textContent = 'Propiedades ▾';
+        const esArmada = o.kind === 'armada';
+        barTool.textContent = `${esArmada ? 'PILAR' : 'COLUMNA'} ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; ind.textContent = 'Propiedades ▾';
         if(showCard) {
-          card.style.display = 'flex'; title.textContent = `Columna ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; const matrizHtml = getMatrizHtml(o.id);
+          card.style.display = 'flex'; title.textContent = `${esArmada ? 'Pilar' : 'Columna'} ${o.label}${o.tipo ? ' · '+o.tipo : ''}`; const matrizHtml = getMatrizHtml(o.id);
           if (vistaActual === 'planta') {
-             content.innerHTML = matrizHtml + `<p style="font-size:14px; color:var(--label); text-align:center; margin-bottom:8px;">Pasá a la vista ALZADO para editar las dimensiones.</p><button class="prop-btn-full btn-outline" onclick="ST('rotate_edit')">ROTAR COLUMNA</button>`;
+             content.innerHTML = matrizHtml + `<p style="font-size:14px; color:var(--label); text-align:center; margin-bottom:8px;">Pasá a la vista ALZADO para editar las dimensiones.</p><button class="prop-btn-full btn-outline" onclick="ST('rotate_edit')">${esArmada ? 'ROTAR PILAR' : 'ROTAR COLUMNA'}</button>`;
           } else {
-             content.innerHTML = matrizHtml + `
-              <div class="prop-row"><label>Altura Total (m)</label><input type="number" step="0.01" value="${(o.altura/1000).toFixed(2)}" onchange="modColumna('altura', this.value)" onkeydown="${kEnt}"></div>
-              <div class="prop-row"><label>Ancho Base (m)</label><input type="number" step="0.01" value="${(o.anchoBase/1000).toFixed(2)}" onchange="modColumna('anchoBase', this.value)" onkeydown="${kEnt}"></div>
-              <div class="prop-row"><label>Ancho Tope (m)</label><input type="number" step="0.01" value="${(o.anchoTope/1000).toFixed(2)}" onchange="modColumna('anchoTope', this.value)" onkeydown="${kEnt}"></div>
-              <div class="prop-row"><label>Cara a Plomo</label><select onchange="modColumna('caraRecta', this.value)"><option value="IZQ" ${o.caraRecta==='IZQ'?'selected':''}>Izquierda</option><option value="DER" ${o.caraRecta==='DER'?'selected':''}>Derecha</option><option value="CENTRO" ${o.caraRecta==='CENTRO'?'selected':''}>Centro (Simétrica)</option></select></div>
-              <div class="prop-row"><label>Retícula</label><select onchange="modColumna('patron', this.value)"><option value="WARREN" ${o.patron==='WARREN'?'selected':''}>Warren (Zig-Zag)</option><option value="X_CROSS" ${o.patron==='X_CROSS'?'selected':''}>Cruces</option><option value="LADDER" ${o.patron==='LADDER'?'selected':''}>Escalera</option></select></div>
-              <div class="prop-row"><label>Divisiones Verticales</label><input type="number" step="1" value="${o.divisiones}" onchange="modColumna('divisiones', this.value)" onkeydown="${kEnt}"></div>
-             `;
+             const kindRow = `<div class="prop-row"><label>Tipo de pilar</label><select onchange="modColumna('kind', this.value)"><option value="reticulada" ${!esArmada?'selected':''}>Reticulada</option><option value="armada" ${esArmada?'selected':''}>Armado (recto)</option></select></div>`;
+             const alturaRow = `<div class="prop-row"><label>Altura Total (m)</label><input type="number" step="0.01" value="${(o.altura/1000).toFixed(2)}" onchange="modColumna('altura', this.value)" onkeydown="${kEnt}"></div>`;
+             if (esArmada) {
+               const tipoPilarRow = `<div class="prop-row"><label>Tipo (pilar)</label><select onchange="modColumnaTipoArmado(this.value)" style="width:150px;">${ilPilares.length ? ilPilares.map(t=>`<option value="${t.name}" ${o.tipo===t.name?'selected':''}>${t.name||'sin nombre'}</option>`).join('') : `<option value="">— definí en Componentes → Pilares —</option>`}</select></div>`;
+               content.innerHTML = matrizHtml + kindRow + tipoPilarRow + alturaRow;
+             } else {
+               content.innerHTML = matrizHtml + kindRow + alturaRow + `
+                <div class="prop-row"><label>Ancho Base (m)</label><input type="number" step="0.01" value="${(o.anchoBase/1000).toFixed(2)}" onchange="modColumna('anchoBase', this.value)" onkeydown="${kEnt}"></div>
+                <div class="prop-row"><label>Ancho Tope (m)</label><input type="number" step="0.01" value="${(o.anchoTope/1000).toFixed(2)}" onchange="modColumna('anchoTope', this.value)" onkeydown="${kEnt}"></div>
+                <div class="prop-row"><label>Cara a Plomo</label><select onchange="modColumna('caraRecta', this.value)"><option value="IZQ" ${o.caraRecta==='IZQ'?'selected':''}>Izquierda</option><option value="DER" ${o.caraRecta==='DER'?'selected':''}>Derecha</option><option value="CENTRO" ${o.caraRecta==='CENTRO'?'selected':''}>Centro (Simétrica)</option></select></div>
+                <div class="prop-row"><label>Retícula</label><select onchange="modColumna('patron', this.value)"><option value="WARREN" ${o.patron==='WARREN'?'selected':''}>Warren (Zig-Zag)</option><option value="X_CROSS" ${o.patron==='X_CROSS'?'selected':''}>Cruces</option><option value="LADDER" ${o.patron==='LADDER'?'selected':''}>Escalera</option></select></div>
+                <div class="prop-row"><label>Divisiones Verticales</label><input type="number" step="1" value="${o.divisiones}" onchange="modColumna('divisiones', this.value)" onkeydown="${kEnt}"></div>
+               `;
+             }
           }
         }
       }

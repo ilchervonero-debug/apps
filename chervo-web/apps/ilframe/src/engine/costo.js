@@ -15,7 +15,8 @@ export const GRUPOS_APU = [
   { tipo: 'muros', label: 'Muros', unidad: 'm2' },
   { tipo: 'vigas', label: 'Vigas', unidad: 'ml' },
   { tipo: 'cerchas', label: 'Cerchas', unidad: 'ml' },
-  { tipo: 'pilares', label: 'Pilares / Columnas', unidad: 'ml' },
+  { tipo: 'pilares', label: 'Pilares armados', unidad: 'ml' },
+  { tipo: 'columnas', label: 'Columnas reticuladas', unidad: 'ml' },
   { tipo: 'techos', label: 'Techos / Cubiertas', unidad: 'm2' },
   { tipo: 'losas', label: 'Losas / Entrepisos', unidad: 'm2' },
 ]
@@ -73,7 +74,7 @@ function matchMaterial(m, materialesCore) {
 
 // Grupos que se costean pieza por pieza contando operaciones reales
 // (cortes de perfil + tornillos o soldadura) en vez de una tarea m²/ml.
-export const GRUPOS_RETICULADOS = ['cerchas', 'pilares']
+export const GRUPOS_RETICULADOS = ['cerchas', 'columnas']
 
 // Costo de mano de obra de UNA pieza reticulada (cercha o columna),
 // contando cortes + conexiones (tornillos, o soldadura con piso de

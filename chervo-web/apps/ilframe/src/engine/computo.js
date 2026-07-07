@@ -10,7 +10,7 @@ import { PROFILE_SECTIONS } from '../data/profiles'
 import { panelBOM } from './bom'
 import { beamKg } from './beams'
 import { cerchaKg, cerchaTypeDef, trussGeometry } from './trusses'
-import { columnaKg, columnaGeometry } from './pilares'
+import { columnaKg, columnaGeometry, pilarKg } from './pilares'
 
 const secOf = (ref) => (PROFILE_SECTIONS[ref?.normId]?.C || [])[ref?.secIdx ?? 0]
 const labelOf = (ref) => { const s = secOf(ref); return s ? `${s.h}x${s.w}x${s.t}` : '—' }
@@ -109,19 +109,37 @@ export function computoProyecto(state, project) {
   }
 
   // ── Columnas reticuladas (tipo enlazado a Componentes → Columnas) ──
-  if (columnas.length) {
-    const filas = columnas.map((c) => {
+  const reticuladas = columnas.filter((c) => c.kind !== 'armada')
+  if (reticuladas.length) {
+    const filas = reticuladas.map((c) => {
       const t = findType(project.types?.columna, c.tipo) || {}
       const pilar = {
         altura: c.altura || 3000, anchoBase: c.anchoBase || 400, anchoTope: c.anchoTope || 400,
         caraRecta: c.caraRecta || 'IZQ', divisiones: c.divisiones || 5, patron: PATRON_MAP[c.patron] || 'DA',
         perfil: t.perfil, perfilReticula: t.perfilReticula,
       }
+      const g = columnaGeometry(pilar)
+      const sec = secOf(t.perfil), secR = secOf(t.perfilReticula)
+      addSteel(labelOf(t.perfil), sec ? (g.lens.cordon / 1000) * sec.kg : 0)
+      addSteel(labelOf(t.perfilReticula), secR ? (g.lens.reticula / 1000) * secR.kg : 0)
       const kg = columnaKg(pilar)
-      const ops = contarOperaciones(columnaGeometry(pilar))
+      const ops = contarOperaciones(g)
       return { id: c.label, perfil: labelOf(t.perfil), det: `Columna reticulada · alto ${(pilar.altura / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), ml: +(pilar.altura / 1000).toFixed(2), ops, soldada: !!t.soldada, extra: '' }
     })
-    grupos.push({ tipo: 'pilares', label: 'Pilares / Columnas', filas })
+    grupos.push({ tipo: 'columnas', label: 'Columnas reticuladas', filas })
+  }
+
+  // ── Pilares armados (tipo enlazado a Componentes → Pilares; costo por ml como una viga) ──
+  const armadas = columnas.filter((c) => c.kind === 'armada')
+  if (armadas.length) {
+    const filas = armadas.map((c) => {
+      const t = findType(project.types?.pilar, c.tipo) || {}
+      const pilar = { altura: c.altura || 2800, tipoArmado: t.tipoArmado || 'DOBLE_CAJON', perfil: t.perfil }
+      const kg = pilarKg(pilar)
+      addSteel(labelOf(t.perfil), kg)
+      return { id: c.label, perfil: labelOf(t.perfil), det: `Pilar armado · alto ${(pilar.altura / 1000).toFixed(2)} m${c.tipo ? ' · ' + c.tipo : ''}`, kg: +kg.toFixed(1), ml: +(pilar.altura / 1000).toFixed(2), extra: '' }
+    })
+    grupos.push({ tipo: 'pilares', label: 'Pilares armados', filas })
   }
 
   // ── Techos (geometría propia del studio: slope %/fallDir; tipo → Componentes Techos) ──

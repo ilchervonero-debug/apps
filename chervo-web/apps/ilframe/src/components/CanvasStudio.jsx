@@ -23,6 +23,7 @@ export default function CanvasStudio() {
         walls: spec.walls.map((w) => ({ name: w.name, espesorMm: w.espesorMm })),
         cerchas: spec.cerchas.map((c) => ({ name: c.name })),
         columnas: spec.columnas.map((c) => ({ name: c.name })),
+        pilares: spec.pilares.map((c) => ({ name: c.name })),
         techos: spec.techos.map((c) => ({ name: c.name })),
         vigas: spec.vigas.map((c) => ({ name: c.name })),
       })

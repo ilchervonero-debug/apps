@@ -103,7 +103,7 @@ function pieceSVG(tipo, el) {
   if (tipo === 'muros') return faceSVG(el)
   if (tipo === 'vigas') return vigaSVG(el)
   if (tipo === 'cerchas') return cerchaSVG(el)
-  if (tipo === 'pilares') return el.kind === 'reticulada' ? columnaSVG(el) : ''
+  if (tipo === 'columnas') return columnaSVG(el)
   if (tipo === 'techos') return techoSVG(el)
   if (tipo === 'losas') return losaSVG(el)
   return ''
