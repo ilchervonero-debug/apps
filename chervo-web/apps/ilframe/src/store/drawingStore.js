@@ -867,3 +867,26 @@ export const useDrawingStore = create((set) => ({
     }),
   })),
 }))
+
+// ── Guardado automático del proyecto ───────────────────────────
+// El Core (precios, cuadrilla, tareas) ya se guarda solo en cada cambio
+// (ver saveCore arriba). Esto hace lo mismo para el proyecto (dibujo,
+// Componentes, notas de revisión): antes solo se guardaba al tocar
+// "volver atrás" o "Exportar" — si se cerraba el navegador de golpe en
+// el medio, se perdía lo hecho desde la última vez que se volvió atrás.
+// Ahora se guarda solo, con una demora cortita para no escribir en cada
+// tecla, cada vez que cambia algo del proyecto; y si se cierra la
+// pestaña de golpe, se fuerza un guardado final antes de que se vaya.
+let _autosaveT = null
+useDrawingStore.subscribe((state) => {
+  if (!state.currentProjectId) return
+  clearTimeout(_autosaveT)
+  _autosaveT = setTimeout(() => useDrawingStore.getState().saveCurrent(), 600)
+})
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    clearTimeout(_autosaveT)
+    const s = useDrawingStore.getState()
+    if (s.currentProjectId) s.saveCurrent()
+  })
+}
