@@ -1,5 +1,6 @@
 import { useDrawingStore, panelPolygon } from '../store/drawingStore'
 import { computoProyecto } from '../engine/computo'
+import RevisionNotes from './RevisionNotes'
 import { PROFILE_SECTIONS } from '../data/profiles'
 import { trussGeometry } from '../engine/trusses'
 import { columnaGeometry } from '../engine/pilares'
@@ -179,6 +180,7 @@ export default function ExportView() {
         <div style={{ fontSize: 14, fontWeight: 500, color: '#8a8a8a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
           Salida — {project.name}
         </div>
+        <RevisionNotes />
         {!has && <div style={{ color: '#9a9a9a', marginBottom: 12, fontSize: 16 }}>Dibujá elementos para habilitar las salidas.</div>}
         <ExpCard has={has} icon="xls" title="Excel · Lista de materiales" desc="Cómputo consolidado de todos los elementos (acero por perfil, placas, chapa, deck, tornillos…)." color="#217346" onClick={() => xlsx('materiales')} />
         <ExpCard has={has} icon="xls" title="Excel · Lista de partes" desc="Detalle por pieza de cada elemento: perfil, medidas y kg." color="#217346" onClick={() => xlsx('partes')} />

@@ -1,6 +1,7 @@
 import { useDrawingStore } from '../store/drawingStore'
 import { computoProyecto } from '../engine/computo'
 import { costoProyecto } from '../engine/costo'
+import RevisionNotes from './RevisionNotes'
 
 const money = (n) => '$ ' + Math.round(n || 0).toLocaleString('es-UY')
 
@@ -27,6 +28,8 @@ export default function BomView() {
   return (
     <div style={{ flex: 1, minHeight: 0, overflow: 'auto', background: '#f7f7f8', padding: 16 }}>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
+
+        <RevisionNotes />
 
         {/* Totales headline */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
