@@ -789,6 +789,10 @@
             </button>
         </div>
         <div class="modal-body">
+            <div class="form-group">
+                <label>Encabezado del informe (opcional)</label>
+                <textarea class="form-input" id="print-encabezado" rows="3" style="resize:vertical" placeholder="Ej: nombre de tu empresa, cliente, N° de contrato… (admite el mismo formato de las notas: **negrita**, listas, etc.)" onchange="guardarEncabezado(this.value)"></textarea>
+            </div>
             <label class="print-all"><input type="checkbox" id="print-all" checked onclick="printToggleAll()"> Seleccionar todo</label>
             <div id="print-list"></div>
         </div>
@@ -1306,7 +1310,7 @@ async function crearProyecto() {
     const nombre = document.getElementById('nuevo-nombre').value.trim();
     if (!nombre) { toast('Escribí un nombre','err'); return; }
     const selT = document.getElementById('nuevo-trabajo').value;
-    const p = { id: Date.now(), nombre, fechaCreacion: new Date().toISOString(), bloques: [], trabajo: (selT && selT !== '__new') ? selT : '' };
+    const p = { id: Date.now(), nombre, fechaCreacion: new Date().toISOString(), bloques: [], trabajo: (selT && selT !== '__new') ? selT : '', encabezado: '' };
     proyectos.unshift(p);
     cerrarModal('modal-nuevo-proyecto');
     renderVistaActual();
@@ -1407,6 +1411,7 @@ function renderBloque(b, i) {
 function abrirModalPrint() {
     const bs = (proyectos[proyectoIdx].bloques) || [];
     if (!bs.length) { toast('No hay notas para imprimir', 'err'); return; }
+    document.getElementById('print-encabezado').value = proyectos[proyectoIdx].encabezado || '';
     document.getElementById('print-all').checked = true;
     document.getElementById('print-list').innerHTML = bs.map((b,i) => {
         const prev = (b.texto || '').replace(/[#*>`_~\-]/g,' ').replace(/\s+/g,' ').trim().slice(0,70)
@@ -1415,6 +1420,11 @@ function abrirModalPrint() {
     }).join('');
     printActualizarBtn();
     abrirModal('modal-print');
+}
+async function guardarEncabezado(v) {
+    if (proyectoIdx === null) return;
+    proyectos[proyectoIdx].encabezado = v;
+    await guardarProyecto(proyectos[proyectoIdx]);
 }
 function printChks() { return Array.from(document.querySelectorAll('.print-chk')); }
 function printSync() { document.getElementById('print-all').checked = printChks().every(c => c.checked); printActualizarBtn(); }
@@ -1630,9 +1640,13 @@ function imprimirSeleccion(indices) {
       .md-render code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-size:.85em}.md-render blockquote{border-left:3px solid #FE0000;padding-left:10px;color:#555;font-style:italic;margin:6px 0}
       .code-block{background:#f4f4f4;border-radius:6px;margin:8px 0}.code-block pre{padding:10px;font-size:.82rem;white-space:pre-wrap;word-break:break-word;margin:0}.btn-copy-code{display:none}
       .pr-fotos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.pr-fotos img{border-radius:6px;object-fit:cover;flex:1 1 calc(50% - 3px);max-width:calc(50% - 3px);max-height:240px}.pr-fotos img:only-child{flex:none;width:100%;max-width:100%;max-height:340px;object-fit:contain}
+      .pr-encabezado{margin-bottom:16px;line-height:1.6;font-size:.95rem}.pr-encabezado strong{font-weight:800}
       @media print{body{padding:0}@page{margin:14mm}}`;
 
+    const encabezadoHtml = (p.encabezado || '').trim() ? `<div class="pr-encabezado">${md(p.encabezado)}</div>` : '';
+
     const doc = `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.nombre)}</title><style>${estilos}</style></head><body>`
+        + encabezadoHtml
         + `<div class="pr-portada"><h1><span>Bitacora</span>app</h1><h2>${esc(p.nombre)}</h2><div class="meta">Exportado el ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})} · ${bloques.length} nota${bloques.length!==1?'s':''}</div></div>`
         + bloquesHtml
         + `<scr`+`ipt>window.addEventListener('load',function(){setTimeout(function(){window.print();},350);});</scr`+`ipt></body></html>`;
