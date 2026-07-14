@@ -795,6 +795,14 @@
         </div>
         <div class="modal-body">
             <div class="form-group">
+                <label>Logo (opcional)</label>
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <img id="logo-preview" style="display:none; max-height:56px; max-width:140px; object-fit:contain; border:1px solid var(--border); border-radius:8px; background:var(--surface);">
+                    <button type="button" class="btn btn-secundario" onclick="document.getElementById('input-logo').click()">Subir logo</button>
+                    <button type="button" class="btn btn-secundario" id="btn-quitar-logo" style="display:none" onclick="quitarLogo()">Quitar</button>
+                </div>
+            </div>
+            <div class="form-group">
                 <label>Encabezado del informe (opcional)</label>
                 <textarea class="form-input" id="print-encabezado" rows="3" style="resize:vertical" placeholder="Ej: nombre de tu empresa, cliente, N° de contrato… (admite el mismo formato de las notas: **negrita**, listas, etc.)" onchange="guardarEncabezado(this.value)"></textarea>
             </div>
@@ -810,6 +818,7 @@
 
 <input type="file" id="input-foto-galeria" accept="image/*" multiple onchange="onFotoNota(event)">
 <input type="file" id="input-foto-camara" accept="image/*" capture="environment" onchange="onFotoNota(event)">
+<input type="file" id="input-logo" accept="image/*" onchange="onLogoUpload(event)">
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1315,7 +1324,7 @@ async function crearProyecto() {
     const nombre = document.getElementById('nuevo-nombre').value.trim();
     if (!nombre) { toast('Escribí un nombre','err'); return; }
     const selT = document.getElementById('nuevo-trabajo').value;
-    const p = { id: Date.now(), nombre, fechaCreacion: new Date().toISOString(), bloques: [], trabajo: (selT && selT !== '__new') ? selT : '', encabezado: '' };
+    const p = { id: Date.now(), nombre, fechaCreacion: new Date().toISOString(), bloques: [], trabajo: (selT && selT !== '__new') ? selT : '', encabezado: '', logo: '' };
     proyectos.unshift(p);
     cerrarModal('modal-nuevo-proyecto');
     renderVistaActual();
@@ -1417,6 +1426,7 @@ function abrirModalPrint() {
     const bs = (proyectos[proyectoIdx].bloques) || [];
     if (!bs.length) { toast('No hay notas para imprimir', 'err'); return; }
     document.getElementById('print-encabezado').value = proyectos[proyectoIdx].encabezado || '';
+    mostrarLogoPreview(proyectos[proyectoIdx].logo || '');
     document.getElementById('print-all').checked = true;
     document.getElementById('print-list').innerHTML = bs.map((b,i) => {
         const prev = (b.texto || '').replace(/[#*>`_~\-]/g,' ').replace(/\s+/g,' ').trim().slice(0,70)
@@ -1429,6 +1439,40 @@ function abrirModalPrint() {
 async function guardarEncabezado(v) {
     if (proyectoIdx === null) return;
     proyectos[proyectoIdx].encabezado = v;
+    await guardarProyecto(proyectos[proyectoIdx]);
+}
+function mostrarLogoPreview(src) {
+    const img = document.getElementById('logo-preview');
+    const btnQuitar = document.getElementById('btn-quitar-logo');
+    if (src) { img.src = src; img.style.display = ''; btnQuitar.style.display = ''; }
+    else { img.removeAttribute('src'); img.style.display = 'none'; btnQuitar.style.display = 'none'; }
+}
+function onLogoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = async () => {
+        const MAX = 400;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) { if (w > h) { h = Math.round(h*MAX/w); w = MAX; } else { w = Math.round(w*MAX/h); h = MAX; } }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        const dataUrl = c.toDataURL('image/png');
+        proyectos[proyectoIdx].logo = dataUrl;
+        mostrarLogoPreview(dataUrl);
+        await guardarProyecto(proyectos[proyectoIdx]);
+    };
+    img.onerror = () => toast('No se pudo leer la imagen', 'err');
+    img.src = url;
+    event.target.value = '';
+}
+async function quitarLogo() {
+    if (proyectoIdx === null) return;
+    proyectos[proyectoIdx].logo = '';
+    mostrarLogoPreview('');
     await guardarProyecto(proyectos[proyectoIdx]);
 }
 function printChks() { return Array.from(document.querySelectorAll('.print-chk')); }
@@ -1636,7 +1680,6 @@ function imprimirSeleccion(indices) {
 
     const estilos = `*{box-sizing:border-box}body{font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;margin:0;padding:26px 22px}
       .pr-portada{border-bottom:3px solid #FE0000;padding-bottom:14px;margin-bottom:20px}
-      .pr-portada h1{font-size:1.8rem;font-weight:900;margin:0 0 4px;letter-spacing:-1px}.pr-portada h1 span{color:#FE0000}
       .pr-portada h2{font-size:1.2rem;margin:0 0 6px;font-weight:700}.pr-portada .meta{font-size:.8rem;color:#888}
       .pr-bloque{padding:14px 0;border-bottom:1px solid #e8e8e8;break-inside:avoid;page-break-inside:avoid}
       .pr-fecha{font-size:.72rem;color:#aaa;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
@@ -1645,14 +1688,18 @@ function imprimirSeleccion(indices) {
       .md-render code{background:#f4f4f4;padding:1px 5px;border-radius:3px;font-size:.85em}.md-render blockquote{border-left:3px solid #FE0000;padding-left:10px;color:#555;font-style:italic;margin:6px 0}
       .code-block{background:#f4f4f4;border-radius:6px;margin:8px 0}.code-block pre{padding:10px;font-size:.82rem;white-space:pre-wrap;word-break:break-word;margin:0}.btn-copy-code{display:none}
       .pr-fotos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.pr-fotos img{border-radius:6px;object-fit:cover;flex:1 1 calc(50% - 3px);max-width:calc(50% - 3px);max-height:240px}.pr-fotos img:only-child{flex:none;width:100%;max-width:100%;max-height:340px;object-fit:contain}
-      .pr-encabezado{margin-bottom:16px;line-height:1.6;font-size:.95rem}.pr-encabezado strong{font-weight:800}
+      .pr-encabezado{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+      .pr-logo{max-height:80px;max-width:220px;object-fit:contain;flex-shrink:0}
+      .pr-encabezado-texto{line-height:1.6;font-size:.95rem}.pr-encabezado-texto strong{font-weight:800}
       @media print{body{padding:0}@page{margin:14mm}}`;
 
-    const encabezadoHtml = (p.encabezado || '').trim() ? `<div class="pr-encabezado">${md(p.encabezado)}</div>` : '';
+    const logoHtml = p.logo ? `<img class="pr-logo" src="${p.logo}">` : '';
+    const textoEncHtml = (p.encabezado || '').trim() ? `<div class="pr-encabezado-texto">${md(p.encabezado)}</div>` : '';
+    const encabezadoHtml = (logoHtml || textoEncHtml) ? `<div class="pr-encabezado">${logoHtml}${textoEncHtml}</div>` : '';
 
     const doc = `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(p.nombre)}</title><style>${estilos}</style></head><body>`
         + encabezadoHtml
-        + `<div class="pr-portada"><h1><span>Bitacora</span>app</h1><h2>${esc(p.nombre)}</h2><div class="meta">Exportado el ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})} · ${bloques.length} nota${bloques.length!==1?'s':''}</div></div>`
+        + `<div class="pr-portada"><h2>${esc(p.nombre)}</h2><div class="meta">Exportado el ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})} · ${bloques.length} nota${bloques.length!==1?'s':''}</div></div>`
         + bloquesHtml
         + `<scr`+`ipt>window.addEventListener('load',function(){setTimeout(function(){window.print();},350);});</scr`+`ipt></body></html>`;
 
