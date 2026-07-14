@@ -106,9 +106,10 @@
             padding: 12px; border-radius: 10px; border: none;
             background: transparent; font-family: 'Exo', sans-serif;
             font-size: 16px; font-weight: 600; cursor: pointer;
-            color: var(--ink-2); width: 100%; text-align: left; transition: background .15s;
+            color: var(--ink-2); width: 100%; text-align: left; transition: background .15s, transform .12s ease;
         }
         .btn-cuenta-accion:hover { background: var(--accent-soft); }
+        .btn-cuenta-accion:active { transform: scale(0.98); background: var(--accent-soft); }
         .btn-cuenta-accion.danger { color: var(--red); }
         .btn-cuenta-accion svg { width: 18px; height: 18px; flex-shrink: 0; }
 
@@ -266,6 +267,7 @@
             display: flex; align-items: center; gap: 5px; transition: all .2s; white-space: nowrap;
         }
         .btn-editar-nombre:hover { background: var(--red); color: white; border-color: var(--red); }
+        .btn-editar-nombre:active { transform: scale(0.94); }
 
         /* ===== BLOQUES TIMELINE ===== */
         .bloques-timeline { display: flex; flex-direction: column; gap: 10px; }
@@ -287,7 +289,8 @@
         .print-all { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; color: var(--ink-2); padding: 2px 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 8px; cursor: pointer; }
         .print-all input { width: 21px; height: 21px; accent-color: var(--red); }
         #print-list { max-height: 52vh; overflow-y: auto; }
-        .print-item { display: flex; align-items: center; gap: 12px; padding: 12px 2px; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .print-item { display: flex; align-items: center; gap: 12px; padding: 12px 2px; border-bottom: 1px solid var(--border); cursor: pointer; border-radius: 8px; transition: background-color .15s ease; }
+        .print-item:active { background: var(--accent-soft); }
         .print-item input { width: 21px; height: 21px; accent-color: var(--red); flex-shrink: 0; }
         .print-item span { display: flex; flex-direction: column; min-width: 0; }
         .print-item b { font-size: 16px; font-weight: 600; color: var(--ink);}
@@ -300,6 +303,7 @@
         }
         .btn-bloque svg { width: 14px; height: 14px; }
         .btn-bloque:hover { background: var(--accent-soft); color: var(--ink-2); }
+        .btn-bloque:active { transform: scale(0.88); }
         .btn-bloque.eliminar:hover { background: #fee2e2; color: var(--red); }
         .bloque-contenido { padding: 14px 16px; }
         .nota-fotos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -413,7 +417,8 @@
         input[type="file"] { display: none; }
 
         /* ===== BOTONES ===== */
-        .btn { padding: 10px 20px; border-radius: 10px; font-family: 'Exo', sans-serif; font-weight: 600; font-size: 16px; cursor: pointer; transition: all .2s; border: none; display: flex; align-items: center; gap: 6px; }
+        .btn { padding: 10px 20px; border-radius: 10px; font-family: 'Exo', sans-serif; font-weight: 600; font-size: 16px; cursor: pointer; transition: transform .12s ease, background-color .2s ease, box-shadow .2s ease; border: none; display: flex; align-items: center; gap: 6px; }
+        .btn:active { transform: scale(0.96); }
         .btn svg { width: 15px; height: 15px; }
         .btn-primario { background: var(--red); color: white; }
         .btn-primario:hover { background: var(--red-hover); }
