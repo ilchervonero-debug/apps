@@ -175,6 +175,8 @@
   /* rutinas */
   .rut-grupo{font-size:.68rem;color:var(--gris);text-transform:uppercase;letter-spacing:.1em;margin:16px 0 4px;font-weight:600}
   .rut-racha{font-size:.66rem;color:var(--rojo);font-family:'Geist Mono',monospace;flex-shrink:0;align-self:center}
+  .item.rut-item .txt{color:var(--rojo)}
+  .item.rut-item.hecho .txt{color:var(--gris)}
 
   /* recordatorios y rutinas con hora (en marca: negro / rojo al sonar) */
   .ic svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
@@ -215,8 +217,8 @@
   #recInputs{display:none;flex-direction:column;gap:8px;margin-top:8px}
   #recInputs.ver{display:flex}
   .rec-chips{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-  .rchip,.rrep{border:none;font-family:inherit;font-size:.78rem;cursor:pointer;padding:8px 13px;border-radius:8px;background:var(--fondo-2);color:var(--gris)}
-  .rchip.sel,.rrep.sel{background:var(--rojo);color:#fff}
+  .rchip,.rrep,.rdia{border:none;font-family:inherit;font-size:.78rem;cursor:pointer;padding:8px 13px;border-radius:8px;background:var(--fondo-2);color:var(--gris)}
+  .rchip.sel,.rrep.sel,.rdia.sel{background:var(--rojo);color:#fff}
   #recRepetir{display:none}
   #recFecha,#recHora{border:none;background:var(--fondo-2);border-radius:8px;padding:9px 10px;font-family:inherit;font-size:.9rem;color:var(--tinta);outline:none}
   #recFecha{flex:1;min-width:130px}
@@ -385,6 +387,16 @@
       <button type="button" class="rrep sel" data-r="diario">Cada día</button>
       <button type="button" class="rrep" data-r="lunvie">L a V</button>
       <button type="button" class="rrep" data-r="finde">Finde</button>
+      <button type="button" class="rrep" data-r="dia">Un día</button>
+    </div>
+    <div class="rec-chips" id="recDiaSem" style="display:none">
+      <button type="button" class="rdia" data-d="1">Lun</button>
+      <button type="button" class="rdia" data-d="2">Mar</button>
+      <button type="button" class="rdia" data-d="3">Mié</button>
+      <button type="button" class="rdia" data-d="4">Jue</button>
+      <button type="button" class="rdia" data-d="5">Vie</button>
+      <button type="button" class="rdia sel" data-d="6">Sáb</button>
+      <button type="button" class="rdia" data-d="0">Dom</button>
     </div>
     <input type="time" id="recHora" step="60">
   </div>
@@ -616,7 +628,7 @@ function filaItem(it, onChk, onEdit, onMan, onDel, fechaCtx){
   }
   // línea de hora / recurrencia
   let meta='';
-  if(it.tipo==='rutina'&&it.repetir&&it.repetir!=='diario') meta=ETIQ_REP[it.repetir]||'';
+  if(it.tipo==='rutina'&&it.repetir&&it.repetir!=='diario') meta=etiquetaRepeticion(it);
   if(it.hora) meta = meta ? meta+' · '+it.hora : it.hora;
   if(meta){ const h=document.createElement('div'); h.className='rec-hora'; h.textContent=meta; cuerpo.appendChild(h); }
   if(it.tipo==='pago'){ const fd=it.fecha||fechaCtx; if(fd){ const pts=fd.split('-'); const fh=document.createElement('div'); fh.className='rec-hora'; fh.textContent=parseInt(pts[2],10)+' de '+MESES[parseInt(pts[1],10)-1]; cuerpo.appendChild(fh); } }
@@ -693,7 +705,8 @@ function pintarDia(){
   const k=key(sel);
   const items=data.dias[k]||[];
   const esHoy=mismodia(sel,hoy);
-  if(!items.length && !(esHoy&&data.rutinas.length)){ l.innerHTML='<div class="vacio">Hoja en blanco</div>'; return; }
+  const rutinasHoy=esHoy ? data.rutinas.filter(rutinaAplicaHoy) : [];
+  if(!items.length && !rutinasHoy.length){ l.innerHTML='<div class="vacio">Hoja en blanco</div>'; return; }
   const focarEdicion=row=>{
     const te=row.querySelector('.txt[contenteditable="true"]');
     if(te){ te.focus(); const r=document.createRange(); r.selectNodeContents(te); r.collapse(false); const s=getSelection(); s.removeAllRanges(); s.addRange(r); }
@@ -721,10 +734,10 @@ function pintarDia(){
     l.appendChild(row);
     if(it.id===itemEdit) focarEdicion(row);
   });
-  // rutinas del día (solo hoy) — también arrastrables, editables y con hora
-  if(esHoy&&data.rutinas.length){
+  // rutinas del día (solo las que corresponden a hoy según su recurrencia) — arrastrables, editables y con hora
+  if(rutinasHoy.length){
     const g=document.createElement('div'); g.className='rut-grupo'; g.textContent='Rutinas'; l.appendChild(g);
-    data.rutinas.forEach(r=>{
+    rutinasHoy.forEach(r=>{
       r.tipo='rutina';
       const row=filaItem(r,
         ()=>{ r.hecho=!r.hecho; save(); pintarTodo(); },
@@ -829,9 +842,12 @@ const recFechaRow=document.getElementById('recFechaRow');
 const recFecha=document.getElementById('recFecha');
 const recHora=document.getElementById('recHora');
 const recRepetir=document.getElementById('recRepetir');
+const recDiaSem=document.getElementById('recDiaSem');
 const rchips=Array.from(document.querySelectorAll('.rchip'));
 const rreps=Array.from(document.querySelectorAll('.rrep'));
-let rutRepetir='diario'; // diario | lunvie | finde
+const rdias=Array.from(document.querySelectorAll('.rdia'));
+let rutRepetir='diario'; // diario | lunvie | finde | dia
+let rutDiaSem=6; // 0=dom..6=sáb, solo usado si rutRepetir==='dia'
 function sincronizarChips(){
   rchips.forEach(c=>{
     const d=key(addDias(hoy,parseInt(c.dataset.d,10)));
@@ -842,7 +858,11 @@ rchips.forEach(c=>{
   c.onclick=()=>{ recFecha.value=key(addDias(hoy,parseInt(c.dataset.d,10))); sincronizarChips(); };
 });
 rreps.forEach(c=>{
-  c.onclick=()=>{ rutRepetir=c.dataset.r; rreps.forEach(x=>x.classList.toggle('sel',x===c)); };
+  c.onclick=()=>{ rutRepetir=c.dataset.r; rreps.forEach(x=>x.classList.toggle('sel',x===c));
+    recDiaSem.style.display = rutRepetir==='dia' ? 'flex' : 'none'; };
+});
+rdias.forEach(c=>{
+  c.onclick=()=>{ rutDiaSem=parseInt(c.dataset.d,10); rdias.forEach(x=>x.classList.toggle('sel',x===c)); };
 });
 recFecha.addEventListener('change', sincronizarChips);
 
@@ -851,9 +871,15 @@ function rutinaAplicaHoy(r){
   const dow=new Date().getDay(); // 0=dom .. 6=sáb
   if(r.repetir==='lunvie') return dow>=1&&dow<=5;
   if(r.repetir==='finde') return dow===0||dow===6;
+  if(r.repetir==='dia') return dow===r.diaSem;
   return true; // diario o sin definir
 }
+const NOMBRE_DIA_PLURAL=['Domingos','Lunes','Martes','Miércoles','Jueves','Viernes','Sábados'];
 const ETIQ_REP={diario:'Cada día', lunvie:'L a V', finde:'Finde'};
+function etiquetaRepeticion(it){
+  if(it.repetir==='dia') return NOMBRE_DIA_PLURAL[it.diaSem]||'';
+  return ETIQ_REP[it.repetir]||'';
+}
 
 // ── Captura ──
 const inpEl=document.getElementById('inp');
@@ -866,6 +892,7 @@ document.querySelectorAll('.tipo').forEach(b=>{
       recInputs.classList.add('ver');
       recFechaRow.style.display='flex';
       recRepetir.style.display='none';
+      recDiaSem.style.display='none';
       recHora.style.display='none';
       if(!recFecha.value) recFecha.value=key(sel);
       sincronizarChips();
@@ -874,6 +901,7 @@ document.querySelectorAll('.tipo').forEach(b=>{
       recInputs.classList.add('ver');
       recFechaRow.style.display='flex';
       recRepetir.style.display='none';
+      recDiaSem.style.display='none';
       recHora.style.display='';
       if(!recFecha.value) recFecha.value=key(sel);
       if(!recHora.value){ const n=new Date(); recHora.value=String((n.getHours()+1)%24).padStart(2,'0')+':00'; }
@@ -882,7 +910,8 @@ document.querySelectorAll('.tipo').forEach(b=>{
     } else if(tipoSel==='rutina'){
       recInputs.classList.add('ver');
       recFechaRow.style.display='none';                            // rutina = recurrente, no necesita fecha
-      recRepetir.style.display='flex';                             // mostrar Cada día / L a V / Finde
+      recRepetir.style.display='flex';                             // mostrar Cada día / L a V / Finde / Un día
+      recDiaSem.style.display = rutRepetir==='dia' ? 'flex' : 'none';
       recHora.value='';                                            // la hora es opcional
       inpEl.placeholder='Rutina — elegí repetición y hora (opcional)';
     } else {
@@ -957,7 +986,7 @@ function agregar(){
   const v=inp.value.trim(); if(!v) return;
   if(tipoSel==='rutina'){
     const hora=recHora.value||'';   // hora opcional → si la ponés, es alarma recurrente
-    data.rutinas.push({id,tipo:'rutina',txt:v,hora,repetir:rutRepetir,hecho:false,racha:0});
+    data.rutinas.push({id,tipo:'rutina',txt:v,hora,repetir:rutRepetir,diaSem:(rutRepetir==='dia'?rutDiaSem:undefined),hecho:false,racha:0});
     save(); FX.save(); inp.value=''; recHora.value=''; pintarTodo(); return;
   }
   if(tipoSel==='recordatorio'){
