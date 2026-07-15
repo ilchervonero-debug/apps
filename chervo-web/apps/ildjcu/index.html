@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DJCU Relevamiento v3</title>
+<title>iLDJCU — Relevamiento de Campo</title>
 <link rel="manifest" href="/apps/ildjcu/manifest.json">
 <link rel="apple-touch-icon" href="/apps/ildjcu/icon-192.svg">
 <meta name="theme-color" content="#1C1C1C">
@@ -16,7 +16,7 @@
 body{font-family:Exo,Arial,sans-serif;background:#F2F2F0;color:#1C1C1C;font-size:16px}
 .app{max-width:640px;margin:0 auto;background:#F2F2F0;min-height:100vh}
 .header{background:#fff;color:#1C1C1C;padding:14px 16px;border-bottom:1px solid #ECECEC;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.header-sub{font-size:14px;color:#7A7A7A;letter-spacing:2px;text-transform:uppercase}
+.header-sub{font-size:14px;color:#7A7A7A;letter-spacing:.5px}
 .header-title{font-size:20px;font-weight:500;margin-top:2px;color:#1C1C1C}
 .header-title .acc{color:#FE0000}
 .header-user{font-size:16px;font-weight:500;color:#1C1C1C;background:#F6F6F6;border:1px solid #ECECEC;border-radius:20px;padding:7px 13px;cursor:pointer;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
@@ -35,7 +35,9 @@ body{font-family:Exo,Arial,sans-serif;background:#F2F2F0;color:#1C1C1C;font-size
 .field textarea{resize:vertical}
 .full{grid-column:1/-1}
 .btn{border:none;border-radius:6px;padding:10px 16px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif;color:#fff}
-.btn-red{background:#FE0000}.btn-dark{background:#1C1C1C}.btn-green{background:#7A7A7A}.btn-gray{background:#7A7A7A}
+.btn-red{background:#FE0000}
+.btn-dark{background:transparent;color:#1C1C1C;border:2px solid #1C1C1C}
+.btn-green{background:#7A7A7A}.btn-gray{background:#7A7A7A}
 .btn-full{width:100%}.btn-sm{padding:5px 10px;font-size:14px}
 .nav{display:flex;gap:10px;margin-top:8px}
 .linea-bloque{background:#fff;border-radius:8px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
@@ -47,8 +49,9 @@ body{font-family:Exo,Arial,sans-serif;background:#F2F2F0;color:#1C1C1C;font-size
 .foto-inner{display:flex;gap:10px;align-items:flex-start}
 .foto-img{width:100px;height:80px;object-fit:cover;border-radius:5px;border:1px solid #DCDCD8;flex-shrink:0}
 .foto-side{flex:1}
-.rec-btn{width:100%;margin-top:5px;font-size:16px;padding:6px;border:none;border-radius:5px;cursor:pointer;color:#fff;font-weight:500}
-.rec-btn.grabando{background:#1C1C1C}.rec-btn.parado{background:#7A7A7A}
+.rec-btn{width:100%;margin-top:5px;font-size:16px;padding:6px;background:transparent;border-radius:5px;cursor:pointer;font-weight:500}
+.rec-btn.grabando{color:#FE0000;border:2px solid #FE0000}
+.rec-btn.parado{color:#1C1C1C;border:2px solid #DCDCD8}
 .total-bar{background:#E7E7E4;color:#1C1C1C;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:18px}
 .resumen-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F0F0;font-size:16px}
 .resumen-row span:first-child{color:#7A7A7A}
@@ -173,7 +176,7 @@ body{font-family:Exo,Arial,sans-serif;background:#F2F2F0;color:#1C1C1C;font-size
 <div class="app">
   <div class="header">
     <div>
-      <div class="header-sub" style="color:#FE0000;font-weight:800">DJCU-UY <span style="color:#bbb;font-weight:400;letter-spacing:1px">v3</span></div>
+      <div class="header-sub" style="font-weight:800"><span style="color:#FE0000">iL</span><span style="color:#C0C0C0">DJCU</span> <span style="color:#bbb;font-weight:400;letter-spacing:1px">v3</span></div>
       <div class="header-title" onclick="ilsxOpen()" style="cursor:pointer">Relevamiento de Campo</div>
     </div>
     <div class="header-user" id="header_user" onclick="goTab(8)" title="Mi cuenta">—</div>
@@ -482,7 +485,7 @@ body{font-family:Exo,Arial,sans-serif;background:#F2F2F0;color:#1C1C1C;font-size
       <div class="card">
         <div class="card-title">Croquis del inmueble</div>
         <div style="font-size:16px;color:#7A7A7A;margin-bottom:10px">Dibujá el croquis en iLDraw, exportá como PNG y cargalo acá. Se incluye automáticamente en la declaración impresa.</div>
-        <a href="/apps/ildraw/" target="_blank" style="display:block;background:#1C1C1C;color:#fff;text-align:center;padding:12px;border-radius:6px;font-size:16px;font-weight:500;text-decoration:none;margin-bottom:10px;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Abrir iLDraw →</a>
+        <a href="/apps/ildraw/" target="_blank" style="display:block;background:transparent;color:#1C1C1C;border:2px solid #1C1C1C;text-align:center;padding:12px;border-radius:6px;font-size:16px;font-weight:500;text-decoration:none;margin-bottom:10px;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Abrir iLDraw →</a>
         <div class="field">
           <label>Cargar PNG del croquis</label>
           <input type="file" id="croquis_file" accept="image/png,image/jpeg,image/*" onchange="cargarCroquis(event)" style="padding:6px;font-size:16px">
@@ -1617,7 +1620,7 @@ function exportarPresupuesto() {
     + '.stit{font-size:9pt;font-weight:700;text-transform:uppercase;color:#fff;background:#1C1C1C;padding:4px 8px;margin:14px 0 6px}'
     + '.total{background:#1C1C1C;color:#fff;padding:12px 16px;text-align:right;font-size:15pt;font-weight:700;margin-top:8px;border-radius:4px}'
     + '.pie{font-size:8pt;color:#7A7A7A;margin-top:20px;border-top:1px solid #eee;padding-top:8px;text-align:center}'
-    + '.btn-imp{margin:0 0 16px;padding:10px 20px;background:#1C1C1C;color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif}'
+    + '.btn-imp{margin:0 0 16px;padding:10px 20px;background:transparent;color:#1C1C1C;border:2px solid #1C1C1C;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif}'
     + '</style></head><body>'
     + '<button class="btn-imp no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir / Guardar PDF</button>'
     + '<div class="cab"><div class="tit">Presupuesto y Honorarios Profesionales</div>'
@@ -1675,7 +1678,7 @@ if('serviceWorker' in navigator){
 .ilsx-app{font-size:20px;font-weight:800;color:#FE0000;padding:0 22px;letter-spacing:-.3px}
 .ilsx-app b{color:#C0C0C0;font-weight:400}
 .ilsx-ver{font-size:14px;color:#8a8a8a;padding:3px 22px 12px;font-weight:300}
-.ilsx-row{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #f0f0f0;padding:16px 22px;font-family:inherit;font-size:15px;font-weight:600;color:#1C1C1C;cursor:pointer;text-decoration:none}
+.ilsx-row{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #f0f0f0;padding:16px 22px;font-family:inherit;font-size:16px;font-weight:500;color:#1C1C1C;cursor:pointer;text-decoration:none}
 .ilsx-row svg{width:19px;height:19px;color:#8a8a8a;flex:none}
 .ilsx-row:active{background:#F6F6F6}
 .ilsx-foot{text-align:center;font-size:14px;color:#c4c4c4;font-weight:800;letter-spacing:.14em;padding:16px 0 2px}
