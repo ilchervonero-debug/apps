@@ -38,13 +38,6 @@ body{font-family:'Exo',sans-serif;background:var(--g1);color:var(--g5);font-size
 .proy-del{width:32px;height:32px;border-radius:6px;border:1.5px solid var(--g2);background:none;color:var(--g4);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .1s;}
 .proy-del:active{background:var(--g1);}
 
-/* MODAL EXPORTAR */
-.modal-ov{position:fixed;inset:0;background:rgba(20,20,20,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:16px;}
-.modal-ov.on{display:flex;}
-.modal-box{background:var(--b);border-radius:12px;padding:18px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;}
-.modal-box textarea{width:100%;padding:9px 10px;border:1.5px solid var(--g2);border-radius:6px;font-family:'Exo',sans-serif;font-size:16px;font-weight:500;color:var(--g5);resize:vertical;}
-.modal-box textarea:focus{outline:none;border-color:var(--r);}
-
 /* VIEWS */
 .view{display:none;min-height:calc(100vh - 60px);}
 .view.active{display:block;}
@@ -194,21 +187,28 @@ body{font-family:'Exo',sans-serif;background:var(--g1);color:var(--g5);font-size
 
 <!-- HDR -->
 <div class="hdr">
-  <div class="hdr-logo" onclick="volverLanding()" style="cursor:pointer" title="Inicio">
-    <svg viewBox="0 0 28 28" fill="none">
-      <rect x="2" y="18" width="24" height="7" rx="1" fill="#FE0000"/>
-      <rect x="5" y="7" width="3" height="11" rx="1" fill="#424242"/>
-      <rect x="20" y="7" width="3" height="11" rx="1" fill="#424242"/>
-      <rect x="4" y="5" width="20" height="3" rx="1" fill="#9E9E9E"/>
-      <rect x="8" y="9" width="12" height="7" rx="1" stroke="#9E9E9E" stroke-width="1.2" fill="none"/>
-    </svg>
-  </div>
-  <div style="flex:1;">
-    <h1 onclick="ilsxOpen()" style="cursor:pointer">HA<span>-Calc</span> <span style="font-size:14px;font-weight:400;color:var(--g3);">v2</span></h1>
-  </div>
-  <button class="hdr-icon-btn hidden" id="btn-exportar" onclick="abrirExportar()" title="Exportar proyecto">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></svg>
+  <!-- Botón izquierdo: menú (☰) en el landing, flecha atrás (←) dentro de un proyecto -->
+  <button class="hdr-icon-btn" id="hdr-left" onclick="ilsxOpen()" title="Menú">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
   </button>
+  <div style="flex:1;">
+    <h1>HA<span>-Calc</span> <span style="font-size:14px;font-weight:400;color:var(--g3);">v2</span></h1>
+  </div>
+  <!-- Acciones del proyecto: solo visibles con un proyecto abierto, cada una su ícono -->
+  <div id="hdr-actions" class="hidden" style="display:flex;align-items:center;gap:2px;">
+    <button class="hdr-icon-btn" onclick="imprimirProyecto()" title="Imprimir">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M7 9V4h10v5"/><path d="M7 18H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="7" y="15" width="10" height="6"/></svg>
+    </button>
+    <button class="hdr-icon-btn" onclick="exportarPDFDoc()" title="Exportar PDF">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><path d="M8.5 13h1a1.3 1.3 0 0 1 0 2.6h-1V13v5" stroke-width="1"/><path d="M12.8 13v5M12.8 13h1.4M12.8 15.4h1.2" stroke-width="1"/></svg>
+    </button>
+    <button class="hdr-icon-btn" onclick="exportarCSV()" title="Exportar CSV">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>
+    </button>
+    <button class="hdr-icon-btn" onclick="guardarRespaldo()" title="Guardar respaldo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M21 8v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8"/><path d="M2 4h20v4H2z"/><path d="M9.5 12h5"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- VIEW: LANDING (lista de proyectos) -->
@@ -235,13 +235,31 @@ body{font-family:'Exo',sans-serif;background:var(--g1);color:var(--g5);font-size
 
     <!-- RESUMEN -->
     <div id="resumen-container"></div>
+
+    <!-- MEMBRETE del informe (logo + encabezado que salen en el PDF/impresión) -->
+    <div class="card" style="margin-top:4px;">
+      <div class="card-title">Membrete del informe <span style="font-size:14px;color:var(--g3);font-weight:400;">— opcional, sale en PDF e impresión</span></div>
+      <div class="fg" style="margin-bottom:12px;">
+        <label>Logo</label>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;">
+          <img id="exp-logo-preview" style="display:none;max-height:50px;max-width:130px;object-fit:contain;border:1px solid var(--g2);border-radius:6px;">
+          <button type="button" class="btn btn-g btn-sm" onclick="document.getElementById('exp-logo-file').click()">Subir logo</button>
+          <button type="button" class="btn btn-g btn-sm hidden" id="exp-btn-quitar-logo" onclick="quitarLogoExport()">Quitar</button>
+        </div>
+        <input type="file" id="exp-logo-file" accept="image/*" class="hidden" onchange="onLogoExportUpload(event)">
+      </div>
+      <div class="fg">
+        <label>Encabezado</label>
+        <textarea id="exp-encabezado" rows="3" style="width:100%;padding:9px 10px;border:1.5px solid var(--g2);border-radius:6px;font-family:'Exo',sans-serif;font-size:16px;font-weight:500;color:var(--g5);resize:vertical;margin-top:6px;" placeholder="Nombre de tu empresa, cliente, N° de obra…" onchange="guardarEncabezadoExport(this.value)"></textarea>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- VIEW: PRECIOS / CONFIG -->
 <div class="view" id="view-config-precios">
   <div style="padding:12px 14px 0;">
-    <button onclick="irInicio()" style="background:none;border:none;color:var(--r);font-family:'Exo',sans-serif;font-weight:500;font-size:14px;text-transform:uppercase;letter-spacing:0.4px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;padding:6px 2px;">
+    <button onclick="volverLanding()" style="background:none;border:none;color:var(--r);font-family:'Exo',sans-serif;font-weight:500;font-size:14px;text-transform:uppercase;letter-spacing:0.4px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;padding:6px 2px;">
       <svg viewBox="0 0 14 14" fill="none" width="15" height="15"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Inicio
     </button>
@@ -306,37 +324,6 @@ body{font-family:'Exo',sans-serif;background:var(--g1);color:var(--g5);font-size
       <button class="btn btn-g" onclick="guardarElemento()">Guardar</button>
     </div>
     <div id="det-resultados"></div>
-  </div>
-</div>
-
-<!-- MODAL: EXPORTAR PROYECTO -->
-<div class="modal-ov" id="modal-exportar">
-  <div class="modal-box">
-    <div class="card-title">Exportar <span>Proyecto</span></div>
-    <div class="fg" style="margin-bottom:12px;">
-      <label>Logo (opcional)</label>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;">
-        <img id="exp-logo-preview" style="display:none;max-height:50px;max-width:130px;object-fit:contain;border:1px solid var(--g2);border-radius:6px;">
-        <button type="button" class="btn btn-g btn-sm" onclick="document.getElementById('exp-logo-file').click()">Subir logo</button>
-        <button type="button" class="btn btn-g btn-sm hidden" id="exp-btn-quitar-logo" onclick="quitarLogoExport()">Quitar</button>
-      </div>
-      <input type="file" id="exp-logo-file" accept="image/*" class="hidden" onchange="onLogoExportUpload(event)">
-    </div>
-    <div class="fg" style="margin-bottom:16px;">
-      <label>Encabezado del informe (opcional)</label>
-      <textarea id="exp-encabezado" rows="3" placeholder="Nombre de tu empresa, cliente, N° de obra…" onchange="guardarEncabezadoExport(this.value)"></textarea>
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-r" onclick="exportarProyectoPDF()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M6 9V4h12v5"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>
-        Exportar PDF
-      </button>
-      <button class="btn btn-g" onclick="exportarCSV()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Exportar CSV
-      </button>
-    </div>
-    <div style="margin-top:12px;text-align:right;"><button class="btn btn-g btn-sm" onclick="cerrarExportar()">Cerrar</button></div>
   </div>
 </div>
 
@@ -427,30 +414,39 @@ function borrarProyecto(idx){
   renderLanding();
 }
 
+// Ajusta el botón izquierdo del header y muestra/oculta las acciones del proyecto.
+// mode: 'landing' (☰ menú) · 'proyecto' (← volver + acciones) · 'config' (← volver)
+function setHeaderMode(mode){
+  const left=document.getElementById('hdr-left');
+  const actions=document.getElementById('hdr-actions');
+  if(mode==='landing'){
+    left.setAttribute('onclick','ilsxOpen()');left.setAttribute('title','Menú');
+    left.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+    actions.classList.add('hidden');
+  }else{
+    left.setAttribute('onclick','volverLanding()');left.setAttribute('title','Volver a proyectos');
+    left.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M15 5 8 12l7 7"/></svg>';
+    actions.classList.toggle('hidden',mode!=='proyecto');
+  }
+}
+
 function abrirProyecto(idx){
   proyectoIdx=idx;
   document.getElementById('proj-nombre').value=proyectos[idx].nombre;
-  document.getElementById('btn-exportar').classList.remove('hidden');
+  document.getElementById('exp-encabezado').value=proyectos[idx].encabezado||'';
+  mostrarLogoPreviewExport(proyectos[idx].logo||'');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-proyecto').classList.add('active');
+  setHeaderMode('proyecto');
   renderLista();
 }
 
 function volverLanding(){
   proyectoIdx=null;
-  document.getElementById('btn-exportar').classList.add('hidden');
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-landing').classList.add('active');
+  setHeaderMode('landing');
   renderLanding();
-}
-
-function irInicio(){
-  if(proyectoIdx!==null){
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    document.getElementById('view-proyecto').classList.add('active');
-    document.getElementById('btn-exportar').classList.remove('hidden');
-    renderLista();
-  } else volverLanding();
 }
 
 function saveProyecto(){
@@ -480,8 +476,8 @@ function renderLanding(){
 // ══ VISTAS (precios/config) ══
 function showTab(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('btn-exportar').classList.add('hidden');
   document.getElementById('view-config-precios').classList.add('active');
+  setHeaderMode('config');
   switchTab2(id);
 }
 function switchTab2(id){
@@ -997,16 +993,7 @@ function exportarCSV(){
   a.download=(p.nombre||'proyecto').replace(/[^a-z0-9\-_]+/gi,'_')+'.csv';a.click();
 }
 
-// ══ EXPORTAR (encabezado + logo, PDF completo del proyecto) ══
-function abrirExportar(){
-  if(proyectoIdx===null)return;
-  const p=proyectos[proyectoIdx];
-  document.getElementById('exp-encabezado').value=p.encabezado||'';
-  mostrarLogoPreviewExport(p.logo||'');
-  document.getElementById('modal-exportar').classList.add('on');
-}
-function cerrarExportar(){document.getElementById('modal-exportar').classList.remove('on');}
-
+// ══ MEMBRETE (encabezado + logo del informe, por proyecto) ══
 function mostrarLogoPreviewExport(src){
   const img=document.getElementById('exp-logo-preview');
   const btn=document.getElementById('exp-btn-quitar-logo');
@@ -1043,8 +1030,8 @@ function guardarEncabezadoExport(v){
   setProyectosStorage();
 }
 
-function exportarProyectoPDF(){
-  if(proyectoIdx===null)return;
+// ══ DOCUMENTO IMPRIMIBLE (compartido por Imprimir y Exportar PDF) ══
+function construirDocProyecto(autoprint){
   const p=proyectos[proyectoIdx];
   const logoHtml=p.logo?`<img class="pr-logo" src="${p.logo}">`:'';
   const encHtml=(p.encabezado||'').trim()?`<div class="pr-enc-texto">${escNl(p.encabezado)}</div>`:'';
@@ -1070,7 +1057,7 @@ function exportarProyectoPDF(){
   const total=mat+enc+mo;
   const cfg=getConfig();
 
-  const doc=`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${esc(p.nombre)}</title><style>
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${esc(p.nombre)}</title><style>
     *{box-sizing:border-box}body{font-family:Exo,Arial,sans-serif;color:#1C1C1C;margin:0;padding:26px 22px}
     .pr-encabezado{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #FE0000}
     .pr-logo{max-height:80px;max-width:220px;object-fit:contain;flex-shrink:0}
@@ -1097,16 +1084,40 @@ function exportarProyectoPDF(){
         <div class="pr-total"><span>TOTAL</span><span>$${fmt(total)} UYU</span></div>
         <div style="text-align:right;font-size:13px;color:#7A7A7A;margin-top:6px">USD ${fmt(total/cfg.tc)}</div>
       </div>`:'')
-    + `<scr`+`ipt>window.addEventListener('load',function(){setTimeout(function(){window.print();},350);});</scr`+`ipt></body></html>`;
+    + (autoprint?`<scr`+`ipt>window.addEventListener('load',function(){setTimeout(function(){window.print();},350);});</scr`+`ipt>`:'')
+    + `</body></html>`;
+}
 
+// Imprimir: abre el documento y dispara el diálogo de impresión directamente.
+function imprimirProyecto(){
+  if(proyectoIdx===null)return;
+  const w=window.open('','_blank');
+  if(!w){alert('Permití ventanas emergentes para imprimir');return;}
+  w.document.open();w.document.write(construirDocProyecto(true));w.document.close();
+}
+
+// Exportar PDF: abre el documento formateado en otra pestaña para guardarlo/compartirlo como PDF.
+function exportarPDFDoc(){
+  if(proyectoIdx===null)return;
   const w=window.open('','_blank');
   if(!w){alert('Permití ventanas emergentes para generar el PDF');return;}
-  w.document.open();w.document.write(doc);w.document.close();
+  w.document.open();w.document.write(construirDocProyecto(false));w.document.close();
+}
+
+// Guardar respaldo: descarga un .json con todo el proyecto (para conservar copia o mover de equipo).
+function guardarRespaldo(){
+  if(proyectoIdx===null)return;
+  const p=proyectos[proyectoIdx];
+  const data={app:'HA-Calc',version:1,fecha:new Date().toISOString(),proyecto:p};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download=(p.nombre||'proyecto').replace(/[^a-z0-9\-_]+/gi,'_')+'_respaldo.json';a.click();
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
   loadConfig();
   proyectos=getProyectosStorage();
+  setHeaderMode('landing');
   renderLanding();
 });
 function ilsxOpen(){document.getElementById('ilsx-ov').classList.add('on')}
@@ -1116,7 +1127,7 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catc
 
 <!-- ===== iLStorage panel (estetico, additivo) ===== -->
 <style>
-#ilsx-ov{position:fixed;inset:0;background:rgba(20,20,20,.45);display:none;align-items:flex-end;justify-content:center;z-index:99999;font-family:'Exo 2',system-ui,sans-serif}
+#ilsx-ov{position:fixed;inset:0;background:rgba(20,20,20,.45);display:none;align-items:flex-end;justify-content:center;z-index:99999;font-family:'Exo',system-ui,sans-serif}
 #ilsx-ov.on{display:flex}
 #ilsx-sheet{background:#fff;width:100%;max-width:600px;border-radius:22px 22px 0 0;padding:8px 0 calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 40px rgba(0,0,0,.18);animation:ilsxUp .25s cubic-bezier(.3,1.1,.5,1)}
 @keyframes ilsxUp{from{transform:translateY(100%)}to{transform:translateY(0)}}

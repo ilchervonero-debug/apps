@@ -178,39 +178,50 @@ Todos comparten el mismo molde para verse hermanos:
 - Acciones secundarias = **texto** (sin recuadro). El recuadro/relleno se reserva a la
   **acción primaria única** (guardar, +, =).
 - Menús: fila = ícono monolínea + etiqueta. Ícono en tinta, acento rojo mínimo.
-- Ajustes que no son la tarea principal de la pantalla (precios, configuración, cargas
-  de datos) **no van sueltos en el header** — viven en el panel iLStorage (tocar el
-  nombre de la app), como filas de menú más. El header se reserva para el nombre de la
-  app y, si corresponde, un solo ícono de acción (ver §8).
+- **Nada de logo/ícono de app antes del nombre en el header.** El nombre (wordmark iL/HA
+  rojo + resto plata) va solo. A la izquierda del header:
+  - en la **pantalla principal / landing** → **menú hamburguesa (☰)**, tres líneas finas
+    rojas, que abre el panel de menú (bottom sheet) con **Configuración**, la **versión**
+    de la app y lo que venga (cuenta/sync). Es el hogar de todo ajuste global y de lo que
+    "no es la tarea".
+  - dentro de **un registro abierto** (proyecto, expediente…) → **flecha ← de volver** al
+    landing, para no quedar encerrado y poder saltar entre registros.
+- Ajustes que no son la tarea principal (precios, configuración, cuenta) **nunca van
+  sueltos como botones en el header** — viven en ese menú.
 
 ---
 
-## 8. Exportación (PDF / CSV)
+## 8. Exportación (imprimir / PDF / CSV / respaldo)
 
-- **Un solo ícono de exportación** en el header (descarga/salida, rojo, línea fina),
-  visible **solo cuando hay un proyecto/registro abierto** — nunca en el listado o
-  landing, ahí no hay nada que exportar todavía. Reemplaza tener varios botones sueltos
-  (ej. "Precios", "CSV") ocupando lugar en el header.
-- Al tocar el ícono se abre un modal simple con:
-  - **Logo (opcional):** botón "Subir logo" + vista previa + "Quitar". Se redimensiona
-    a 400px y se guarda en **PNG** (conserva transparencia). Mismo patrón en toda la
-    familia — ver la implementación de referencia en Bitácora.
-  - **Encabezado del informe (opcional):** texto libre, se imprime arriba del
-    documento. Si queda vacío y sin logo, el documento no lleva ningún encabezado
-    forzado — nada de branding de la app ni de datos que el usuario no escribió.
-  - Un botón por formato disponible (Exportar PDF, Exportar CSV, etc.).
-- El PDF exportado lleva el logo+encabezado arriba (si se cargaron) y el **detalle
-  completo** del proyecto/registro — no un resumen recortado.
-- Logo y encabezado se guardan **por proyecto/registro**, no como ajuste global — cada
-  proyecto puede tener su propio membrete.
+- Las acciones de salida van como **íconos flat separados en el header** del registro
+  abierto — **uno por acción**, no un único ícono que las agrupe a todas en un modal.
+  Cada uno rojo, línea fina (`stroke-width:1.1`), con su `title`: **Imprimir**, **PDF**,
+  **CSV**, **Guardar respaldo**, etc. Visibles **solo con un registro abierto** (nunca en
+  el landing — ahí no hay nada que exportar).
+- Distinción real entre imprimir y PDF (en web no hay "generar PDF" sin librería):
+  **Imprimir** abre el documento y dispara el diálogo de impresión; **PDF** abre el
+  documento formateado en otra pestaña para guardarlo/compartirlo como archivo.
+- **Respaldo** = descargar un `.json` del registro (copia restaurable / mover de equipo),
+  distinto del CSV (datos tabulares). Puente hasta tener sync real (Supabase).
+- **Membrete (logo + encabezado)** editable **por registro**, no como ajuste global —
+  cada proyecto tiene su propio membrete. Vive como una tarjeta "Membrete del informe
+  (opcional)" **dentro del registro**, no en el header ni en un modal de export:
+  - **Logo:** "Subir logo" + vista previa + "Quitar". Se redimensiona a 400px y se guarda
+    en **PNG** (conserva transparencia). Referencia: Bitácora.
+  - **Encabezado:** texto libre. Si queda vacío y sin logo, el documento no lleva
+    encabezado forzado — nada de branding de la app ni datos que el usuario no escribió.
+- El documento exportado lleva el membrete arriba (si se cargó) y el **detalle completo**
+  del registro — no un resumen recortado.
 
 ---
 
-_Versión iLStyle 1.6 — patrón de exportación (ícono único PDF/CSV + encabezado y logo
-editables por proyecto, solo visible con un registro abierto); los ajustes secundarios
-(precios/config) se mueven del header al panel iLStorage. Versión 1.5 — excepción de
-tipografía para textos largos (Inter light/regular, solo para párrafos extensos; Exo
-sigue siendo la fuente de todo lo demás). Versión 1.4 — íconos aún más finos
-(`stroke-width:1`) y más grandes (mín. 40px en menú); se agrega la regla de estado
-activo = borde rojo. Versión 1.3 — estándar de ícono de app instalada (launcher
+_Versión iLStyle 1.7 — sin logo de app antes del nombre; menú hamburguesa (☰) a la
+izquierda en el landing (Configuración + versión + cuenta) y flecha ← de volver dentro de
+un registro; exportación con un ícono flat por acción (imprimir/PDF/CSV/respaldo), no un
+ícono que las agrupe; membrete (logo+encabezado) por registro dentro del propio registro.
+Versión 1.6 — patrón de exportación con encabezado y logo editables por proyecto.
+Versión 1.5 — excepción de tipografía para textos largos (Inter light/regular, solo para
+párrafos extensos; Exo sigue siendo la fuente de todo lo demás). Versión 1.4 — íconos aún
+más finos (`stroke-width:1`) y más grandes (mín. 40px en menú); se agrega la regla de
+estado activo = borde rojo. Versión 1.3 — estándar de ícono de app instalada (launcher
 full-bleed maskable) e íconos instalados uniformados._
