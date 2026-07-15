@@ -205,9 +205,11 @@ Todos comparten el mismo molde para verse hermanos:
   Cada uno rojo, línea fina (`stroke-width:1.1`), con su `title`: **Imprimir**, **PDF**,
   **CSV**, **Guardar respaldo**, etc. Visibles **solo con un registro abierto** (nunca en
   el landing — ahí no hay nada que exportar).
-- Distinción real entre imprimir y PDF (en web no hay "generar PDF" sin librería):
-  **Imprimir** abre el documento y dispara el diálogo de impresión; **PDF** abre el
-  documento formateado en otra pestaña para guardarlo/compartirlo como archivo.
+- **No poner "Imprimir" y "PDF" como dos íconos separados: son redundantes.** En la web no
+  existe generar un PDF de verdad sin sumar una librería pesada (contra "app liviana"); el
+  PDF sale por el **diálogo de imprimir → "Guardar como PDF"** (disponible en móvil y
+  escritorio). Va **un solo ícono de imprimir** (title "Imprimir o guardar PDF"), y el
+  modal aclara que en el diálogo se puede guardar como PDF.
 - **Respaldo** = descargar un `.json` del registro (copia restaurable / mover de equipo),
   distinto del CSV (datos tabulares). Puente hasta tener sync real (Supabase).
 - **Membrete (logo + encabezado)** editable **por registro**, no como ajuste global —
