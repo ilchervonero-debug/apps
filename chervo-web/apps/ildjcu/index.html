@@ -6,90 +6,92 @@
 <title>DJCU Relevamiento v3</title>
 <link rel="manifest" href="/apps/ildjcu/manifest.json">
 <link rel="apple-touch-icon" href="/apps/ildjcu/icon-192.svg">
-<meta name="theme-color" content="#2b2b2b">
+<meta name="theme-color" content="#1C1C1C">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;600;700;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
-.app{max-width:640px;margin:0 auto;background:#f0f0f0;min-height:100vh}
-.header{background:#fff;color:#2b2b2b;padding:14px 16px;border-bottom:1px solid #ececec;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.header-sub{font-size:13px;color:#999;letter-spacing:2px;text-transform:uppercase}
-.header-title{font-size:17px;font-weight:700;margin-top:2px;color:#2b2b2b}
+body{font-family:Exo,Arial,sans-serif;background:#F2F2F0;color:#1C1C1C;font-size:16px}
+.app{max-width:640px;margin:0 auto;background:#F2F2F0;min-height:100vh}
+.header{background:#fff;color:#1C1C1C;padding:14px 16px;border-bottom:1px solid #ECECEC;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.header-sub{font-size:14px;color:#7A7A7A;letter-spacing:2px;text-transform:uppercase}
+.header-title{font-size:20px;font-weight:500;margin-top:2px;color:#1C1C1C}
 .header-title .acc{color:#FE0000}
-.header-user{font-size:13px;font-weight:700;color:#555;background:#f4f4f4;border:1px solid #ececec;border-radius:20px;padding:7px 13px;cursor:pointer;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
-.tabs{display:flex;background:#f4f4f4;overflow-x:auto;border-bottom:1px solid #e0e0e0}
-.tab{flex:0 0 auto;padding:10px 12px;background:transparent;color:#777;border:none;border-bottom:3px solid transparent;font-size:13px;cursor:pointer;font-weight:600;letter-spacing:.3px;font-family:Arial,sans-serif;white-space:nowrap;margin-bottom:-1px}
-.tab.active{background:#fff;color:#FE0000;font-weight:700;border-bottom:3px solid #FE0000;border-radius:8px 8px 0 0}
+.header-user{font-size:16px;font-weight:500;color:#1C1C1C;background:#F6F6F6;border:1px solid #ECECEC;border-radius:20px;padding:7px 13px;cursor:pointer;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.tabs{display:flex;background:#F6F6F6;overflow-x:auto;border-bottom:1px solid #E0E0E0}
+.tab{flex:0 0 auto;padding:10px 12px;background:transparent;color:#7A7A7A;border:none;border-bottom:3px solid transparent;font-size:16px;cursor:pointer;font-weight:500;letter-spacing:.3px;white-space:nowrap;margin-bottom:-1px}
+.tab.active{background:#fff;color:#FE0000;font-weight:600;border-bottom:3px solid #FE0000;border-radius:8px 8px 0 0}
 .body{padding:14px}
 .card{background:#fff;border-radius:8px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.card-title{font-weight:700;font-size:14px;color:#FE0000;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid #f0f0f0;padding-bottom:5px}
+.card-title{font-weight:600;font-size:18px;color:#FE0000;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;border-bottom:1px solid #F0F0F0;padding-bottom:5px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
 .row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px}
 .field{margin-bottom:8px}
-.field label{display:block;font-size:14px;color:#666;margin-bottom:3px}
-.field input,.field select,.field textarea{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:5px;font-size:16px;background:#fafafa;font-family:Arial,sans-serif}
+.field label{display:block;font-size:16px;color:#7A7A7A;margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;padding:8px 10px;border:1px solid #DCDCD8;border-radius:5px;font-size:18px;background:#F6F6F6;font-family:Exo,Arial,sans-serif;color:#1C1C1C}
 .field textarea{resize:vertical}
 .full{grid-column:1/-1}
-.btn{border:none;border-radius:6px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif;color:#fff}
-.btn-red{background:#FE0000}.btn-dark{background:#2b2b2b}.btn-green{background:#aaaaaa}.btn-gray{background:#555}
-.btn-full{width:100%}.btn-sm{padding:5px 10px;font-size:13px}
+.btn{border:none;border-radius:6px;padding:10px 16px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif;color:#fff}
+.btn-red{background:#FE0000}.btn-dark{background:#1C1C1C}.btn-green{background:#7A7A7A}.btn-gray{background:#7A7A7A}
+.btn-full{width:100%}.btn-sm{padding:5px 10px;font-size:14px}
 .nav{display:flex;gap:10px;margin-top:8px}
 .linea-bloque{background:#fff;border-radius:8px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
 .linea-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.links-box{background:#f8f8f8;border-radius:6px;padding:10px 12px;margin-top:8px}
-.links-box .lbl{font-size:13px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-.links-box a{display:block;font-size:13px;color:#555555;text-decoration:none;padding:3px 0}
+.links-box{background:#F6F6F6;border-radius:6px;padding:10px 12px;margin-top:8px}
+.links-box .lbl{font-size:14px;color:#7A7A7A;font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.links-box a{display:block;font-size:16px;color:#1C1C1C;text-decoration:none;padding:3px 0}
 .foto-item{background:#fff;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .foto-inner{display:flex;gap:10px;align-items:flex-start}
-.foto-img{width:100px;height:80px;object-fit:cover;border-radius:5px;border:1px solid #ddd;flex-shrink:0}
+.foto-img{width:100px;height:80px;object-fit:cover;border-radius:5px;border:1px solid #DCDCD8;flex-shrink:0}
 .foto-side{flex:1}
-.rec-btn{width:100%;margin-top:5px;font-size:13px;padding:6px;border:none;border-radius:5px;cursor:pointer;font-family:Arial;color:#fff;font-weight:700}
-.rec-btn.grabando{background:#555555}.rec-btn.parado{background:#aaaaaa}
-.total-bar{background:#2b2b2b;color:#fff;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:13px}
-.resumen-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
-.resumen-row span:first-child{color:#888}
-.resumen-row span:last-child{font-weight:600}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2b2b2b;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:999;display:none}
+.rec-btn{width:100%;margin-top:5px;font-size:16px;padding:6px;border:none;border-radius:5px;cursor:pointer;color:#fff;font-weight:500}
+.rec-btn.grabando{background:#1C1C1C}.rec-btn.parado{background:#7A7A7A}
+.total-bar{background:#E7E7E4;color:#1C1C1C;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:18px}
+.resumen-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F0F0F0;font-size:16px}
+.resumen-row span:first-child{color:#7A7A7A}
+.resumen-row span:last-child{font-weight:500}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#FE0000;color:#fff;padding:10px 20px;border-radius:20px;font-size:16px;z-index:999;display:none}
 .cond{background:#fff8e1;border-left:3px solid #f0a500;padding:10px;border-radius:0 5px 5px 0;margin:8px 0}
-.honor-result{background:#ececec;border-radius:6px;padding:12px;margin-top:10px;font-size:15px;font-weight:700;color:#FE0000;text-align:center}
-.honor-linea{display:flex;justify-content:space-between;font-size:13px;color:#555;padding:3px 0}
-.grabando-ind{font-size:13px;color:#555555;text-align:center;margin-top:3px}
+.honor-result{background:#E7E7E4;border-radius:6px;padding:12px;margin-top:10px;font-size:24px;font-weight:500;color:#FE0000;text-align:center}
+.honor-linea{display:flex;justify-content:space-between;font-size:16px;color:#1C1C1C;padding:3px 0}
+.grabando-ind{font-size:14px;color:#1C1C1C;text-align:center;margin-top:3px}
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.input-sm input{padding:6px 8px;font-size:14px}
-/* Tabla DJCU oficial */
-.djcu-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-.djcu-table th{background:#e8e8e8;padding:4px 5px;border:1px solid #bbb;text-align:center;font-size:13px}
-.djcu-table td{padding:4px 5px;border:1px solid #ddd;text-align:center}
-.djcu-table td input,.djcu-table td select{width:100%;padding:3px 4px;border:1px solid #ddd;border-radius:3px;font-size:13px;background:#fafafa;text-align:center;font-family:Arial}
+.input-sm input{padding:6px 8px;font-size:16px}
+/* Tabla DJCU oficial — formato de columnas fijado por el organismo (DNC);
+   se mantiene compacta (14px, piso de caption) para no romper el layout oficial. */
+.djcu-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+.djcu-table th{background:#E7E7E4;padding:4px 5px;border:1px solid #bbb;text-align:center;font-size:14px}
+.djcu-table td{padding:4px 5px;border:1px solid #DCDCD8;text-align:center}
+.djcu-table td input,.djcu-table td select{width:100%;padding:3px 4px;border:1px solid #DCDCD8;border-radius:3px;font-size:14px;background:#F6F6F6;text-align:center;font-family:Exo,Arial,sans-serif}
 .djcu-table td.desc input{text-align:left}
 .cod-desc{display:flex;gap:4px}
 .cod-desc input:first-child{width:40px;flex-shrink:0}
 .cod-desc input:last-child{flex:1}
-.pin-overlay{position:fixed;inset:0;background:#f4f4f4;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
-.bienvenida-overlay{position:fixed;inset:0;background:#f4f4f4;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9998}
-.bienvenida-box{background:#fff;border-radius:14px;padding:28px 24px;width:300px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3)}
-.perm-btn{width:100%;padding:13px;margin-bottom:10px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px}
-.perm-btn.pendiente{background:#fafafa;color:#2b2b2b;border:2px solid #FE0000}
-.perm-btn.ok{background:#e8f8f0;color:#2d7a4f;border:2px solid #2d7a4f}
-.perm-btn.bloqueado{background:#fff0f0;color:#c0392b;border:2px solid #c0392b}
-.visor-overlay{position:fixed;inset:0;background:#2b2b2b;z-index:9997;display:none;flex-direction:column}
-.visor-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#2b2b2b;flex-shrink:0}
-.visor-toolbar span{color:#fff;font-size:13px;font-weight:700}
+.pin-overlay{position:fixed;inset:0;background:#F6F6F6;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
+.bienvenida-overlay{position:fixed;inset:0;background:#F6F6F6;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9998}
+.bienvenida-box{background:#fff;border-radius:14px;padding:28px 24px;width:300px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.perm-btn{width:100%;padding:13px;margin-bottom:10px;border:none;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:10px}
+.perm-btn.pendiente{background:#F6F6F6;color:#1C1C1C;border:2px solid #FE0000}
+.perm-btn.ok{background:#F6F6F6;color:#2d7a4f;border:2px solid #2d7a4f}
+.perm-btn.bloqueado{background:#F6F6F6;color:#FE0000;border:2px solid #FE0000}
+.visor-overlay{position:fixed;inset:0;background:#1C1C1C;z-index:9997;display:none;flex-direction:column}
+.visor-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#1C1C1C;flex-shrink:0}
+.visor-toolbar span{color:#fff;font-size:16px;font-weight:500}
 .visor-iframe{flex:1;border:none;width:100%;background:#fff}
-.pin-box{background:#fff;border-top:4px solid #FE0000;border-radius:14px;padding:32px 28px;width:280px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.3)}
-.pin-logo{font-size:18px;font-weight:800;color:#FE0000;letter-spacing:1px;margin-bottom:4px}
-.pin-sub{font-size:13px;color:#aaa;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.pin-box{background:#fff;border-top:4px solid #FE0000;border-radius:14px;padding:32px 28px;width:280px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.pin-logo{font-size:20px;font-weight:800;color:#FE0000;letter-spacing:1px;margin-bottom:4px}
+.pin-sub{font-size:14px;color:#7A7A7A;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
 .pin-dots{display:flex;gap:12px;justify-content:center;margin-bottom:20px}
-.pin-dot{width:15px;height:15px;border-radius:50%;border:2px solid #d4d4d4;background:#fff;transition:all .15s}
+.pin-dot{width:15px;height:15px;border-radius:50%;border:2px solid #DCDCD8;background:#fff;transition:all .15s}
 .pin-dot.filled{background:#FE0000;border-color:#FE0000}
 .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.pin-btn{background:#fafafa;border:1px solid #ececec;border-radius:8px;padding:14px;font-size:18px;font-weight:700;color:#2b2b2b;cursor:pointer;font-family:Arial;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
-.pin-btn:active{background:#ececec}
-.pin-btn.del{font-size:14px;color:#FE0000}
-.pin-err{font-size:13px;color:#c0392b;min-height:18px;margin-top:2px}
+.pin-btn{background:#F6F6F6;border:1px solid #ECECEC;border-radius:8px;padding:14px;font-size:20px;font-weight:500;color:#1C1C1C;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+.pin-btn:active{background:#ECECEC}
+.pin-btn.del{font-size:16px;color:#FE0000}
+.pin-err{font-size:16px;color:#FE0000;min-height:18px;margin-top:2px}
 </style>
 </head>
 <body>
@@ -97,18 +99,18 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
 <!-- PANTALLA DE BIENVENIDA Y PERMISOS -->
 <div class="bienvenida-overlay" id="bienvenida_overlay">
   <div class="bienvenida-box">
-    <div style="margin-bottom:6px;color:#FE0000"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
-    <div style="font-size:18px;font-weight:800;color:#2b2b2b;margin-bottom:4px">Bienvenido</div>
-    <div id="bienvenida_nombre" style="font-size:13px;color:#888;margin-bottom:20px"></div>
-    <div style="font-size:13px;color:#666;margin-bottom:14px;text-align:left">Para usar cámara y micrófono en el relevamiento, habilitá los permisos:</div>
+    <div style="margin-bottom:6px;color:#FE0000"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
+    <div style="font-size:18px;font-weight:600;color:#1C1C1C;margin-bottom:4px">Bienvenido</div>
+    <div id="bienvenida_nombre" style="font-size:16px;color:#7A7A7A;margin-bottom:20px"></div>
+    <div style="font-size:16px;color:#7A7A7A;margin-bottom:14px;text-align:left">Para usar cámara y micrófono en el relevamiento, habilitá los permisos:</div>
     <button id="btn_perm_cam" class="perm-btn pendiente" onclick="pedirPermiso('camara')">
-      <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Habilitar cámara</span>
+      <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Habilitar cámara</span>
     </button>
     <button id="btn_perm_mic" class="perm-btn pendiente" onclick="pedirPermiso('microfono')">
-      <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Habilitar micrófono</span>
+      <span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Habilitar micrófono</span>
     </button>
-    <div style="font-size:13px;color:#aaa;margin:10px 0 14px">Podés saltear esto y habilitarlos después desde el navegador.</div>
-    <button onclick="entrarApp()" style="width:100%;padding:13px;background:#FE0000;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">
+    <div style="font-size:16px;color:#7A7A7A;margin:10px 0 14px">Podés saltear esto y habilitarlos después desde el navegador.</div>
+    <button onclick="entrarApp()" style="width:100%;padding:13px;background:#FE0000;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif;touch-action:manipulation">
       Entrar →
     </button>
   </div>
@@ -143,27 +145,27 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
 
     <!-- Crear cuenta -->
     <div id="pin_crear" style="display:none;margin-top:12px;border-top:1px solid #f0f0f0;padding-top:12px">
-      <div style="font-size:13px;color:#888;margin-bottom:8px;text-align:center">Nueva cuenta</div>
-      <input id="reg2_nombre" type="text" placeholder="Tu nombre" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:16px;margin-bottom:8px;font-family:Arial">
-      <input id="reg2_pin" type="password" maxlength="4" inputmode="numeric" placeholder="PIN (4 dígitos)" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:16px;margin-bottom:8px;font-family:Arial">
-      <input id="reg2_pin2" type="password" maxlength="4" inputmode="numeric" placeholder="Confirmar PIN" style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:16px;margin-bottom:8px;font-family:Arial">
-      <div id="reg2_msg" style="font-size:13px;min-height:16px;margin-bottom:6px;text-align:center"></div>
-      <button onclick="registrarDesdePin()" style="width:100%;padding:10px;background:#555555;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">Crear cuenta</button>
+      <div style="font-size:16px;color:#7A7A7A;margin-bottom:8px;text-align:center">Nueva cuenta</div>
+      <input id="reg2_nombre" type="text" placeholder="Tu nombre" style="width:100%;padding:8px 10px;border:1px solid #DCDCD8;border-radius:6px;font-size:16px;margin-bottom:8px;font-family:Exo,Arial,sans-serif">
+      <input id="reg2_pin" type="password" maxlength="4" inputmode="numeric" placeholder="PIN (4 dígitos)" style="width:100%;padding:8px 10px;border:1px solid #DCDCD8;border-radius:6px;font-size:16px;margin-bottom:8px;font-family:Exo,Arial,sans-serif">
+      <input id="reg2_pin2" type="password" maxlength="4" inputmode="numeric" placeholder="Confirmar PIN" style="width:100%;padding:8px 10px;border:1px solid #DCDCD8;border-radius:6px;font-size:16px;margin-bottom:8px;font-family:Exo,Arial,sans-serif">
+      <div id="reg2_msg" style="font-size:16px;min-height:16px;margin-bottom:6px;text-align:center"></div>
+      <button onclick="registrarDesdePin()" style="width:100%;padding:10px;background:#7A7A7A;color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif;touch-action:manipulation">Crear cuenta</button>
     </div>
 
-    <button onclick="toggleCrearCuenta()" style="margin-top:10px;background:none;border:none;color:#555555;font-size:13px;cursor:pointer;font-family:Arial;width:100%;touch-action:manipulation" id="btn_crear_toggle">¿Sin cuenta? Crear una →</button>
+    <button onclick="toggleCrearCuenta()" style="margin-top:10px;background:none;border:none;color:#7A7A7A;font-size:16px;cursor:pointer;font-family:Exo,Arial,sans-serif;width:100%;touch-action:manipulation" id="btn_crear_toggle">¿Sin cuenta? Crear una →</button>
   </div>
 </div>
 
 <!-- VISOR INLINE PARA iOS -->
 <div class="visor-overlay" id="visor_overlay">
   <div class="visor-toolbar">
-    <span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Vista previa — Imprimí o compartí desde acá</span>
-    <button onclick="cerrarVisor()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Cerrar</button>
+    <span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Vista previa — Imprimí o compartí desde acá</span>
+    <button onclick="cerrarVisor()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif;touch-action:manipulation">✕ Cerrar</button>
   </div>
-  <div style="background:#2b2b2b;padding:8px 14px;flex-shrink:0;display:flex;gap:8px">
-    <button onclick="imprimirVisor()" style="flex:1;background:#555555;border:none;color:#fff;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir / PDF</button>
-    <button onclick="compartirVisor()" style="flex:1;background:#aaaaaa;border:none;color:#fff;padding:10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Compartir</button>
+  <div style="background:#1C1C1C;padding:8px 14px;flex-shrink:0;display:flex;gap:8px">
+    <button onclick="imprimirVisor()" style="flex:1;background:#7A7A7A;border:none;color:#fff;padding:10px;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir / PDF</button>
+    <button onclick="compartirVisor()" style="flex:1;background:#7A7A7A;border:none;color:#fff;padding:10px;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Compartir</button>
   </div>
   <iframe class="visor-iframe" id="visor_iframe"></iframe>
 </div>
@@ -184,18 +186,18 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
     <button class="tab" onclick="goTab(4)">Fotos</button>
     <button class="tab" onclick="goTab(5)">Económico</button>
     <button class="tab" onclick="goTab(6)">Resumen</button>
-    <button class="tab" onclick="goTab(7)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Archivos</button>
-    <button class="tab" onclick="goTab(8)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Mi cuenta</button>
-    <button class="tab" id="tab_admin_btn" style="display:none" onclick="goTab(9)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Admin</button>
+    <button class="tab" onclick="goTab(7)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> Archivos</button>
+    <button class="tab" onclick="goTab(8)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Mi cuenta</button>
+    <button class="tab" id="tab_admin_btn" style="display:none" onclick="goTab(9)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Admin</button>
   </div>
   <div class="body">
 
     <!-- TAB 0: EXPEDIENTE -->
     <div id="tab0">
       <div class="card">
-        <div class="card-title">Gestión del expediente <span style="background:#f0f0f0;color:#888;font-size:13px;padding:1px 5px;border-radius:8px;font-weight:400">INTERNO</span></div>
+        <div class="card-title">Gestión del expediente <span style="background:#f0f0f0;color:#7A7A7A;font-size:14px;padding:1px 5px;border-radius:8px;font-weight:400">INTERNO</span></div>
         <div class="field"><label>Nombre del cliente / proyecto</label><input id="cliente" type="text" placeholder="Ej: García, Juan — Calle X 123"></div>
-        <div class="field"><label>Intermediario / referido <span style="font-size:13px;color:#aaa">(opcional)</span></label><input id="intermediario" type="text" placeholder="Arq., Escribano, gestor..."></div>
+        <div class="field"><label>Intermediario / referido <span style="font-size:14px;color:#7A7A7A">(opcional)</span></label><input id="intermediario" type="text" placeholder="Arq., Escribano, gestor..."></div>
         <div class="row">
           <div class="field"><label>Fecha de alta</label><input id="fecha_alta" type="datetime-local"></div>
           <div class="field"><label>Estado del trámite</label>
@@ -214,7 +216,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
     <!-- TAB 1: INMUEBLE -->
     <div id="tab1" style="display:none">
       <div class="card">
-        <div class="card-title">Régimen y tipo <span style="background:#ececec;color:#2b2b2b;font-size:13px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
+        <div class="card-title">Régimen y tipo <span style="background:#ececec;color:#1C1C1C;font-size:14px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
         <div class="row">
           <div class="field"><label>Régimen de propiedad</label>
             <select id="regimen" onchange="onRegimen()">
@@ -230,7 +232,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
             </select>
           </div>
         </div>
-        <div class="field"><label>Tipo de Declaración Jurada <span style="background:#ececec;color:#2b2b2b;font-size:13px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></label>
+        <div class="field"><label>Tipo de Declaración Jurada <span style="background:#ececec;color:#1C1C1C;font-size:14px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></label>
           <select id="tipo_dj">
             <option value="">— Seleccionar</option>
             <option value="SCE">SCE — Solo construcciones existentes</option>
@@ -262,7 +264,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
           <div class="field"><label>Dim. Frente (m)</label><input id="dim_frente" type="number" step="0.01"></div>
         </div>
         <div class="field">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:16px">
             <input type="checkbox" id="es_esquina" style="width:auto" onchange="toggleEsquina()">
             Es esquina
           </label>
@@ -280,18 +282,18 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
           <div class="field"><label>Nº expediente DNC</label><input id="nro_expediente" type="text" placeholder="000000000000"></div>
         </div>
         <div style="text-align:center;margin:10px 0">
-          <button class="btn btn-dark btn-full" onclick="geolocate()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Capturar coordenadas GPS</button>
-          <div id="gps_result" style="font-size:13px;color:#666;margin-top:5px"></div>
+          <button class="btn btn-dark btn-full" onclick="geolocate()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Capturar coordenadas GPS</button>
+          <div id="gps_result" style="font-size:16px;color:#7A7A7A;margin-top:5px"></div>
         </div>
         <div class="links-box">
           <div class="lbl">Consultas Catastro DNC</div>
-          <a href="http://visor.catastro.gub.uy/visordnc/" target="_blank"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg> Visor de mapa — Catastro DNC</a>
-          <a href="https://www.snig.gub.uy/ConsultaPadrones" target="_blank"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar padrón por ubicación (SNIG)</a>
-          <a href="http://sede.catastro.gub.uy/Sede/" target="_blank"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><line x1="3" y1="21" x2="21" y2="21"/><path d="M4 21V10l8-5 8 5v11"/><line x1="8" y1="21" x2="8" y2="12"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="16" y1="21" x2="16" y2="12"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Sede Electrónica DNC — trámites</a>
+          <a href="http://visor.catastro.gub.uy/visordnc/" target="_blank"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg> Visor de mapa — Catastro DNC</a>
+          <a href="https://www.snig.gub.uy/ConsultaPadrones" target="_blank"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar padrón por ubicación (SNIG)</a>
+          <a href="http://sede.catastro.gub.uy/Sede/" target="_blank"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><line x1="3" y1="21" x2="21" y2="21"/><path d="M4 21V10l8-5 8 5v11"/><line x1="8" y1="21" x2="8" y2="12"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="16" y1="21" x2="16" y2="12"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Sede Electrónica DNC — trámites</a>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Propietario <span style="background:#ececec;color:#2b2b2b;font-size:13px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
+        <div class="card-title">Propietario <span style="background:#ececec;color:#1C1C1C;font-size:14px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
         <div class="row">
           <div class="field"><label>Apellidos</label><input id="prop_apellidos" type="text"></div>
           <div class="field"><label>Nombres</label><input id="prop_nombres" type="text"></div>
@@ -319,8 +321,8 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
     <!-- TAB 2: CONSTRUCCIÓN — tabla oficial DJCU -->
     <div id="tab2" style="display:none">
       <div class="card" style="overflow-x:auto">
-        <div class="card-title">Situación Actual — Tabla DJCU oficial <span style="background:#ececec;color:#2b2b2b;font-size:13px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
-        <p style="font-size:13px;color:#888;margin-bottom:8px">Campos según formulario DNC: Nivel · U.O · Hab · Ser · Destino (Tabla A) · Cat (Tabla B) · Est (Tabla C) · Área Edific · Obra · Const · Rema · Cub (Tabla D) · Ubic (solo PH, Tabla F)</p>
+        <div class="card-title">Situación Actual — Tabla DJCU oficial <span style="background:#ececec;color:#1C1C1C;font-size:14px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
+        <p style="font-size:16px;color:#7A7A7A;margin-bottom:8px">Campos según formulario DNC: Nivel · U.O · Hab · Ser · Destino (Tabla A) · Cat (Tabla B) · Est (Tabla C) · Área Edific · Obra · Const · Rema · Cub (Tabla D) · Ubic (solo PH, Tabla F)</p>
         <table class="djcu-table" id="tabla_construccion">
           <thead>
             <tr>
@@ -348,7 +350,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
           </select>
         </div>
         <div class="field">
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:16px">
             <input type="checkbox" id="reformas_internas" style="width:auto">
             Reformas internas no visibles (fachada intacta)
           </label>
@@ -363,7 +365,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
     <!-- TAB 3: PROFESIONAL -->
     <div id="tab3" style="display:none">
       <div class="card">
-        <div class="card-title">Profesional firmante <span style="background:#ececec;color:#2b2b2b;font-size:13px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
+        <div class="card-title">Profesional firmante <span style="background:#ececec;color:#1C1C1C;font-size:14px;padding:1px 5px;border-radius:8px;font-weight:400">DNC</span></div>
         <div class="row">
           <div class="field"><label>Apellidos</label><input id="prof_apellidos" type="text"></div>
           <div class="field"><label>Nombres</label><input id="prof_nombres" type="text"></div>
@@ -402,17 +404,17 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
     <!-- TAB 4: FOTOS -->
     <div id="tab4" style="display:none">
       <div class="card">
-        <div class="card-title">Registro fotográfico <span style="background:#f0f0f0;color:#888;font-size:13px;padding:1px 5px;border-radius:8px;font-weight:400">RELEVAMIENTO</span></div>
-        <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px;margin-bottom:12px" onclick="document.getElementById('file_input').click()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Tomar foto / Seleccionar</button>
+        <div class="card-title">Registro fotográfico <span style="background:#f0f0f0;color:#7A7A7A;font-size:14px;padding:1px 5px;border-radius:8px;font-weight:400">RELEVAMIENTO</span></div>
+        <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px;margin-bottom:12px" onclick="document.getElementById('file_input').click()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Tomar foto / Seleccionar</button>
         <input id="file_input" type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="addFotos(event)">
         <div id="fotos_container"></div>
-        <div id="fotos_count" style="font-size:13px;color:#888;text-align:right">0 fotos</div>
+        <div id="fotos_count" style="font-size:16px;color:#7A7A7A;text-align:right">0 fotos</div>
       </div>
       <div class="card">
         <div class="card-title">Observaciones generales</div>
-        <button id="btn_obs_gen" class="rec-btn parado" onclick="toggleVoz('obs_gen','btn_obs_gen','ind_obs_gen')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar observaciones generales</button>
+        <button id="btn_obs_gen" class="rec-btn parado" onclick="toggleVoz('obs_gen','btn_obs_gen','ind_obs_gen')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar observaciones generales</button>
         <div id="ind_obs_gen" class="grabando-ind"></div>
-        <textarea id="obs_gen" rows="5" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:5px;font-size:13px;margin-top:8px;font-family:Arial" placeholder="Descripción general del inmueble, estado, particularidades..."></textarea>
+        <textarea id="obs_gen" rows="5" style="width:100%;padding:8px;border:1px solid #DCDCD8;border-radius:5px;font-size:16px;margin-top:8px;font-family:Exo,Arial,sans-serif" placeholder="Descripción general del inmueble, estado, particularidades..."></textarea>
       </div>
       <div class="nav">
         <button class="btn btn-gray btn-full" onclick="goTab(3)">← Atrás</button>
@@ -423,7 +425,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
     <!-- TAB 5: ECONÓMICO -->
     <div id="tab5" style="display:none">
       <div class="card">
-        <div class="card-title">Timbres y honorarios <span style="background:#f0f0f0;color:#888;font-size:13px;padding:1px 5px;border-radius:8px;font-weight:400">INTERNO — no va a DNC</span></div>
+        <div class="card-title">Timbres y honorarios <span style="background:#f0f0f0;color:#7A7A7A;font-size:14px;padding:1px 5px;border-radius:8px;font-weight:400">INTERNO — no va a DNC</span></div>
         <div class="row">
           <div class="field"><label>Timbres profesionales ($)</label><input id="timbres" type="number" value="270" oninput="calcHonorarios()"></div>
           <div class="field"><label>Valor base por bloque ($)</label><input id="valor_bloque" type="number" value="2000" oninput="calcHonorarios()"></div>
@@ -453,12 +455,12 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
       <div class="card">
         <div class="card-title">Imprimir</div>
         <div style="margin-bottom:10px">
-          <div style="font-size:13px;color:#555;margin-bottom:5px">Declaración oficial 2 hojas A4 — firmas, propietario, profesional <span style="background:#ececec;color:#2b2b2b;font-size:13px;padding:1px 5px;border-radius:8px">DNC</span></div>
-          <button class="btn btn-red btn-full" style="padding:12px;font-size:14px" onclick="exportar()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir declaración DJCU</button>
+          <div style="font-size:16px;color:#7A7A7A;margin-bottom:5px">Declaración oficial 2 hojas A4 — firmas, propietario, profesional <span style="background:#ececec;color:#1C1C1C;font-size:16px;padding:1px 5px;border-radius:8px">DNC</span></div>
+          <button class="btn btn-red btn-full" style="padding:12px;font-size:14px" onclick="exportar()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir declaración DJCU</button>
         </div>
         <div>
-          <div style="font-size:13px;color:#555;margin-bottom:5px">Presupuesto, honorarios y gastos <span style="background:#f0f0f0;color:#888;font-size:13px;padding:1px 5px;border-radius:8px">INTERNO</span></div>
-          <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px" onclick="exportarPresupuesto()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir presupuesto y gastos</button>
+          <div style="font-size:16px;color:#7A7A7A;margin-bottom:5px">Presupuesto, honorarios y gastos <span style="background:#f0f0f0;color:#7A7A7A;font-size:16px;padding:1px 5px;border-radius:8px">INTERNO</span></div>
+          <button class="btn btn-dark btn-full" style="padding:12px;font-size:14px" onclick="exportarPresupuesto()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir presupuesto y gastos</button>
         </div>
       </div>
 
@@ -466,27 +468,27 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
       <div class="card">
         <div class="card-title">Enviar a Catastro DNC</div>
         <div style="margin-bottom:10px">
-          <div style="font-size:13px;color:#555;margin-bottom:5px">Genera archivos .DBF para importar en el programa DJCU.exe (C:\catastro)</div>
-          <button class="btn btn-dark btn-full" style="padding:12px" onclick="exportarDBF()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Exportar para DJCU.exe</button>
+          <div style="font-size:16px;color:#7A7A7A;margin-bottom:5px">Genera archivos .DBF para importar en el programa DJCU.exe (C:\catastro)</div>
+          <button class="btn btn-dark btn-full" style="padding:12px" onclick="exportarDBF()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Exportar para DJCU.exe</button>
         </div>
         <div style="margin-bottom:10px">
-          <div style="font-size:13px;color:#555;margin-bottom:5px">Copia los datos para pegar en la Sede Electrónica DNC</div>
-          <button class="btn btn-green btn-full" style="padding:12px" onclick="copiarSedeWeb()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Copiar datos para Sede DNC</button>
+          <div style="font-size:16px;color:#7A7A7A;margin-bottom:5px">Copia los datos para pegar en la Sede Electrónica DNC</div>
+          <button class="btn btn-green btn-full" style="padding:12px" onclick="copiarSedeWeb()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Copiar datos para Sede DNC</button>
         </div>
-        <a href="http://sede.catastro.gub.uy/Sede/" target="_blank" style="display:block;text-align:center;font-size:13px;color:#555555;font-weight:700;text-decoration:none;padding:6px 0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><line x1="3" y1="21" x2="21" y2="21"/><path d="M4 21V10l8-5 8 5v11"/><line x1="8" y1="21" x2="8" y2="12"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="16" y1="21" x2="16" y2="12"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Abrir Sede Electrónica DNC →</a>
+        <a href="http://sede.catastro.gub.uy/Sede/" target="_blank" style="display:block;text-align:center;font-size:16px;color:#7A7A7A;font-weight:500;text-decoration:none;padding:6px 0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><line x1="3" y1="21" x2="21" y2="21"/><path d="M4 21V10l8-5 8 5v11"/><line x1="8" y1="21" x2="8" y2="12"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="16" y1="21" x2="16" y2="12"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Abrir Sede Electrónica DNC →</a>
       </div>
 
       <!-- CROQUIS -->
       <div class="card">
         <div class="card-title">Croquis del inmueble</div>
-        <div style="font-size:13px;color:#555;margin-bottom:10px">Dibujá el croquis en iLDraw, exportá como PNG y cargalo acá. Se incluye automáticamente en la declaración impresa.</div>
-        <a href="/apps/ildraw/" target="_blank" style="display:block;background:#2b2b2b;color:#fff;text-align:center;padding:12px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Abrir iLDraw →</a>
+        <div style="font-size:16px;color:#7A7A7A;margin-bottom:10px">Dibujá el croquis en iLDraw, exportá como PNG y cargalo acá. Se incluye automáticamente en la declaración impresa.</div>
+        <a href="/apps/ildraw/" target="_blank" style="display:block;background:#1C1C1C;color:#fff;text-align:center;padding:12px;border-radius:6px;font-size:16px;font-weight:500;text-decoration:none;margin-bottom:10px;touch-action:manipulation"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Abrir iLDraw →</a>
         <div class="field">
           <label>Cargar PNG del croquis</label>
-          <input type="file" id="croquis_file" accept="image/png,image/jpeg,image/*" onchange="cargarCroquis(event)" style="padding:6px;font-size:13px">
+          <input type="file" id="croquis_file" accept="image/png,image/jpeg,image/*" onchange="cargarCroquis(event)" style="padding:6px;font-size:16px">
         </div>
-        <img id="croquis_preview" style="display:none;max-width:100%;border:1px solid #ddd;border-radius:6px;margin-top:8px" alt="Croquis">
-        <button id="croquis_clear" style="display:none;margin-top:6px;background:none;border:1px solid #ddd;border-radius:5px;padding:5px 12px;font-size:13px;cursor:pointer;color:#888;font-family:Arial" onclick="limpiarCroquis()">✕ Quitar croquis</button>
+        <img id="croquis_preview" style="display:none;max-width:100%;border:1px solid #DCDCD8;border-radius:6px;margin-top:8px" alt="Croquis">
+        <button id="croquis_clear" style="display:none;margin-top:6px;background:none;border:1px solid #DCDCD8;border-radius:5px;padding:5px 12px;font-size:16px;cursor:pointer;color:#7A7A7A;font-family:Exo,Arial,sans-serif" onclick="limpiarCroquis()">✕ Quitar croquis</button>
       </div>
 
       <div class="nav" style="margin-top:4px">
@@ -499,13 +501,13 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
     <div id="tab9" style="display:none">
       <div class="card">
         <div class="card-title">Gestión de usuarios</div>
-        <div id="admin_lista"><div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Cargando...</div></div>
+        <div id="admin_lista"><div style="text-align:center;color:#7A7A7A;padding:20px;font-size:16px">Cargando...</div></div>
       </div>
       <div class="card">
         <div class="card-title">Agregar usuario</div>
         <div class="field"><label>Nombre</label><input id="admin_nombre" type="text" placeholder="Nombre del usuario"></div>
         <div class="field"><label>PIN (4 dígitos)</label><input id="admin_pin" type="password" maxlength="4" inputmode="numeric"></div>
-        <div id="admin_msg" style="font-size:13px;min-height:16px;margin-bottom:8px"></div>
+        <div id="admin_msg" style="font-size:16px;min-height:16px;margin-bottom:8px"></div>
         <button class="btn btn-red btn-full" onclick="adminAgregarUsuario()">+ Agregar usuario</button>
       </div>
     </div>
@@ -517,12 +519,12 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
         <div class="field"><label>Nombre</label><input id="reg_nombre" type="text" placeholder="Tu nombre completo"></div>
         <div class="field"><label>PIN (4 dígitos)</label><input id="reg_pin" type="password" maxlength="4" inputmode="numeric" placeholder="Ej: 1234"></div>
         <div class="field"><label>Confirmar PIN</label><input id="reg_pin2" type="password" maxlength="4" inputmode="numeric" placeholder="Repetí el PIN"></div>
-        <div id="reg_msg" style="font-size:13px;min-height:18px;margin-bottom:8px"></div>
+        <div id="reg_msg" style="font-size:16px;min-height:18px;margin-bottom:8px"></div>
         <button class="btn btn-red btn-full" onclick="registrarUsuario()">Crear cuenta</button>
       </div>
       <div class="card" style="margin-top:4px">
         <div class="card-title">Sesión actual</div>
-        <div style="font-size:13px;color:#444;padding:4px 0">Usuario: <strong id="sesion_usuario">—</strong></div>
+        <div style="font-size:16px;color:#444;padding:4px 0">Usuario: <strong id="sesion_usuario">—</strong></div>
         <button class="btn btn-gray btn-full" style="margin-top:10px" onclick="if(confirm('¿Cerrar sesión?')) location.reload()">Cerrar sesión</button>
       </div>
     </div>
@@ -535,7 +537,7 @@ body{font-family:Arial,sans-serif;background:#f0f0f0;color:#222;font-size:14px}
       <div class="card">
         <div class="card-title">Mis declaraciones guardadas</div>
         <div id="archivos_lista">
-          <div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Cargando...</div>
+          <div style="text-align:center;color:#7A7A7A;padding:20px;font-size:16px">Cargando...</div>
         </div>
       </div>
     </div>
@@ -604,27 +606,27 @@ function compartirVisor() {
 
 async function cargarUsuariosAdmin() {
   var c = document.getElementById('admin_lista');
-  c.innerHTML = '<div style="text-align:center;color:#aaa;padding:12px;font-size:13px">Cargando...</div>';
+  c.innerHTML = '<div style="text-align:center;color:#7A7A7A;padding:12px;font-size:16px">Cargando...</div>';
   try {
     var res = await supaFetch('usuarios?select=id,nombre,pin,activo&order=id.asc');
     var data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) { c.innerHTML = '<div style="color:#aaa;padding:12px;font-size:13px">Sin usuarios.</div>'; return; }
+    if (!Array.isArray(data) || data.length === 0) { c.innerHTML = '<div style="color:#7A7A7A;padding:12px;font-size:16px">Sin usuarios.</div>'; return; }
     c.innerHTML = data.map(function(u) {
       var esAdmin = u.nombre === ADMIN_USER;
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0">'+
         '<div>'+
-          '<span style="font-weight:700;font-size:13px;color:'+(u.activo?'#2b2b2b':'#aaa')+'">'+u.nombre+'</span>'+
-          (esAdmin?'<span style="font-size:13px;color:#555555;margin-left:6px">admin</span>':'')+
-          '<br><span style="font-size:13px;color:#aaa">PIN: '+u.pin+'</span>'+
+          '<span style="font-weight:500;font-size:16px;color:'+(u.activo?'#1C1C1C':'#7A7A7A')+'">'+u.nombre+'</span>'+
+          (esAdmin?'<span style="font-size:16px;color:#7A7A7A;margin-left:6px">admin</span>':'')+
+          '<br><span style="font-size:16px;color:#7A7A7A">PIN: '+u.pin+'</span>'+
         '</div>'+
         '<div style="display:flex;gap:6px">'+
-          (!esAdmin?'<button onclick="adminToggle('+u.id+','+u.activo+')" style="padding:5px 10px;border:none;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;background:'+(u.activo?'#fff3cd':'#e8f8f0')+';color:'+(u.activo?'#856404':'#2d7a4f')+';">'+(u.activo?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Bloquear':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Activar')+'</button>':'')+
-          (!esAdmin?'<button onclick="adminBorrar('+u.id+',\''+u.nombre+'\')" style="padding:5px 10px;border:none;border-radius:5px;font-size:13px;font-weight:700;cursor:pointer;background:#fff0f0;color:#c0392b;">✕</button>':'')+
+          (!esAdmin?'<button onclick="adminToggle('+u.id+','+u.activo+')" style="padding:5px 10px;border:none;border-radius:5px;font-size:16px;font-weight:500;cursor:pointer;background:'+(u.activo?'#fff3cd':'#e8f8f0')+';color:'+(u.activo?'#856404':'#2d7a4f')+';">'+(u.activo?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Bloquear':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Activar')+'</button>':'')+
+          (!esAdmin?'<button onclick="adminBorrar('+u.id+',\''+u.nombre+'\')" style="padding:5px 10px;border:none;border-radius:5px;font-size:16px;font-weight:500;cursor:pointer;background:#F6F6F6;color:#FE0000;">✕</button>':'')+
         '</div>'+
       '</div>';
     }).join('');
   } catch(e) {
-    c.innerHTML = '<div style="color:#c0392b;padding:12px;font-size:13px">Error al cargar usuarios.</div>';
+    c.innerHTML = '<div style="color:#FE0000;padding:12px;font-size:16px">Error al cargar usuarios.</div>';
   }
 }
 
@@ -643,9 +645,9 @@ async function adminAgregarUsuario() {
   var nombre = document.getElementById('admin_nombre').value.trim();
   var pin = document.getElementById('admin_pin').value.trim();
   var msg = document.getElementById('admin_msg');
-  if (!nombre) { msg.style.color='#c0392b'; msg.textContent='Ingresá un nombre.'; return; }
-  if (pin.length < 4) { msg.style.color='#c0392b'; msg.textContent='PIN de 4 dígitos.'; return; }
-  msg.style.color='#888'; msg.textContent='Creando...';
+  if (!nombre) { msg.style.color='#FE0000'; msg.textContent='Ingresá un nombre.'; return; }
+  if (pin.length < 4) { msg.style.color='#FE0000'; msg.textContent='PIN de 4 dígitos.'; return; }
+  msg.style.color='#7A7A7A'; msg.textContent='Creando...';
   try {
     var res = await supaFetch('usuarios', { method:'POST', body: JSON.stringify({nombre:nombre, pin:pin, activo:true}) });
     if (res.ok || res.status===201) {
@@ -653,8 +655,8 @@ async function adminAgregarUsuario() {
       document.getElementById('admin_nombre').value='';
       document.getElementById('admin_pin').value='';
       cargarUsuariosAdmin();
-    } else { msg.style.color='#c0392b'; msg.textContent='Error al crear.'; }
-  } catch(e) { msg.style.color='#c0392b'; msg.textContent='Error de conexión.'; }
+    } else { msg.style.color='#FE0000'; msg.textContent='Error al crear.'; }
+  } catch(e) { msg.style.color='#FE0000'; msg.textContent='Error de conexión.'; }
 }
 
 function mostrarBienvenida() {
@@ -679,13 +681,13 @@ async function pedirPermiso(tipo) {
     stream.getTracks().forEach(function(t){ t.stop(); });
     btn.className = 'perm-btn ok';
     btn.innerHTML = tipo === 'camara'
-      ? '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Cámara habilitada ✓</span>'
-      : '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Micrófono habilitado ✓</span>';
+      ? '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Cámara habilitada ✓</span>'
+      : '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Micrófono habilitado ✓</span>';
   } catch(e) {
     btn.className = 'perm-btn bloqueado';
     btn.innerHTML = tipo === 'camara'
-      ? '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Cámara bloqueada</span>'
-      : '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Micrófono bloqueado</span>';
+      ? '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><span>Cámara bloqueada</span>'
+      : '<span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span><span>Micrófono bloqueado</span>';
   }
 }
 
@@ -702,23 +704,23 @@ async function registrarDesdePin() {
   var pin = document.getElementById('reg2_pin').value.trim();
   var pin2 = document.getElementById('reg2_pin2').value.trim();
   var msg = document.getElementById('reg2_msg');
-  if (!nombre) { msg.style.color='#c0392b'; msg.textContent='Ingresá tu nombre.'; return; }
-  if (pin.length < 4) { msg.style.color='#c0392b'; msg.textContent='PIN de 4 dígitos.'; return; }
-  if (pin !== pin2) { msg.style.color='#c0392b'; msg.textContent='Los PINs no coinciden.'; return; }
-  msg.style.color='#888'; msg.textContent='Creando cuenta...';
+  if (!nombre) { msg.style.color='#FE0000'; msg.textContent='Ingresá tu nombre.'; return; }
+  if (pin.length < 4) { msg.style.color='#FE0000'; msg.textContent='PIN de 4 dígitos.'; return; }
+  if (pin !== pin2) { msg.style.color='#FE0000'; msg.textContent='Los PINs no coinciden.'; return; }
+  msg.style.color='#7A7A7A'; msg.textContent='Creando cuenta...';
   try {
     var chk = await supaFetch('usuarios?select=id&nombre=eq.'+encodeURIComponent(nombre));
     var existe = await chk.json();
-    if (Array.isArray(existe) && existe.length > 0) { msg.style.color='#c0392b'; msg.textContent='Ese nombre ya existe.'; return; }
+    if (Array.isArray(existe) && existe.length > 0) { msg.style.color='#FE0000'; msg.textContent='Ese nombre ya existe.'; return; }
     var res = await supaFetch('usuarios', { method:'POST', body: JSON.stringify({nombre:nombre, pin:pin, activo:true}) });
     if (res.ok || res.status===201) {
-      msg.style.color='#555555'; msg.textContent='✓ Cuenta creada. Ingresá tu PIN.';
+      msg.style.color='#7A7A7A'; msg.textContent='✓ Cuenta creada. Ingresá tu PIN.';
       document.getElementById('reg2_nombre').value='';
       document.getElementById('reg2_pin').value='';
       document.getElementById('reg2_pin2').value='';
       setTimeout(toggleCrearCuenta, 1500);
-    } else { msg.style.color='#c0392b'; msg.textContent='Error al crear cuenta.'; }
-  } catch(e) { msg.style.color='#c0392b'; msg.textContent='Error de conexión.'; }
+    } else { msg.style.color='#FE0000'; msg.textContent='Error al crear cuenta.'; }
+  } catch(e) { msg.style.color='#FE0000'; msg.textContent='Error de conexión.'; }
 }
 
 function pinPress(v) {
@@ -806,7 +808,7 @@ function geolocate() {
   el.textContent='Obteniendo ubicación...';
   navigator.geolocation.getCurrentPosition(function(pos){
     var lat=pos.coords.latitude.toFixed(6), lng=pos.coords.longitude.toFixed(6);
-    el.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Lat: '+lat+' | Lng: '+lng+' <a href="https://www.google.com/maps?q='+lat+','+lng+'" target="_blank" style="color:#555555;font-size:13px">ver en mapa</a>';
+    el.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Lat: '+lat+' | Lng: '+lng+' <a href="https://www.google.com/maps?q='+lat+','+lng+'" target="_blank" style="color:#7A7A7A;font-size:16px">ver en mapa</a>';
     el.setAttribute('data-lat',lat); el.setAttribute('data-lng',lng);
   }, function(){ el.textContent='No se pudo obtener la ubicación.'; });
 }
@@ -875,7 +877,7 @@ var UBIC_OPTS=[
 ];
 
 function td_sel(id,field,val,opts,w){
-  var s='<td style="min-width:'+w+'"><select style="width:100%;padding:3px 2px;border:1px solid #ddd;border-radius:3px;font-size:13px;background:#fafafa;font-family:Arial" onchange="updL('+id+',\''+field+'\',this.value)">';
+  var s='<td style="min-width:'+w+'"><select style="width:100%;padding:3px 2px;border:1px solid #DCDCD8;border-radius:3px;font-size:14px;background:#F6F6F6;font-family:Exo,Arial,sans-serif" onchange="updL('+id+',\''+field+'\',this.value)">';
   opts.forEach(function(o){ s+='<option value="'+o.v+'"'+(o.v===val?' selected':'')+'>'+o.l+'</option>'; });
   s+='</select></td>';
   return s;
@@ -894,18 +896,18 @@ function renderLineas() {
       td_inp(l.id,'uo',l.uo,'28px')+
       td_inp(l.id,'hab',l.hab,'28px')+
       td_inp(l.id,'ser',l.ser,'28px')+
-      '<td style="min-width:140px"><select style="width:100%;padding:3px 2px;border:1px solid #ddd;border-radius:3px;font-size:13px;background:#fafafa;font-family:Arial" onchange="updDestino('+l.id+',this.value)">'+
+      '<td style="min-width:140px"><select style="width:100%;padding:3px 2px;border:1px solid #DCDCD8;border-radius:3px;font-size:14px;background:#F6F6F6;font-family:Exo,Arial,sans-serif" onchange="updDestino('+l.id+',this.value)">'+
         destOpts.replace('value="'+l.cod+'"','value="'+l.cod+'" selected')+
       '</select></td>'+
       td_sel(l.id,'cat',l.cat,CAT_OPTS,'62px')+
       td_sel(l.id,'est',l.est,EST_OPTS,'62px')+
-      '<td style="min-width:50px"><input type="number" value="'+l.edific+'" style="width:100%;padding:3px 2px;border:1px solid #ddd;border-radius:3px;font-size:13px;text-align:center" onchange="updLEdific('+l.id+',this.value)"></td>'+
+      '<td style="min-width:50px"><input type="number" value="'+l.edific+'" style="width:100%;padding:3px 2px;border:1px solid #DCDCD8;border-radius:3px;font-size:14px;text-align:center" onchange="updLEdific('+l.id+',this.value)"></td>'+
       td_inp(l.id,'obra',l.obra,'32px')+
       td_inp(l.id,'cons',l.cons,'32px')+
       td_inp(l.id,'rema',l.rema,'32px')+
       td_sel(l.id,'cub',l.cub,CUB_OPTS,'72px')+
       td_sel(l.id,'ubic',l.ubic||'0',UBIC_OPTS,'62px')+
-      '<td><button onclick="removeLinea('+l.id+')" style="background:#555555;color:#fff;border:none;border-radius:3px;padding:2px 6px;font-size:13px;cursor:pointer">✕</button></td>';
+      '<td><button onclick="removeLinea('+l.id+')" style="background:#7A7A7A;color:#fff;border:none;border-radius:3px;padding:2px 6px;font-size:14px;cursor:pointer">✕</button></td>';
     tbody.appendChild(tr);
   });
   updateTotal();
@@ -918,7 +920,7 @@ function updDestino(id, cod) {
 }
 
 function td_inp(id,field,val,w){
-  return '<td style="min-width:'+w+'"><input type="text" value="'+val+'" style="width:100%;padding:3px 4px;border:1px solid #ddd;border-radius:3px;font-size:13px;text-align:center" onchange="updL('+id+',\''+field+'\',this.value)"></td>';
+  return '<td style="min-width:'+w+'"><input type="text" value="'+val+'" style="width:100%;padding:3px 4px;border:1px solid #DCDCD8;border-radius:3px;font-size:14px;text-align:center" onchange="updL('+id+',\''+field+'\',this.value)"></td>';
 }
 
 function updL(id,k,v){ lineas.forEach(function(l){ if(l.id===id) l[k]=v; }); }
@@ -966,12 +968,12 @@ function renderFotos(){
       '<div class="foto-inner">'+
         '<div style="position:relative;flex-shrink:0">'+
           '<img class="foto-img" src="'+f.url+'">'+
-          '<button style="position:absolute;top:-6px;right:-6px;background:#555555;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:13px;cursor:pointer;line-height:20px;padding:0;font-weight:700" onclick="delFoto(\''+f.id+'\')">✕</button>'+
+          '<button style="position:absolute;top:-6px;right:-6px;background:#7A7A7A;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:14px;cursor:pointer;line-height:20px;padding:0;font-weight:500" onclick="delFoto(\''+f.id+'\')">✕</button>'+
         '</div>'+
         '<div class="foto-side">'+
-          '<div style="font-size:13px;color:#666;margin-bottom:3px">Descripción foto '+(i+1)+'</div>'+
-          '<textarea rows="3" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:5px;font-size:13px;background:#fafafa;resize:vertical;font-family:Arial" placeholder="Dictá o escribí..." onchange="updFoto(\''+f.id+'\',this.value)" id="ta_'+f.id+'">'+f.caption+'</textarea>'+
-          '<button id="btnf_'+f.id+'" class="rec-btn parado" onclick="toggleVoz(\'ta_'+f.id+'\',\'btnf_'+f.id+'\',\'indf_'+f.id+'\',\''+f.id+'\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar descripción</button>'+
+          '<div style="font-size:16px;color:#7A7A7A;margin-bottom:3px">Descripción foto '+(i+1)+'</div>'+
+          '<textarea rows="3" style="width:100%;padding:6px 8px;border:1px solid #DCDCD8;border-radius:5px;font-size:16px;background:#F6F6F6;resize:vertical;font-family:Exo,Arial,sans-serif" placeholder="Dictá o escribí..." onchange="updFoto(\''+f.id+'\',this.value)" id="ta_'+f.id+'">'+f.caption+'</textarea>'+
+          '<button id="btnf_'+f.id+'" class="rec-btn parado" onclick="toggleVoz(\'ta_'+f.id+'\',\'btnf_'+f.id+'\',\'indf_'+f.id+'\',\''+f.id+'\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar descripción</button>'+
           '<div id="indf_'+f.id+'" class="grabando-ind"></div>'+
         '</div>'+
       '</div>';
@@ -989,7 +991,7 @@ function toggleVoz(targetId,btnId,indId,fotoId){
     recInstances[btnId].stop(); delete recInstances[btnId];
     var btn=document.getElementById(btnId);
     btn.classList.remove('grabando'); btn.classList.add('parado');
-    btn.innerHTML=fotoId?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar descripción':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar observaciones generales';
+    btn.innerHTML=fotoId?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar descripción':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar observaciones generales';
     document.getElementById(indId).textContent='';
     return;
   }
@@ -1003,13 +1005,13 @@ function toggleVoz(targetId,btnId,indId,fotoId){
   };
   r.onend=function(){
     var btn=document.getElementById(btnId);
-    if(btn){ btn.classList.remove('grabando'); btn.classList.add('parado'); btn.innerHTML=fotoId?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar descripción':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar observaciones generales'; }
+    if(btn){ btn.classList.remove('grabando'); btn.classList.add('parado'); btn.innerHTML=fotoId?'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar descripción':'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Dictar observaciones generales'; }
     var ind=document.getElementById(indId); if(ind) ind.textContent='';
     delete recInstances[btnId];
   };
   r.start(); recInstances[btnId]=r;
   var btn=document.getElementById(btnId);
-  btn.classList.remove('parado'); btn.classList.add('grabando'); btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><rect x="5" y="5" width="14" height="14" rx="2"/></svg> Detener dictado';
+  btn.classList.remove('parado'); btn.classList.add('grabando'); btn.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><rect x="5" y="5" width="14" height="14" rx="2"/></svg> Detener dictado';
   document.getElementById(indId).textContent='● Grabando...';
 }
 
@@ -1031,7 +1033,7 @@ function calcHonorarios(){
     '<div class="honor-linea"><span>Líneas ('+n+' × $'+por_bloque+')</span><span>$'+(n*por_bloque).toLocaleString('es-UY')+'</span></div>'+
     (sub_ph>0?'<div class="honor-linea"><span>Adicional PH</span><span>$'+sub_ph.toLocaleString('es-UY')+'</span></div>':'')+
     (ajuste!==0?'<div class="honor-linea"><span>Ajuste</span><span>$'+ajuste.toLocaleString('es-UY')+'</span></div>':'')+
-    '<div class="honor-linea" style="border-top:1px solid #ddd;padding-top:4px;margin-top:4px"><span>Subtotal honorarios</span><span>$'+subtotal.toLocaleString('es-UY')+'</span></div>'+
+    '<div class="honor-linea" style="border-top:1px solid #DCDCD8;padding-top:4px;margin-top:4px"><span>Subtotal honorarios</span><span>$'+subtotal.toLocaleString('es-UY')+'</span></div>'+
     '<div class="honor-linea"><span>Timbres</span><span>$'+timbres.toLocaleString('es-UY')+'</span></div>';
   document.getElementById('honor_total').textContent='TOTAL: $ '+total.toLocaleString('es-UY');
 }
@@ -1107,26 +1109,26 @@ function exportar(){
   var UBIC_LABEL={'0':'FRENTISTA','1':'INTERIOR','2':'CONTRAFRENTE'};
   var lineas_html=lineas.map(function(l){
     return '<tr>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.nivel+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.uo+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.hab+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.ser+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.cod+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:left">'+l.desc+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.cat+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.est+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.edific+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.obra+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.cons+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.rema+'</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+l.cub+'</td>'+
-      (esPH?'<td style="border:1px solid #999;padding:3px 5px;text-align:center">'+(UBIC_LABEL[l.ubic]||l.ubic||'')+'</td>':'')+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.nivel+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.uo+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.hab+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.ser+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.cod+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:left">'+l.desc+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.cat+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.est+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.edific+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.obra+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.cons+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.rema+'</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+l.cub+'</td>'+
+      (esPH?'<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center">'+(UBIC_LABEL[l.ubic]||l.ubic||'')+'</td>':'')+
     '</tr>';
   }).join('');
 
   var fotos_html=fotos.length===0?'':
     fotos.map(function(f,i){
-      return '<div style="display:flex;gap:14px;align-items:flex-start;margin:8px 0;padding:8px;border:1px solid #ddd;break-inside:avoid">'+
+      return '<div style="display:flex;gap:14px;align-items:flex-start;margin:8px 0;padding:8px;border:1px solid #DCDCD8;break-inside:avoid">'+
         '<img style="max-width:180px;max-height:135px;border:1px solid #ccc;flex-shrink:0" src="'+f.url+'">'+
         '<div style="flex:1;font-size:9pt;color:#333"><strong>Foto '+(i+1)+'</strong><br>'+(f.caption||'(sin descripción)')+'</div></div>';
     }).join('');
@@ -1134,14 +1136,14 @@ function exportar(){
   var css=
     '@page{size:A4 portrait;margin:12mm 15mm}'+
     '@media print{html,body{width:210mm}.page-break{page-break-before:always}}'+
-    'html,body{font-family:Arial,sans-serif;font-size:9pt;margin:0;padding:0;width:210mm;box-sizing:border-box;color:#000}'+
+    'html,body{font-family:Exo,Arial,sans-serif;font-size:9pt;margin:0;padding:0;width:210mm;box-sizing:border-box;color:#000}'+
     '.pagina{padding:12mm 15mm;box-sizing:border-box;min-height:273mm;position:relative}'+
     'table{border-collapse:collapse;width:100%}'+
     'p,div,td,th{text-align:left}'+
     '.th-g{background:#d8d8d8;font-weight:700;border:1px solid #000;padding:3px 5px;text-align:center;font-size:7.5pt}'+
-    '.th-g2{background:#ececec;font-weight:700;border:1px solid #888;padding:2px 4px;text-align:center;font-size:7pt}'+
-    '.obs{padding:7px;border-left:3px solid #999;background:#f9f9f9;white-space:pre-wrap;font-size:8.5pt;margin:4px 0}'+
-    '.pie{font-size:7pt;color:#888;text-align:center;margin-top:12px;border-top:1px solid #bbb;padding-top:4px}';
+    '.th-g2{background:#ececec;font-weight:700;border:1px solid #7A7A7A;padding:2px 4px;text-align:center;font-size:7pt}'+
+    '.obs{padding:7px;border-left:3px solid #7A7A7A;background:#f9f9f9;white-space:pre-wrap;font-size:8.5pt;margin:4px 0}'+
+    '.pie{font-size:7pt;color:#7A7A7A;text-align:center;margin-top:12px;border-top:1px solid #bbb;padding-top:4px}';
 
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head><body>'+
   '<div class="pagina">'+
@@ -1209,9 +1211,9 @@ function exportar(){
     '</tr>'+
   '</thead><tbody>'+lineas_html+
     '<tr>'+
-      '<td colspan="8" style="border:1px solid #999;padding:3px 6px;text-align:right;font-weight:700;font-size:8pt">TOTAL</td>'+
-      '<td style="border:1px solid #999;padding:3px 5px;text-align:center;font-weight:700">'+total_edific.toFixed(1)+'</td>'+
-      '<td colspan="'+(esPH?5:4)+'" style="border:1px solid #999"></td>'+
+      '<td colspan="8" style="border:1px solid #7A7A7A;padding:3px 6px;text-align:right;font-weight:700;font-size:8pt">TOTAL</td>'+
+      '<td style="border:1px solid #7A7A7A;padding:3px 5px;text-align:center;font-weight:700">'+total_edific.toFixed(1)+'</td>'+
+      '<td colspan="'+(esPH?5:4)+'" style="border:1px solid #7A7A7A"></td>'+
     '</tr>'+
   '</tbody></table>'+
 
@@ -1365,7 +1367,7 @@ function cacheKeyLista() { return 'ildjcu_lista_'+usuarioActivo; }
 
 function htmlListaExpedientes(data) {
   if (!Array.isArray(data) || data.length === 0) {
-    return '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">'+usuarioActivo+' no tiene declaraciones guardadas aún.</div>';
+    return '<div style="text-align:center;color:#7A7A7A;padding:20px;font-size:16px">'+usuarioActivo+' no tiene declaraciones guardadas aún.</div>';
   }
   return data.map(function(exp) {
     var fecha = exp.created_at ? exp.created_at.slice(0,10) : '—';
@@ -1375,20 +1377,20 @@ function htmlListaExpedientes(data) {
     var dpto = exp.dpto || '—';
     var dir = exp.direccion || '—';
     var area = exp.total_edific ? exp.total_edific + ' m²' : '—';
-    return '<div style="border:1px solid #e8e8e8;border-radius:8px;padding:12px;margin-bottom:10px;background:#fafafa">'+
+    return '<div style="border:1px solid #e8e8e8;border-radius:8px;padding:12px;margin-bottom:10px;background:#F6F6F6">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+
         '<div>'+
-          '<span style="font-weight:700;font-size:13px;color:#2b2b2b">Padrón '+padron+'</span>'+
-          '<span style="font-size:13px;color:#888;margin-left:8px">'+dpto+'</span>'+
+          '<span style="font-weight:600;font-size:16px;color:#1C1C1C">Padrón '+padron+'</span>'+
+          '<span style="font-size:16px;color:#7A7A7A;margin-left:8px">'+dpto+'</span>'+
         '</div>'+
-        '<span style="font-size:13px;color:#aaa">'+fecha+' '+hora+'</span>'+
+        '<span style="font-size:16px;color:#7A7A7A">'+fecha+' '+hora+'</span>'+
       '</div>'+
-      '<div style="font-size:13px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> '+dir+'</div>'+
-      '<div style="font-size:13px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> '+cliente+'</div>'+
+      '<div style="font-size:16px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> '+dir+'</div>'+
+      '<div style="font-size:16px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> '+cliente+'</div>'+
       '<div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center">'+
-        '<span style="font-size:13px;color:#555555">▪ '+area+' &nbsp;·&nbsp; '+exp.usuario+'</span>'+
-        '<button onclick="editarExpediente(\''+exp.id+'\')" style="background:#555555;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Editar</button>'+
-        ' <button onclick="borrarExpediente(\''+exp.id+'\')" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Borrar</button>'+
+        '<span style="font-size:16px;color:#7A7A7A">▪ '+area+' &nbsp;·&nbsp; '+exp.usuario+'</span>'+
+        '<button onclick="editarExpediente(\''+exp.id+'\')" style="background:#7A7A7A;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif;touch-action:manipulation"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Editar</button>'+
+        ' <button onclick="borrarExpediente(\''+exp.id+'\')" style="background:#FE0000;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif;touch-action:manipulation">✕ Borrar</button>'+
       '</div>'+
     '</div>';
   }).join('');
@@ -1405,7 +1407,7 @@ async function cargarArchivos() {
   if (cacheRaw) {
     try { c.innerHTML = htmlListaExpedientes(JSON.parse(cacheRaw)); huboCache = true; } catch(e) {}
   }
-  if (!huboCache) c.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Cargando...</div>';
+  if (!huboCache) c.innerHTML = '<div style="text-align:center;color:#7A7A7A;padding:20px;font-size:16px">Cargando...</div>';
   try {
     // Solo se piden los campos de resumen (no el JSON completo con fotos en base64) —
     // así la lista carga rápido aunque haya muchas declaraciones con fotos.
@@ -1419,7 +1421,7 @@ async function cargarArchivos() {
     if (fresco !== cacheRaw) c.innerHTML = htmlListaExpedientes(data);
     try { localStorage.setItem(cacheKeyLista(), fresco); } catch(e) {}
   } catch(e) {
-    if (!huboCache) c.innerHTML = '<div style="text-align:center;color:#c0392b;padding:20px;font-size:13px">Error al cargar archivos.</div>';
+    if (!huboCache) c.innerHTML = '<div style="text-align:center;color:#FE0000;padding:20px;font-size:16px">Error al cargar archivos.</div>';
   }
 }
 
@@ -1503,16 +1505,16 @@ async function registrarUsuario() {
   var pin = document.getElementById('reg_pin').value.trim();
   var pin2 = document.getElementById('reg_pin2').value.trim();
   var msg = document.getElementById('reg_msg');
-  if (!nombre) { msg.style.color='#c0392b'; msg.textContent='Ingresá tu nombre.'; return; }
-  if (pin.length < 4) { msg.style.color='#c0392b'; msg.textContent='El PIN debe tener 4 dígitos.'; return; }
-  if (pin !== pin2) { msg.style.color='#c0392b'; msg.textContent='Los PINs no coinciden.'; return; }
-  msg.style.color='#888'; msg.textContent='Creando cuenta...';
+  if (!nombre) { msg.style.color='#FE0000'; msg.textContent='Ingresá tu nombre.'; return; }
+  if (pin.length < 4) { msg.style.color='#FE0000'; msg.textContent='El PIN debe tener 4 dígitos.'; return; }
+  if (pin !== pin2) { msg.style.color='#FE0000'; msg.textContent='Los PINs no coinciden.'; return; }
+  msg.style.color='#7A7A7A'; msg.textContent='Creando cuenta...';
   try {
     // Verificar que no exista ya ese nombre
     var chk = await supaFetch('usuarios?select=id&nombre=eq.'+encodeURIComponent(nombre));
     var existe = await chk.json();
     if (Array.isArray(existe) && existe.length > 0) {
-      msg.style.color='#c0392b'; msg.textContent='Ese nombre ya está en uso.'; return;
+      msg.style.color='#FE0000'; msg.textContent='Ese nombre ya está en uso.'; return;
     }
     var res = await supaFetch('usuarios', {
       method: 'POST',
@@ -1525,10 +1527,10 @@ async function registrarUsuario() {
       document.getElementById('reg_pin').value='';
       document.getElementById('reg_pin2').value='';
     } else {
-      msg.style.color='#c0392b'; msg.textContent='Error al crear la cuenta. Intentá de nuevo.';
+      msg.style.color='#FE0000'; msg.textContent='Error al crear la cuenta. Intentá de nuevo.';
     }
   } catch(e) {
-    msg.style.color='#c0392b'; msg.textContent='Error de conexión.';
+    msg.style.color='#FE0000'; msg.textContent='Error de conexión.';
   }
 }
 
@@ -1596,27 +1598,27 @@ function exportarPresupuesto() {
 
   var fila = function(lbl, val, bold) {
     return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:10pt">'
-      + '<span style="color:#555">' + lbl + '</span>'
+      + '<span style="color:#7A7A7A">' + lbl + '</span>'
       + '<span style="font-weight:' + (bold ? '700' : '400') + '">' + val + '</span></div>';
   };
 
   var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><style>'
     + '@page{size:A4 portrait;margin:20mm}'
     + '@media print{html,body{width:210mm}.no-print{display:none}}'
-    + 'html,body{font-family:Arial,sans-serif;font-size:10pt;color:#111;margin:0;padding:0;width:210mm}'
-    + '.cab{border-bottom:3px solid #2b2b2b;padding-bottom:10px;margin-bottom:14px}'
-    + '.tit{font-size:15pt;font-weight:700;color:#2b2b2b}'
-    + '.sub{font-size:9pt;color:#888;margin-top:2px}'
+    + 'html,body{font-family:Exo,Arial,sans-serif;font-size:10pt;color:#111;margin:0;padding:0;width:210mm}'
+    + '.cab{border-bottom:3px solid #1C1C1C;padding-bottom:10px;margin-bottom:14px}'
+    + '.tit{font-size:15pt;font-weight:700;color:#1C1C1C}'
+    + '.sub{font-size:9pt;color:#7A7A7A;margin-top:2px}'
     + '.aviso{background:#fff3cd;border:1px solid #f0a500;padding:6px 10px;border-radius:4px;font-size:9pt;color:#7a5c00;margin-bottom:14px}'
-    + '.stit{font-size:9pt;font-weight:700;text-transform:uppercase;color:#fff;background:#2b2b2b;padding:4px 8px;margin:14px 0 6px}'
-    + '.total{background:#2b2b2b;color:#fff;padding:12px 16px;text-align:right;font-size:15pt;font-weight:700;margin-top:8px;border-radius:4px}'
-    + '.pie{font-size:8pt;color:#aaa;margin-top:20px;border-top:1px solid #eee;padding-top:8px;text-align:center}'
-    + '.btn-imp{margin:0 0 16px;padding:10px 20px;background:#2b2b2b;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial}'
+    + '.stit{font-size:9pt;font-weight:700;text-transform:uppercase;color:#fff;background:#1C1C1C;padding:4px 8px;margin:14px 0 6px}'
+    + '.total{background:#1C1C1C;color:#fff;padding:12px 16px;text-align:right;font-size:15pt;font-weight:700;margin-top:8px;border-radius:4px}'
+    + '.pie{font-size:8pt;color:#7A7A7A;margin-top:20px;border-top:1px solid #eee;padding-top:8px;text-align:center}'
+    + '.btn-imp{margin:0 0 16px;padding:10px 20px;background:#1C1C1C;color:#fff;border:none;border-radius:6px;font-size:16px;font-weight:500;cursor:pointer;font-family:Exo,Arial,sans-serif}'
     + '</style></head><body>'
-    + '<button class="btn-imp no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir / Guardar PDF</button>'
+    + '<button class="btn-imp no-print" onclick="window.print()"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir / Guardar PDF</button>'
     + '<div class="cab"><div class="tit">Presupuesto y Honorarios Profesionales</div>'
     + '<div class="sub">DJCU — Declaración Jurada de Caracterización Urbana</div></div>'
-    + '<div class="aviso"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> DOCUMENTO INTERNO — No presentar a DNC. Archivo profesional exclusivo.</div>'
+    + '<div class="aviso"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> DOCUMENTO INTERNO — No presentar a DNC. Archivo profesional exclusivo.</div>'
     + '<div class="stit">Datos del expediente</div>'
     + fila('Fecha de emisión', fecha)
     + fila('Cliente / Proyecto', cliente)
@@ -1666,20 +1668,20 @@ if('serviceWorker' in navigator){
 #ilsx-sheet{background:#fff;width:100%;max-width:600px;border-radius:22px 22px 0 0;padding:8px 0 calc(20px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 40px rgba(0,0,0,.18);animation:ilsxUp .25s cubic-bezier(.3,1.1,.5,1)}
 @keyframes ilsxUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 #ilsx-grip{width:38px;height:4px;border-radius:2px;background:#e2e2e2;margin:6px auto 14px}
-.ilsx-app{font-size:20px;font-weight:700;color:#2b2b2b;padding:0 22px;letter-spacing:-.3px}
-.ilsx-app b{color:#fe0000;font-weight:800}
-.ilsx-ver{font-size:13px;color:#8a8a8a;padding:3px 22px 12px;font-weight:300}
-.ilsx-row{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #f0f0f0;padding:16px 22px;font-family:inherit;font-size:15px;font-weight:600;color:#2b2b2b;cursor:pointer;text-decoration:none}
+.ilsx-app{font-size:20px;font-weight:800;color:#FE0000;padding:0 22px;letter-spacing:-.3px}
+.ilsx-app b{color:#C0C0C0;font-weight:400}
+.ilsx-ver{font-size:14px;color:#8a8a8a;padding:3px 22px 12px;font-weight:300}
+.ilsx-row{display:flex;align-items:center;gap:13px;width:100%;text-align:left;background:none;border:none;border-top:1px solid #f0f0f0;padding:16px 22px;font-family:inherit;font-size:15px;font-weight:600;color:#1C1C1C;cursor:pointer;text-decoration:none}
 .ilsx-row svg{width:19px;height:19px;color:#8a8a8a;flex:none}
-.ilsx-row:active{background:#fafafa}
-.ilsx-foot{text-align:center;font-size:13px;color:#c4c4c4;font-weight:800;letter-spacing:.14em;padding:16px 0 2px}
+.ilsx-row:active{background:#F6F6F6}
+.ilsx-foot{text-align:center;font-size:14px;color:#c4c4c4;font-weight:800;letter-spacing:.14em;padding:16px 0 2px}
 </style>
 <div id="ilsx-ov" onclick="if(event.target===this)ilsxClose()">
   <div id="ilsx-sheet">
     <div id="ilsx-grip"></div>
     <div class="ilsx-app">iL<b>DJCU</b></div>
     <div class="ilsx-ver">versión 3.0</div>
-    <a class="ilsx-row" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</a>
+    <a class="ilsx-row" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</a>
     <div class="ilsx-foot">iLStorage</div>
   </div>
 </div>
