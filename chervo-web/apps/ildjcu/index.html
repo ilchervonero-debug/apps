@@ -427,12 +427,12 @@ body{font-family:Exo,Arial,sans-serif;background:#F2F2F0;color:#1C1C1C;font-size
       <div class="card">
         <div class="card-title">Timbres y honorarios <span style="background:#f0f0f0;color:#7A7A7A;font-size:14px;padding:1px 5px;border-radius:8px;font-weight:400">INTERNO — no va a DNC</span></div>
         <div class="row">
-          <div class="field"><label>Timbres profesionales ($)</label><input id="timbres" type="number" value="270" oninput="calcHonorarios()"></div>
-          <div class="field"><label>Valor base por bloque ($)</label><input id="valor_bloque" type="number" value="2000" oninput="calcHonorarios()"></div>
+          <div class="field"><label>Timbres profesionales ($)</label><input id="timbres" type="number" value="0" oninput="calcHonorarios()"></div>
+          <div class="field"><label>Valor base por bloque ($)</label><input id="valor_bloque" type="number" value="0" oninput="calcHonorarios()"></div>
         </div>
         <div class="row">
-          <div class="field"><label>Honorarios base ($)</label><input id="honor_base" type="number" value="5000" oninput="calcHonorarios()"></div>
-          <div class="field"><label>Adicional PH ($)</label><input id="honor_ph" type="number" value="1500" oninput="calcHonorarios()"></div>
+          <div class="field"><label>Honorarios base ($)</label><input id="honor_base" type="number" value="0" oninput="calcHonorarios()"></div>
+          <div class="field"><label>Adicional PH ($)</label><input id="honor_ph" type="number" value="0" oninput="calcHonorarios()"></div>
         </div>
         <div class="field"><label>Ajuste manual ($)</label><input id="honor_ajuste" type="number" value="0" oninput="calcHonorarios()"></div>
         <div id="honor_desglose" style="margin-top:10px;background:#f8f8f8;border-radius:6px;padding:10px"></div>
@@ -1018,10 +1018,10 @@ function toggleVoz(targetId,btnId,indId,fotoId){
 // HONORARIOS
 function calcHonorarios(){
   function nv(id,d){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?d:v;}
-  var timbres=nv('timbres',270);
-  var base=nv('honor_base',5000);
-  var por_bloque=nv('valor_bloque',2000);
-  var ph_add=nv('honor_ph',1500);
+  var timbres=nv('timbres',0);
+  var base=nv('honor_base',0);
+  var por_bloque=nv('valor_bloque',0);
+  var ph_add=nv('honor_ph',0);
   var ajuste=nv('honor_ajuste',0);
   var regimen=document.getElementById('regimen').value;
   var n=lineas.length;
@@ -1072,10 +1072,10 @@ function exportar(){
   var tipo_dj=g('tipo_dj')!=='—'?g('tipo_dj'):'';
   var esPH=g('regimen')==='ph';
   var total_edific=lineas.reduce(function(s,l){return s+(parseFloat(l.edific)||0);},0);
-  var timbres=parseFloat(document.getElementById('timbres').value)||270;
-  var base=parseFloat(document.getElementById('honor_base').value)||5000;
-  var por_bloque=parseFloat(document.getElementById('valor_bloque').value)||2000;
-  var ph_add=parseFloat(document.getElementById('honor_ph').value)||1500;
+  var timbres=parseFloat(document.getElementById('timbres').value)||0;
+  var base=parseFloat(document.getElementById('honor_base').value)||0;
+  var por_bloque=parseFloat(document.getElementById('valor_bloque').value)||0;
+  var ph_add=parseFloat(document.getElementById('honor_ph').value)||0;
   var ajuste=parseFloat(document.getElementById('honor_ajuste').value)||0;
   var sub_ph=g('regimen')==='ph'?ph_add:0;
   var total_honor=base+(lineas.length*por_bloque)+sub_ph+ajuste+timbres;
@@ -1463,7 +1463,11 @@ function limpiarFormulario() {
   lineas = []; linea_id = 0; renderLineas();
   fotos = []; renderFotos();
   limpiarCroquis();
-  onRegimen(); toggleEsquina();
+  ['timbres','valor_bloque','honor_base','honor_ph','honor_ajuste'].forEach(function(k) {
+    var el = document.getElementById(k);
+    if (el) el.value = '0';
+  });
+  onRegimen(); toggleEsquina(); calcHonorarios();
 }
 
 async function editarExpediente(id) {
@@ -1584,10 +1588,10 @@ function exportarPresupuesto() {
   var tipo_dj = g('tipo_dj') !== '—' ? g('tipo_dj') : '';
   var notas = document.getElementById('notas_internas').value;
   function nv(id,d){var v=parseFloat(document.getElementById(id).value);return isNaN(v)?d:v;}
-  var timbres = nv('timbres',270);
-  var base = nv('honor_base',5000);
-  var por_bloque = nv('valor_bloque',2000);
-  var ph_add = nv('honor_ph',1500);
+  var timbres = nv('timbres',0);
+  var base = nv('honor_base',0);
+  var por_bloque = nv('valor_bloque',0);
+  var ph_add = nv('honor_ph',0);
   var ajuste = nv('honor_ajuste',0);
   var esPH = g('regimen') === 'ph';
   var n = lineas.length;
