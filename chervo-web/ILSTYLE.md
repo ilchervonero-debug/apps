@@ -42,6 +42,11 @@ Vale igual en el header y en el panel iLStorage (¡no invertir!).
 
 - Familia: **Exo** (`https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;600;700;800`).
   Números / monoespaciado (opcional): Geist Mono.
+- **Excepción — textos largos:** para bloques largos de lectura corrida (notas, observaciones,
+  descripciones, párrafos extensos) se puede usar **Inter** en vez de Exo, en peso **300–400**
+  (light/regular, nunca más saturado). Mismo piso de tamaño que el resto (16 mínimo) y
+  `line-height: 1.6` para que no canse la vista. Exo sigue siendo la fuente de títulos,
+  etiquetas, botones y contenido corto — Inter es solo para el párrafo largo, no reemplaza a Exo.
 - Esto es para **gente que trabaja, sin lentes**. Ángel **ve borroso** → texto **grande y limpio**.
   **Hay espacio: se usa texto grande.** No se discute más.
 
@@ -176,4 +181,8 @@ Todos comparten el mismo molde para verse hermanos:
 
 ---
 
-_Versión iLStyle 1.4 — íconos aún más finos (`stroke-width:1`) y más grandes (mín. 40px en menú); se agrega la regla de estado activo = borde rojo. Versión 1.3 — estándar de ícono de app instalada (launcher full-bleed maskable) e íconos instalados uniformados._
+_Versión iLStyle 1.5 — excepción de tipografía para textos largos (Inter light/regular,
+solo para párrafos extensos; Exo sigue siendo la fuente de todo lo demás). Versión 1.4 —
+íconos aún más finos (`stroke-width:1`) y más grandes (mín. 40px en menú); se agrega la
+regla de estado activo = borde rojo. Versión 1.3 — estándar de ícono de app instalada
+(launcher full-bleed maskable) e íconos instalados uniformados._
