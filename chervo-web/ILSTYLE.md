@@ -178,11 +178,39 @@ Todos comparten el mismo molde para verse hermanos:
 - Acciones secundarias = **texto** (sin recuadro). El recuadro/relleno se reserva a la
   **acción primaria única** (guardar, +, =).
 - Menús: fila = ícono monolínea + etiqueta. Ícono en tinta, acento rojo mínimo.
+- Ajustes que no son la tarea principal de la pantalla (precios, configuración, cargas
+  de datos) **no van sueltos en el header** — viven en el panel iLStorage (tocar el
+  nombre de la app), como filas de menú más. El header se reserva para el nombre de la
+  app y, si corresponde, un solo ícono de acción (ver §8).
 
 ---
 
-_Versión iLStyle 1.5 — excepción de tipografía para textos largos (Inter light/regular,
-solo para párrafos extensos; Exo sigue siendo la fuente de todo lo demás). Versión 1.4 —
-íconos aún más finos (`stroke-width:1`) y más grandes (mín. 40px en menú); se agrega la
-regla de estado activo = borde rojo. Versión 1.3 — estándar de ícono de app instalada
-(launcher full-bleed maskable) e íconos instalados uniformados._
+## 8. Exportación (PDF / CSV)
+
+- **Un solo ícono de exportación** en el header (descarga/salida, rojo, línea fina),
+  visible **solo cuando hay un proyecto/registro abierto** — nunca en el listado o
+  landing, ahí no hay nada que exportar todavía. Reemplaza tener varios botones sueltos
+  (ej. "Precios", "CSV") ocupando lugar en el header.
+- Al tocar el ícono se abre un modal simple con:
+  - **Logo (opcional):** botón "Subir logo" + vista previa + "Quitar". Se redimensiona
+    a 400px y se guarda en **PNG** (conserva transparencia). Mismo patrón en toda la
+    familia — ver la implementación de referencia en Bitácora.
+  - **Encabezado del informe (opcional):** texto libre, se imprime arriba del
+    documento. Si queda vacío y sin logo, el documento no lleva ningún encabezado
+    forzado — nada de branding de la app ni de datos que el usuario no escribió.
+  - Un botón por formato disponible (Exportar PDF, Exportar CSV, etc.).
+- El PDF exportado lleva el logo+encabezado arriba (si se cargaron) y el **detalle
+  completo** del proyecto/registro — no un resumen recortado.
+- Logo y encabezado se guardan **por proyecto/registro**, no como ajuste global — cada
+  proyecto puede tener su propio membrete.
+
+---
+
+_Versión iLStyle 1.6 — patrón de exportación (ícono único PDF/CSV + encabezado y logo
+editables por proyecto, solo visible con un registro abierto); los ajustes secundarios
+(precios/config) se mueven del header al panel iLStorage. Versión 1.5 — excepción de
+tipografía para textos largos (Inter light/regular, solo para párrafos extensos; Exo
+sigue siendo la fuente de todo lo demás). Versión 1.4 — íconos aún más finos
+(`stroke-width:1`) y más grandes (mín. 40px en menú); se agrega la regla de estado
+activo = borde rojo. Versión 1.3 — estándar de ícono de app instalada (launcher
+full-bleed maskable) e íconos instalados uniformados._

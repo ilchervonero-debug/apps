@@ -25,6 +25,25 @@ body{font-family:'Exo',sans-serif;background:var(--g1);color:var(--g5);font-size
 .hdr h1:active{opacity:.7;}
 .hdr h1 span{color:var(--plata);font-weight:400;}
 .hdr-sub{font-size:14px;color:var(--g3);}
+.hdr-icon-btn{background:none;border:none;color:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:6px;flex-shrink:0;transition:opacity .15s;}
+.hdr-icon-btn:active{opacity:.5;}
+
+/* PROYECTOS (landing) */
+.proy-card{background:var(--b);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .1s;}
+.proy-card:hover{background:var(--rl);}
+.proy-card:active{background:var(--g1);}
+.proy-info{flex:1;min-width:0;}
+.proy-nombre{font-size:18px;font-weight:600;color:var(--g5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.proy-meta{font-size:14px;color:var(--g3);margin-top:2px;}
+.proy-del{width:32px;height:32px;border-radius:6px;border:1.5px solid var(--g2);background:none;color:var(--g4);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .1s;}
+.proy-del:active{background:var(--g1);}
+
+/* MODAL EXPORTAR */
+.modal-ov{position:fixed;inset:0;background:rgba(20,20,20,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-ov.on{display:flex;}
+.modal-box{background:var(--b);border-radius:12px;padding:18px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;}
+.modal-box textarea{width:100%;padding:9px 10px;border:1.5px solid var(--g2);border-radius:6px;font-family:'Exo',sans-serif;font-size:16px;font-weight:500;color:var(--g5);resize:vertical;}
+.modal-box textarea:focus{outline:none;border-color:var(--r);}
 
 /* VIEWS */
 .view{display:none;min-height:calc(100vh - 60px);}
@@ -175,7 +194,7 @@ body{font-family:'Exo',sans-serif;background:var(--g1);color:var(--g5);font-size
 
 <!-- HDR -->
 <div class="hdr">
-  <div class="hdr-logo" onclick="showTab('lista')" style="cursor:pointer" title="Inicio">
+  <div class="hdr-logo" onclick="volverLanding()" style="cursor:pointer" title="Inicio">
     <svg viewBox="0 0 28 28" fill="none">
       <rect x="2" y="18" width="24" height="7" rx="1" fill="#FE0000"/>
       <rect x="5" y="7" width="3" height="11" rx="1" fill="#424242"/>
@@ -187,17 +206,24 @@ body{font-family:'Exo',sans-serif;background:var(--g1);color:var(--g5);font-size
   <div style="flex:1;">
     <h1 onclick="ilsxOpen()" style="cursor:pointer">HA<span>-Calc</span> <span style="font-size:14px;font-weight:400;color:var(--g3);">v2</span></h1>
   </div>
-  <div style="display:flex;gap:6px;">
-    <button class="btn btn-g btn-sm" onclick="showTab('precios')" style="font-size:14px;">Precios</button>
-    <button class="btn btn-g btn-sm" onclick="showTab('config')" style="font-size:14px;">Config</button>
-    <button class="btn btn-g btn-sm" onclick="exportarCSV()" style="font-size:14px;">CSV</button>
+  <button class="hdr-icon-btn hidden" id="btn-exportar" onclick="abrirExportar()" title="Exportar proyecto">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></svg>
+  </button>
+</div>
+
+<!-- VIEW: LANDING (lista de proyectos) -->
+<div class="view active" id="view-landing">
+  <div class="landing">
+    <button class="btn btn-r btn-full" onclick="nuevoProyecto()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo proyecto
+    </button>
+    <div id="proyectos-container" style="margin-top:14px;"></div>
   </div>
 </div>
 
-<!-- VIEW: LISTA (landing) -->
-<div class="view active" id="view-lista">
-
-  <!-- Nombre proyecto -->
+<!-- VIEW: PROYECTO (grupos/items del proyecto abierto) -->
+<div class="view" id="view-proyecto">
   <div class="landing">
     <div class="proyecto-box">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="2" stroke="var(--r)" stroke-width="1.5"/><path d="M5 9h8M5 6h5M5 12h6" stroke="var(--r)" stroke-width="1.2" stroke-linecap="round"/></svg>
@@ -215,7 +241,7 @@ body{font-family:'Exo',sans-serif;background:var(--g1);color:var(--g5);font-size
 <!-- VIEW: PRECIOS / CONFIG -->
 <div class="view" id="view-config-precios">
   <div style="padding:12px 14px 0;">
-    <button onclick="showTab('lista')" style="background:none;border:none;color:var(--r);font-family:'Exo 2',sans-serif;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:0.4px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;padding:6px 2px;">
+    <button onclick="irInicio()" style="background:none;border:none;color:var(--r);font-family:'Exo',sans-serif;font-weight:500;font-size:14px;text-transform:uppercase;letter-spacing:0.4px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;padding:6px 2px;">
       <svg viewBox="0 0 14 14" fill="none" width="15" height="15"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Inicio
     </button>
@@ -283,6 +309,37 @@ body{font-family:'Exo',sans-serif;background:var(--g1);color:var(--g5);font-size
   </div>
 </div>
 
+<!-- MODAL: EXPORTAR PROYECTO -->
+<div class="modal-ov" id="modal-exportar">
+  <div class="modal-box">
+    <div class="card-title">Exportar <span>Proyecto</span></div>
+    <div class="fg" style="margin-bottom:12px;">
+      <label>Logo (opcional)</label>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;">
+        <img id="exp-logo-preview" style="display:none;max-height:50px;max-width:130px;object-fit:contain;border:1px solid var(--g2);border-radius:6px;">
+        <button type="button" class="btn btn-g btn-sm" onclick="document.getElementById('exp-logo-file').click()">Subir logo</button>
+        <button type="button" class="btn btn-g btn-sm hidden" id="exp-btn-quitar-logo" onclick="quitarLogoExport()">Quitar</button>
+      </div>
+      <input type="file" id="exp-logo-file" accept="image/*" class="hidden" onchange="onLogoExportUpload(event)">
+    </div>
+    <div class="fg" style="margin-bottom:16px;">
+      <label>Encabezado del informe (opcional)</label>
+      <textarea id="exp-encabezado" rows="3" placeholder="Nombre de tu empresa, cliente, N° de obra…" onchange="guardarEncabezadoExport(this.value)"></textarea>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-r" onclick="exportarProyectoPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M6 9V4h12v5"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg>
+        Exportar PDF
+      </button>
+      <button class="btn btn-g" onclick="exportarCSV()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Exportar CSV
+      </button>
+    </div>
+    <div style="margin-top:12px;text-align:right;"><button class="btn btn-g btn-sm" onclick="cerrarExportar()">Cerrar</button></div>
+  </div>
+</div>
+
 <script>
 // ══ DATOS ══
 const HORMIGON={C15:{cem:200,arena:0.72,piedra:0.95,agua:200},C20:{cem:250,arena:0.66,piedra:0.88,agua:190},C25:{cem:300,arena:0.60,piedra:0.80,agua:180},C30:{cem:350,arena:0.55,piedra:0.75,agua:175},C35:{cem:390,arena:0.50,piedra:0.70,agua:170},C40:{cem:430,arena:0.45,piedra:0.65,agua:165}};
@@ -343,17 +400,87 @@ const LABELS_TIPO={zapata:'Zapata',viga_cim:'Viga Fund.',muro_cim:'Muro Fund.',p
 const PRECIOS_DEF={cemento:229,arena:1102,piedra:691,acero_8:0,acero_10:309,acero_12:0,acero_16:0,acero_20:0,malla_35:0,malla_42:0,tabla:0,clavos:0,alambre:0,nylon_200:0,nylon_300:0};
 
 // ══ ESTADO ══
-let obra={nombre:'',grupos:{cimentacion:[],columnas:[],vigas:[],losas:[]}};
+let proyectos=[];
+let proyectoIdx=null; // índice del proyecto abierto (null = estamos en el landing)
 let activeItem=null; // {grupoId, itemIdx}
 let currentResult=null;
 
-// ══ PROYECTO ══
-function saveProyecto(){obra.nombre=document.getElementById('proj-nombre').value;}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escNl(s){return esc(s).replace(/\n/g,'<br>');}
 
-// ══ VISTAS ══
+// ══ PROYECTOS (persistencia) ══
+function getProyectosStorage(){const s=localStorage.getItem('apu2_proyectos');return s?JSON.parse(s):[];}
+function setProyectosStorage(){localStorage.setItem('apu2_proyectos',JSON.stringify(proyectos));}
+
+function nuevoProyecto(){
+  const nombre=(prompt('Nombre del proyecto:')||'').trim();
+  if(!nombre)return;
+  proyectos.push({id:Date.now(),nombre,grupos:{cimentacion:[],columnas:[],vigas:[],losas:[]},encabezado:'',logo:'',creado:Date.now()});
+  setProyectosStorage();
+  abrirProyecto(proyectos.length-1);
+}
+
+function borrarProyecto(idx){
+  if(!confirm('¿Borrar el proyecto "'+proyectos[idx].nombre+'"? No se puede deshacer.'))return;
+  proyectos.splice(idx,1);
+  setProyectosStorage();
+  renderLanding();
+}
+
+function abrirProyecto(idx){
+  proyectoIdx=idx;
+  document.getElementById('proj-nombre').value=proyectos[idx].nombre;
+  document.getElementById('btn-exportar').classList.remove('hidden');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-proyecto').classList.add('active');
+  renderLista();
+}
+
+function volverLanding(){
+  proyectoIdx=null;
+  document.getElementById('btn-exportar').classList.add('hidden');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-landing').classList.add('active');
+  renderLanding();
+}
+
+function irInicio(){
+  if(proyectoIdx!==null){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-proyecto').classList.add('active');
+    document.getElementById('btn-exportar').classList.remove('hidden');
+    renderLista();
+  } else volverLanding();
+}
+
+function saveProyecto(){
+  if(proyectoIdx===null)return;
+  proyectos[proyectoIdx].nombre=document.getElementById('proj-nombre').value;
+  setProyectosStorage();
+}
+
+// ══ RENDER LANDING ══
+function renderLanding(){
+  const c=document.getElementById('proyectos-container');
+  if(!proyectos.length){c.innerHTML='<div class="item-empty">Sin proyectos — tocá "Nuevo proyecto" para empezar</div>';return;}
+  c.innerHTML=proyectos.map((p,i)=>{
+    const todos=Object.values(p.grupos).flat();
+    const conResultado=todos.filter(it=>it.resultado);
+    const total=conResultado.reduce((s,it)=>s+it.resultado.totalObra,0);
+    const meta=todos.length+' elemento'+(todos.length!==1?'s':'')+(total?' · $'+fmt(total)+' UYU':'');
+    return `<div class="proy-card" onclick="abrirProyecto(${i})">
+      <div class="proy-info"><div class="proy-nombre">${esc(p.nombre)}</div><div class="proy-meta">${meta}</div></div>
+      <button class="proy-del" onclick="event.stopPropagation();borrarProyecto(${i})" title="Borrar proyecto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// ══ VISTAS (precios/config) ══
 function showTab(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  if(id==='lista'){document.getElementById('view-lista').classList.add('active');return;}
+  document.getElementById('btn-exportar').classList.add('hidden');
   document.getElementById('view-config-precios').classList.add('active');
   switchTab2(id);
 }
@@ -365,11 +492,12 @@ function switchTab2(id){
   if(id==='precios')renderPrecios();
 }
 
-// ══ RENDER LISTA ══
+// ══ RENDER LISTA (proyecto abierto) ══
 function renderLista(){
   const gc=document.getElementById('grupos-container');
+  const proy=proyectos[proyectoIdx];
   gc.innerHTML=GRUPOS_DEF.map(g=>{
-    const items=obra.grupos[g.id]||[];
+    const items=proy.grupos[g.id]||[];
     const count=items.length;
     let itemsHTML=items.length===0
       ?`<div class="item-empty">Sin elementos — tocá + para agregar</div>`
@@ -432,7 +560,7 @@ function dimStr(dims,tipo){
 
 function renderResumen(){
   const rc=document.getElementById('resumen-container');
-  const todos=Object.values(obra.grupos).flat().filter(i=>i.resultado);
+  const todos=Object.values(proyectos[proyectoIdx].grupos).flat().filter(i=>i.resultado);
   if(!todos.length){rc.innerHTML='';return;}
   let mat=0,enc=0,mo=0;
   todos.forEach(i=>{mat+=i.resultado.subtotalMat;enc+=i.resultado.subtotalEncTotal;mo+=i.resultado.moCompleta;});
@@ -444,7 +572,7 @@ function renderResumen(){
     <div class="res-tot-row"><span>Encofrado</span><span>$${fmt(enc)}</span></div>
     <div class="res-tot-row"><span>Mano de Obra</span><span>$${fmt(mo)}</span></div>
     <div class="res-tot-row"><span>TOTAL OBRA</span><span>$${fmt(total)} UYU</span></div>
-    <div style="text-align:right;font-size:14px;color:var(--g4);font-weight:700;margin-top:4px;">USD: $${fmt(total/cfg.tc)}</div>
+    <div style="text-align:right;font-size:14px;color:var(--g4);font-weight:500;margin-top:4px;">USD: $${fmt(total/cfg.tc)}</div>
   </div>`;
 }
 
@@ -460,7 +588,8 @@ function agregarItem(gid){
   const qty=+document.getElementById('qa-qty-'+gid).value||1;
   const tipo=document.getElementById('qa-tipo-'+gid).value;
   if(!nombre){alert('Ponele un nombre al elemento');return;}
-  obra.grupos[gid].push({nombre,tipo,qty,dims:{},arm:{},hormigon:'C25',definido:false,resultado:null});
+  proyectos[proyectoIdx].grupos[gid].push({nombre,tipo,qty,dims:{},arm:{},hormigon:'C25',definido:false,resultado:null});
+  setProyectosStorage();
   document.getElementById('qa-nombre-'+gid).value='';
   document.getElementById('qa-qty-'+gid).value=1;
   toggleQuickAdd(gid);
@@ -471,7 +600,7 @@ function agregarItem(gid){
 function abrirDetalle(gid,idx){
   activeItem={gid,idx};
   currentResult=null;
-  const item=obra.grupos[gid][idx];
+  const item=proyectos[proyectoIdx].grupos[gid][idx];
   document.getElementById('det-title').innerHTML=`${item.nombre} <span>— ${LABELS_TIPO[item.tipo]||item.tipo}</span>`;
   renderDetForm(item);
   if(item.resultado){currentResult=item.resultado;renderResultados(item.resultado);}
@@ -487,7 +616,8 @@ function cerrarDetalle(){
 
 function eliminarItemActual(){
   if(!activeItem||!confirm('Eliminar este elemento?'))return;
-  obra.grupos[activeItem.gid].splice(activeItem.idx,1);
+  proyectos[proyectoIdx].grupos[activeItem.gid].splice(activeItem.idx,1);
+  setProyectosStorage();
   cerrarDetalle();
 }
 
@@ -664,7 +794,7 @@ function applyCol(id){
   sv('arm-cant',p.cant);sv('arm-diam',p.diam);sv('arm-est-d',p.estD);sv('arm-est-e',p.estE);
   const prev=document.getElementById('col-prev');
   if(prev)prev.innerHTML=`<div class="preview-lbl">Sección</div>${svgCol(p.sec,p.cant,false)}`;
-  if(activeItem)obra.grupos[activeItem.gid][activeItem.idx].presetId=id;
+  if(activeItem)proyectos[proyectoIdx].grupos[activeItem.gid][activeItem.idx].presetId=id;
 }
 function applyVig(id){
   const p=PRESETS_VIG.find(x=>x.id===id);if(!p)return;
@@ -674,7 +804,7 @@ function applyVig(id){
   sv('arm-inf-c',p.infC);sv('arm-inf-d',p.infD);sv('arm-sup-c',p.supC);sv('arm-sup-d',p.supD);sv('arm-est-d',p.estD);sv('arm-est-e',p.estE);
   const prev=document.getElementById('vig-prev');
   if(prev)prev.innerHTML=`<div class="preview-lbl">Sección</div>${svgVig(p.infC,p.supC,false)}`;
-  if(activeItem)obra.grupos[activeItem.gid][activeItem.idx].presetId=id;
+  if(activeItem)proyectos[proyectoIdx].grupos[activeItem.gid][activeItem.idx].presetId=id;
 }
 function sv(id,v){const el=document.getElementById(id);if(el)el.value=v;}
 
@@ -685,7 +815,7 @@ function fmt(n){return(+n||0).toLocaleString('es-UY',{minimumFractionDigits:2,ma
 
 function calcularElemento(){
   if(!activeItem){alert('Sin elemento activo');return;}
-  const item=obra.grupos[activeItem.gid][activeItem.idx];
+  const item=proyectos[proyectoIdx].grupos[activeItem.gid][activeItem.idx];
   const tipo=item.tipo, cfg=getConfig(), precios=getPrecios();
   const qty=g('elem-qty')||item.qty||1;
   const hor=gs('h-tipo')||'C25';
@@ -818,7 +948,7 @@ function rr(l,c,p){return `<div class="res-row"><span class="res-row-l">${l}${c?
 function guardarElemento(){
   if(!activeItem){alert('Sin elemento activo');return;}
   if(!currentResult){alert('Calculá primero');return;}
-  const item=obra.grupos[activeItem.gid][activeItem.idx];
+  const item=proyectos[proyectoIdx].grupos[activeItem.gid][activeItem.idx];
   item.qty=g('elem-qty')||item.qty;
   item.hormigon=gs('h-tipo')||'C25';
   item.dims={l:g('d-l'),a:g('d-a')||g('d-e'),h:g('d-h'),e:g('d-e')};
@@ -831,6 +961,7 @@ function guardarElemento(){
   item.definido=true;
   item.descArm=currentResult.descArm;
   item.resultado=currentResult;
+  setProyectosStorage();
   cerrarDetalle();
 }
 
@@ -856,14 +987,128 @@ function guardarConfig(){const c=getConfig();[['tc','cfg-tc'],['des','cfg-des'],
 
 // ══ EXPORT ══
 function exportarCSV(){
-  const todos=GRUPOS_DEF.flatMap(g=>(obra.grupos[g.id]||[]).map(i=>({...i,grupo:g.label})));
+  if(proyectoIdx===null)return;
+  const p=proyectos[proyectoIdx];
+  const todos=GRUPOS_DEF.flatMap(g=>(p.grupos[g.id]||[]).map(i=>({...i,grupo:g.label})));
   if(!todos.length){alert('Sin elementos');return;}
   let csv='Grupo,Nombre,Tipo,Cantidad,Hormigon,Dims,Total UYU\n';
   todos.forEach(i=>csv+=`"${i.grupo}","${i.nombre}","${LABELS_TIPO[i.tipo]||i.tipo}",${i.qty},"${i.hormigon||''}","${dimStr(i.dims||{},i.tipo)||''}","${i.resultado?'$'+fmt(i.resultado.totalObra):''}"\n`);
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='ha-calc.csv';a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=(p.nombre||'proyecto').replace(/[^a-z0-9\-_]+/gi,'_')+'.csv';a.click();
 }
 
-window.addEventListener('DOMContentLoaded',()=>{loadConfig();renderLista();});
+// ══ EXPORTAR (encabezado + logo, PDF completo del proyecto) ══
+function abrirExportar(){
+  if(proyectoIdx===null)return;
+  const p=proyectos[proyectoIdx];
+  document.getElementById('exp-encabezado').value=p.encabezado||'';
+  mostrarLogoPreviewExport(p.logo||'');
+  document.getElementById('modal-exportar').classList.add('on');
+}
+function cerrarExportar(){document.getElementById('modal-exportar').classList.remove('on');}
+
+function mostrarLogoPreviewExport(src){
+  const img=document.getElementById('exp-logo-preview');
+  const btn=document.getElementById('exp-btn-quitar-logo');
+  if(src){img.src=src;img.style.display='';btn.classList.remove('hidden');}
+  else{img.removeAttribute('src');img.style.display='none';btn.classList.add('hidden');}
+}
+function onLogoExportUpload(event){
+  const file=event.target.files[0];if(!file)return;
+  const img=new Image();const url=URL.createObjectURL(file);
+  img.onload=()=>{
+    const MAX=400;let w=img.width,h=img.height;
+    if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    URL.revokeObjectURL(url);
+    const dataUrl=c.toDataURL('image/png');
+    proyectos[proyectoIdx].logo=dataUrl;
+    mostrarLogoPreviewExport(dataUrl);
+    setProyectosStorage();
+  };
+  img.onerror=()=>alert('No se pudo leer la imagen');
+  img.src=url;
+  event.target.value='';
+}
+function quitarLogoExport(){
+  if(proyectoIdx===null)return;
+  proyectos[proyectoIdx].logo='';
+  mostrarLogoPreviewExport('');
+  setProyectosStorage();
+}
+function guardarEncabezadoExport(v){
+  if(proyectoIdx===null)return;
+  proyectos[proyectoIdx].encabezado=v;
+  setProyectosStorage();
+}
+
+function exportarProyectoPDF(){
+  if(proyectoIdx===null)return;
+  const p=proyectos[proyectoIdx];
+  const logoHtml=p.logo?`<img class="pr-logo" src="${p.logo}">`:'';
+  const encHtml=(p.encabezado||'').trim()?`<div class="pr-enc-texto">${escNl(p.encabezado)}</div>`:'';
+  const encabezadoHtml=(logoHtml||encHtml)?`<div class="pr-encabezado">${logoHtml}${encHtml}</div>`:'';
+
+  let filas='';
+  GRUPOS_DEF.forEach(gr=>{
+    const items=p.grupos[gr.id]||[];
+    if(!items.length)return;
+    filas+=`<div class="pr-grupo">${esc(gr.label)}</div>`;
+    filas+=`<table class="pr-tabla"><thead><tr><th>Nombre</th><th>Tipo</th><th>Cant.</th><th>Dimensiones</th><th>Hormigón</th><th>Costo</th></tr></thead><tbody>`;
+    items.forEach(it=>{
+      const dims=it.dims?dimStr(it.dims,it.tipo):'';
+      const costo=it.resultado?'$'+fmt(it.resultado.totalObra):'—';
+      filas+=`<tr><td>${esc(it.nombre)}</td><td>${esc(LABELS_TIPO[it.tipo]||it.tipo)}</td><td>${it.qty}</td><td>${esc(dims)}</td><td>${esc(it.hormigon||'')}</td><td>${costo}</td></tr>`;
+    });
+    filas+=`</tbody></table>`;
+  });
+
+  const todos=Object.values(p.grupos).flat().filter(i=>i.resultado);
+  let mat=0,enc=0,mo=0;
+  todos.forEach(i=>{mat+=i.resultado.subtotalMat;enc+=i.resultado.subtotalEncTotal;mo+=i.resultado.moCompleta;});
+  const total=mat+enc+mo;
+  const cfg=getConfig();
+
+  const doc=`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${esc(p.nombre)}</title><style>
+    *{box-sizing:border-box}body{font-family:Exo,Arial,sans-serif;color:#1C1C1C;margin:0;padding:26px 22px}
+    .pr-encabezado{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #FE0000}
+    .pr-logo{max-height:80px;max-width:220px;object-fit:contain;flex-shrink:0}
+    .pr-enc-texto{line-height:1.6;font-size:15px}
+    h1{font-size:22px;margin:0 0 4px;font-weight:600}
+    .pr-fecha{font-size:14px;color:#7A7A7A;margin-bottom:20px}
+    .pr-grupo{font-size:14px;font-weight:600;color:#FE0000;text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px}
+    .pr-tabla{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:6px}
+    .pr-tabla th{background:#F2F2F0;padding:6px 8px;text-align:left;font-weight:600}
+    .pr-tabla td{padding:6px 8px;border-bottom:1px solid #ECECEC}
+    .pr-resumen{background:#F2F2F0;border-radius:8px;padding:16px;margin-top:20px}
+    .pr-res-row{display:flex;justify-content:space-between;padding:5px 0;font-size:15px}
+    .pr-total{background:#FE0000;color:#fff;border-radius:6px;padding:12px 16px;display:flex;justify-content:space-between;margin-top:10px;font-size:18px;font-weight:600}
+    @media print{@page{margin:16mm}}
+  </style></head><body>`
+    + encabezadoHtml
+    + `<h1>${esc(p.nombre)}</h1>`
+    + `<div class="pr-fecha">Exportado el ${new Date().toLocaleDateString('es-UY',{day:'2-digit',month:'long',year:'numeric'})}</div>`
+    + (filas||'<div style="color:#7A7A7A;font-size:15px">Sin elementos definidos.</div>')
+    + (todos.length?`<div class="pr-resumen">
+        <div class="pr-res-row"><span>Materiales</span><span>$${fmt(mat)}</span></div>
+        <div class="pr-res-row"><span>Encofrado</span><span>$${fmt(enc)}</span></div>
+        <div class="pr-res-row"><span>Mano de obra</span><span>$${fmt(mo)}</span></div>
+        <div class="pr-total"><span>TOTAL</span><span>$${fmt(total)} UYU</span></div>
+        <div style="text-align:right;font-size:13px;color:#7A7A7A;margin-top:6px">USD ${fmt(total/cfg.tc)}</div>
+      </div>`:'')
+    + `<scr`+`ipt>window.addEventListener('load',function(){setTimeout(function(){window.print();},350);});</scr`+`ipt></body></html>`;
+
+  const w=window.open('','_blank');
+  if(!w){alert('Permití ventanas emergentes para generar el PDF');return;}
+  w.document.open();w.document.write(doc);w.document.close();
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  loadConfig();
+  proyectos=getProyectosStorage();
+  renderLanding();
+});
 function ilsxOpen(){document.getElementById('ilsx-ov').classList.add('on')}
 function ilsxClose(){document.getElementById('ilsx-ov').classList.remove('on')}
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
@@ -889,6 +1134,8 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catc
     <div id="ilsx-grip"></div>
     <div class="ilsx-app">HA<b>-Calc</b></div>
     <div class="ilsx-ver">versión 2.0 · cálculo de hormigón armado</div>
+    <button class="ilsx-row" onclick="ilsxClose();showTab('precios')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10"/><path d="M14.5 9.3a2.4 2 0 0 0-2.5-1.3c-1.5 0-2.7.8-2.7 2s1.2 1.7 2.7 2.1 2.7.9 2.7 2.1-1.2 2-2.7 2a2.6 2 0 0 1-2.6-1.4"/></svg>Precios</button>
+    <button class="ilsx-row" onclick="ilsxClose();showTab('config')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.5"/><path d="M12 3v2.2M12 18.8V21M21 12h-2.2M5.2 12H3M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6M18.4 18.4l-1.6-1.6M7.2 7.2 5.6 5.6"/></svg>Configuración</button>
     <a class="ilsx-row" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</a>
     <div class="ilsx-foot">iLStorage</div>
   </div>
