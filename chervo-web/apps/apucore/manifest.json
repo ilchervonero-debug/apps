@@ -1,6 +1,6 @@
 {
-  "name": "APU CORE — Hormigón armado",
-  "short_name": "APU CORE",
+  "name": "HA-Calc — Hormigón armado",
+  "short_name": "HA-Calc",
   "description": "Cálculo de hormigón armado: materiales, encofrado, acero y mano de obra",
   "start_url": "/apps/apucore/",
   "scope": "/apps/apucore/",
