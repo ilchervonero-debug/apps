@@ -1361,9 +1361,51 @@ async function guardarEnNube(fecha, total_edific, total_honor) {
   }
 }
 
+function cacheKeyLista() { return 'ildjcu_lista_'+usuarioActivo; }
+
+function htmlListaExpedientes(data) {
+  if (!Array.isArray(data) || data.length === 0) {
+    return '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">'+usuarioActivo+' no tiene declaraciones guardadas aún.</div>';
+  }
+  return data.map(function(exp) {
+    var fecha = exp.created_at ? exp.created_at.slice(0,10) : '—';
+    var hora = exp.created_at ? exp.created_at.slice(11,16) : '';
+    var padron = exp.padron || '—';
+    var cliente = exp.cliente || '—';
+    var dpto = exp.dpto || '—';
+    var dir = exp.direccion || '—';
+    var area = exp.total_edific ? exp.total_edific + ' m²' : '—';
+    return '<div style="border:1px solid #e8e8e8;border-radius:8px;padding:12px;margin-bottom:10px;background:#fafafa">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+
+        '<div>'+
+          '<span style="font-weight:700;font-size:13px;color:#2b2b2b">Padrón '+padron+'</span>'+
+          '<span style="font-size:13px;color:#888;margin-left:8px">'+dpto+'</span>'+
+        '</div>'+
+        '<span style="font-size:13px;color:#aaa">'+fecha+' '+hora+'</span>'+
+      '</div>'+
+      '<div style="font-size:13px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> '+dir+'</div>'+
+      '<div style="font-size:13px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> '+cliente+'</div>'+
+      '<div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center">'+
+        '<span style="font-size:13px;color:#555555">▪ '+area+' &nbsp;·&nbsp; '+exp.usuario+'</span>'+
+        '<button onclick="editarExpediente(\''+exp.id+'\')" style="background:#555555;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Editar</button>'+
+        ' <button onclick="borrarExpediente(\''+exp.id+'\')" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Borrar</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// Cache-first: si ya hay una lista guardada de este usuario se muestra al toque
+// (sin esperar la red) y se sigue trabajando; la versión fresca llega atrás y
+// reemplaza en silencio solo si cambió algo.
 async function cargarArchivos() {
   var c = document.getElementById('archivos_lista');
-  c.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Cargando...</div>';
+  var cacheRaw = null;
+  try { cacheRaw = localStorage.getItem(cacheKeyLista()); } catch(e) {}
+  var huboCache = false;
+  if (cacheRaw) {
+    try { c.innerHTML = htmlListaExpedientes(JSON.parse(cacheRaw)); huboCache = true; } catch(e) {}
+  }
+  if (!huboCache) c.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Cargando...</div>';
   try {
     // Solo se piden los campos de resumen (no el JSON completo con fotos en base64) —
     // así la lista carga rápido aunque haya muchas declaraciones con fotos.
@@ -1372,37 +1414,12 @@ async function cargarArchivos() {
     }).join(',');
     var res = await supaFetch('expedientes?select=id,usuario,created_at,'+campos_resumen+'&usuario=eq.'+encodeURIComponent(usuarioActivo)+'&order=created_at.desc&limit=50');
     var data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) {
-      c.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">'+usuarioActivo+' no tiene declaraciones guardadas aún.</div>';
-      return;
-    }
-    c.innerHTML = data.map(function(exp) {
-      var fecha = exp.created_at ? exp.created_at.slice(0,10) : '—';
-      var hora = exp.created_at ? exp.created_at.slice(11,16) : '';
-      var padron = exp.padron || '—';
-      var cliente = exp.cliente || '—';
-      var dpto = exp.dpto || '—';
-      var dir = exp.direccion || '—';
-      var area = exp.total_edific ? exp.total_edific + ' m²' : '—';
-      return '<div style="border:1px solid #e8e8e8;border-radius:8px;padding:12px;margin-bottom:10px;background:#fafafa">'+
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+
-          '<div>'+
-            '<span style="font-weight:700;font-size:13px;color:#2b2b2b">Padrón '+padron+'</span>'+
-            '<span style="font-size:13px;color:#888;margin-left:8px">'+dpto+'</span>'+
-          '</div>'+
-          '<span style="font-size:13px;color:#aaa">'+fecha+' '+hora+'</span>'+
-        '</div>'+
-        '<div style="font-size:13px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> '+dir+'</div>'+
-        '<div style="font-size:13px;color:#444;margin-bottom:2px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> '+cliente+'</div>'+
-        '<div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center">'+
-          '<span style="font-size:13px;color:#555555">▪ '+area+' &nbsp;·&nbsp; '+exp.usuario+'</span>'+
-          '<button onclick="editarExpediente(\''+exp.id+'\')" style="background:#555555;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Editar</button>'+
-          ' <button onclick="borrarExpediente(\''+exp.id+'\')" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:5px 10px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial;touch-action:manipulation">✕ Borrar</button>'+
-        '</div>'+
-      '</div>';
-    }).join('');
+    if (!Array.isArray(data)) throw new Error('respuesta inválida');
+    var fresco = JSON.stringify(data);
+    if (fresco !== cacheRaw) c.innerHTML = htmlListaExpedientes(data);
+    try { localStorage.setItem(cacheKeyLista(), fresco); } catch(e) {}
   } catch(e) {
-    c.innerHTML = '<div style="text-align:center;color:#c0392b;padding:20px;font-size:13px">Error al cargar archivos.</div>';
+    if (!huboCache) c.innerHTML = '<div style="text-align:center;color:#c0392b;padding:20px;font-size:13px">Error al cargar archivos.</div>';
   }
 }
 
