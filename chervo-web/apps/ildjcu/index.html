@@ -1365,21 +1365,25 @@ async function cargarArchivos() {
   var c = document.getElementById('archivos_lista');
   c.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">Cargando...</div>';
   try {
-    var res = await supaFetch('expedientes?select=id,usuario,created_at,datos&usuario=eq.'+encodeURIComponent(usuarioActivo)+'&order=created_at.desc&limit=50');
+    // Solo se piden los campos de resumen (no el JSON completo con fotos en base64) —
+    // así la lista carga rápido aunque haya muchas declaraciones con fotos.
+    var campos_resumen = 'padron,cliente,dpto,direccion,total_edific'.split(',').map(function(k){
+      return k+':datos->>'+k;
+    }).join(',');
+    var res = await supaFetch('expedientes?select=id,usuario,created_at,'+campos_resumen+'&usuario=eq.'+encodeURIComponent(usuarioActivo)+'&order=created_at.desc&limit=50');
     var data = await res.json();
     if (!Array.isArray(data) || data.length === 0) {
       c.innerHTML = '<div style="text-align:center;color:#aaa;padding:20px;font-size:13px">'+usuarioActivo+' no tiene declaraciones guardadas aún.</div>';
       return;
     }
     c.innerHTML = data.map(function(exp) {
-      var d = exp.datos || {};
       var fecha = exp.created_at ? exp.created_at.slice(0,10) : '—';
       var hora = exp.created_at ? exp.created_at.slice(11,16) : '';
-      var padron = d.padron || '—';
-      var cliente = d.cliente || '—';
-      var dpto = d.dpto || '—';
-      var dir = d.direccion || '—';
-      var area = d.total_edific ? d.total_edific + ' m²' : '—';
+      var padron = exp.padron || '—';
+      var cliente = exp.cliente || '—';
+      var dpto = exp.dpto || '—';
+      var dir = exp.direccion || '—';
+      var area = exp.total_edific ? exp.total_edific + ' m²' : '—';
       return '<div style="border:1px solid #e8e8e8;border-radius:8px;padding:12px;margin-bottom:10px;background:#fafafa">'+
         '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">'+
           '<div>'+
@@ -1415,6 +1419,34 @@ async function borrarExpediente(id) {
   } catch(e) { showToast('Error de conexión'); }
 }
 
+// Campos de texto/select del formulario de declaración (usado para limpiar y para cargar)
+var CAMPOS_FORM = ['cliente','intermediario','estado_tramite','notas_internas','regimen','tipo_ph',
+  'tipo_dj','condicion_predial','dpto','localidad','direccion','padron','dim_frente','terreno_hect',
+  'terreno_metros','fecha_ingresada','nro_expediente','prop_apellidos','prop_nombres',
+  'prop_ci','prop_calle','prop_puerta','prop_dpto','prop_localidad','prop_tel','prop_email',
+  'prof_apellidos','prof_nombres','prof_ci','prof_matricula','prof_titulo','prof_calle',
+  'prof_puerta','prof_apto','prof_tel','prof_dpto','prof_localidad','prof_email',
+  'direccion2','dim_frente2','obs_gen','antiguedad_general'];
+var CHKS_FORM = ['reformas_internas','es_esquina'];
+
+// Deja el formulario en blanco antes de cargar otra declaración —
+// evita que queden campos, líneas, fotos o croquis de la anterior.
+function limpiarFormulario() {
+  CAMPOS_FORM.forEach(function(k) {
+    var el = document.getElementById(k);
+    if (!el) return;
+    if (el.tagName === 'SELECT') el.selectedIndex = 0; else el.value = '';
+  });
+  CHKS_FORM.forEach(function(k) {
+    var el = document.getElementById(k);
+    if (el) el.checked = false;
+  });
+  lineas = []; linea_id = 0; renderLineas();
+  fotos = []; renderFotos();
+  limpiarCroquis();
+  onRegimen(); toggleEsquina();
+}
+
 async function editarExpediente(id) {
   showToast('Cargando expediente...');
   try {
@@ -1422,37 +1454,26 @@ async function editarExpediente(id) {
     var rows = await res.json();
     if (!Array.isArray(rows) || rows.length === 0) { showToast('No se encontró el expediente'); return; }
     var d = rows[0].datos || {};
+    limpiarFormulario();
     // Campos de texto
-    var campos = ['cliente','intermediario','estado_tramite','notas_internas','regimen','tipo_ph',
-      'tipo_dj','condicion_predial','dpto','localidad','direccion','padron','dim_frente','terreno_hect',
-      'terreno_metros','fecha_ingresada','nro_expediente','prop_apellidos','prop_nombres',
-      'prop_ci','prop_calle','prop_puerta','prop_dpto','prop_localidad','prop_tel','prop_email',
-      'prof_apellidos','prof_nombres','prof_ci','prof_matricula','prof_titulo','prof_calle',
-      'prof_puerta','prof_apto','prof_tel','prof_dpto','prof_localidad','prof_email',
-      'direccion2','dim_frente2','obs_gen','antiguedad_general'];
-    campos.forEach(function(k) {
+    CAMPOS_FORM.forEach(function(k) {
       var el = document.getElementById(k);
       if (el && d[k] !== undefined) el.value = d[k];
     });
     // Checkboxes
-    var chks = ['reformas_internas','es_esquina'];
-    chks.forEach(function(k) {
+    CHKS_FORM.forEach(function(k) {
       var el = document.getElementById(k);
       if (el) { el.checked = !!d[k]; }
     });
     // Disparar eventos para mostrar campos condicionales
     onRegimen(); toggleEsquina();
-    // Líneas de construcción
-    if (Array.isArray(d.lineas) && d.lineas.length > 0) {
-      lineas = d.lineas.map(function(l,i){ return Object.assign({id: i+1}, l); });
-      linea_id = lineas.length;
-      renderLineas();
-    }
-    // Fotos
-    if (Array.isArray(d.fotos) && d.fotos.length > 0) {
-      fotos = d.fotos;
-      renderFotos();
-    }
+    // Líneas de construcción (siempre reemplaza, aunque la declaración cargada no tenga ninguna)
+    lineas = Array.isArray(d.lineas) ? d.lineas.map(function(l,i){ return Object.assign({id: i+1}, l); }) : [];
+    linea_id = lineas.length;
+    renderLineas();
+    // Fotos (idem)
+    fotos = Array.isArray(d.fotos) ? d.fotos : [];
+    renderFotos();
     showToast('✓ Expediente cargado');
     goTab(0);
   } catch(e) {
@@ -1495,7 +1516,16 @@ async function registrarUsuario() {
 }
 
 function nuevoExpediente(){
-  if(confirm('¿Nuevo expediente? Se perderán los datos actuales.')) location.reload();
+  if(!confirm('¿Nuevo expediente? Se perderán los datos actuales.')) return;
+  limpiarFormulario();
+  var now = new Date();
+  var local = new Date(now.getTime() - now.getTimezoneOffset()*60000);
+  document.getElementById('fecha_alta').value = local.toISOString().slice(0,16);
+  document.getElementById('fecha_ingresada').value = local.toISOString().slice(0,10);
+  addLinea();
+  calcHonorarios();
+  goTab(0);
+  showToast('✓ Formulario en blanco');
 }
 
 // CROQUIS
