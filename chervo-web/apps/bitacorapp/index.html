@@ -835,7 +835,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 db.enablePersistence().catch(() => {});
 
-const APP_VERSION = 'v2.11';
+const APP_VERSION = 'v2.12';
 
 // ===== ESTADO =====
 let currentUser = null;
@@ -1411,7 +1411,7 @@ function renderBloque(b, i) {
                 ${b.editado?'<span>· editado</span>':''}
             </div>
             <div class="bloque-acciones">
-                <button class="btn-bloque" onclick="imprimirSeleccion([${i}])" title="Imprimir esta nota">${SVG_PDF}</button>
+                <button class="btn-bloque" onclick="abrirModalPrint(${i})" title="Imprimir esta nota">${SVG_PDF}</button>
                 ${b.texto?`<button class="btn-bloque" onclick="copiarBloque(${i})" title="Copiar">${SVG_COPY}</button>`:''}
                 <button class="btn-bloque" onclick="abrirNota(${i})" title="Editar">${SVG_EDIT}</button>
                 <button class="btn-bloque eliminar" onclick="eliminarBloque(${i})" title="Eliminar">${SVG_TRASH}</button>
@@ -1422,16 +1422,18 @@ function renderBloque(b, i) {
 }
 
 // ===== MENÚ DE IMPRESIÓN =====
-function abrirModalPrint() {
+function abrirModalPrint(soloIdx) {
     const bs = (proyectos[proyectoIdx].bloques) || [];
     if (!bs.length) { toast('No hay notas para imprimir', 'err'); return; }
     document.getElementById('print-encabezado').value = proyectos[proyectoIdx].encabezado || '';
     mostrarLogoPreview(proyectos[proyectoIdx].logo || '');
-    document.getElementById('print-all').checked = true;
+    const soloEsta = typeof soloIdx === 'number';
+    document.getElementById('print-all').checked = !soloEsta;
     document.getElementById('print-list').innerHTML = bs.map((b,i) => {
         const prev = (b.texto || '').replace(/[#*>`_~\-]/g,' ').replace(/\s+/g,' ').trim().slice(0,70)
                      || ((b.fotos||[]).length ? '(fotos)' : '(vacío)');
-        return `<label class="print-item"><input type="checkbox" class="print-chk" value="${i}" checked onclick="printSync()"><span><b>${fechaCorta(b.fecha)}</b><i>${esc(prev)}</i></span></label>`;
+        const marcada = soloEsta ? i === soloIdx : true;
+        return `<label class="print-item"><input type="checkbox" class="print-chk" value="${i}" ${marcada?'checked':''} onclick="printSync()"><span><b>${fechaCorta(b.fecha)}</b><i>${esc(prev)}</i></span></label>`;
     }).join('');
     printActualizarBtn();
     abrirModal('modal-print');
