@@ -178,16 +178,23 @@ Todos comparten el mismo molde para verse hermanos:
 - Acciones secundarias = **texto** (sin recuadro). El recuadro/relleno se reserva a la
   **acción primaria única** (guardar, +, =).
 - Menús: fila = ícono monolínea + etiqueta. Ícono en tinta, acento rojo mínimo.
-- **Nada de logo/ícono de app antes del nombre en el header.** El nombre (wordmark iL/HA
-  rojo + resto plata) va solo. A la izquierda del header:
+- **Nada de logo/ícono de app antes del nombre en el header.** El nombre (wordmark iL/HA)
+  va **a la izquierda**, solo. El **wordmark** es una sola letra/tipografía: **mismo grosor
+  y mismo tamaño** en las dos partes — la primera (`iL`/`HA`) en **rojo** y el resto en
+  **plata `#C0C0C0`**. El color ya alcanza para distinguir: **no** se pone la primera parte
+  en negrita ni el resto en fino/light. Sin énfasis por peso.
+- A la **derecha** del header:
   - en la **pantalla principal / landing** → **menú hamburguesa (☰)**, tres líneas finas
     rojas, que abre el panel de menú (bottom sheet) con **Configuración**, la **versión**
     de la app y lo que venga (cuenta/sync). Es el hogar de todo ajuste global y de lo que
     "no es la tarea".
-  - dentro de **un registro abierto** (proyecto, expediente…) → **flecha ← de volver** al
-    landing, para no quedar encerrado y poder saltar entre registros.
+  - dentro de **un registro abierto** (proyecto, expediente…) → las acciones de salida
+    (§8). El **volver** al landing va como **flecha ← a la izquierda**, para no quedar
+    encerrado y poder saltar entre registros.
 - Ajustes que no son la tarea principal (precios, configuración, cuenta) **nunca van
   sueltos como botones en el header** — viven en ese menú.
+- El panel de menú **no** necesita "Volver a iLStorage" si no cumple una función real en
+  esa app; no se agrega por costumbre.
 
 ---
 
@@ -204,21 +211,26 @@ Todos comparten el mismo molde para verse hermanos:
 - **Respaldo** = descargar un `.json` del registro (copia restaurable / mover de equipo),
   distinto del CSV (datos tabulares). Puente hasta tener sync real (Supabase).
 - **Membrete (logo + encabezado)** editable **por registro**, no como ajuste global —
-  cada proyecto tiene su propio membrete. Vive como una tarjeta "Membrete del informe
-  (opcional)" **dentro del registro**, no en el header ni en un modal de export:
-  - **Logo:** "Subir logo" + vista previa + "Quitar". Se redimensiona a 400px y se guarda
-    en **PNG** (conserva transparencia). Referencia: Bitácora.
-  - **Encabezado:** texto libre. Si queda vacío y sin logo, el documento no lleva
-    encabezado forzado — nada de branding de la app ni datos que el usuario no escribió.
+  cada proyecto tiene su propio membrete. Se edita **en el momento de imprimir/PDF**: al
+  tocar **Imprimir** o **PDF** se abre un modal chico con **logo** ("Subir logo" + vista
+  previa + "Quitar", redimensionado a 400px, guardado en **PNG** — conserva transparencia,
+  referencia: Bitácora) y **encabezado** (texto libre), y el botón que genera. Así el
+  encabezado y la foto están a mano justo cuando se arma el documento, sin ir a buscarlos
+  a otra pantalla. Los valores quedan guardados en el registro para la próxima vez.
+- Si el encabezado queda vacío y sin logo, el documento no lleva encabezado forzado — nada
+  de branding de la app ni datos que el usuario no escribió.
 - El documento exportado lleva el membrete arriba (si se cargó) y el **detalle completo**
   del registro — no un resumen recortado.
+- CSV y Respaldo son directos (no pasan por el modal): no necesitan membrete.
 
 ---
 
-_Versión iLStyle 1.7 — sin logo de app antes del nombre; menú hamburguesa (☰) a la
-izquierda en el landing (Configuración + versión + cuenta) y flecha ← de volver dentro de
-un registro; exportación con un ícono flat por acción (imprimir/PDF/CSV/respaldo), no un
-ícono que las agrupe; membrete (logo+encabezado) por registro dentro del propio registro.
+_Versión iLStyle 1.7 — wordmark de un solo grosor/tamaño (solo cambia el color; primera
+parte roja, resto plata, sin negrita ni fino); sin logo de app antes del nombre; nombre a
+la izquierda y menú hamburguesa (☰) a la **derecha** en el landing (Configuración +
+versión + cuenta), flecha ← de volver dentro de un registro; exportación con un ícono flat
+por acción (imprimir/PDF/CSV/respaldo), no un ícono que las agrupe; membrete
+(logo+encabezado) por registro, editable en el modal de imprimir/PDF.
 Versión 1.6 — patrón de exportación con encabezado y logo editables por proyecto.
 Versión 1.5 — excepción de tipografía para textos largos (Inter light/regular, solo para
 párrafos extensos; Exo sigue siendo la fuente de todo lo demás). Versión 1.4 — íconos aún
