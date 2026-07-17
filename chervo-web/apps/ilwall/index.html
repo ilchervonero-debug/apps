@@ -247,7 +247,7 @@ function navTo(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+view).classList.add('active');
   document.getElementById('btnBack').style.display = (view==='home') ? 'none' : 'flex';
-  if(view==='editor') setTimeout(resizeCanvas,30);
+  if(view==='editor') setTimeout(()=>{ resizeCanvas(); fitView(); },40);
   if(view==='proj') renderProject();
   if(view==='home') renderHome();
 }
@@ -438,7 +438,7 @@ function openNewEditor(){
   document.getElementById('edAislante').checked=false;
   document.getElementById('edStatus').textContent='Sin plano. Podés cargar un DXF o poner el largo a mano.';
   ed.segments=[]; ed.openings=[]; ed.refuerzos=[]; ed.actions=[];
-  setTool('pan'); navTo('editor'); recomputeLive(); fitView();
+  setTool('pan'); recomputeLive(); navTo('editor');
 }
 function editEnv(id){
   const p=activeProj(), e=p.envs.find(x=>x.id===id); if(!e) return;
@@ -460,7 +460,7 @@ function editEnv(id){
   ed.refuerzos=JSON.parse(JSON.stringify(e.refuerzos||[]));
   ed.actions=[];
   document.getElementById('edStatus').textContent = ed.segments.length? ed.segments.length+' segmentos del plano.' : 'Sin plano.';
-  setTool('pan'); navTo('editor'); recomputeLive(); fitView();
+  setTool('pan'); recomputeLive(); navTo('editor');
 }
 
 function readEnvFromForm(){
