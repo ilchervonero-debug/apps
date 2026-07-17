@@ -1,12 +1,22 @@
 import { create } from 'zustand'
 import { LAYER_TEMPLATES } from '../data/layers'
+import { PROFILE_SECTIONS } from '../data/profiles'
 import { defaultRise } from '../engine/trusses'
 import { SEED_CUADRILLA, SEED_MATERIALES, SEED_TAREAS, SEED_RENDIMIENTOS, SEED_OPERACIONES } from '../data/coreSeed'
+
+// Alma (núcleo) del montante del muro (mm): del perfil propio del tipo si lo
+// tiene; si no, del perfil global del proyecto (compatibilidad).
+export function wallCoreH(type, profileSection) {
+  const p = type?.perfil
+  const s = p && (PROFILE_SECTIONS[p.normId]?.C || [])[p.secIdx]
+  if (s) return s.h
+  return parseInt((profileSection || '100_0.95').split('_')[0], 10) || 100
+}
 
 // Espesor de pared (mm) = núcleo (alto del montante) + capas de ambas caras
 export function wallThickness(type, profileSection) {
   if (!type) return 100
-  const core = parseInt((profileSection || '100_0.95').split('_')[0], 10) || 100
+  const core = wallCoreH(type, profileSection)
   const th = (id) => LAYER_TEMPLATES.find((l) => l.id === id)?.thickness || 0
   const sum = (arr) => (arr || []).reduce((a, id) => a + th(id), 0)
   return Math.round(core + sum(type.faces?.interior) + sum(type.faces?.exterior))
@@ -618,7 +628,8 @@ export const useDrawingStore = create((set) => ({
     const used = s.project.wallTypes.map((t) => parseInt((t.code || '').replace(/\D/g, ''), 10)).filter((n) => !isNaN(n))
     const n = (used.length ? Math.max(...used) : 0) + 1
     // nombre en blanco y SIN capas: el espesor se arma con lo que cargue Ángel
-    const wt = { id, code: 'M' + n, name: '', kind: 'interior', faces: { interior: [], exterior: [] } }
+    // perfil propio por muro (100×40×0.95 por defecto); se puede cambiar por tipo
+    const wt = { id, code: 'M' + n, name: '', kind: 'interior', perfil: { normId: 'cu_1', secIdx: 1 }, faces: { interior: [], exterior: [] } }
     return { project: { ...s.project, wallTypes: [...s.project.wallTypes, wt] }, currentWallTypeId: id }
   }),
   updateWallType: (id, patch) => set((s) => ({

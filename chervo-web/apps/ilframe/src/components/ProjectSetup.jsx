@@ -74,7 +74,7 @@ export default function ProjectSetup() {
 
         {/* Muros / Paredes */}
         <Accordion label="Muros / Paredes" count={project.wallTypes.length} open={open.paredes} onToggle={() => toggle('paredes')}>
-          <Sub>Perfil base de los muros</Sub>
+          <Sub>Perfil por defecto (cada muro puede cambiarlo abajo)</Sub>
           <select value={project.profileSection} onChange={(e) => setProject({ profileSection: e.target.value })} style={inp}>
             {sections.map((c, i) => <option key={i} value={`${c.h}_${c.t}`}>{c.h}×{c.w}×{c.t}mm — {c.kg} kg/m</option>)}
           </select>
@@ -224,6 +224,7 @@ function WallTypeCard({ type, profileSection, canDelete, onDraw }) {
           {e.capas ? `alma ${(e.core / 10).toFixed(1)} + capas → ${(e.espesor / 10).toFixed(1)} cm` : `alma ${(e.core / 10).toFixed(1)} cm · sumá capas`}
         </span>
       </div>
+      <PerfilRow label="Perfil (montante)" value={type.perfil} onChange={(v) => updateWallType(type.id, { perfil: v })} />
       <TypeFaceStack typeId={type.id} face="interior" layers={type.faces?.interior || []} label="Cara interior" />
       <TypeFaceStack typeId={type.id} face="exterior" layers={type.faces?.exterior || []} label={type.kind === 'exterior' ? 'Cara exterior' : 'Otra cara'} />
     </div>

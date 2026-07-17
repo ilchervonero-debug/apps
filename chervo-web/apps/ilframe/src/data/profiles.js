@@ -20,6 +20,9 @@ export const OMEGA_SECTIONS = {
       { h: 20, w: 50, lip: 10, t: 0.5, kg: 0.35 },
       { h: 30, w: 50, lip: 12, t: 0.6, kg: 0.47 },
       { h: 40, w: 60, lip: 15, t: 0.9, kg: 0.74 },
+      // Montantes de cielorraso / tabiquería (plaza UY) — ajustar al proveedor.
+      { h: 35, w: 35, lip: 8, t: 0.5, kg: 0.42 },
+      { h: 70, w: 35, lip: 8, t: 0.5, kg: 0.62 },
     ],
     U: [],
   },

@@ -19,7 +19,12 @@ function topYat(topPath, x) {
   return p[p.length - 1][1]
 }
 
-function sectionOf(project) {
+// Sección (montante) del muro: la del perfil propio del tipo si lo tiene;
+// si no, la del perfil global del proyecto (compatibilidad).
+function sectionOf(project, wt) {
+  const p = wt?.perfil
+  const own = p && (PROFILE_SECTIONS[p.normId]?.C || [])[p.secIdx]
+  if (own) return own
   const norm = PROFILE_SECTIONS[project.profileNorm] || PROFILE_SECTIONS.cu_1
   const [h, t] = (project.profileSection || '100_0.95').split('_')
   return (norm.C || []).find((c) => `${c.h}_${c.t}` === `${h}_${t}`) || norm.C[0]
@@ -27,7 +32,8 @@ function sectionOf(project) {
 const layer = (id) => LAYER_TEMPLATES.find((l) => l.id === id)
 
 export function panelBOM(panel, project) {
-  const sec = sectionOf(project)
+  const wtSec = project.wallTypes.find((t) => t.id === (panel.typeId || project.wallTypes[0]?.id))
+  const sec = sectionOf(project, wtSec)
   const kgm = sec ? sec.kg : 1.5
   const spacing = project.studSpacing || 400
   const w = panel.width

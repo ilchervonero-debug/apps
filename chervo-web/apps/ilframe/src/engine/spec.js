@@ -21,7 +21,9 @@ export function perfilResuelto(ref) {
 // Espesor del muro (mm) = alma de la montante (núcleo) + capas de ambas caras.
 // Sin capas cargadas = solo el núcleo de la montante.
 export function muroEspesor(type, profileSection) {
-  const core = parseInt((profileSection || '100_0.95').split('_')[0], 10) || 100
+  // núcleo = alma del perfil propio del muro; si no tiene, el perfil global.
+  const own = type?.perfil && (PROFILE_SECTIONS[type.perfil.normId]?.C || [])[type.perfil.secIdx]
+  const core = own ? own.h : (parseInt((profileSection || '100_0.95').split('_')[0], 10) || 100)
   const sum = (arr) => (arr || []).reduce((a, id) => a + layerTh(id), 0)
   const capas = sum(type?.faces?.interior) + sum(type?.faces?.exterior)
   return { core, capas, espesor: Math.round(core + capas) }
