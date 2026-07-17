@@ -15,7 +15,7 @@
 <style>
 :root{
   --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
-  --accent:#C70000;--red:#C70000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
+  --accent:#FE0000;--red:#C70000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
   --tb:56px;--prop:44px;
   --font:'Exo',-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
 }
@@ -47,10 +47,11 @@ body{display:flex;flex-direction:column;background:#fff;}
   color:var(--ink);cursor:pointer;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;position:relative;
   transition:background .1s;}
-.tb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;
+.tb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.1;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-.tb.on{background:var(--accent);color:#fff;border-radius:8px;}
-.tb:active{background:rgba(0,0,0,.08);}
+/* activo = BORDE rojo + icono rojo (iLStyle), nunca relleno */
+.tb.on{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);}
+.tb:active{background:rgba(0,0,0,.06);}
 .tb[data-tip]:hover::after{content:attr(data-tip);position:absolute;top:calc(100% + 4px);left:50%;
   transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:3px 8px;
   border-radius:6px;font-size:10px;white-space:nowrap;pointer-events:none;z-index:300;}
@@ -75,32 +76,33 @@ body{display:flex;flex-direction:column;background:#fff;}
 .ph-lbl{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;}
 .ph-g3{display:grid;grid-template-columns:repeat(3,62px);gap:6px;}
 .ph-hsep{height:1px;background:#e5e5ea;margin:2px 0;}
-/* botones herramienta — rojo, icono blanco, talle dedo */
+/* botones herramienta — icono ROJO fino sobre claro; activo = borde rojo (iLStyle) */
 .phb{
   width:62px;height:62px;border-radius:10px;
-  background:var(--accent);border:none;color:#fff;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:background .12s;
+  background:#f2f2f7;border:none;color:var(--accent);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .12s,box-shadow .12s;
 }
-.phb svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.8;
+.phb svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.1;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-.phb.on{background:#8c0000;}
-.phb:active{background:#8c0000;}
-/* FAB herramientas — flota sobre canvas, derecha */
+.phb.on{background:#fff;box-shadow:inset 0 0 0 1.5px var(--accent);}
+.phb:active{background:#e5e5ea;}
+/* FAB herramientas — flota sobre canvas, derecha; icono rojo fino, borde rojo */
 #btn-herr{
   position:fixed;right:16px;top:10%;
   width:56px;height:56px;border-radius:50%;
-  background:var(--accent);border:none;color:#fff;cursor:pointer;
+  background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 3px 12px rgba(199,0,0,.35);
+  box-shadow:0 3px 12px rgba(0,0,0,.12);
   z-index:160;transition:background .2s;
 }
-#btn-herr svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+#btn-herr:active{background:#f2f2f7;}
+#btn-herr svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 /* iconos naked de bar 1: sin caja, solo el trazo */
 .ti{background:none;border:none;padding:0;cursor:pointer;flex-shrink:0;
   min-width:44px;min-height:44px;
   display:flex;align-items:center;justify-content:center;}
-.ti svg{fill:none;stroke:currentColor;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;width:26px;height:26px;}
+.ti svg{fill:none;stroke:currentColor;stroke-width:1.1;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none;width:28px;height:28px;}
 /* undo/redo — siempre rojo */
 .ti-r{color:var(--accent);}
 /* select/snap — oscuro apagado, rojo activo */
@@ -149,8 +151,8 @@ body{display:flex;flex-direction:column;background:#fff;}
 .ci{display:flex;align-items:center;gap:12px;padding:12px 16px;font-size:14px;font-weight:500;
   color:var(--ink);cursor:pointer;border-bottom:1px solid rgba(0,0,0,.06);}
 .ci:last-child{border-bottom:none;}
-.ci:active{background:rgba(0,122,255,.1);}
-.ci svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;flex-shrink:0;opacity:.6;}
+.ci:active{background:rgba(0,0,0,.05);}
+.ci svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;opacity:.6;}
 .ci.danger{color:var(--red);}
 
 /* MODALS */
@@ -1268,7 +1270,7 @@ if('serviceWorker' in navigator){
     <div id="ilsx-grip"></div>
     <div class="ilsx-app"><b>iL</b>Draw</div>
     <div class="ilsx-ver">versión 3.0</div>
-    <a class="ilsx-row" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</a>
+    <a class="ilsx-row" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</a>
     <div class="ilsx-foot">iLStorage</div>
   </div>
 </div>
