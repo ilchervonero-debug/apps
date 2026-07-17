@@ -57,7 +57,7 @@ export function computoProyecto(state, project) {
   const studio = state.studio || []
   const walls = studio.filter((o) => o.type === 'wall')
   const cerchasObj = studio.filter((o) => o.type === 'cercha' && o.modelo !== 'VIGA')
-  const vigasObj = studio.filter((o) => o.type === 'cercha' && o.modelo === 'VIGA')
+  const vigasObj = studio.filter((o) => o.type === 'viga' || (o.type === 'cercha' && o.modelo === 'VIGA'))
   const columnas = studio.filter((o) => o.type === 'columna')
   const techos = studio.filter((o) => o.type === 'roof')
   const losasObj = studio.filter((o) => o.type === 'losa')
