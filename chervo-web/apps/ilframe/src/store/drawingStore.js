@@ -198,10 +198,6 @@ function activeTypeCfg(s, cat) {
 function defaultProject(name = 'Proyecto sin nombre') {
   return {
     name,
-    // Notas libres de revisión (Cómputo/Salida): cosas por corregir o
-    // cambiar que Ángel va anotando mientras revisa. Un solo cuaderno
-    // por proyecto, visible desde ambas pestañas.
-    notasRevision: '',
     profileNorm: 'cu_1',
     profileSection: '100_0.95',
     studSpacing: 400,
