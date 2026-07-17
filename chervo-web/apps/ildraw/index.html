@@ -76,20 +76,20 @@ body{display:flex;flex-direction:column;background:#fff;}
 .ph-lbl{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;}
 .ph-g3{display:grid;grid-template-columns:repeat(3,62px);gap:6px;}
 .ph-hsep{height:1px;background:#e5e5ea;margin:2px 0;}
-/* botones herramienta — icono ROJO fino sobre claro; activo = borde rojo (iLStyle) */
+/* botones herramienta — icono NEGRO fino, sin fondo; activo = icono rojo + borde rojo */
 .phb{
   width:62px;height:62px;border-radius:10px;
-  background:#f2f2f7;border:none;color:var(--accent);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:background .12s,box-shadow .12s;
+  background:transparent;border:none;color:var(--ink);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:box-shadow .12s,transform .08s;
 }
 .phb svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.1;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-.phb.on{background:#fff;box-shadow:inset 0 0 0 1.5px var(--accent);}
-.phb:active{background:#e5e5ea;}
-/* FAB herramientas — flota sobre canvas, derecha; icono rojo fino, borde rojo */
+.phb.on{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);}
+.phb:active{transform:scale(.92);}
+/* FAB herramientas — cuadrado esquinas redondeadas; icono rojo fino, borde rojo */
 #btn-herr{
   position:fixed;right:16px;top:10%;
-  width:56px;height:56px;border-radius:50%;
+  width:56px;height:56px;border-radius:14px;
   background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 3px 12px rgba(0,0,0,.12);
@@ -172,6 +172,16 @@ body{display:flex;flex-direction:column;background:#fff;}
   font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;
   background:rgba(242,242,247,.9);color:var(--ink);}
 .mrow button.ok{background:var(--accent);color:#fff;border-color:var(--accent);}
+/* filas de exportación — icono negro fino; presionado = línea roja */
+.exrow{display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;column-gap:14px;
+  align-items:center;width:100%;text-align:left;background:transparent;border:1.5px solid #ececf0;
+  border-radius:14px;padding:14px 16px;cursor:pointer;font-family:var(--font);transition:border-color .12s;}
+.exrow svg{grid-row:1/3;width:34px;height:34px;fill:none;stroke:var(--ink);stroke-width:1.1;
+  stroke-linecap:round;stroke-linejoin:round;}
+.exrow .exn{font-size:18px;font-weight:500;color:var(--ink);}
+.exrow .exd{font-size:14px;color:var(--label);}
+.exrow:active{border-color:var(--accent);}
+.exrow:active svg{stroke:var(--accent);}
 
 #toast{position:fixed;bottom:54px;left:50%;transform:translateX(-50%) translateY(6px);
   background:rgba(28,28,30,.9);
@@ -213,7 +223,7 @@ body{display:flex;flex-direction:column;background:#fff;}
   <button class="ti ti-t" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
   <button class="ti ti-t" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <div class="tg">
-    <button class="tb" data-tip="Exportar" onclick="exportPNG()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    <button class="tb" data-tip="Exportar" onclick="openExport()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
     <button class="tb" data-tip="Nuevo" onclick="newDoc()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
   </div>
   <button class="ti ti-t on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
@@ -346,6 +356,26 @@ body{display:flex;flex-direction:column;background:#fff;}
 <div class="modal" id="etmod"><div class="mbox"><h3>Editar</h3><input type="text" id="etinput" placeholder="Nuevo texto..."><div class="mrow"><button onclick="document.getElementById('etmod').classList.remove('show')">Cancelar</button><button class="ok" onclick="confirmEditText()">Aplicar</button></div></div></div>
 <div class="modal" id="scmod"><div class="mbox"><h3>Escalar</h3><div style="display:flex;align-items:center;gap:10px;padding:4px 0"><span style="font-size:12px;color:var(--label);flex-shrink:0">Escala</span><input type="range" id="scSlider" min="10" max="300" value="100" style="flex:1;accent-color:var(--accent)" oninput="prevScale(this.value)"><span id="scVal" style="font-size:12px;color:var(--ink);min-width:36px">100%</span></div><div class="mrow"><button onclick="cancelScale()">Cancelar</button><button class="ok" onclick="confirmScale()">Aplicar</button></div></div></div>
 
+<!-- EXPORT — selector explícito de formato -->
+<div class="modal" id="exmod">
+  <div class="mbox">
+    <h3>Exportar dibujo</h3>
+    <button class="exrow" onclick="doExport('dxf')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l2 3-2 3M13 13l2 3-2 3" stroke-width="1.1"/></svg>
+      <span class="exn">DXF</span><span class="exd">vectorial para CAD (AutoCAD, LibreCAD)</span>
+    </button>
+    <button class="exrow" onclick="doExport('png')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+      <span class="exn">PNG</span><span class="exd">imagen limpia, sin grilla</span>
+    </button>
+    <button class="exrow" onclick="doExport('pdf')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+      <span class="exn">PDF</span><span class="exd">para imprimir o guardar</span>
+    </button>
+    <div class="mrow"><button onclick="closeExport()">Cerrar</button></div>
+  </div>
+</div>
+
 <!-- ROTATE OVERLAY (fullscreen drag) -->
 <div id="rotOverlay"></div>
 
@@ -357,6 +387,7 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),wrap=document.get
 let vpX=0,vpY=0,vpZ=1,cellPx=30,snapOn=true;
 let tool='select',color='#1c1c1e',strokeW=2,lineType='solid';
 let objects=[],nextId=1,history=[],redo=[];
+let _exporting=false;
 let drawing=false,dragStartW=null,dragCurW=null,penPts=[];
 // pline — continuous drag, double-click closes
 let plineActive=false,plinePts=[],plineLastTap=0;
@@ -449,6 +480,7 @@ function render(){
 }
 
 function drawGrid(){
+  if(_exporting)return;
   const cs=cellPx*vpZ;if(cs<3)return;
   const ox=((vpX%cs)+cs)%cs,oy=((vpY%cs)+cs)%cs;
   ctx.save();
@@ -508,7 +540,7 @@ function drawArcObj(obj){
     ctx.beginPath();ctx.arc(cs.x,cs.y,rs,arc.startAngle,arc.endAngle,arc.ccw);ctx.stroke();
   }
   // Always show midpoint grip when select tool active
-  if(tool==='select'){
+  if(tool==='select'&&!_exporting){
     const gs=w2s(...obj.pts[1]);
     ctx.save();ctx.setLineDash([]);
     ctx.fillStyle='#ff9f0a';ctx.strokeStyle='#fff';ctx.lineWidth=2.5;
@@ -1215,12 +1247,114 @@ function ST(t){
 }
 function toggleSnap(){snapOn=!snapOn;document.getElementById('snapBtn').classList.toggle('on',snapOn);toast('Snap '+(snapOn?'ON':'OFF'));}
 function newDoc(){if(!confirm('¿Nuevo documento?'))return;saveHistory();objects=[];nextId=1;render();}
+// ── EXPORTACIÓN (explícita: DXF / PNG / PDF · siempre limpio, sin grilla) ──
+function openExport(){
+  if(!objects.length){toast('Nada para exportar');return;}
+  document.getElementById('exmod').classList.add('show');
+}
+function closeExport(){document.getElementById('exmod').classList.remove('show');}
+function doExport(fmt){
+  closeExport();
+  if(fmt==='dxf')return exportDXF();
+  if(fmt==='pdf')return exportPDF();
+  return exportPNG();
+}
+
+// Caja envolvente (mundo) de todo lo dibujado — incluye el radio de círculo/polígono.
+function contentBounds(){
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity,any=false;
+  const ext=(x,y)=>{if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;any=true;};
+  for(const o of objects){
+    if(!o||!o.pts)continue;
+    if((o.type==='circle'||o.type==='poly')&&o.pts[0]){const[cx,cy]=o.pts[0],r=o.r||0;ext(cx-r,cy-r);ext(cx+r,cy+r);continue;}
+    o.pts.forEach(p=>ext(p[0],p[1]));
+  }
+  if(!any)return null;
+  return{minX,minY,maxX,maxY,w:Math.max(1,maxX-minX),h:Math.max(1,maxY-minY)};
+}
+
+// Render limpio (sin grilla, sin grips) ajustado al contenido → dataURL PNG en alta resolución.
+function renderCleanURL(){
+  const bb=contentBounds();if(!bb)return null;
+  const prevW=cv.width,prevH=cv.height,pvX=vpX,pvY=vpY,pvZ=vpZ,pvTool=tool;
+  const pad=Math.max(cellPx*0.5,Math.max(bb.w,bb.h)*0.06);
+  const wW=bb.w+pad*2,wH=bb.h+pad*2;
+  const scale=2000/Math.max(wW,wH,1);            // lado mayor ≈ 2000px
+  cv.width=Math.round(wW*scale);cv.height=Math.round(wH*scale);
+  vpZ=scale;vpX=-(bb.minX-pad)*scale;vpY=-(bb.minY-pad)*scale;
+  tool='';_exporting=true;
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+  render();
+  const url=cv.toDataURL('image/png');
+  _exporting=false;tool=pvTool;vpX=pvX;vpY=pvY;vpZ=pvZ;
+  cv.width=prevW;cv.height=prevH;render();
+  return url;
+}
+
 async function exportPNG(){
-  const off=document.createElement('canvas');off.width=cv.width;off.height=cv.height;
-  const oc=off.getContext('2d');oc.fillStyle='#fff';oc.fillRect(0,0,off.width,off.height);oc.drawImage(cv,0,0);
+  const url=renderCleanURL();if(!url){toast('Nada para exportar');return;}
   const fn='ildraw_'+Date.now()+'.png';
-  if(navigator.share&&navigator.canShare){try{const blob=await new Promise(res=>off.toBlob(res,'image/png'));const file=new File([blob],fn,{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'iLDraw'});return;}}catch(ex){if(ex.name==='AbortError')return;}}
-  const a=document.createElement('a');a.download=fn;a.href=off.toDataURL('image/png');a.click();toast('PNG guardado ✓');
+  if(navigator.share&&navigator.canShare){try{const blob=await(await fetch(url)).blob();const file=new File([blob],fn,{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'iLDraw'});return;}}catch(ex){if(ex.name==='AbortError')return;}}
+  const a=document.createElement('a');a.download=fn;a.href=url;a.click();toast('PNG guardado ✓');
+}
+
+function exportPDF(){
+  const bb=contentBounds();const url=renderCleanURL();if(!url){toast('Nada para exportar');return;}
+  const landscape=bb.w>=bb.h;
+  const w=window.open('','_blank');
+  if(!w){toast('Permití la ventana emergente');return;}
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>iLDraw</title>'+
+    '<style>@page{size:'+(landscape?'A4 landscape':'A4 portrait')+';margin:12mm}'+
+    'html,body{margin:0;padding:0}img{width:100%;height:auto;display:block}</style></head>'+
+    '<body><img src="'+url+'" onload="setTimeout(function(){window.print()},150)"></body></html>');
+  w.document.close();
+  toast('PDF · elegí "Guardar como PDF"');
+}
+
+// Muestrea un arco de 3 puntos como polilínea en coords mundo (robusto ante orientación).
+function arcPolyPts(o){
+  const arc=threePointArc(o.pts[0],o.pts[1],o.pts[2]);
+  if(!arc)return[o.pts[0],o.pts[2]];
+  const ang=p=>Math.atan2(p[1]-arc.cy,p[0]-arc.cx);
+  const a0=ang(o.pts[0]);
+  const norm=a=>(((a-a0)%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+  const nm=norm(ang(o.pts[1])),n1=norm(ang(o.pts[2]));
+  const end=nm<=n1?a0+n1:a0+(n1-2*Math.PI);       // sentido que pasa por el punto medio
+  const steps=Math.max(8,Math.ceil(Math.abs(end-a0)/(Math.PI/36)));
+  const pts=[];for(let i=0;i<=steps;i++){const a=a0+(end-a0)*i/steps;pts.push([arc.cx+arc.r*Math.cos(a),arc.cy+arc.r*Math.sin(a)]);}
+  return pts;
+}
+
+// DXF ASCII (R12) — vectorial, en metros (1 celda = 1 m). Y invertida (CAD es Y arriba).
+function exportDXF(){
+  const bb=contentBounds();if(!bb){toast('Nada para exportar');return;}
+  const s=1/cellPx;
+  const X=x=>(x*s).toFixed(4),Y=y=>(-y*s).toFixed(4);
+  const e=[];
+  const line=(a,b)=>e.push('0','LINE','8','iLDraw','10',X(a[0]),'20',Y(a[1]),'30','0.0','11',X(b[0]),'21',Y(b[1]),'31','0.0');
+  const poly=(pts,closed)=>{e.push('0','LWPOLYLINE','8','iLDraw','90',String(pts.length),'70',closed?'1':'0');for(const p of pts)e.push('10',X(p[0]),'20',Y(p[1]));};
+  const circle=(c,r)=>e.push('0','CIRCLE','8','iLDraw','10',X(c[0]),'20',Y(c[1]),'30','0.0','40',(r*s).toFixed(4));
+  const text=(p,h,t)=>e.push('0','TEXT','8','iLDraw','10',X(p[0]),'20',Y(p[1]),'30','0.0','40',(h*s).toFixed(4),'1',String(t).replace(/\n/g,' '));
+  for(const o of objects){
+    if(!o||!o.pts)continue;
+    switch(o.type){
+      case 'line':line(o.pts[0],o.pts[1]);break;
+      case 'rect':{const[[ax,ay],[bx,by]]=o.pts;poly([[ax,ay],[bx,ay],[bx,by],[ax,by]],true);break;}
+      case 'pline':poly(o.pts,!!o.closed);break;
+      case 'pen':poly(o.pts,false);break;
+      case 'circle':circle(o.pts[0],o.r||0);break;
+      case 'poly':{const c=o.pts[0],r=o.r||0,n=o.sides||4,vs=[];for(let i=0;i<n;i++){const a=(-Math.PI/2)+(2*Math.PI*i/n);vs.push([c[0]+r*Math.cos(a),c[1]+r*Math.sin(a)]);}poly(vs,true);break;}
+      case 'arc':poly(arcPolyPts(o),false);break;
+      case 'text':text(o.pts[0],o.fontSize||14,o.text||'');break;
+      case 'dim':case 'dim2':{line(o.pts[0],o.pts[1]);const mx=(o.pts[0][0]+o.pts[1][0])/2,my=(o.pts[0][1]+o.pts[1][1])/2,len=hyp(o.pts[1][0]-o.pts[0][0],o.pts[1][1]-o.pts[0][1]);text([mx,my],10,o.label||(len/cellPx).toFixed(2)+'m');break;}
+      case 'hatch':poly(o.pts,true);break;
+    }
+  }
+  const dxf=['0','SECTION','2','HEADER','9','$INSUNITS','70','6','0','ENDSEC','0','SECTION','2','ENTITIES',...e,'0','ENDSEC','0','EOF'].join('\n');
+  const a=document.createElement('a');a.download='ildraw_'+Date.now()+'.dxf';
+  a.href=URL.createObjectURL(new Blob([dxf],{type:'application/dxf'}));a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  toast('DXF guardado ✓');
 }
 function setDimFont(sz){
   dimFontSize=sz;
