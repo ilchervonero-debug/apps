@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#F2F2F0"/>
+  <!-- rayo -->
+  <path d="M108 34 60 104h30l-8 54 52-74H98z" fill="#888888"/>
+  <!-- acento rojo -->
+  <path d="M108 34 60 104h30" fill="none" stroke="#FF3333" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -160,6 +160,30 @@ Versión = número de caché del SW.
   = chatarra (sin volqueta). localStorage (obras + config).
 - **Nota:** a futuro **fusionar con APU/HA-Calc** (mismo esquema de Config/rubros).
 
+### iLVolt — `apps/ilvolt/` · v1 · en grilla
+- **Qué es:** **presupuesto de instalaciones eléctricas** (Uruguay). Primera app que
+  estrena la estructura iLStyle 1.8 completa (Core + Proyectos → Dashboard por fases →
+  Resultados aparte).
+- **Estructura:**
+  - *Landing* = **Core** (tarjeta: matriz de precios base editable — mano de obra,
+    factores SAU/BPS, módulos por línea económico/estándar/diseño/premium, canalización,
+    iluminación, fuerza) + **Proyectos**.
+  - *Proyecto* con 4 pestañas (flujo de arriba abajo, **sin costos durante el diseño**):
+    **Datos** (cliente, ubicación, fecha, línea, jornal base editable, switches: SAU,
+    BPS Ley 14.411, vista/embutida, incendio, T2 exterior, solo inspecciona + visitas,
+    tramo subterráneo + metros + cambio dirección) → **Ambientes** (nodos con bocas:
+    tomas 10A/Schuko/Schuko-corte/USB/luces/paneles + cargas: horno-anafe, termofón,
+    sensores/reflectores, bomba-piscina) → **Ingeniería** (tableros T1/T2, circuitos,
+    térmicas, diferenciales, alertas, medida indirecta >40 kW — **sin costos**) →
+    **Resultados** (costos discriminados, desglose por ambiente, encabezado + notas
+    legales editables, firmas en el PDF).
+- **Motor:** `CorePresupuesto.calcularProyecto` integrado del documento de Ángel
+  (reglas UTE: 2×PVC 63mm + cámaras cada 15m, PAT automática, medida indirecta >40 kW;
+  mano de obra por rendimiento SAU × jornal × BPS 1.758, o boca fija; peinado de tableros;
+  visitas de inspección). Spec completa en `apps/ilvolt/CORE-SPEC.md`.
+- **Export:** Excel (.xlsx) + CSV + Imprimir/PDF (limpio, encabezado + firmas + notas,
+  sin marca de app). localStorage (core editable + proyectos).
+
 ---
 
 ## Notas

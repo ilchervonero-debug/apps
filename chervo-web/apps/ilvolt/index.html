@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>iLVolt — Presupuesto eléctrico</title>
+<meta name="theme-color" content="#F2F2F0">
+<link rel="manifest" href="/apps/ilvolt/manifest.json">
+<link rel="apple-touch-icon" href="/apps/ilvolt/icon-192.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<style>
+:root{ --white:#FFFFFF; --bg:#F2F2F0; --gray-l:#F6F6F6; --gray-m:#DCDCD8; --ink:#1C1C1C; --gray-t:#7A7A7A; --plata:#C0C0C0; --red:#FE0000; }
+*{box-sizing:border-box; margin:0; padding:0; font-family:'Exo',sans-serif; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%; background:var(--bg); font-size:16px; color:var(--ink); line-height:1.5; overflow-x:hidden;}
+.app{display:flex; flex-direction:column; height:100dvh; overflow:hidden;}
+.ic{width:26px; height:26px; fill:none; stroke:var(--ink); stroke-width:1.3; stroke-linecap:round; stroke-linejoin:round; flex:none;}
+.ic-red{stroke:var(--red);}
+
+header{background:var(--white); padding:14px 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--gray-m); flex-shrink:0;}
+#headTitle{font-size:22px; letter-spacing:-.3px; font-weight:800; color:var(--plata);}
+#headTitle .red{color:var(--red);}
+.hburger{background:none; border:none; cursor:pointer; padding:6px; display:flex;}
+.header-btn{background:none; border:none; color:var(--ink); padding:8px 6px; cursor:pointer; font-size:16px; display:flex; align-items:center; gap:6px;}
+
+.view{display:none; flex:1; overflow:hidden; flex-direction:column;}
+.view.active{display:flex;}
+.scroll{flex:1; overflow-y:auto; overflow-x:hidden; padding-bottom:36px;}
+.container{padding:20px; max-width:900px; margin:0 auto; width:100%;}
+
+.add-bar{display:flex; gap:10px; margin-bottom:20px;}
+.add-bar>*{min-width:0;}
+.input,.sel,textarea{padding:12px 14px; border:1px solid var(--gray-m); border-radius:8px; font-size:18px; background:var(--white); color:var(--ink); width:100%; max-width:100%; font-family:'Exo',sans-serif;}
+.sel{font-size:16px;}
+.input:focus,.sel:focus,textarea:focus{outline:none; border-color:var(--red);}
+textarea{resize:vertical; min-height:70px; line-height:1.5;}
+/* Sin botones pintados: ícono + borde que cambia de color */
+.btn{border:1.5px solid var(--gray-m); padding:12px 16px; border-radius:8px; font-size:16px; cursor:pointer; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; background:var(--white); color:var(--ink);}
+.btn .ic{stroke:currentColor; width:22px; height:22px;}
+.btn-red{color:var(--red); border-color:var(--red);}
+.btn-sm{padding:10px 13px; font-size:15px;}
+.btn-text{background:none; border:none; color:var(--red); padding:11px 6px; font-size:16px; cursor:pointer; white-space:nowrap;}
+.btn:active,.btn-text:active{filter:brightness(.94);}
+
+.card{display:flex; align-items:center; gap:14px; padding:18px; background:var(--white); border:1px solid var(--gray-m); border-radius:10px; margin-bottom:12px; cursor:pointer;}
+.card:active{background:var(--gray-l);}
+.card-title{font-size:19px; flex:1; min-width:0;}
+.card-sub{font-size:14px; color:var(--gray-t);}
+.card-core{border-left:4px solid var(--red);}
+.empty{text-align:center; padding:30px 20px; color:var(--gray-t); font-size:17px;}
+
+.tabs{display:flex; gap:6px; margin-bottom:18px; overflow-x:auto;}
+.tab{flex:1 0 auto; padding:11px 14px; border-radius:10px; border:1.5px solid var(--gray-m); background:var(--white); color:var(--ink); font-size:15px; cursor:pointer; white-space:nowrap;}
+.tab.on{border-color:var(--red); color:var(--red);}
+
+.field{margin-bottom:14px;}
+.field label{display:block; font-size:15px; color:var(--gray-t); margin-bottom:5px;}
+.chk{display:flex; align-items:center; gap:12px; margin-bottom:12px; cursor:pointer; font-size:16px;}
+.chk input{display:none;}
+.chk .mark{width:24px; height:24px; border:1.5px solid var(--gray-m); border-radius:5px; background:var(--white); position:relative; flex:none;}
+.chk input:checked + .mark{border-color:var(--red);}
+.chk input:checked + .mark::after{content:""; position:absolute; left:8px; top:4px; width:5px; height:10px; border:solid var(--red); border-width:0 2px 2px 0; transform:rotate(45deg);}
+.sub-in{display:flex; align-items:center; gap:10px; margin:-4px 0 12px 36px;}
+.sub-in .input{width:130px; font-size:16px;}
+.sub-in span{font-size:15px; color:var(--gray-t);}
+
+.item{background:var(--white); border:1px solid var(--gray-m); border-left:4px solid var(--red); border-radius:10px; padding:16px; margin-bottom:14px;}
+.item-head{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+.item-head .input{flex:1;}
+.g2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.numf{display:flex; flex-direction:column; gap:4px;}
+.numf label{font-size:13px; color:var(--gray-t);}
+.numf input{padding:10px; border:1px solid var(--gray-m); border-radius:8px; font-size:17px; text-align:right;}
+.numf input:focus{outline:none; border-color:var(--red);}
+
+.sec-title{font-size:18px; margin:18px 0 10px; color:var(--ink);}
+.eng{background:var(--white); border:1px solid var(--gray-m); border-radius:10px; padding:16px; margin-bottom:14px;}
+.eng h4{font-size:16px; margin-bottom:8px;}
+.circ{font-size:15px; padding:7px 0; border-bottom:1px solid var(--gray-l); display:flex; gap:8px;}
+.circ .cid{color:var(--red); font-weight:600; min-width:74px;}
+.stat{display:flex; gap:22px; margin-top:12px;}
+.stat b{font-size:22px; font-weight:600; display:block;}
+.stat span{font-size:13px; color:var(--gray-t); text-transform:uppercase;}
+.alert{border:1.5px solid var(--red); border-radius:10px; padding:12px 14px; margin-bottom:10px; font-size:15px; color:var(--ink);}
+.alert.crit{background:#fff;}
+.alert .at{color:var(--red); font-weight:600;}
+
+.totbox{background:var(--white); border:1px solid var(--gray-m); border-radius:10px; padding:18px; margin-bottom:16px;}
+.totrow{display:flex; justify-content:space-between; padding:6px 0; font-size:17px; gap:10px;}
+.totrow.big{font-size:23px; font-weight:600; color:var(--red); border-top:2px solid var(--red); margin-top:6px; padding-top:12px;}
+.tbl-wrap{width:100%; overflow-x:auto; margin-bottom:16px;}
+.mtable{width:100%; border-collapse:collapse; font-size:15px;}
+.mtable th{text-align:left; font-weight:600; color:var(--gray-t); font-size:13px; text-transform:uppercase; padding:8px 6px; border-bottom:1px solid var(--gray-m);}
+.mtable td{padding:8px 6px; border-bottom:1px solid var(--gray-l);}
+.mtable td.q{text-align:right; white-space:nowrap;}
+
+.ov{position:fixed; inset:0; background:rgba(20,20,20,.4); display:none; align-items:flex-end; justify-content:center; z-index:100;}
+.ov.on{display:flex;}
+.sheet{background:var(--white); width:100%; max-width:560px; border-radius:20px 20px 0 0; padding:20px 20px calc(24px + env(safe-area-inset-bottom,0)); max-height:88dvh; overflow-y:auto;}
+.sheet h3{font-size:20px; font-weight:600; margin-bottom:12px;}
+.sheet .row{display:flex; align-items:center; padding:12px 4px; border-bottom:1px solid var(--gray-l); font-size:16px; cursor:pointer; gap:12px;}
+.sheet .ver{font-size:14px; color:var(--gray-t); margin-top:12px; text-align:center;}
+
+#toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(8px); background:rgba(28,28,28,.92); color:#fff; padding:11px 20px; border-radius:22px; font-size:16px; opacity:0; transition:.2s; pointer-events:none; z-index:200;}
+#toast.on{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div id="headTitle"><span class="red">iL</span>Volt</div>
+    <div style="display:flex; align-items:center; gap:4px;">
+      <button class="header-btn" id="btnBack" onclick="goBack()" style="display:none;">
+        <svg class="ic ic-red" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> Volver
+      </button>
+      <button class="hburger" onclick="openMenu()" title="Menú">
+        <svg class="ic ic-red" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- LANDING: Core + Proyectos -->
+  <div id="view-home" class="view active">
+    <div class="scroll"><div class="container">
+      <div class="card card-core" onclick="openCore()">
+        <svg class="ic ic-red" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>
+        <div style="flex:1; min-width:0;"><div class="card-title">Core · Tarifas y precios</div>
+          <div class="card-sub">Matriz de precios base (editable)</div></div>
+        <svg class="ic" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </div>
+      <div class="add-bar" style="margin-top:8px;">
+        <input type="text" id="newProjName" class="input" placeholder="Nombre del proyecto…">
+        <button class="btn btn-red" onclick="createProject()">Crear</button>
+      </div>
+      <div id="projectsList"></div>
+    </div></div>
+  </div>
+
+  <!-- CORE editor -->
+  <div id="view-core" class="view">
+    <div class="scroll"><div class="container">
+      <h2 style="font-size:24px; font-weight:600; margin-bottom:6px; color:var(--plata);">Core · Tarifas</h2>
+      <p class="card-sub" style="margin-bottom:18px;">Valores por defecto en $ UYU. Se guardan al escribir.</p>
+      <div id="coreForm"></div>
+      <button class="btn btn-red" style="width:100%; margin-top:10px;" onclick="resetCore()">Restaurar valores por defecto</button>
+    </div></div>
+  </div>
+
+  <!-- PROYECTO -->
+  <div id="view-proj" class="view">
+    <div class="scroll"><div class="container">
+      <h2 id="pdTitle" style="font-size:23px; font-weight:600; margin-bottom:14px; color:var(--plata);"></h2>
+      <div class="tabs">
+        <button class="tab on" data-tab="datos" onclick="switchTab('datos')">Datos</button>
+        <button class="tab" data-tab="ambientes" onclick="switchTab('ambientes')">Ambientes</button>
+        <button class="tab" data-tab="ingenieria" onclick="switchTab('ingenieria')">Ingeniería</button>
+        <button class="tab" data-tab="resultados" onclick="switchTab('resultados')">Resultados</button>
+      </div>
+      <div id="tab-datos"></div>
+      <div id="tab-ambientes" style="display:none;"></div>
+      <div id="tab-ingenieria" style="display:none;"></div>
+      <div id="tab-resultados" style="display:none;"></div>
+    </div></div>
+  </div>
+
+</div>
+
+<!-- MENÚ -->
+<div class="ov" id="menuOv" onclick="if(event.target===this)closeMenu()">
+  <div class="sheet">
+    <h3><span style="color:var(--red);font-weight:800;">iL</span><span style="color:var(--plata);font-weight:800;">Volt</span></h3>
+    <div class="row" onclick="closeMenu();openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Core · Tarifas y precios</div>
+    <div class="ver">iLVolt · versión 1.0 · presupuesto eléctrico (UY)</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   iLVolt — Core de presupuestación eléctrica (Uruguay).
+   Estructura: Landing (Core + Proyectos) → Dashboard por fases
+   (Datos → Ambientes → Ingeniería) → Resultados (pestaña aparte,
+   sin mezclar costos en el diseño). localStorage.
+   ============================================================ */
+
+// ---- CORE por defecto (matriz de precios, editable) ----
+const CORE_DEFAULT = {
+  manoDeObra: { bocaFijo:800, peinadoLlave:400, visitaInspeccion:2500 },
+  factoresSAU: { jornalBaseMedioOficial:2500, coeficienteBocaEmbutida:0.522, coeficienteBocaVista:0.418, multiplicadorBpsUnificado:1.758 },
+  marcasModulos: {
+    economico:{ interruptor:105, toma10a:116, schuko:163, usb:600, schukoCorte:280 },
+    estandar: { interruptor:75,  toma10a:85,  schuko:229, usb:600, schukoCorte:350 },
+    diseno:   { interruptor:180, toma10a:210, schuko:325, usb:650, schukoCorte:480 },
+    premium:  { interruptor:240, toma10a:280, schuko:410, usb:750, schukoCorte:590 }
+  },
+  canalizacion: { corrugadoNaranjaMetro:15, corrugadoAzulMetro:25, corrugadoReforzadoMetro:26, cajaEmbutir10x5:45, daisaTuboMetro:100, daisaConector:130, daisaCajaAluminio:440, pvcSubterrano63mmMetro:90, camaraRegistro40x40:1800, kitPuestaATierra:1500 },
+  iluminacion: { dicroicaLed:180, panelLedPlafones:450, reflectorExteriorLed:650, sensorMovimientoFotocelula:550 },
+  fuerzaExterior: { bombaAguaPiscina:4500 }
+};
+let core = mergeCore(JSON.parse(localStorage.getItem('ilvolt_core')||'null'));
+function mergeCore(saved){ const c=JSON.parse(JSON.stringify(CORE_DEFAULT)); if(saved){ for(const g in c){ if(saved[g]) for(const k in c[g]){ if(g==='marcasModulos'){ for(const m in c[g][k]) if(saved[g][k]&&saved[g][k][m]!=null) c[g][k][m]=saved[g][k][m]; } else if(saved[g][k]!=null) c[g][k]=saved[g][k]; } } } return c; }
+function saveCore(){ localStorage.setItem('ilvolt_core', JSON.stringify(core)); }
+
+let projects = JSON.parse(localStorage.getItem('ilvolt_db')||'[]');
+let activeId=null, curTab='datos';
+function saveDB(){ localStorage.setItem('ilvolt_db', JSON.stringify(projects)); }
+const proj = ()=> projects.find(p=>p.id===activeId);
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
+const money = (n)=> '$ '+Math.round(n).toLocaleString('es-UY');
+const num = (n)=> (Math.round(n*100)/100).toLocaleString('es-UY');
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+const DEFAULT_NOTAS = "Presupuesto estimado, válido por 15 días. Sujeto a verificación en obra. No incluye gestiones ante UTE ni obra civil (amurado) salvo indicación expresa. Precios sujetos a disponibilidad y tipo de cambio.";
+
+/* ==================== MOTOR (Core JS integrado) ==================== */
+const CorePresupuesto = {
+  calcularProyecto: function(datosProyecto){
+    const P = core;
+    let totalMateriales=0, totalManoObra=0, totalBocasContadas=0;
+    let desgloseAmbientes=[];
+    let ingenieriaTableros={ requiereMedidaIndirecta:false, alertasSeguridad:[],
+      T1:{descripcion:"Tablero General Principal (Interior)", circuitos:[]},
+      T2:{descripcion:"Tablero Seccional (Exterior/Piscina/Barbacoa)", circuitos:[]},
+      totalDiferenciales:0, totalTermicas:0 };
+    let totalPotenciaEstimadaW=0;
+    let necesitaT2 = datosProyecto.requiereSubTableroExterior;
+
+    ingenieriaTableros.T1.circuitos.push({id:"C1", tipo:"Iluminación LED General", destino:"Interiores limpios"});
+    ingenieriaTableros.T1.circuitos.push({id:"C2", tipo:"Tomas Generales 10A", destino:"Dormitorios y Estar"});
+    ingenieriaTableros.totalTermicas+=2; ingenieriaTableros.totalDiferenciales+=1;
+    let diferencialCocinaAsignado=false;
+
+    (datosProyecto.ambientes||[]).forEach(amb=>{
+      let costoMaterialesAmb=0, puestasAmb=0;
+      const preciosLinea = P.marcasModulos[datosProyecto.perfilCalidad] || P.marcasModulos.estandar;
+      puestasAmb += (amb.tomas10a||0)+(amb.tomasSchuko||0)+(amb.tomasSchukoCorte||0)+(amb.modulosUsb||0)+(amb.lucesLed||0);
+      totalBocasContadas += puestasAmb;
+      costoMaterialesAmb += (amb.tomas10a||0)*preciosLinea.toma10a;
+      costoMaterialesAmb += (amb.tomasSchuko||0)*preciosLinea.schuko;
+      costoMaterialesAmb += (amb.tomasSchukoCorte||0)*preciosLinea.schukoCorte;
+      costoMaterialesAmb += (amb.modulosUsb||0)*preciosLinea.usb;
+      costoMaterialesAmb += (amb.lucesLed||0)*P.iluminacion.dicroicaLed;
+      costoMaterialesAmb += (amb.panelesLed||0)*P.iluminacion.panelLedPlafones;
+      costoMaterialesAmb += puestasAmb*P.canalizacion.cajaEmbutir10x5;
+      let precioCañoUso = datosProyecto.esEntornoIncendio ? P.canalizacion.corrugadoAzulMetro : P.canalizacion.corrugadoNaranjaMetro;
+      costoMaterialesAmb += puestasAmb*4*precioCañoUso;
+      costoMaterialesAmb += puestasAmb*6*P.canalizacion.corrugadoNaranjaMetro;
+
+      if(amb.tipo==="cocina"){
+        totalPotenciaEstimadaW+=3500;
+        if(amb.tieneHornoAnafe){ totalPotenciaEstimadaW+=4500;
+          ingenieriaTableros.alertasSeguridad.push("Cocina: Se detectó Horno/Anafe eléctrico. Se genera circuito exclusivo Carga Pesada.");
+          ingenieriaTableros.T1.circuitos.push({id:"C_Horno", tipo:"Circuito Exclusivo Horno/Anafe", destino:"Cocina"});
+          ingenieriaTableros.totalTermicas++; }
+        if(!diferencialCocinaAsignado){
+          ingenieriaTableros.T1.circuitos.push({id:"C_TomasCocina", tipo:"Tomas de Mesada y Electrodomésticos Pesados", destino:"Cocina"});
+          ingenieriaTableros.totalTermicas++; ingenieriaTableros.totalDiferenciales++; diferencialCocinaAsignado=true; }
+      }
+      if(amb.tieneTermofon){ totalPotenciaEstimadaW+=2000;
+        ingenieriaTableros.alertasSeguridad.push("Ambiente "+amb.nombre+": Se detectó Termofón. Se exige circuito independiente con Schuko con corte.");
+        ingenieriaTableros.T1.circuitos.push({id:"C_Termofon_"+amb.nombre, tipo:"Alimentación Exclusiva Termofón", destino:amb.nombre});
+        ingenieriaTableros.totalTermicas++; }
+
+      if(amb.tipo==="exterior"||amb.tipo==="patio"){
+        costoMaterialesAmb += (amb.sensoresMovimiento||0)*P.iluminacion.sensorMovimientoFotocelula;
+        costoMaterialesAmb += (amb.reflectoresLed||0)*P.iluminacion.reflectorExteriorLed;
+        if(amb.tieneBombaOFiltrado){ totalPotenciaEstimadaW+=1500; costoMaterialesAmb += P.fuerzaExterior.bombaAguaPiscina;
+          ingenieriaTableros.alertasSeguridad.push("Exterior: Se detectó Bomba/Piscina. Se exige disyuntor diferencial aislado exclusivo para intemperie."); }
+        let tableroDestino = necesitaT2 ? "T2":"T1";
+        if(necesitaT2 && ingenieriaTableros.T2.circuitos.length===0) ingenieriaTableros.totalDiferenciales++;
+        else if(!necesitaT2 && amb.tieneBombaOFiltrado) ingenieriaTableros.totalDiferenciales++;
+        ingenieriaTableros[tableroDestino].circuitos.push({id:"C_Ext_Ilum", tipo:"Iluminación Exterior (Sensores/Fotocélulas/Reflectores)", destino:amb.nombre});
+        ingenieriaTableros[tableroDestino].circuitos.push({id:"C_Ext_Fuerza", tipo:"Fuerza Exterior (Bombas y Tomas Estancos IP55)", destino:amb.nombre});
+        ingenieriaTableros.totalTermicas+=2;
+      }
+      totalMateriales += costoMaterialesAmb;
+      desgloseAmbientes.push({nombre:amb.nombre, puestas:puestasAmb, subtotalMateriales:costoMaterialesAmb});
+    });
+
+    let costoSubterraneo=0;
+    if(datosProyecto.llevaTramoSubterraneo){
+      costoSubterraneo += (datosProyecto.metrosSubterraneo||0)*(P.canalizacion.pvcSubterrano63mmMetro*2);
+      let cantidadCamaras=2;
+      if((datosProyecto.metrosSubterraneo||0)>15 || datosProyecto.tieneCambioDireccionSubterraneo) cantidadCamaras += Math.floor((datosProyecto.metrosSubterraneo||0)/15);
+      costoSubterraneo += cantidadCamaras*P.canalizacion.camaraRegistro40x40;
+      totalMateriales += costoSubterraneo;
+    }
+    totalMateriales += P.canalizacion.kitPuestaATierra;
+
+    if(totalPotenciaEstimadaW>40000){ ingenieriaTableros.requiereMedidaIndirecta=true;
+      ingenieriaTableros.alertasSeguridad.push("CRÍTICO: La carga calculada supera los 40 kW. Se debe presupuestar e instalar Puesto de Medida Indirecta (Gabinetes acoplados CM doble + CT + CI) con barras de cobre estañadas."); }
+
+    let subtotalManoObraBocas=0;
+    if(datosProyecto.calcularPorSAU){
+      let factorRendimiento = datosProyecto.esInstalacionVista ? P.factoresSAU.coeficienteBocaVista : P.factoresSAU.coeficienteBocaEmbutida;
+      let jornalBase = datosProyecto.jornalBase || P.factoresSAU.jornalBaseMedioOficial;
+      let manoObraBaseImponible = totalBocasContadas*factorRendimiento*jornalBase;
+      subtotalManoObraBocas = datosProyecto.aplicaBpsUnificado ? manoObraBaseImponible*P.factoresSAU.multiplicadorBpsUnificado : manoObraBaseImponible;
+    } else {
+      subtotalManoObraBocas = totalBocasContadas*P.manoDeObra.bocaFijo;
+    }
+    let subtotalManoObraTableros = ingenieriaTableros.totalTermicas*P.manoDeObra.peinadoLlave;
+    totalManoObra = subtotalManoObraBocas + subtotalManoObraTableros;
+    if(datosProyecto.soloInspeccionaCanalizacion) totalManoObra += (datosProyecto.cantidadVisitasObra||2)*P.manoDeObra.visitaInspeccion;
+
+    return { cliente:datosProyecto.cliente, ubicacion:datosProyecto.ubicacion, fechaEmision:datosProyecto.fecha||new Date().toLocaleDateString('es-UY'),
+      totalBocas:totalBocasContadas, desgloseAmbientes, ingenieriaTableros,
+      costos:{ subtotalMaterialesModulosYCaños:Math.round(totalMateriales-costoSubterraneo), subtotalInfraestructuraSubterraneaUte:Math.round(costoSubterraneo),
+        totalMaterialesNeto:Math.round(totalMateriales), totalManoObraNeto:Math.round(totalManoObra), TOTAL:Math.round(totalMateriales+totalManoObra) } };
+  }
+};
+
+/* ==================== Navegación ==================== */
+function navTo(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('btnBack').style.display=(v==='home')?'none':'flex';
+  if(v==='home') renderHome();
+  if(v==='core') renderCore();
+  if(v==='proj'){ curTab='datos'; switchTab('datos'); document.getElementById('pdTitle').textContent=proj()?proj().name:''; }
+}
+function goBack(){ if(document.getElementById('view-proj').classList.contains('active')||document.getElementById('view-core').classList.contains('active')) navTo('home'); }
+function openMenu(){ document.getElementById('menuOv').classList.add('on'); }
+function closeMenu(){ document.getElementById('menuOv').classList.remove('on'); }
+function openCore(){ navTo('core'); }
+
+/* ==================== Proyectos ==================== */
+function createProject(){
+  const inp=document.getElementById('newProjName'), name=inp.value.trim();
+  if(!name){ toast('Escribí un nombre'); return; }
+  projects.push({ id:Date.now(), name, cliente:'', ubicacion:'', fecha:new Date().toLocaleDateString('es-UY'),
+    perfilCalidad:'estandar', jornalBase:core.factoresSAU.jornalBaseMedioOficial,
+    calcularPorSAU:true, aplicaBpsUnificado:true, esInstalacionVista:false, esEntornoIncendio:false,
+    requiereSubTableroExterior:false, soloInspeccionaCanalizacion:false, cantidadVisitasObra:2,
+    llevaTramoSubterraneo:false, metrosSubterraneo:0, tieneCambioDireccionSubterraneo:false,
+    encabezado:'', notasLegales:DEFAULT_NOTAS, ambientes:[] });
+  saveDB(); inp.value=''; renderHome();
+}
+function openProject(id){ activeId=id; navTo('proj'); }
+function delProject(id,ev){ ev.stopPropagation(); if(!confirm('¿Borrar el proyecto?'))return; projects=projects.filter(p=>p.id!==id); saveDB(); renderHome(); }
+function renderHome(){
+  const l=document.getElementById('projectsList');
+  if(!projects.length){ l.innerHTML='<div class="empty">Sin proyectos. Creá el primero arriba.</div>'; return; }
+  l.innerHTML = projects.map(p=>`
+    <div class="card" onclick="openProject(${p.id})">
+      <svg class="ic ic-red" viewBox="0 0 24 24"><path d="M3 21h18M6 21V7l7-4 7 4v14"/><path d="M10 21v-6h4v6"/></svg>
+      <div style="flex:1; min-width:0;"><div class="card-title">${esc(p.name)}</div>
+        <div class="card-sub">${(p.ambientes||[]).length} ambiente(s)${p.cliente?' · '+esc(p.cliente):''}</div></div>
+      <button class="btn-text" onclick="delProject(${p.id},event)">Borrar</button>
+    </div>`).join('');
+}
+
+/* ==================== Core editor ==================== */
+const CORE_LABELS = {
+  manoDeObra:{__t:'Mano de obra', bocaFijo:'Boca (trato fijo)', peinadoLlave:'Peinado llave / tablero', visitaInspeccion:'Visita de inspección'},
+  factoresSAU:{__t:'Factores SAU / BPS', jornalBaseMedioOficial:'Jornal base ½ oficial', coeficienteBocaEmbutida:'Coef. boca embutida', coeficienteBocaVista:'Coef. boca vista', multiplicadorBpsUnificado:'Multiplicador BPS unificado'},
+  canalizacion:{__t:'Canalización', corrugadoNaranjaMetro:'Corrugado naranja $/m', corrugadoAzulMetro:'Corrugado azul ignífugo $/m', corrugadoReforzadoMetro:'Corrugado reforzado $/m', cajaEmbutir10x5:'Caja embutir 10×5', daisaTuboMetro:'Daisa tubo $/m', daisaConector:'Daisa conector', daisaCajaAluminio:'Daisa caja aluminio', pvcSubterrano63mmMetro:'PVC subterráneo 63mm $/m', camaraRegistro40x40:'Cámara registro 40×40', kitPuestaATierra:'Kit puesta a tierra'},
+  iluminacion:{__t:'Iluminación', dicroicaLed:'Dicroica LED', panelLedPlafones:'Panel / plafón LED', reflectorExteriorLed:'Reflector exterior LED', sensorMovimientoFotocelula:'Sensor / fotocélula'},
+  fuerzaExterior:{__t:'Fuerza exterior', bombaAguaPiscina:'Bomba agua / piscina'}
+};
+const MARCA_LABELS = { economico:'Económica', estandar:'Estándar (Atenea)', diseno:'Diseño (Duomo)', premium:'Premium (Cambre)' };
+const MOD_LABELS = { interruptor:'Interruptor', toma10a:'Toma 10A', schuko:'Schuko', usb:'USB', schukoCorte:'Schuko c/corte' };
+function renderCore(){
+  let h='';
+  for(const g in CORE_LABELS){ const L=CORE_LABELS[g];
+    h+=`<div class="sec-title">${L.__t}</div><div class="g2">`;
+    for(const k in core[g]) h+=`<div class="numf"><label>${L[k]||k}</label><input type="number" step="any" value="${core[g][k]}" oninput="setCore('${g}','${k}',this.value)"></div>`;
+    h+=`</div>`;
+  }
+  h+=`<div class="sec-title">Módulos por línea</div>`;
+  for(const m in core.marcasModulos){ h+=`<div class="eng"><h4>${MARCA_LABELS[m]||m}</h4><div class="g2">`;
+    for(const k in core.marcasModulos[m]) h+=`<div class="numf"><label>${MOD_LABELS[k]||k}</label><input type="number" step="any" value="${core.marcasModulos[m][k]}" oninput="setCoreMarca('${m}','${k}',this.value)"></div>`;
+    h+=`</div></div>`;
+  }
+  document.getElementById('coreForm').innerHTML=h;
+}
+function setCore(g,k,v){ core[g][k]=+v||0; saveCore(); }
+function setCoreMarca(m,k,v){ core.marcasModulos[m][k]=+v||0; saveCore(); }
+function resetCore(){ if(!confirm('¿Restaurar todos los precios por defecto?'))return; core=JSON.parse(JSON.stringify(CORE_DEFAULT)); saveCore(); renderCore(); toast('Core restaurado'); }
+
+/* ==================== Pestañas del proyecto ==================== */
+function switchTab(t){
+  curTab=t;
+  ['datos','ambientes','ingenieria','resultados'].forEach(x=>{
+    document.getElementById('tab-'+x).style.display = x===t?'block':'none';
+    document.querySelector('.tab[data-tab="'+x+'"]').classList.toggle('on', x===t);
+  });
+  if(t==='datos') renderDatos();
+  if(t==='ambientes') renderAmbientes();
+  if(t==='ingenieria') renderIngenieria();
+  if(t==='resultados') renderResultados();
+}
+function setP(field,val){ const p=proj(); if(!p)return; p[field]=val; saveDB(); }
+
+/* ---- Fase 1: Datos ---- */
+function renderDatos(){
+  const p=proj(); if(!p)return;
+  document.getElementById('tab-datos').innerHTML = `
+    <div class="field"><label>Cliente</label><input class="input" value="${esc(p.cliente)}" oninput="setP('cliente',this.value)"></div>
+    <div class="field"><label>Ubicación de la obra</label><input class="input" value="${esc(p.ubicacion)}" oninput="setP('ubicacion',this.value)"></div>
+    <div class="field"><label>Fecha</label><input class="input" value="${esc(p.fecha)}" oninput="setP('fecha',this.value)"></div>
+    <div class="field"><label>Línea de módulos (calidad)</label>
+      <select class="sel" onchange="setP('perfilCalidad',this.value)">
+        ${['economico','estandar','diseno','premium'].map(k=>`<option value="${k}" ${p.perfilCalidad===k?'selected':''}>${MARCA_LABELS[k]}</option>`).join('')}
+      </select></div>
+    <div class="field"><label>Jornal base ½ oficial ($)</label><input type="number" class="input" value="${p.jornalBase}" oninput="setP('jornalBase',+this.value||0)"></div>
+    ${chk('calcularPorSAU','Calcular mano de obra por rendimiento SAU', p.calcularPorSAU)}
+    ${chk('aplicaBpsUnificado','Obra formalizada Ley 14.411 (BPS +75.8%)', p.aplicaBpsUnificado)}
+    ${chk('esInstalacionVista','Instalación vista (si no, embutida)', p.esInstalacionVista)}
+    ${chk('esEntornoIncendio','Entorno de riesgo de incendio (caño azul)', p.esEntornoIncendio)}
+    ${chk('requiereSubTableroExterior','Sub-tablero exterior T2 (jardín/piscina)', p.requiereSubTableroExterior)}
+    ${chk('soloInspeccionaCanalizacion','Solo inspecciona (amurado lo hace el albañil)', p.soloInspeccionaCanalizacion)}
+    <div class="sub-in" id="sub-visitas" style="${p.soloInspeccionaCanalizacion?'':'display:none'}"><span>Visitas de obra</span><input type="number" class="input" value="${p.cantidadVisitasObra}" oninput="setP('cantidadVisitasObra',+this.value||0)"></div>
+    ${chk('llevaTramoSubterraneo','Acometida con tramo subterráneo (UTE)', p.llevaTramoSubterraneo)}
+    <div id="sub-subte" style="${p.llevaTramoSubterraneo?'':'display:none'}">
+      <div class="sub-in"><span>Metros</span><input type="number" class="input" value="${p.metrosSubterraneo}" oninput="setP('metrosSubterraneo',+this.value||0)"></div>
+      ${chk('tieneCambioDireccionSubterraneo','Tiene cambio de dirección', p.tieneCambioDireccionSubterraneo,'margin-left:36px')}
+    </div>`;
+}
+function chk(field,label,val,style){ return `<label class="chk" style="${style||''}"><input type="checkbox" ${val?'checked':''} onchange="toggleP('${field}',this.checked)"><span class="mark"></span>${label}</label>`; }
+function toggleP(field,val){ setP(field,val); if(field==='soloInspeccionaCanalizacion') document.getElementById('sub-visitas').style.display=val?'flex':'none'; if(field==='llevaTramoSubterraneo') document.getElementById('sub-subte').style.display=val?'block':'none'; }
+
+/* ---- Fase 2: Ambientes ---- */
+const TIPOS = [['cocina','Cocina'],['bano','Baño'],['dormitorio','Dormitorio'],['estar','Estar/Living'],['lavadero','Lavadero'],['exterior','Exterior'],['patio','Patio/Piscina'],['otro','Otro']];
+function renderAmbientes(){
+  const p=proj(); if(!p)return;
+  const list = (p.ambientes||[]).map(a=>ambienteCard(a)).join('');
+  document.getElementById('tab-ambientes').innerHTML = `
+    <button class="btn btn-red" style="width:100%; margin-bottom:16px;" onclick="addAmbiente()">
+      <svg class="ic" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agregar ambiente</button>
+    ${list || '<div class="empty">Sin ambientes. Agregá el primero.</div>'}`;
+}
+function nf(id,field,label,val){ return `<div class="numf"><label>${label}</label><input type="number" min="0" value="${val||0}" oninput="setAmb(${id},'${field}',+this.value||0)"></div>`; }
+function ambienteCard(a){
+  const ext = a.tipo==='exterior'||a.tipo==='patio';
+  return `<div class="item">
+    <div class="item-head">
+      <input class="input" value="${esc(a.nombre)}" placeholder="Nombre del ambiente" oninput="setAmb(${a.id},'nombre',this.value)">
+      <button class="btn-text" onclick="delAmb(${a.id})">Quitar</button>
+    </div>
+    <div class="field"><label>Tipo</label><select class="sel" onchange="setAmb(${a.id},'tipo',this.value,true)">
+      ${TIPOS.map(([v,t])=>`<option value="${v}" ${a.tipo===v?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="g2">
+      ${nf(a.id,'tomas10a','Tomas 10A',a.tomas10a)}
+      ${nf(a.id,'tomasSchuko','Schuko 16A',a.tomasSchuko)}
+      ${nf(a.id,'tomasSchukoCorte','Schuko c/corte',a.tomasSchukoCorte)}
+      ${nf(a.id,'modulosUsb','Módulos USB',a.modulosUsb)}
+      ${nf(a.id,'lucesLed','Luces / dicroicas',a.lucesLed)}
+      ${nf(a.id,'panelesLed','Paneles LED',a.panelesLed)}
+      ${ext?nf(a.id,'sensoresMovimiento','Sensores/fotocél.',a.sensoresMovimiento):''}
+      ${ext?nf(a.id,'reflectoresLed','Reflectores LED',a.reflectoresLed):''}
+    </div>
+    <div style="margin-top:12px;">
+      ${a.tipo==='cocina'?chkA(a.id,'tieneHornoAnafe','Horno / anafe eléctrico',a.tieneHornoAnafe):''}
+      ${chkA(a.id,'tieneTermofon','Termofón',a.tieneTermofon)}
+      ${ext?chkA(a.id,'tieneBombaOFiltrado','Bomba / filtrado piscina',a.tieneBombaOFiltrado):''}
+    </div>
+  </div>`;
+}
+function chkA(id,field,label,val){ return `<label class="chk"><input type="checkbox" ${val?'checked':''} onchange="setAmb(${id},'${field}',this.checked,true)"><span class="mark"></span>${label}</label>`; }
+function addAmbiente(){ const p=proj(); p.ambientes.push({id:Date.now(), nombre:'', tipo:'dormitorio', tomas10a:0,tomasSchuko:0,tomasSchukoCorte:0,modulosUsb:0,lucesLed:0,panelesLed:0,sensoresMovimiento:0,reflectoresLed:0,tieneHornoAnafe:false,tieneTermofon:false,tieneBombaOFiltrado:false}); saveDB(); renderAmbientes(); }
+function setAmb(id,field,val,rerender){ const p=proj(), a=p.ambientes.find(x=>x.id===id); if(!a)return; a[field]=val; saveDB(); if(rerender) renderAmbientes(); }
+function delAmb(id){ const p=proj(); p.ambientes=p.ambientes.filter(x=>x.id!==id); saveDB(); renderAmbientes(); }
+
+/* ---- Fase 3: Ingeniería (sin costos) ---- */
+function renderIngenieria(){
+  const p=proj(); if(!p)return;
+  const r = CorePresupuesto.calcularProyecto(p);
+  const ing = r.ingenieriaTableros;
+  const circHtml = (t)=> t.circuitos.length ? t.circuitos.map(c=>`<div class="circ"><span class="cid">${c.id}</span><span>${esc(c.tipo)} <span style="color:var(--gray-t)">· ${esc(c.destino)}</span></span></div>`).join('') : '<div class="card-sub" style="padding:6px 0;">Sin circuitos.</div>';
+  let alerts = ing.alertasSeguridad.map(a=>{ const crit=a.startsWith('CRÍTICO'); return `<div class="alert ${crit?'crit':''}"><span class="at">${crit?'CRÍTICO · ':''}</span>${esc(a.replace(/^CRÍTICO: /,''))}</div>`; }).join('');
+  document.getElementById('tab-ingenieria').innerHTML = `
+    ${ing.requiereMedidaIndirecta?'<div class="alert crit"><span class="at">Medida indirecta obligatoria (UTE)</span> — supera 40 kW: CM doble + CT + CI.</div>':''}
+    ${alerts||''}
+    <div class="eng"><h4>${esc(ing.T1.descripcion)}</h4>${circHtml(ing.T1)}</div>
+    ${ing.T2.circuitos.length?`<div class="eng"><h4>${esc(ing.T2.descripcion)}</h4>${circHtml(ing.T2)}</div>`:''}
+    <div class="eng"><div class="stat"><div><b>${ing.totalTermicas}</b><span>Térmicas</span></div><div><b>${ing.totalDiferenciales}</b><span>Diferenciales</span></div><div><b>${r.totalBocas}</b><span>Bocas</span></div></div></div>`;
+}
+
+/* ---- Fase 4: Resultados (pestaña aparte, con costos) ---- */
+function renderResultados(){
+  const p=proj(); if(!p)return;
+  const r = CorePresupuesto.calcularProyecto(p);
+  const c = r.costos;
+  document.getElementById('tab-resultados').innerHTML = `
+    <div class="field"><label>Encabezado del presupuesto (editable)</label><textarea oninput="setP('encabezado',this.value)" placeholder="Empresa, técnico, contacto…">${esc(p.encabezado)}</textarea></div>
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <button class="btn btn-red" style="flex:1;" onclick="exportExcel()"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l2 3-2 3M15 13l-2 3 2 3"/></svg>Excel</button>
+      <button class="btn" style="flex:1;" onclick="exportCSV()"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="16" x2="16" y2="16"/></svg>CSV</button>
+    </div>
+    <button class="btn" style="width:100%; margin-bottom:16px;" onclick="imprimir()"><svg class="ic" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir o guardar PDF</button>
+    <div class="tbl-wrap"><table class="mtable"><thead><tr><th>Ambiente</th><th class="q">Bocas</th><th class="q">Materiales</th></tr></thead><tbody>
+      ${r.desgloseAmbientes.map(a=>`<tr><td>${esc(a.nombre)}</td><td class="q">${a.puestas}</td><td class="q">${money(a.subtotalMateriales)}</td></tr>`).join('')||'<tr><td class="card-sub">Sin ambientes.</td></tr>'}
+    </tbody></table></div>
+    <div class="totbox">
+      <div class="totrow"><span>Materiales (módulos y caños)</span><span>${money(c.subtotalMaterialesModulosYCaños)}</span></div>
+      <div class="totrow"><span>Infraestructura subterránea UTE</span><span>${money(c.subtotalInfraestructuraSubterraneaUte)}</span></div>
+      <div class="totrow"><span>Materiales neto</span><span>${money(c.totalMaterialesNeto)}</span></div>
+      <div class="totrow"><span>Mano de obra neto</span><span>${money(c.totalManoObraNeto)}</span></div>
+      <div class="totrow big"><span>TOTAL PROYECTO</span><span>${money(c.TOTAL)}</span></div>
+    </div>
+    <div class="field"><label>Notas legales / deslinde comercial (editable)</label><textarea oninput="setP('notasLegales',this.value)">${esc(p.notasLegales)}</textarea></div>`;
+}
+
+/* ==================== Export ==================== */
+function exportExcel(){
+  const p=proj(); if(!p) return; if(typeof XLSX==='undefined'){ toast('Necesitás conexión para el Excel'); return; }
+  const r=CorePresupuesto.calcularProyecto(p), c=r.costos, ing=r.ingenieriaTableros; const aoa=[];
+  (p.encabezado||'').split('\n').forEach(l=>{ if(l.trim()) aoa.push([l]); });
+  aoa.push(['Cliente', p.cliente]); aoa.push(['Ubicación', p.ubicacion]); aoa.push(['Fecha', p.fecha]); aoa.push(['Línea', MARCA_LABELS[p.perfilCalidad]]); aoa.push([]);
+  aoa.push(['AMBIENTE','BOCAS','MATERIALES']);
+  r.desgloseAmbientes.forEach(a=>aoa.push([a.nombre, a.puestas, Math.round(a.subtotalMateriales)]));
+  aoa.push([]); aoa.push(['INGENIERÍA DE TABLEROS']);
+  aoa.push(['Térmicas', ing.totalTermicas]); aoa.push(['Diferenciales', ing.totalDiferenciales]); aoa.push(['Medida indirecta', ing.requiereMedidaIndirecta?'SÍ (>40 kW)':'No']);
+  ing.T1.circuitos.forEach(ci=>aoa.push(['T1 '+ci.id, ci.tipo, ci.destino]));
+  ing.T2.circuitos.forEach(ci=>aoa.push(['T2 '+ci.id, ci.tipo, ci.destino]));
+  ing.alertasSeguridad.forEach(a=>aoa.push(['Alerta', a]));
+  aoa.push([]); aoa.push(['COSTOS']);
+  aoa.push(['Materiales (módulos y caños)', c.subtotalMaterialesModulosYCaños]);
+  aoa.push(['Infraestructura subterránea UTE', c.subtotalInfraestructuraSubterraneaUte]);
+  aoa.push(['Materiales neto', c.totalMaterialesNeto]);
+  aoa.push(['Mano de obra neto', c.totalManoObraNeto]);
+  aoa.push(['TOTAL PROYECTO', c.TOTAL]);
+  const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:34},{wch:26},{wch:16}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Presupuesto');
+  XLSX.writeFile(wb, 'iLVolt_'+p.name.replace(/[^\w\-]+/g,'_')+'.xlsx'); toast('Excel generado');
+}
+function exportCSV(){
+  const p=proj(); if(!p) return;
+  const r=CorePresupuesto.calcularProyecto(p), c=r.costos; const R=[];
+  (p.encabezado||'').split('\n').forEach(l=>{ if(l.trim()) R.push([l]); });
+  R.push(['Cliente',p.cliente]); R.push(['Ubicacion',p.ubicacion]); R.push(['Fecha',p.fecha]); R.push([]);
+  R.push(['Ambiente','Bocas','Materiales']);
+  r.desgloseAmbientes.forEach(a=>R.push([a.nombre,a.puestas,Math.round(a.subtotalMateriales)]));
+  R.push([]); R.push(['Materiales neto',c.totalMaterialesNeto]); R.push(['Mano de obra neto',c.totalManoObraNeto]); R.push(['TOTAL',c.TOTAL]);
+  const csv=R.map(row=>row.map(x=>{const s=String(x==null?'':x); return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(';')).join('\n');
+  const a=document.createElement('a'); a.download='iLVolt_'+p.name.replace(/[^\w\-]+/g,'_')+'.csv';
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'})); a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); toast('CSV generado');
+}
+function imprimir(){
+  const p=proj(); if(!p) return;
+  const r=CorePresupuesto.calcularProyecto(p), c=r.costos, ing=r.ingenieriaTableros;
+  const enc=(p.encabezado||'').split('\n').filter(l=>l.trim()).map(l=>`<div>${esc(l)}</div>`).join('');
+  const amb=r.desgloseAmbientes.map(a=>`<tr><td>${esc(a.nombre)}</td><td class="q">${a.puestas}</td><td class="q">${money(a.subtotalMateriales)}</td></tr>`).join('');
+  const circ=[...ing.T1.circuitos.map(x=>['T1',x]),...ing.T2.circuitos.map(x=>['T2',x])].map(([t,x])=>`<tr><td>${t} · ${x.id}</td><td>${esc(x.tipo)}</td><td>${esc(x.destino)}</td></tr>`).join('');
+  const w=window.open('','_blank'); if(!w){ toast('Permití la ventana emergente'); return; }
+  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Presupuesto</title>
+    <style>@page{size:A4 portrait;margin:15mm}*{font-family:'Segoe UI',Arial,sans-serif}body{color:#1C1C1C;font-size:12px}
+    .enc{font-size:14px;line-height:1.5;border-bottom:2px solid #FE0000;padding-bottom:8px;margin-bottom:10px}
+    .meta{color:#555;margin-bottom:14px}
+    h3{font-size:14px;margin:14px 0 6px;border-bottom:1px solid #999;padding-bottom:3px}
+    table{width:100%;border-collapse:collapse;margin-bottom:8px}th{text-align:left;font-size:10px;text-transform:uppercase;color:#777;border-bottom:1px solid #999;padding:5px 4px}
+    td{padding:5px 4px;border-bottom:1px solid #eee}.q{text-align:right;white-space:nowrap}
+    .tot div{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+    .tot .big{font-size:19px;font-weight:700;color:#FE0000;border-top:2px solid #FE0000;margin-top:6px;padding-top:8px}
+    .firmas{display:flex;gap:40px;margin-top:40px}.firmas div{flex:1;border-top:1px solid #333;padding-top:6px;text-align:center;font-size:12px;color:#555}
+    .notas{margin-top:18px;font-size:11px;color:#666;line-height:1.5}</style></head><body>
+    ${enc?`<div class="enc">${enc}</div>`:''}
+    <div class="meta">${esc(p.cliente||'')}${p.ubicacion?' · '+esc(p.ubicacion):''} · ${esc(p.fecha)} · Línea ${esc(MARCA_LABELS[p.perfilCalidad])}</div>
+    <h3>Ambientes</h3>
+    <table><thead><tr><th>Ambiente</th><th class="q">Bocas</th><th class="q">Materiales</th></tr></thead><tbody>${amb}</tbody></table>
+    <h3>Ingeniería de tableros (${ing.totalTermicas} térmicas · ${ing.totalDiferenciales} diferenciales${ing.requiereMedidaIndirecta?' · Medida indirecta':''})</h3>
+    <table><thead><tr><th>Tablero</th><th>Circuito</th><th>Destino</th></tr></thead><tbody>${circ}</tbody></table>
+    <h3>Costos</h3>
+    <div class="tot">
+      <div><span>Materiales neto</span><span>${money(c.totalMaterialesNeto)}</span></div>
+      <div><span>Mano de obra neto</span><span>${money(c.totalManoObraNeto)}</span></div>
+      <div class="big"><span>TOTAL PROYECTO</span><span>${money(c.TOTAL)}</span></div>
+    </div>
+    <div class="firmas"><div>Firma del técnico</div><div>Firma del cliente</div></div>
+    ${p.notasLegales?`<div class="notas">${esc(p.notasLegales)}</div>`:''}
+    <script>onload=function(){setTimeout(function(){print()},150)}<\/script></body></html>`);
+  w.document.close(); toast('PDF · elegí "Guardar como PDF"');
+}
+
+/* ==================== init ==================== */
+renderHome();
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('/apps/ilvolt/sw.js').catch(()=>{}); }
+</script>
+</body>
+</html>
