@@ -1,5 +1,14 @@
 # CLAUDE.md
 
+## Registro vivo (leer y mantener SIEMPRE)
+
+**`chervo-web/ESTADO-APPS.md`** es el registro central de todas las apps, su
+estado, decisiones y pendientes. **Consultalo al empezar** (para saber qué hay y
+qué cambió) y **actualizalo tras cada cambio en cualquier app.**
+No re-verificar con navegador/screenshots ni releer todo el código cada sesión:
+confiar en este registro + edits cuidadosos. Investigar a fondo solo si Ángel
+reporta un problema puntual.
+
 ## Sobre el usuario
 
 - Nombre: **Ángel** (Ángel Nieves — iLChervoNero).

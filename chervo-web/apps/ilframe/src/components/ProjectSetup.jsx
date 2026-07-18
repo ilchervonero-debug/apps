@@ -206,7 +206,6 @@ function WallTypeCard({ type, profileSection, canDelete, onDraw }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <input value={type.name} onChange={(e) => updateWallType(type.id, { name: e.target.value })}
           placeholder="Nombre del muro…" style={{ ...inp, flex: 1 }} />
-        <DrawIcon onClick={onDraw} />
         {canDelete && <button onClick={() => removeWallType(type.id)} style={delBtn}>×</button>}
       </div>
       {/* Nombres típicos (opcional) — no quita el nombre libre de arriba */}
@@ -227,6 +226,7 @@ function WallTypeCard({ type, profileSection, canDelete, onDraw }) {
       <PerfilRow label="Perfil (montante)" value={type.perfil} onChange={(v) => updateWallType(type.id, { perfil: v })} />
       <TypeFaceStack typeId={type.id} face="interior" layers={type.faces?.interior || []} label="Cara interior" />
       <TypeFaceStack typeId={type.id} face="exterior" layers={type.faces?.exterior || []} label={type.kind === 'exterior' ? 'Cara exterior' : 'Otra cara'} />
+      {onDraw && <DrawBtn onClick={onDraw} />}
     </div>
   )
 }
@@ -252,23 +252,25 @@ function TypeCard({ cat, type, canDelete, onDraw }) {
     <div style={typeCard}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <input value={type.name} onChange={(e) => up({ name: e.target.value })} placeholder="Nombre del elemento…" style={{ ...inp, flex: 1 }} />
-        {onDraw && <DrawIcon onClick={onDraw} />}
         {canDelete && <button onClick={() => removeType(cat, type.id)} style={delBtn}>×</button>}
       </div>
       <TypeMaterial cat={cat} type={type} up={up} />
+      {onDraw && <DrawBtn onClick={onDraw} />}
     </div>
   )
 }
 
-// Ícono "Dibujar" — abre el plano ya conectado a este elemento (herramienta
-// + tipo elegidos, centrado en lo ya dibujado si existe). Rojo = acción principal.
-function DrawIcon({ onClick }) {
+// Botón "Dibujar en el plano" — abre el canvas ya conectado a ESTE elemento
+// (su herramienta + su tipo + su vista, centrado en lo ya dibujado si existe).
+// Cada elemento tiene el suyo → es el link directo al plano. Rojo = principal.
+function DrawBtn({ onClick }) {
   return (
-    <button onClick={onClick} title="Dibujar"
-      style={{ border: '1.5px solid #fe0000', background: '#fff', color: '#fe0000', borderRadius: 8, width: 34, height: 34, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+    <button onClick={onClick} title="Dibujar en el plano"
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', marginTop: 6, padding: '11px', borderRadius: 10, border: '1.5px solid #fe0000', background: '#fff', color: '#fe0000', fontSize: 16, cursor: 'pointer' }}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
       </svg>
+      Dibujar en el plano
     </button>
   )
 }
