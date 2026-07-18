@@ -141,21 +141,24 @@ Versión = número de caché del SW.
 - **Qué es:** **gastos compartidos** de Gerardo y Ana Gracia (predio/ruta 26).
   Registra gastos por persona y calcula total combinado y saldos.
 
-### Demoliciones — `apps/demoliciones/` · v1 · en grilla
+### Demoliciones — `apps/demoliciones/` · v2 · en grilla
 - **Qué es:** **APU de demoliciones** para reformas residenciales (Uruguay).
   Spec en `apps/demoliciones/APU_DEMOLICIONES.md` (fuente de verdad).
-- **Lógica:** 12 rubros con rendimiento (matriz §2 del MD) → por rubro calcula
-  H Oficial + H Peón (× acarreo × insalubridad), Costo MO, herramientas menores
-  (10% en rubros pesados), GG (15%), **precio con cascada** (+ % beneficio),
-  **volumen de escombro** (espesor × esponjamiento, o bolsas × 0.03 m³) y a nivel
-  obra **volquetas** (ceil vol / cap.) + **fletes** como ítem global.
-- **Config** (hamburguesa a la derecha): $hora Oficial/Peón/Medio Oficial,
-  % herramientas, % GG, % beneficio, capacidad volqueta (5 m³), flete/volqueta.
-  Rubro 9 (cielorraso) usa tarifa de Medio Oficial. Hierro = chatarra (recupero,
-  sin volqueta).
-- **Export:** PDF (desglose) y CSV. Persistencia localStorage (obras + config).
-- **Nota:** pensada para **fusionarse a futuro con APU/HA-Calc** (mismo esquema de
-  Config y de "rubros con rendimiento").
+- **Wordmark:** "Demoliciones" en **plata** con la "D" roja (nombres nunca en negro).
+- **Estructura (2 pestañas dentro de la obra):**
+  - *Rubros* (dashboard) = **solo carga** de datos: cantidad, acarreo,
+    insalubridad, consumibles. **No muestra resultados por rubro ni totales.**
+  - *Resumen* = lo **sumado**: tabla desglosada + totales, **encabezado editable**,
+    export **Excel (.xlsx, SheetJS)** y **PDF limpio** (solo encabezado + tabla,
+    **sin marca de app**).
+- **Lógica:** 12 rubros con rendimiento (matriz §2) → H Ofi + H Peón
+  (× acarreo × insalubridad), Costo MO, herramientas (10% pesados), GG (15%),
+  **precio con cascada** (+ % beneficio), **escombro** (espesor × esponjamiento o
+  bolsas × 0.03 m³) → **volquetas** (ceil vol/cap) + **fletes** global.
+- **Config** (hamburguesa derecha): $hora Ofi/Peón/Medio Ofi, % herr, % GG,
+  % beneficio, cap. volqueta (5 m³), flete. Cielorraso usa Medio Oficial; hierro
+  = chatarra (sin volqueta). localStorage (obras + config).
+- **Nota:** a futuro **fusionar con APU/HA-Calc** (mismo esquema de Config/rubros).
 
 ---
 
