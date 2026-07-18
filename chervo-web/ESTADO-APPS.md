@@ -141,10 +141,25 @@ Versión = número de caché del SW.
 - **Qué es:** **gastos compartidos** de Gerardo y Ana Gracia (predio/ruta 26).
   Registra gastos por persona y calcula total combinado y saldos.
 
+### Demoliciones — `apps/demoliciones/` · v1 · en grilla
+- **Qué es:** **APU de demoliciones** para reformas residenciales (Uruguay).
+  Spec en `apps/demoliciones/APU_DEMOLICIONES.md` (fuente de verdad).
+- **Lógica:** 12 rubros con rendimiento (matriz §2 del MD) → por rubro calcula
+  H Oficial + H Peón (× acarreo × insalubridad), Costo MO, herramientas menores
+  (10% en rubros pesados), GG (15%), **precio con cascada** (+ % beneficio),
+  **volumen de escombro** (espesor × esponjamiento, o bolsas × 0.03 m³) y a nivel
+  obra **volquetas** (ceil vol / cap.) + **fletes** como ítem global.
+- **Config** (hamburguesa a la derecha): $hora Oficial/Peón/Medio Oficial,
+  % herramientas, % GG, % beneficio, capacidad volqueta (5 m³), flete/volqueta.
+  Rubro 9 (cielorraso) usa tarifa de Medio Oficial. Hierro = chatarra (recupero,
+  sin volqueta).
+- **Export:** PDF (desglose) y CSV. Persistencia localStorage (obras + config).
+- **Nota:** pensada para **fusionarse a futuro con APU/HA-Calc** (mismo esquema de
+  Config y de "rubros con rendimiento").
+
 ---
 
 ## Notas
-- `apps/demoliciones/` **no es una app**: es solo `APU_DEMOLICIONES.md` (doc de APU).
 - Al agregar/renombrar una app: crear su ficha acá y (si va pública) su tarjeta
   en la grilla del `index.html`.
 
@@ -152,3 +167,4 @@ Versión = número de caché del SW.
 - iLFrame: cuantificar el material de cierre/tapa de la comanda A/B/T.
 - iLWall: ajustar coeficientes de cómputo si Ángel los define distinto.
 - APU CORE: decidir si la tarjeta de grilla se renombra a HA-Calc.
+- Demoliciones: a futuro, fusionar con APU/HA-Calc (Config y matrices compatibles).

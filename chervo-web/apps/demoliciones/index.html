@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Demoliciones — APU por rubro</title>
+<meta name="theme-color" content="#F2F2F0">
+<link rel="manifest" href="/apps/demoliciones/manifest.json">
+<link rel="apple-touch-icon" href="/apps/demoliciones/icon-192.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --white:#FFFFFF; --bg:#F2F2F0; --gray-l:#F6F6F6; --gray-m:#DCDCD8;
+  --ink:#1C1C1C; --gray-t:#7A7A7A; --red:#FE0000;
+}
+*{box-sizing:border-box; margin:0; padding:0; font-family:'Exo',sans-serif; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%; background:var(--bg); font-size:16px; color:var(--ink); line-height:1.5;}
+.app{display:flex; flex-direction:column; height:100dvh; overflow:hidden;}
+.ic{width:26px; height:26px; fill:none; stroke:var(--ink); stroke-width:1.3; stroke-linecap:round; stroke-linejoin:round; flex:none;}
+.ic-red{stroke:var(--red);}
+
+header{background:var(--white); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--gray-m); flex-shrink:0;}
+#headTitle{font-size:22px; letter-spacing:-.5px; font-weight:800;}
+.il-red{color:var(--red); font-weight:800;}
+.hburger{background:none; border:none; cursor:pointer; padding:6px; display:flex;}
+.header-btn{background:none; border:none; color:var(--ink); padding:8px 6px; cursor:pointer; font-size:16px; display:flex; align-items:center; gap:6px;}
+
+.view{display:none; flex:1; overflow:hidden; flex-direction:column;}
+.view.active{display:flex;}
+.scroll{flex:1; overflow-y:auto; padding-bottom:30px;}
+.container{padding:22px; max-width:960px; margin:0 auto; width:100%;}
+
+.add-bar{display:flex; gap:12px; margin-bottom:24px;}
+.input{padding:13px 15px; border:1px solid var(--gray-m); border-radius:8px; font-size:18px; background:var(--white); color:var(--ink); width:100%;}
+.input:focus{outline:none; border-color:var(--red);}
+.sel{padding:11px 12px; border:1px solid var(--gray-m); border-radius:8px; font-size:16px; background:var(--white); color:var(--ink);}
+.sel:focus{outline:none; border-color:var(--red);}
+.btn{border:none; padding:13px 18px; border-radius:8px; font-size:16px; cursor:pointer; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px;}
+.btn-red{background:var(--red); color:var(--white);}
+.btn-out{background:var(--white); color:var(--ink); border:1px solid var(--gray-m);}
+.btn-sm{padding:10px 14px; font-size:15px;}
+.btn-text{background:none; border:none; color:var(--red); padding:11px 8px; font-size:16px; cursor:pointer;}
+.btn:active,.btn-text:active{filter:brightness(.94);}
+
+.card{display:flex; align-items:center; gap:14px; padding:18px 20px; background:var(--white); border:1px solid var(--gray-m); border-radius:10px; margin-bottom:12px; cursor:pointer;}
+.card:active{background:var(--gray-l);}
+.card-title{font-size:19px; flex:1;}
+.card-sub{font-size:14px; color:var(--gray-t);}
+.empty{text-align:center; padding:34px 20px; color:var(--gray-t); font-size:17px;}
+
+.item{background:var(--white); border:1px solid var(--gray-m); border-left:4px solid var(--red); border-radius:10px; padding:16px 18px; margin-bottom:14px;}
+.item-head{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+.item-name{font-size:18px; flex:1;}
+.item-cons{font-size:13px; color:var(--gray-t); margin-bottom:12px;}
+.row{display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
+.row .lab{font-size:15px; color:var(--gray-t); width:96px; flex:none;}
+.out{display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px 16px; margin-top:10px; padding-top:12px; border-top:1px solid var(--gray-l);}
+.o-lbl{font-size:13px; color:var(--gray-t); text-transform:uppercase;}
+.o-val{font-size:17px; font-weight:500;}
+.o-red{font-size:20px; font-weight:600; color:var(--red);}
+
+.summary{background:var(--white); border:1px solid var(--gray-m); border-radius:10px; padding:20px; margin-bottom:18px;}
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px;}
+.data{display:flex; flex-direction:column;}
+.d-lbl{font-size:14px; color:var(--gray-t); text-transform:uppercase; margin-bottom:3px;}
+.d-val{font-size:19px; font-weight:500;}
+.d-red{font-size:24px; font-weight:600; color:var(--red);}
+
+/* SHEET (config) */
+.ov{position:fixed; inset:0; background:rgba(20,20,20,.4); display:none; align-items:flex-end; justify-content:center; z-index:100;}
+.ov.on{display:flex;}
+.sheet{background:var(--white); width:100%; max-width:560px; border-radius:20px 20px 0 0; padding:20px 20px calc(24px + env(safe-area-inset-bottom,0)); max-height:88dvh; overflow-y:auto;}
+.sheet h3{font-size:20px; font-weight:600; margin-bottom:16px;}
+.cfg-row{display:flex; align-items:center; gap:12px; margin-bottom:12px;}
+.cfg-row label{flex:1; font-size:16px;}
+.cfg-row input{width:130px; padding:11px 12px; border:1px solid var(--gray-m); border-radius:8px; font-size:17px; text-align:right;}
+.cfg-row input:focus{outline:none; border-color:var(--red);}
+.sheet .ver{font-size:14px; color:var(--gray-t); margin-top:8px; text-align:center;}
+
+#toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(8px); background:rgba(28,28,28,.92); color:#fff; padding:11px 20px; border-radius:22px; font-size:16px; opacity:0; transition:.2s; pointer-events:none; z-index:200;}
+#toast.on{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div id="headTitle"><span class="il-red">Demo</span>liciones</div>
+    <div style="display:flex; align-items:center; gap:4px;">
+      <button class="header-btn" id="btnBack" onclick="goBack()" style="display:none;">
+        <svg class="ic ic-red" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg> Volver
+      </button>
+      <button class="hburger" onclick="openConfig()" title="Configuración">
+        <svg class="ic ic-red" viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <div id="view-home" class="view active">
+    <div class="scroll"><div class="container">
+      <div class="add-bar">
+        <input type="text" id="newProjName" class="input" placeholder="Nombre de la obra…">
+        <button class="btn btn-red" onclick="createProject()">Crear</button>
+      </div>
+      <div id="projectsList"></div>
+    </div></div>
+  </div>
+
+  <!-- OBRA -->
+  <div id="view-proj" class="view">
+    <div class="scroll"><div class="container">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+        <h2 id="pdTitle" style="font-size:24px; font-weight:600;">Obra</h2>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-out btn-sm" onclick="exportCSV()">CSV</button>
+          <button class="btn btn-out btn-sm" onclick="exportPDF()">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+            PDF
+          </button>
+        </div>
+      </div>
+
+      <div class="add-bar">
+        <select id="rubroSel" class="sel" style="flex:1;"></select>
+        <button class="btn btn-red" onclick="addItem()">Agregar rubro</button>
+      </div>
+
+      <div id="totals" style="display:none;">
+        <div class="summary"><div class="grid" id="totGrid"></div></div>
+      </div>
+      <div id="itemsList"></div>
+    </div></div>
+  </div>
+
+</div>
+
+<!-- CONFIG SHEET -->
+<div class="ov" id="cfgOv" onclick="if(event.target===this)closeConfig()">
+  <div class="sheet">
+    <h3>Configuración</h3>
+    <div class="cfg-row"><label>Hora Oficial ($)</label><input type="number" id="cfg_ofi"></div>
+    <div class="cfg-row"><label>Hora Peón ($)</label><input type="number" id="cfg_peon"></div>
+    <div class="cfg-row"><label>Hora Medio Oficial ($)</label><input type="number" id="cfg_medio"></div>
+    <div class="cfg-row"><label>Herramientas menores (%)</label><input type="number" id="cfg_herr"></div>
+    <div class="cfg-row"><label>Gastos generales (%)</label><input type="number" id="cfg_gg"></div>
+    <div class="cfg-row"><label>Beneficio (%)</label><input type="number" id="cfg_benef"></div>
+    <div class="cfg-row"><label>Capacidad volqueta (m³)</label><input type="number" id="cfg_volq"></div>
+    <div class="cfg-row"><label>Flete por volqueta ($)</label><input type="number" id="cfg_flete"></div>
+    <button class="btn btn-red" style="width:100%; margin-top:8px;" onclick="saveConfig()">Guardar</button>
+    <div class="ver">Demoliciones · versión 1.0</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   Demoliciones — APU por rubro (mano de obra, escombro, volquetas,
+   precio con cascada). Spec: APU_DEMOLICIONES.md. localStorage.
+   ============================================================ */
+
+const VOL_BOLSA = 0.03; // m³ por bolsa de escombro (para rubros por bolsas)
+
+// Matriz de rendimientos (§2 del MD)
+const RUBROS = [
+  {key:'piso',       label:'Romper piso (revestimiento)',        u:'M²', hOfi:0,    hPeon:0.45, esp:1.3, espesor:0.02, pesado:false, bolsas:1.25, cons:'Rotomartillo liviano 5 kg, disco'},
+  {key:'contrapiso', label:'Contrapiso grueso / platea',         u:'M²', hOfi:0.80, hPeon:1.00, esp:1.5, espesor:0.10, pesado:true,  bolsas:4.5,  cons:'Rotomartillo pesado 11–16 kg, puntas'},
+  {key:'tabique',    label:'Tabiques livianos (yeso/placas)',    u:'M²', hOfi:0,    hPeon:0.40, esp:1.8, espesor:0.10, pesado:false, bolsas:2,    cons:'Atornilladora, amoladora, hojas de sierra'},
+  {key:'pared15',    label:'Pared mampostería ≤15 cm',           u:'M²', hOfi:0.80, hPeon:1.10, esp:1.4, espesor:0.15, pesado:false, bolsas:4,    cons:'Rotomartillo 5–11 kg, disco diamante 9"'},
+  {key:'muro30',     label:'Muro de carga ≥30 cm',               u:'M³', hOfi:4.5,  hPeon:5.5,  esp:1.4, espesor:1,    pesado:false, bolsas:27,   cons:'Rotomartillo pesado, andamio, apuntalamiento'},
+  {key:'hormigon',   label:'Hormigón armado (vigas/columnas/losas)', u:'M³', hOfi:18, hPeon:22, esp:1.5, espesor:1,   pesado:true,  bolsas:40,   cons:'Martillo rompepavimentos 16–30 kg, discos, oxicorte'},
+  {key:'hierro',     label:'Hierro estructural (IPN/columnas)',  u:'ML', hOfi:1.35, hPeon:1.65, esp:1.1, espesor:0,    pesado:true,  bolsas:0, chatarra:true, cons:'Amoladora 9", discos metal, aparejo, puntales'},
+  {key:'estufa',     label:'Estufas / parrilleros',              u:'Un', hOfi:11,   hPeon:13,   esp:1.4, espesor:0,    pesado:true,  bolsas:52,   cons:'Rotomartillo 11 kg, amoladora 9", nylon + cinta'},
+  {key:'cielorraso', label:'Cielorraso suspendido',              u:'M²', hOfi:0.35, hPeon:0.35, esp:1.8, espesor:0.05, pesado:false, bolsas:1.5, medioOfi:true, cons:'Atornilladora, amoladora 4.5", andamio liviano'},
+  {key:'abertura_ok',label:'Abertura a conservar (desmonte técnico)', u:'Un', hOfi:1, hPeon:1, esp:1,  espesor:0,    pesado:false, bolsas:0,    cons:'Amoladora 4.5" fina, cuñas, palancas'},
+  {key:'abertura_no',label:'Abertura a descartar',               u:'Un', hOfi:0,    hPeon:0.5,  esp:1,   espesor:0,    pesado:false, bolsas:0,    cons:'Marra, cortafierro, amoladora 9"'},
+  {key:'bano',       label:'Baño integral',                      u:'Gl', hOfi:14,   hPeon:18,   esp:1.4, espesor:0,    pesado:false, bolsas:50,   cons:'Rotomartillo mediano, tapones agua + teflón'},
+  {key:'cocina',     label:'Cocina integral',                    u:'Gl', hOfi:16,   hPeon:20,   esp:1.5, espesor:0,    pesado:false, bolsas:45,   cons:'Rotomartillo, discos, tapón de gas + sellador'},
+];
+const rubro = (k)=> RUBROS.find(r=>r.key===k);
+const ACARREO = [['1','Baja (PB, <20 m)'],['1.3','Media (pasillos/giros)'],['1.4','Alta (planta alta por escalera)']];
+const INSAL   = [['1','No aplica'],['1.3','Sí (lana, hollín o >3 m)']];
+
+const DEF_CFG = { ofi:450, peon:350, medio:400, herr:10, gg:15, benef:20, volq:5, flete:4000 };
+let config = Object.assign({}, DEF_CFG, JSON.parse(localStorage.getItem('demo_cfg')||'{}'));
+let projects = JSON.parse(localStorage.getItem('demo_db')||'[]');
+let activeId = null;
+
+function saveDB(){ localStorage.setItem('demo_db', JSON.stringify(projects)); }
+function saveCfgDB(){ localStorage.setItem('demo_cfg', JSON.stringify(config)); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),2200); }
+const proj = ()=> projects.find(p=>p.id===activeId);
+const money = (n)=> '$ '+Math.round(n).toLocaleString('es-UY');
+const fmt = (n,d=2)=> (Math.round(n*10**d)/10**d).toLocaleString('es-UY');
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ---------- Cálculo ----------
+function computeItem(it){
+  const r = rubro(it.rubro); if(!r) return null;
+  const q = +it.cantidad||0;
+  const mult = (+it.acarreo||1) * (+it.insal||1);
+  const hOfi = q * r.hOfi * mult;
+  const hPeon = q * r.hPeon * mult;
+  const costoOfi = hOfi * (r.medioOfi ? config.medio : config.ofi);
+  const costoPeon = hPeon * config.peon;
+  const mo = costoOfi + costoPeon;
+  const herr = r.pesado ? mo * config.herr/100 : 0;
+  const cons = +it.consumibles||0;
+  const directo = mo + cons;
+  const subtotal = directo + herr;
+  const gg = subtotal * config.gg/100;
+  const precio = (subtotal + gg) * (1 + config.benef/100);
+  const vol = r.chatarra ? 0 : (r.espesor>0 ? q*r.espesor*r.esp : (r.bolsas>0 ? q*r.bolsas*VOL_BOLSA : 0));
+  const bolsas = q * r.bolsas;
+  return { hOfi, hPeon, mo, herr, cons, gg, precio, vol, bolsas, chatarra:!!r.chatarra };
+}
+function computeObra(p){
+  let precio=0, vol=0, bolsas=0, mo=0;
+  for(const it of p.items){ const c=computeItem(it); if(!c)continue; precio+=c.precio; vol+=c.vol; bolsas+=c.bolsas; mo+=c.mo; }
+  const volquetas = Math.ceil(vol / (config.volq||5)) || 0;
+  const fletes = volquetas * config.flete;
+  return { precio, vol, bolsas, mo, volquetas, fletes, total: precio + fletes };
+}
+
+// ---------- Navegación ----------
+function navTo(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('btnBack').style.display = (v==='home')?'none':'flex';
+  if(v==='home') renderHome();
+  if(v==='proj') renderProj();
+}
+function goBack(){ navTo('home'); }
+
+// ---------- Proyectos ----------
+function createProject(){
+  const inp=document.getElementById('newProjName'), name=inp.value.trim();
+  if(!name){ toast('Escribí un nombre'); return; }
+  projects.push({ id:Date.now(), name, items:[] });
+  saveDB(); inp.value=''; renderHome();
+}
+function openProject(id){ activeId=id; navTo('proj'); }
+function delProject(id,ev){ ev.stopPropagation(); if(!confirm('¿Borrar la obra?'))return; projects=projects.filter(p=>p.id!==id); saveDB(); renderHome(); }
+function renderHome(){
+  const l=document.getElementById('projectsList');
+  if(!projects.length){ l.innerHTML='<div class="empty">Sin obras. Creá la primera arriba.</div>'; return; }
+  l.innerHTML = projects.map(p=>{
+    const t=computeObra(p);
+    return `<div class="card" onclick="openProject(${p.id})">
+      <svg class="ic ic-red" viewBox="0 0 24 24"><path d="M3 21h18M6 21V9l6-4 6 4v12"/><path d="M9 21v-6h6v6"/></svg>
+      <div style="flex:1;"><div class="card-title">${esc(p.name)}</div>
+        <div class="card-sub">${p.items.length} rubro(s)${p.items.length?' · '+money(t.total):''}</div></div>
+      <button class="btn-text" onclick="delProject(${p.id},event)">Borrar</button>
+    </div>`;
+  }).join('');
+}
+
+// ---------- Obra: rubros ----------
+function renderProj(){
+  const p=proj(); if(!p) return navTo('home');
+  document.getElementById('pdTitle').textContent = p.name;
+  document.getElementById('rubroSel').innerHTML = RUBROS.map(r=>`<option value="${r.key}">${r.label} · ${r.u}</option>`).join('');
+  const l=document.getElementById('itemsList');
+  if(!p.items.length){ l.innerHTML='<div class="empty">Sin rubros. Elegí uno arriba y agregalo.</div>'; document.getElementById('totals').style.display='none'; return; }
+  l.innerHTML = p.items.map((it)=>{
+    const r=rubro(it.rubro), c=computeItem(it);
+    return `<div class="item">
+      <div class="item-head">
+        <div class="item-name">${r.label}</div>
+        <button class="btn-text" onclick="delItem(${it.id})">Quitar</button>
+      </div>
+      <div class="item-cons">Consumible clave: ${esc(r.cons)}</div>
+      <div class="row">
+        <span class="lab">Cantidad (${r.u})</span>
+        <input type="number" class="input" style="width:120px;" value="${it.cantidad}" step="0.01" oninput="setItem(${it.id},'cantidad',this.value)">
+      </div>
+      <div class="row">
+        <span class="lab">Acarreo</span>
+        <select class="sel" onchange="setItem(${it.id},'acarreo',this.value)">${ACARREO.map(([v,t])=>`<option value="${v}" ${String(it.acarreo)===v?'selected':''}>${t}</option>`).join('')}</select>
+      </div>
+      <div class="row">
+        <span class="lab">Insalubridad</span>
+        <select class="sel" onchange="setItem(${it.id},'insal',this.value)">${INSAL.map(([v,t])=>`<option value="${v}" ${String(it.insal)===v?'selected':''}>${t}</option>`).join('')}</select>
+      </div>
+      <div class="row">
+        <span class="lab">Consumibles $</span>
+        <input type="number" class="input" style="width:120px;" value="${it.consumibles||0}" step="1" oninput="setItem(${it.id},'consumibles',this.value)">
+      </div>
+      <div class="out">
+        <div><div class="o-lbl">H Oficial</div><div class="o-val">${fmt(c.hOfi,1)}</div></div>
+        <div><div class="o-lbl">H Peón</div><div class="o-val">${fmt(c.hPeon,1)}</div></div>
+        <div><div class="o-lbl">Costo MO</div><div class="o-val">${money(c.mo)}</div></div>
+        <div><div class="o-lbl">Herr. + GG</div><div class="o-val">${money(c.herr+c.gg)}</div></div>
+        <div><div class="o-lbl">Escombro</div><div class="o-val">${c.chatarra?'chatarra':fmt(c.vol,2)+' m³'}</div></div>
+        <div><div class="o-lbl">Precio venta</div><div class="o-red">${money(c.precio)}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+  // Totales
+  const t=computeObra(p);
+  document.getElementById('totals').style.display='block';
+  document.getElementById('totGrid').innerHTML = [
+    {l:'Total obra', v:money(t.total), r:true},
+    {l:'Trabajos', v:money(t.precio)},
+    {l:'Escombro', v:fmt(t.vol,2)+' m³'},
+    {l:'Volquetas', v:t.volquetas},
+    {l:'Fletes', v:money(t.fletes)},
+    {l:'Bolsas aprox.', v:fmt(t.bolsas,0)},
+  ].map(x=>`<div class="data"><div class="d-lbl">${x.l}</div><div class="${x.r?'d-red':'d-val'}">${x.v}</div></div>`).join('');
+}
+function addItem(){
+  const p=proj(); const k=document.getElementById('rubroSel').value;
+  p.items.push({ id:Date.now(), rubro:k, cantidad:0, acarreo:'1', insal:'1', consumibles:0 });
+  saveDB(); renderProj();
+}
+function setItem(id,field,val){
+  const p=proj(), it=p.items.find(x=>x.id===id); if(!it)return;
+  it[field]= (field==='acarreo'||field==='insal') ? val : (+val||0);
+  saveDB();
+  // recalcular solo totales + salidas sin re-render completo (mantener foco)
+  renderProjSoft();
+}
+function renderProjSoft(){
+  const p=proj(); const t=computeObra(p);
+  document.getElementById('totGrid').innerHTML = [
+    {l:'Total obra', v:money(t.total), r:true},
+    {l:'Trabajos', v:money(t.precio)},
+    {l:'Escombro', v:fmt(t.vol,2)+' m³'},
+    {l:'Volquetas', v:t.volquetas},
+    {l:'Fletes', v:money(t.fletes)},
+    {l:'Bolsas aprox.', v:fmt(t.bolsas,0)},
+  ].map(x=>`<div class="data"><div class="d-lbl">${x.l}</div><div class="${x.r?'d-red':'d-val'}">${x.v}</div></div>`).join('');
+  // actualizar los "out" de cada item
+  const outs=document.querySelectorAll('#itemsList .item');
+  p.items.forEach((it,i)=>{ const c=computeItem(it); const o=outs[i]; if(!o)return;
+    const vals=o.querySelectorAll('.out .o-val, .out .o-red');
+    if(vals.length>=6){ vals[0].textContent=fmt(c.hOfi,1); vals[1].textContent=fmt(c.hPeon,1); vals[2].textContent=money(c.mo); vals[3].textContent=money(c.herr+c.gg); vals[4].textContent=c.chatarra?'chatarra':fmt(c.vol,2)+' m³'; vals[5].textContent=money(c.precio); }
+  });
+}
+function delItem(id){ const p=proj(); p.items=p.items.filter(x=>x.id!==id); saveDB(); renderProj(); }
+
+// ---------- Config ----------
+function openConfig(){
+  cfgSet('cfg_ofi',config.ofi); cfgSet('cfg_peon',config.peon); cfgSet('cfg_medio',config.medio);
+  cfgSet('cfg_herr',config.herr); cfgSet('cfg_gg',config.gg); cfgSet('cfg_benef',config.benef);
+  cfgSet('cfg_volq',config.volq); cfgSet('cfg_flete',config.flete);
+  document.getElementById('cfgOv').classList.add('on');
+}
+function cfgSet(id,v){ document.getElementById(id).value=v; }
+function closeConfig(){ document.getElementById('cfgOv').classList.remove('on'); }
+function saveConfig(){
+  config = { ofi:+val('cfg_ofi'), peon:+val('cfg_peon'), medio:+val('cfg_medio'),
+    herr:+val('cfg_herr'), gg:+val('cfg_gg'), benef:+val('cfg_benef'),
+    volq:+val('cfg_volq')||5, flete:+val('cfg_flete') };
+  saveCfgDB(); closeConfig();
+  if(document.getElementById('view-proj').classList.contains('active')) renderProj();
+  toast('Configuración guardada');
+}
+function val(id){ return document.getElementById(id).value; }
+
+// ---------- Export CSV ----------
+function exportCSV(){
+  const p=proj(); if(!p||!p.items.length){ toast('Sin rubros para exportar'); return; }
+  const rows=[['Rubro','Unidad','Cantidad','Acarreo','Insal','H Ofi','H Peon','Costo MO','Herr+GG','Escombro m3','Precio venta']];
+  for(const it of p.items){ const r=rubro(it.rubro), c=computeItem(it);
+    rows.push([r.label,r.u,it.cantidad,it.acarreo,it.insal,fmt(c.hOfi,2),fmt(c.hPeon,2),Math.round(c.mo),Math.round(c.herr+c.gg),c.chatarra?'chatarra':fmt(c.vol,2),Math.round(c.precio)]); }
+  const t=computeObra(p);
+  rows.push([]); rows.push(['TOTAL trabajos','','','','','','','','','',Math.round(t.precio)]);
+  rows.push(['Escombro total (m3)','','','','','','','','',fmt(t.vol,2),'']);
+  rows.push(['Volquetas','','','','','','','','',t.volquetas,'']);
+  rows.push(['Fletes','','','','','','','','','',Math.round(t.fletes)]);
+  rows.push(['TOTAL OBRA','','','','','','','','','',Math.round(t.total)]);
+  const csv=rows.map(r=>r.map(c=>{ const s=String(c); return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }).join(';')).join('\n');
+  const a=document.createElement('a'); a.download='Demoliciones_'+p.name.replace(/[^\w\-]+/g,'_')+'.csv';
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'})); a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500); toast('CSV generado');
+}
+
+// ---------- Export PDF ----------
+function exportPDF(){
+  const p=proj(); if(!p||!p.items.length){ toast('Sin rubros para exportar'); return; }
+  const t=computeObra(p);
+  const rows=p.items.map(it=>{ const r=rubro(it.rubro), c=computeItem(it);
+    return `<tr><td>${esc(r.label)}</td><td class="q">${fmt(it.cantidad,2)} ${r.u}</td>
+      <td class="q">${fmt(c.hOfi,1)}</td><td class="q">${fmt(c.hPeon,1)}</td>
+      <td class="q">${money(c.mo)}</td><td class="q">${c.chatarra?'chatarra':fmt(c.vol,2)}</td>
+      <td class="q">${money(c.precio)}</td></tr>`; }).join('');
+  const w=window.open('','_blank'); if(!w){ toast('Permití la ventana emergente'); return; }
+  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Demoliciones — ${esc(p.name)}</title>
+    <style>@page{size:A4 portrait;margin:15mm}*{font-family:'Segoe UI',Arial,sans-serif}body{color:#1C1C1C;font-size:12px}
+    .brand{font-size:26px;font-weight:800}.brand b{color:#FE0000}.sub{color:#7A7A7A;margin-bottom:14px}
+    table{width:100%;border-collapse:collapse;margin-bottom:14px}th{text-align:left;font-size:11px;text-transform:uppercase;color:#7A7A7A;border-bottom:1px solid #999;padding:6px 4px}
+    td{padding:6px 4px;border-bottom:1px solid #eee}.q{text-align:right;white-space:nowrap}
+    .tot{margin-top:10px;border-top:2px solid #FE0000;padding-top:10px}.tot div{display:flex;justify-content:space-between;padding:4px 0;font-size:14px}
+    .tot .big{font-size:20px;font-weight:700;color:#FE0000}</style></head><body>
+    <div class="brand"><b>Demo</b>liciones</div>
+    <div class="sub">${esc(p.name)} · ${new Date().toLocaleDateString('es-UY')}</div>
+    <table><thead><tr><th>Rubro</th><th class="q">Cant.</th><th class="q">H Ofi</th><th class="q">H Peón</th><th class="q">Costo MO</th><th class="q">Escombro m³</th><th class="q">Precio</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="tot">
+      <div><span>Trabajos</span><span>${money(t.precio)}</span></div>
+      <div><span>Escombro / volquetas</span><span>${fmt(t.vol,2)} m³ · ${t.volquetas} volq.</span></div>
+      <div><span>Fletes</span><span>${money(t.fletes)}</span></div>
+      <div class="big"><span>TOTAL OBRA</span><span>${money(t.total)}</span></div>
+    </div>
+    <script>onload=function(){setTimeout(function(){print()},150)}<\/script></body></html>`);
+  w.document.close(); toast('PDF · elegí "Guardar como PDF"');
+}
+
+// ---------- init ----------
+renderHome();
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('/apps/demoliciones/sw.js').catch(()=>{}); }
+</script>
+</body>
+</html>

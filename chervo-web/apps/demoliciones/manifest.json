@@ -1,0 +1,19 @@
+{
+  "name": "Demoliciones",
+  "short_name": "Demoliciones",
+  "description": "APU de demoliciones: mano de obra, escombro, volquetas y precio por rubro",
+  "start_url": "/apps/demoliciones/",
+  "scope": "/apps/demoliciones/",
+  "display": "standalone",
+  "background_color": "#F2F2F0",
+  "theme_color": "#F2F2F0",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/apps/demoliciones/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
