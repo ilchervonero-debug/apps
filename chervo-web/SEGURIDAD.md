@@ -2,6 +2,25 @@
 
 Fecha de auditoría: 2026-07-18. Mantener este archivo al día si se agregan apps o backends.
 
+---
+
+## ▶ LUNES 11:00 — orden de pasos (runbook)
+
+Hacer en la PC. Estado hoy: **nada prendido todavía** (decisión de Ángel: son 2 usuarios,
+riesgo bajo el finde). Orden:
+
+1. **ildjcu / Supabase** (lo más importante):
+   1. Ángel + Claude juntos: definir el diseño con **token de sesión** (ver §1, para que el PIN
+      y los expedientes no sean accesibles directo ni spoofeables).
+   2. Ángel: pegar el SQL final en Supabase → SQL Editor (RLS + tabla `sesiones` + funciones).
+   3. Claude: pushear el `index.html` de ildjcu ya adaptado a las funciones.
+   4. Probar juntos: entra por PIN, el admin ve su panel, se crean/leen/borran expedientes. OK.
+2. **Firebase** (bitacorapp, ilme, gastos-ruta26): Ángel pega las Reglas de §2 en la consola y
+   limita *Authorized domains* a `ilchervo.com` + `localhost`.
+3. Marcar el checklist del final y actualizar la fecha de arriba.
+
+> `vercel.json` (cabeceras, §4) ya quedó hecho y subido el 2026-07-18.
+
 ## Resumen (qué guarda datos y dónde)
 
 | App | Backend | Datos | Riesgo hoy |
@@ -44,36 +63,56 @@ revoke all on public.usuarios   from anon;
 revoke all on public.expedientes from anon;
 ```
 
-### Paso B — Funciones RPC (el único camino permitido)
+**Dos agujeros extra a tapar (por eso hace falta token, no solo login_pin):**
+- El **panel admin** hace `GET usuarios?select=id,nombre,pin,activo` → **lista todos los PINs**.
+  Eso no puede seguir yendo directo a la tabla.
+- Los expedientes se filtran por nombre en el cliente (`usuario=eq.<nombre>`). Como el cliente
+  solo guarda un string con el nombre, cualquiera podría pedir los de otro. Hace falta que el
+  servidor sepa **quién es** por un token, no por un nombre que manda el cliente.
+
+### Paso B — Diseño con token de sesión (se arma y prueba el lunes juntos)
 
 ```sql
--- login: devuelve el nombre solo si el PIN coincide y está activo. El PIN nunca sale.
+-- tabla de sesiones (token -> usuario)
+create table if not exists public.sesiones (
+  token uuid primary key default gen_random_uuid(),
+  usuario text not null,
+  es_admin boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table public.sesiones enable row level security;   -- sin políticas: nadie la toca directo
+
+-- login: valida PIN y devuelve un token. El PIN nunca sale de la base.
 create or replace function public.login_pin(p text)
-returns table(nombre text)
-language sql security definer set search_path = public as $$
-  select nombre from usuarios where pin = p and activo = true limit 1;
-$$;
+returns table(token uuid, nombre text, es_admin boolean)
+language plpgsql security definer set search_path = public as $$
+declare u record;
+begin
+  select nombre into u from usuarios where pin = p and activo = true limit 1;
+  if u is null then return; end if;
+  return query
+    insert into sesiones(usuario, es_admin)
+    values (u.nombre, u.nombre = 'ADMIN')   -- ⚠ poner acá el nombre real del admin
+    returning sesiones.token, sesiones.usuario, (select es_admin from sesiones s where s.token = sesiones.token);
+end $$;
 
--- listar expedientes de un usuario (resumen)
-create or replace function public.expedientes_de(u text)
-returns setof expedientes
-language sql security definer set search_path = public as $$
-  select * from expedientes where usuario = u order by created_at desc limit 50;
-$$;
-
--- crear / borrar expediente: análogas, con SECURITY DEFINER y validando el usuario.
-grant execute on function public.login_pin(text)      to anon;
-grant execute on function public.expedientes_de(text) to anon;
+-- de acá para abajo, cada función recibe el TOKEN y resuelve el usuario server-side:
+-- expedientes_listar(tk), expedientes_crear(tk, datos), expedientes_borrar(tk, id),
+-- expedientes_abrir(tk, id)  → todas validan el token en `sesiones`.
+-- admin_usuarios_listar(tk)  → exige es_admin; devuelve nombre/activo SIN el pin.
+-- admin_usuario_crear/toggle/borrar(tk, ...) → exigen es_admin.
+grant execute on function public.login_pin(text) to anon;
+-- (grant execute de las demás cuando se creen)
 ```
 
-### Paso C — Cliente (index.html de ildjcu)
+> El SQL completo de las funciones de expedientes y admin lo terminamos el lunes junto con el
+> cambio del cliente, así lo probamos de una y no queda a medias.
 
-Cambiar las llamadas directas a la tabla por `POST /rest/v1/rpc/login_pin` etc.
-**Esto lo hago yo en el repo en cuanto confirmes** (hay que hacerlo junto con el SQL de arriba,
-si no la app deja de andar). Es un cambio de fondo del login — por eso lo dejo para acordarlo.
+### Paso C — Cliente (index.html de ildjcu) — lo hace Claude el lunes
 
-> Mientras tanto, mínimo indispensable: **prender RLS ya** (Paso A). La app quedará caída hasta
-> tener las RPC, así que A + B + C conviene hacerlos en la misma tanda.
+Guardar el `token` que devuelve `login_pin` y mandar todas las llamadas a
+`POST /rest/v1/rpc/<funcion>` con ese token, en vez de pegarle directo a las tablas.
+Se pushea **junto** con el SQL de Paso A+B, si no la app deja de entrar.
 
 ---
 
@@ -131,9 +170,13 @@ sheetjs). Se deja anotado; no se aplica para no romper las apps.
 
 ---
 
-## Checklist para Ángel
+## Checklist (para el LUNES — ver runbook arriba)
 
-- [ ] **ildjcu:** correr §1 A+B en Supabase y avisarme para hacer §1 C (cliente). ⚠️ prioridad
+- [ ] **ildjcu:** armar diseño con token (§1 B), pegar SQL en Supabase, pushear cliente (§1 C),
+      probar. ⚠️ prioridad
 - [ ] **Firebase:** pegar las Reglas de §2 y limitar Authorized domains a ilchervo.com + localhost.
-- [x] Cabeceras de seguridad en `vercel.json` (§4).
+- [x] Cabeceras de seguridad en `vercel.json` (§4) — hecho 2026-07-18.
 - [x] Verificado: sin `service_role` ni secretos privados en el repo.
+
+> Decisión 2026-07-18: se deja SIN prender nada el fin de semana (2 usuarios, riesgo bajo).
+> Todo se ejecuta el lunes 11:00 con la PC. Recordatorio programado.
