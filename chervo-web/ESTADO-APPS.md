@@ -141,7 +141,7 @@ Versión = número de caché del SW.
 - **Qué es:** **gastos compartidos** de Gerardo y Ana Gracia (predio/ruta 26).
   Registra gastos por persona y calcula total combinado y saldos.
 
-### Demoliciones — `apps/demoliciones/` · v3 · en grilla
+### Demoliciones — `apps/demoliciones/` · v4 · en grilla
 - **Qué es:** **APU de demoliciones** para reformas residenciales (Uruguay).
   Spec en `apps/demoliciones/APU_DEMOLICIONES.md` (fuente de verdad).
 - **Wordmark:** "Demoliciones" en **plata** con la "D" roja (nombres nunca en negro).
