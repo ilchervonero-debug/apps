@@ -134,8 +134,13 @@ Versión = número de caché del SW.
   **caja de rótulo** (Obra, Cliente, Plano, Fecha, Escala, Lámina) y marco limpio. Si la planta
   no tiene hoja → espacio infinito (export normal).
 - **Persistencia por planta** (objetos, origen, plano+transform, grilla) con autosave.
+- **Hoja de conteo de materiales:** botón en la barra → cuenta símbolos por tipo + metros de
+  trazado (líneas/polilíneas/arcos), **por planta o por todo el proyecto**, imprimible en PDF
+  (A4, con encabezado del proyecto). Base para enganchar el presupuesto (**iLVolt 2.0**).
 - **Pendiente (próximo):** lápiz de cableado con largo, leyenda automática, capas eléctricas,
-  conteo de bocas, collage (varios planos a la vez), rótulo con campos editables.
+  collage (varios planos a la vez), rótulo con campos editables.
+- **Visión:** SketchVolt será la app **principal**; sumándole el core de presupuesto de iLVolt
+  queda como **iLVolt 2.0**.
 
 ### iLMe — `apps/ilme/` · v15 · en grilla
 - **Qué es:** agenda personal — memoria, **rutinas** y pagos.
