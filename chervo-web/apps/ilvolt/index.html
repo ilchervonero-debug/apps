@@ -121,6 +121,34 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
 .wb-item.error .wb-q{color:var(--red);}
 .wb-item .wb-w{font-size:14px; color:var(--gray-t);}
 .wb-item .wb-fix{font-size:15px; color:var(--ink); margin-top:2px;}
+
+/* FAB Herramientas (dentro del proyecto) */
+#fabTools{position:fixed; right:16px; bottom:78px; width:56px; height:56px; border-radius:14px; background:var(--white); border:1.5px solid var(--red); display:none; align-items:center; justify-content:center; box-shadow:0 3px 12px rgba(0,0,0,.15); z-index:95; cursor:pointer;}
+#fabTools.on{display:flex;}
+#fabTools svg{width:28px; height:28px; fill:none; stroke:var(--red); stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round;}
+/* Herramienta a pantalla completa */
+.tool{position:fixed; inset:0; background:var(--bg); display:none; flex-direction:column; z-index:150;}
+.tool.on{display:flex;}
+.tool > header{background:var(--white); padding:14px 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--gray-m); flex-shrink:0;}
+.tool > header .t{font-size:20px; font-weight:600;}
+.tool .tscroll{flex:1; overflow-y:auto; padding:18px;}
+/* Grilla del tablero */
+.tabhead{display:flex; align-items:center; gap:10px; margin:6px 0 6px;}
+.tabhead .tn{font-size:18px; flex:1;}
+.tab-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:6px 0 18px;}
+.mod{border:1.5px dashed var(--gray-m); border-radius:9px; min-height:82px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; padding:6px; background:var(--white); text-align:center;}
+.mod.empty{color:var(--gray-t); font-size:26px;}
+.mod.filled{border-style:solid; border-color:var(--red);}
+.mod .sym{width:26px; height:26px; fill:none; stroke:var(--ink); stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round;}
+.mod .amp{font-size:13px; font-weight:600; color:var(--ink);}
+.mod .nom{font-size:12px; color:var(--gray-t); line-height:1.1;}
+.mod .via{font-size:10px; color:var(--red);}
+/* Calculadora de metros */
+.mt-total{font-size:34px; font-weight:600; color:var(--red); text-align:center; margin:6px 0 12px;}
+.mt-row{display:flex; justify-content:space-between; padding:9px 4px; border-bottom:1px solid var(--gray-l); font-size:16px;}
+/* Bitácora */
+.bt-note{background:var(--white); border:1px solid var(--gray-m); border-left:4px solid var(--red); border-radius:10px; padding:14px 16px; margin-bottom:12px; font-size:16px;}
+.bt-note .d{font-size:13px; color:var(--gray-t); margin-top:4px;}
 </style>
 </head>
 <body>
@@ -185,7 +213,76 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
   <div class="sheet">
     <h3><span style="color:var(--red);font-weight:800;">iL</span><span style="color:var(--plata);font-weight:800;">Volt</span></h3>
     <div class="row" onclick="closeMenu();openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Core · Tarifas y precios</div>
-    <div class="ver">iLVolt · versión 1.5 · presupuesto eléctrico (UY)</div>
+    <div class="row" onclick="closeMenu();openTools()"><svg class="ic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg>Herramientas</div>
+    <div class="ver">iLVolt · versión 1.6 · presupuesto eléctrico (UY)</div>
+  </div>
+</div>
+
+<!-- FAB Herramientas (dentro del proyecto) -->
+<button id="fabTools" onclick="openTools()" title="Herramientas">
+  <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg>
+</button>
+
+<!-- Panel Herramientas -->
+<div class="ov" id="toolsOv" onclick="if(event.target===this)closeTools()">
+  <div class="sheet">
+    <h3>Herramientas</h3>
+    <div class="row" onclick="closeTools();openTablero()"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16M13 4v16M18 4v16"/></svg>Armador de tablero</div>
+    <div class="row" onclick="closeTools();openMetros()"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8h18v8H3z"/><path d="M7 8v4M11 8v6M15 8v4M19 8v6"/></svg>Calculadora de metros</div>
+    <div class="row" onclick="closeTools();openBita()"><svg class="ic" viewBox="0 0 24 24"><path d="M4 4h13l3 3v13H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Bitácora</div>
+  </div>
+</div>
+
+<!-- Herramienta: Armador de tablero -->
+<div class="tool" id="toolTablero">
+  <header><span class="t">Armador de tablero</span><button class="btn-text" onclick="closeTool('toolTablero')">Cerrar</button></header>
+  <div class="tscroll">
+    <button class="btn btn-red" style="width:100%; margin-bottom:16px;" onclick="addTablero()">+ Agregar tablero</button>
+    <div id="tablerosList"></div>
+  </div>
+</div>
+
+<!-- Herramienta: Calculadora de metros -->
+<div class="tool" id="toolMetros">
+  <header><span class="t">Calculadora de metros</span><button class="btn-text" onclick="closeTool('toolMetros')">Cerrar</button></header>
+  <div class="tscroll">
+    <div class="mt-total" id="mtTotal">0,00 m</div>
+    <div class="add-bar">
+      <input type="number" step="0.01" id="mtInput" class="input" placeholder="Metros del tramo…" inputmode="decimal">
+      <button class="btn btn-red" onclick="mtAdd()">Sumar</button>
+    </div>
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <button class="btn" style="flex:1;" onclick="mtUndo()">Borrar último</button>
+      <button class="btn" style="flex:1;" onclick="mtClear()">Vaciar</button>
+    </div>
+    <div id="mtList"></div>
+  </div>
+</div>
+
+<!-- Herramienta: Bitácora -->
+<div class="tool" id="toolBita">
+  <header><span class="t">Bitácora</span><button class="btn-text" onclick="closeTool('toolBita')">Cerrar</button></header>
+  <div class="tscroll">
+    <div class="add-bar">
+      <input type="text" id="btInput" class="input" placeholder="Anotá algo para acordarte…">
+      <button class="btn btn-red" onclick="btAdd()">Guardar</button>
+    </div>
+    <div id="btList"></div>
+  </div>
+</div>
+
+<!-- Modal: cargar llave -->
+<div class="ov" id="llaveOv" onclick="if(event.target===this)document.getElementById('llaveOv').classList.remove('on')">
+  <div class="sheet">
+    <h3>Llave</h3>
+    <div class="field"><label>Tipo</label><select id="lvTipo" class="sel" onchange="lvSyncAmp()"></select></div>
+    <div class="field"><label>Amperaje / calibre</label><select id="lvAmp" class="sel"></select></div>
+    <div class="field"><label>Nombre / ambiente</label><input id="lvNom" class="input" placeholder="Alumbrado, Tomas, Cocina…"></div>
+    <div class="field"><label>De dónde viene</label><input id="lvVia" class="input" placeholder="Red, T1, T2…"></div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn" style="flex:1;" onclick="lvBorrar()">Quitar</button>
+      <button class="btn btn-red" style="flex:1;" onclick="lvGuardar()">Guardar</button>
+    </div>
   </div>
 </div>
 
@@ -403,6 +500,7 @@ function navTo(v){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   document.getElementById('btnBack').style.display=(v==='home')?'none':'flex';
+  document.getElementById('fabTools').classList.toggle('on', v==='proj');
   if(v==='home') renderHome();
   if(v==='core') renderCore();
   if(v==='proj'){ curTab='datos'; switchTab('datos'); document.getElementById('pdTitle').textContent=proj()?proj().name:''; }
@@ -826,6 +924,77 @@ function imprimir(){
     </div>
     <script>onload=function(){setTimeout(function(){print()},150)}<\/script></body></html>`);
   w.document.close(); toast('PDF · elegí "Guardar como PDF"');
+}
+
+/* ==================== HERRAMIENTAS ==================== */
+function openTools(){ document.getElementById('toolsOv').classList.add('on'); }
+function closeTools(){ document.getElementById('toolsOv').classList.remove('on'); }
+function closeTool(id){ document.getElementById(id).classList.remove('on'); }
+
+// ---- Armador de tablero ----
+const TIPOS_LLAVE=[['termica','Térmica'],['diferencial','Diferencial'],['general','General']];
+const AMPS={ termica:['C6','C10','C16','C20','C25','C32','C40'], diferencial:['2×25 30mA','2×40 30mA','4×40 30mA'], general:['C40','C50','C63'] };
+function symLlave(t){
+  if(t==='diferencial') return '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M12 8v8M9 11l3-3 3 3"/>';
+  if(t==='general') return '<path d="M7 4v5M7 15v5"/><path d="M7 9l9 5"/><circle cx="7" cy="4" r="1.4"/>';
+  return '<path d="M6 3v18"/><path d="M6 8l6 4-6 4"/><path d="M15 7c1.6 1.4 1.6 5.6 0 7"/>';
+}
+let tableros=JSON.parse(localStorage.getItem('ilvolt_tableros')||'[]');
+let _tabSel=null;
+function saveTab(){ localStorage.setItem('ilvolt_tableros', JSON.stringify(tableros)); }
+function openTablero(){ document.getElementById('toolTablero').classList.add('on'); renderTableros(); }
+function addTablero(){
+  const size=+(prompt('¿Tablero de cuántos módulos? (4, 8, 12, 18, 24)','12')||0); if(!size) return;
+  const nom=prompt('Nombre del tablero','T'+(tableros.length+1))||('T'+(tableros.length+1));
+  tableros.push({id:Date.now(), nombre:nom, size, llaves:{}}); saveTab(); renderTableros();
+}
+function delTablero(id){ if(!confirm('¿Borrar el tablero?'))return; tableros=tableros.filter(t=>t.id!==id); saveTab(); renderTableros(); }
+function renderTableros(){
+  const l=document.getElementById('tablerosList');
+  if(!tableros.length){ l.innerHTML='<div class="empty">Sin tableros. Agregá el primero arriba.</div>'; return; }
+  l.innerHTML=tableros.map(t=>{
+    let slots=''; for(let i=0;i<t.size;i++){ const k=t.llaves[i];
+      slots += k
+        ? `<div class="mod filled" onclick="lvOpen(${t.id},${i})"><svg class="sym" viewBox="0 0 24 24">${symLlave(k.tipo)}</svg><span class="amp">${esc(k.amp||'')}</span><span class="nom">${esc(k.nom||'')}</span>${k.via?`<span class="via">←${esc(k.via)}</span>`:''}</div>`
+        : `<div class="mod empty" onclick="lvOpen(${t.id},${i})">+</div>`;
+    }
+    return `<div style="margin-bottom:20px;"><div class="tabhead"><span class="tn">${esc(t.nombre)} · ${t.size} mód.</span><button class="btn-text" onclick="delTablero(${t.id})">Borrar</button></div><div class="tab-grid">${slots}</div></div>`;
+  }).join('');
+}
+function lvOpen(tid,idx){
+  _tabSel={tid,idx};
+  const t=tableros.find(x=>x.id===tid), k=t.llaves[idx]||{};
+  document.getElementById('lvTipo').innerHTML=TIPOS_LLAVE.map(([v,n])=>`<option value="${v}" ${((k.tipo||'termica')===v)?'selected':''}>${n}</option>`).join('');
+  lvSyncAmp(k.amp); document.getElementById('lvNom').value=k.nom||''; document.getElementById('lvVia').value=k.via||'';
+  document.getElementById('llaveOv').classList.add('on');
+}
+function lvSyncAmp(sel){ const t=document.getElementById('lvTipo').value; document.getElementById('lvAmp').innerHTML=(AMPS[t]||[]).map(x=>`<option ${x===sel?'selected':''}>${x}</option>`).join(''); }
+function lvGuardar(){ if(!_tabSel)return; const t=tableros.find(x=>x.id===_tabSel.tid); if(!t)return;
+  t.llaves[_tabSel.idx]={tipo:document.getElementById('lvTipo').value, amp:document.getElementById('lvAmp').value, nom:document.getElementById('lvNom').value.trim(), via:document.getElementById('lvVia').value.trim()};
+  saveTab(); document.getElementById('llaveOv').classList.remove('on'); renderTableros(); }
+function lvBorrar(){ if(!_tabSel)return; const t=tableros.find(x=>x.id===_tabSel.tid); if(t){ delete t.llaves[_tabSel.idx]; saveTab(); } document.getElementById('llaveOv').classList.remove('on'); renderTableros(); }
+
+// ---- Calculadora de metros (con memoria) ----
+let mtTramos=JSON.parse(localStorage.getItem('ilvolt_metros')||'[]');
+function saveMt(){ localStorage.setItem('ilvolt_metros', JSON.stringify(mtTramos)); }
+function openMetros(){ document.getElementById('toolMetros').classList.add('on'); renderMetros(); }
+function mtAdd(){ const v=+document.getElementById('mtInput').value; if(!v)return; mtTramos.push(v); saveMt(); document.getElementById('mtInput').value=''; renderMetros(); }
+function mtUndo(){ mtTramos.pop(); saveMt(); renderMetros(); }
+function mtClear(){ if(!mtTramos.length||!confirm('¿Vaciar la cuenta?'))return; mtTramos=[]; saveMt(); renderMetros(); }
+function renderMetros(){
+  const tot=mtTramos.reduce((a,b)=>a+b,0);
+  document.getElementById('mtTotal').textContent=(Math.round(tot*100)/100).toLocaleString('es-UY')+' m';
+  document.getElementById('mtList').innerHTML=mtTramos.map((v,i)=>`<div class="mt-row"><span>Tramo ${i+1}</span><span>${(Math.round(v*100)/100).toLocaleString('es-UY')} m</span></div>`).reverse().join('')||'<div class="empty">Sin tramos. Sumá el primero.</div>';
+}
+
+// ---- Bitácora ----
+let bita=JSON.parse(localStorage.getItem('ilvolt_bitacora')||'[]');
+function saveBt(){ localStorage.setItem('ilvolt_bitacora', JSON.stringify(bita)); }
+function openBita(){ document.getElementById('toolBita').classList.add('on'); renderBita(); }
+function btAdd(){ const t=document.getElementById('btInput').value.trim(); if(!t)return; bita.unshift({id:Date.now(), t, d:new Date().toLocaleString('es-UY')}); saveBt(); document.getElementById('btInput').value=''; renderBita(); }
+function btDel(id){ bita=bita.filter(x=>x.id!==id); saveBt(); renderBita(); }
+function renderBita(){
+  document.getElementById('btList').innerHTML=bita.map(n=>`<div class="bt-note">${esc(n.t)}<div class="d">${esc(n.d)} · <span onclick="btDel(${n.id})" style="color:var(--red);cursor:pointer">borrar</span></div></div>`).join('')||'<div class="empty">Sin notas.</div>';
 }
 
 /* ==================== init ==================== */
