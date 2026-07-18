@@ -143,6 +143,15 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
 .mod .amp{font-size:13px; font-weight:600; color:var(--ink);}
 .mod .nom{font-size:12px; color:var(--gray-t); line-height:1.1;}
 .mod .via{font-size:10px; color:var(--red);}
+/* Regletas de neutro/tierra al lado del tablero */
+.tabhead .tn{flex:1; min-width:0;}
+.reg-chips{display:flex; gap:8px; margin:8px 0;}
+.chip{border:1.5px solid var(--gray-m); background:var(--white); color:var(--ink); border-radius:8px; padding:8px 14px; font-size:15px; cursor:pointer;}
+.chip.on{border-color:var(--red); color:var(--red);}
+.regletas{display:flex; flex-direction:column; gap:8px; width:34px; flex:none;}
+.regleta{flex:1; min-height:82px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:600; writing-mode:vertical-rl; letter-spacing:1px;}
+.regleta.n{background:#2b8be0;}
+.regleta.t{background:#1e9e6a;}
 /* Calculadora de metros */
 .mt-total{font-size:34px; font-weight:600; color:var(--red); text-align:center; margin:6px 0 12px;}
 .mt-row{display:flex; justify-content:space-between; padding:9px 4px; border-bottom:1px solid var(--gray-l); font-size:16px;}
@@ -214,7 +223,7 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
     <h3><span style="color:var(--red);font-weight:800;">iL</span><span style="color:var(--plata);font-weight:800;">Volt</span></h3>
     <div class="row" onclick="closeMenu();openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Core · Tarifas y precios</div>
     <div class="row" onclick="closeMenu();openTools()"><svg class="ic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg>Herramientas</div>
-    <div class="ver">iLVolt · versión 1.6 · presupuesto eléctrico (UY)</div>
+    <div class="ver">iLVolt · versión 1.7 · presupuesto eléctrico (UY)</div>
   </div>
 </div>
 
@@ -237,7 +246,10 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
 <div class="tool" id="toolTablero">
   <header><span class="t">Armador de tablero</span><button class="btn-text" onclick="closeTool('toolTablero')">Cerrar</button></header>
   <div class="tscroll">
-    <button class="btn btn-red" style="width:100%; margin-bottom:16px;" onclick="addTablero()">+ Agregar tablero</button>
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <button class="btn btn-red" style="flex:1;" onclick="addTablero()">+ Agregar tablero</button>
+      <button class="btn" onclick="printTableros()"><svg class="ic" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>PDF</button>
+    </div>
     <div id="tablerosList"></div>
   </div>
 </div>
@@ -271,17 +283,17 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
   </div>
 </div>
 
-<!-- Modal: cargar llave -->
-<div class="ov" id="llaveOv" onclick="if(event.target===this)document.getElementById('llaveOv').classList.remove('on')">
+<!-- Modal: cargar/editar llave (por encima de la herramienta) -->
+<div class="ov" id="llaveOv" style="z-index:300" onclick="if(event.target===this)document.getElementById('llaveOv').classList.remove('on')">
   <div class="sheet">
-    <h3>Llave</h3>
+    <h3>¿Qué llave va acá?</h3>
     <div class="field"><label>Tipo</label><select id="lvTipo" class="sel" onchange="lvSyncAmp()"></select></div>
     <div class="field"><label>Amperaje / calibre</label><select id="lvAmp" class="sel"></select></div>
     <div class="field"><label>Nombre / ambiente</label><input id="lvNom" class="input" placeholder="Alumbrado, Tomas, Cocina…"></div>
-    <div class="field"><label>De dónde viene</label><input id="lvVia" class="input" placeholder="Red, T1, T2…"></div>
+    <div class="field"><label>De dónde viene</label><input id="lvVia" class="input" placeholder="Red, T1, Diferencial…"></div>
     <div style="display:flex; gap:8px;">
-      <button class="btn" style="flex:1;" onclick="lvBorrar()">Quitar</button>
-      <button class="btn btn-red" style="flex:1;" onclick="lvGuardar()">Guardar</button>
+      <button class="btn" style="flex:1;" onclick="lvBorrar()">Vaciar</button>
+      <button class="btn btn-red" style="flex:1;" onclick="lvGuardar()">Poner</button>
     </div>
   </div>
 </div>
@@ -943,23 +955,56 @@ let tableros=JSON.parse(localStorage.getItem('ilvolt_tableros')||'[]');
 let _tabSel=null;
 function saveTab(){ localStorage.setItem('ilvolt_tableros', JSON.stringify(tableros)); }
 function openTablero(){ document.getElementById('toolTablero').classList.add('on'); renderTableros(); }
-function addTablero(){
-  const size=+(prompt('¿Tablero de cuántos módulos? (4, 8, 12, 18, 24)','12')||0); if(!size) return;
-  const nom=prompt('Nombre del tablero','T'+(tableros.length+1))||('T'+(tableros.length+1));
-  tableros.push({id:Date.now(), nombre:nom, size, llaves:{}}); saveTab(); renderTableros();
-}
+const TAB_SIZES=[4,6,8,12,18,24,36];
+function addTablero(){ tableros.push({id:Date.now(), nombre:'Tablero '+(tableros.length+1), size:12, llaves:{}, neutro:true, tierra:true}); saveTab(); renderTableros(); }
 function delTablero(id){ if(!confirm('¿Borrar el tablero?'))return; tableros=tableros.filter(t=>t.id!==id); saveTab(); renderTableros(); }
+function setTabNom(id,v){ const t=tableros.find(x=>x.id===id); if(t){ t.nombre=v; saveTab(); } }
+function setTabSize(id,v){ const t=tableros.find(x=>x.id===id); if(t){ t.size=+v; saveTab(); renderTableros(); } }
+function toggleReg(id,campo){ const t=tableros.find(x=>x.id===id); if(t){ t[campo]=!t[campo]; saveTab(); renderTableros(); } }
 function renderTableros(){
   const l=document.getElementById('tablerosList');
-  if(!tableros.length){ l.innerHTML='<div class="empty">Sin tableros. Agregá el primero arriba.</div>'; return; }
+  if(!tableros.length){ l.innerHTML='<div class="empty">Sin tableros. Agregá el primero con el botón de arriba.</div>'; return; }
   l.innerHTML=tableros.map(t=>{
     let slots=''; for(let i=0;i<t.size;i++){ const k=t.llaves[i];
       slots += k
         ? `<div class="mod filled" onclick="lvOpen(${t.id},${i})"><svg class="sym" viewBox="0 0 24 24">${symLlave(k.tipo)}</svg><span class="amp">${esc(k.amp||'')}</span><span class="nom">${esc(k.nom||'')}</span>${k.via?`<span class="via">←${esc(k.via)}</span>`:''}</div>`
         : `<div class="mod empty" onclick="lvOpen(${t.id},${i})">+</div>`;
     }
-    return `<div style="margin-bottom:20px;"><div class="tabhead"><span class="tn">${esc(t.nombre)} · ${t.size} mód.</span><button class="btn-text" onclick="delTablero(${t.id})">Borrar</button></div><div class="tab-grid">${slots}</div></div>`;
+    const reg=(t.neutro||t.tierra)?`<div class="regletas">${t.neutro?'<div class="regleta n">NEUTRO</div>':''}${t.tierra?'<div class="regleta t">TIERRA</div>':''}</div>`:'';
+    return `<div style="margin-bottom:24px;">
+      <div class="tabhead">
+        <input class="input tn" style="flex:1; min-width:0;" value="${esc(t.nombre)}" oninput="setTabNom(${t.id},this.value)">
+        <select class="sel" style="width:112px; flex:none;" onchange="setTabSize(${t.id},this.value)">${TAB_SIZES.map(s=>`<option value="${s}" ${t.size===s?'selected':''}>${s} mód.</option>`).join('')}</select>
+        <button class="btn-text" onclick="delTablero(${t.id})">Borrar</button>
+      </div>
+      <div class="reg-chips">
+        <button class="chip ${t.neutro?'on':''}" onclick="toggleReg(${t.id},'neutro')">Regleta neutro</button>
+        <button class="chip ${t.tierra?'on':''}" onclick="toggleReg(${t.id},'tierra')">Regleta tierra</button>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:8px;">${reg}<div class="tab-grid" style="flex:1">${slots}</div></div>
+    </div>`;
   }).join('');
+}
+function printTableros(){
+  if(!tableros.length){ toast('No hay tableros'); return; }
+  const tn={termica:'Térmica',diferencial:'Diferencial',general:'General'};
+  const secc=tableros.map(t=>{
+    const filas=[]; for(let i=0;i<t.size;i++){ const k=t.llaves[i]; if(k) filas.push(`<tr><td>${i+1}</td><td>${tn[k.tipo]||''}</td><td>${esc(k.amp||'')}</td><td>${esc(k.nom||'')}</td><td>${esc(k.via||'')}</td></tr>`); }
+    const reg=[t.neutro?'Neutro':'', t.tierra?'Tierra':''].filter(Boolean).join(' · ');
+    return `<h3>${esc(t.nombre)} · ${t.size} módulos${reg?' · Regletas: '+reg:''}</h3>
+      <table><thead><tr><th>#</th><th>Tipo</th><th>Calibre</th><th>Nombre / ambiente</th><th>Viene de</th></tr></thead>
+      <tbody>${filas.join('')||'<tr><td colspan="5" style="color:#888">Sin llaves cargadas.</td></tr>'}</tbody></table>`;
+  }).join('');
+  const w=window.open('','_blank'); if(!w){ toast('Permití la ventana emergente'); return; }
+  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Tableros</title>
+    <style>@page{size:A4 portrait;margin:15mm}*{font-family:'Segoe UI',Arial,sans-serif}body{color:#1C1C1C;font-size:13px}
+    h2{font-size:20px;border-bottom:2px solid #FE0000;padding-bottom:6px;margin-bottom:2px}.d{color:#555;margin-bottom:8px}
+    h3{font-size:15px;margin:16px 0 4px;color:#FE0000}
+    table{width:100%;border-collapse:collapse;margin-bottom:8px}th{text-align:left;font-size:11px;text-transform:uppercase;color:#777;border-bottom:1px solid #999;padding:5px 6px}
+    td{padding:5px 6px;border-bottom:1px solid #eee}</style></head><body>
+    <h2>Tableros eléctricos</h2><div class="d">${new Date().toLocaleDateString('es-UY')}</div>${secc}
+    <script>onload=function(){setTimeout(function(){print()},150)}<\/script></body></html>`);
+  w.document.close(); toast('PDF · elegí "Guardar como PDF"');
 }
 function lvOpen(tid,idx){
   _tabSel={tid,idx};
