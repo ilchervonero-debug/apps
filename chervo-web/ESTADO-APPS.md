@@ -160,7 +160,7 @@ Versión = número de caché del SW.
   = chatarra (sin volqueta). localStorage (obras + config).
 - **Nota:** a futuro **fusionar con APU/HA-Calc** (mismo esquema de Config/rubros).
 
-### iLVolt — `apps/ilvolt/` · v2 · en grilla
+### iLVolt — `apps/ilvolt/` · v3 · en grilla
 - **Qué es:** **presupuesto de instalaciones eléctricas** (Uruguay). Primera app que
   estrena la estructura iLStyle 1.8 completa (Core + Proyectos → Dashboard por fases →
   Resultados aparte).
@@ -168,10 +168,13 @@ Versión = número de caché del SW.
   - *Landing* = **Core** (tarjeta: matriz de precios base editable — mano de obra,
     factores SAU/BPS, módulos por línea económico/estándar/diseño/premium, canalización,
     iluminación, fuerza) + **Proyectos**.
-  - *Proyecto* con 4 pestañas (flujo de arriba abajo, **sin costos durante el diseño**):
-    **Datos** (cliente, ubicación, fecha, línea, jornal base editable, switches: SAU,
-    BPS Ley 14.411, vista/embutida, incendio, T2 exterior, solo inspecciona + visitas,
-    tramo subterráneo + metros + cambio dirección) → **Ambientes** (nodos con bocas:
+  - *Proyecto* con 4 pestañas (flujo de arriba abajo, **sin costos durante el diseño**),
+    con **previa general** (resumen bajo el título: tipo instalación · línea · tableros ·
+    ambientes · bocas):
+    **Datos** (cliente/ubicación/fecha; **tipo de instalación**: embutida / embutida
+    ignífuga / vista-cablecanal / Daisa; **línea de módulos** + acceso al Core;
+    **cantidad de tableros**; **metros de caño y de cable por puesta**; jornal, SAU, BPS,
+    solo inspecciona + visitas, subterráneo) → **Ambientes** (nodos con bocas:
     tomas 10A/Schuko/Schuko-corte/USB/luces/paneles + cargas: horno-anafe, termofón,
     sensores/reflectores, bomba-piscina) → **Ingeniería** (tableros T1/T2, circuitos,
     térmicas, diferenciales, alertas, medida indirecta >40 kW — **sin costos**) →

@@ -152,7 +152,8 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
   <!-- PROYECTO -->
   <div id="view-proj" class="view">
     <div class="scroll"><div class="container">
-      <h2 id="pdTitle" style="font-size:23px; font-weight:600; margin-bottom:14px; color:var(--plata);"></h2>
+      <h2 id="pdTitle" style="font-size:23px; font-weight:600; margin-bottom:2px; color:var(--plata);"></h2>
+      <div id="pdSummary" style="font-size:15px; color:var(--gray-t); margin-bottom:14px;"></div>
       <div class="tabs">
         <button class="tab on" data-tab="datos" onclick="switchTab('datos')">Datos</button>
         <button class="tab" data-tab="ambientes" onclick="switchTab('ambientes')">Ambientes</button>
@@ -173,7 +174,7 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
   <div class="sheet">
     <h3><span style="color:var(--red);font-weight:800;">iL</span><span style="color:var(--plata);font-weight:800;">Volt</span></h3>
     <div class="row" onclick="closeMenu();openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Core · Tarifas y precios</div>
-    <div class="ver">iLVolt · versión 1.1 · presupuesto eléctrico (UY)</div>
+    <div class="ver">iLVolt · versión 1.2 · presupuesto eléctrico (UY)</div>
   </div>
 </div>
 
@@ -234,7 +235,12 @@ const CorePresupuesto = {
       T2:{descripcion:"Tablero Seccional (Exterior/Piscina/Barbacoa)", circuitos:[]},
       totalDiferenciales:0, totalTermicas:0 };
     let totalPotenciaEstimadaW=0;
-    let necesitaT2 = datosProyecto.requiereSubTableroExterior;
+    const tipoInst = datosProyecto.tipoInstalacion || (datosProyecto.esInstalacionVista?'vista':'embutida');
+    const esVista = tipoInst==='vista' || tipoInst==='daisa';
+    const mCano = datosProyecto.metrosCanoPorPuesta||4, mCable = datosProyecto.metrosCablePorPuesta||8;
+    const precioCaja = tipoInst==='daisa'?P.daisa.cajaAluminio : tipoInst==='vista'?P.rigido.cajaPaseIP54 : P.rigido.caja10x5;
+    const precioCano = tipoInst==='daisa'?P.daisa.tubo34Metro : tipoInst==='vista'?(P.canalExterior.canaleta20x10/2) : tipoInst==='embutidaIgnifuga'?P.corrugado.d20Azul : P.corrugado.d20Naranja;
+    let necesitaT2 = (datosProyecto.cantidadTableros||1) >= 2;
 
     ingenieriaTableros.T1.circuitos.push({id:"C1", tipo:"Iluminación LED General", destino:"Interiores limpios"});
     ingenieriaTableros.T1.circuitos.push({id:"C2", tipo:"Tomas Generales 10A", destino:"Dormitorios y Estar"});
@@ -253,10 +259,9 @@ const CorePresupuesto = {
       costoMaterialesAmb += (amb.modulosUsb||0)*preciosLinea.usb;
       costoMaterialesAmb += (amb.lucesLed||0)*P.iluminacion.dicroicaLed;
       costoMaterialesAmb += (amb.panelesLed||0)*P.iluminacion.panelLedPlafones;
-      costoMaterialesAmb += puestasAmb*P.rigido.caja10x5;
-      let precioCañoUso = datosProyecto.esEntornoIncendio ? P.corrugado.d20Azul : P.corrugado.d20Naranja;
-      costoMaterialesAmb += puestasAmb*4*precioCañoUso;
-      costoMaterialesAmb += puestasAmb*6*P.corrugado.d20Naranja;
+      costoMaterialesAmb += puestasAmb*precioCaja;
+      costoMaterialesAmb += puestasAmb*mCano*precioCano;                 // caño/canaleta según tipo
+      costoMaterialesAmb += puestasAmb*mCable*3*P.cables.cable2_0;       // cable: 3 conductores por puesta
 
       if(amb.tipo==="cocina"){
         totalPotenciaEstimadaW+=3500;
@@ -306,7 +311,7 @@ const CorePresupuesto = {
     const T=P.tableros;
     let modulosDIN = ingenieriaTableros.totalTermicas + ingenieriaTableros.totalDiferenciales + 1;
     let gabPrincipal = modulosDIN<=4?T.gabinete4:modulosDIN<=8?T.gabinete8:modulosDIN<=12?T.gabinete12:modulosDIN<=18?T.gabinete18:modulosDIN<=24?T.gabinete24:T.gabinete36;
-    let costoTableros = gabPrincipal + ingenieriaTableros.totalTermicas*T.termica1P16 + ingenieriaTableros.totalDiferenciales*T.diferencial2P40_30 + (ingenieriaTableros.T2.circuitos.length? T.gabinete8 : 0);
+    let costoTableros = gabPrincipal + ingenieriaTableros.totalTermicas*T.termica1P16 + ingenieriaTableros.totalDiferenciales*T.diferencial2P40_30 + Math.max(0,(datosProyecto.cantidadTableros||1)-1)*T.gabinete8;
     totalMateriales += costoTableros;
 
     // Medida indirecta (si supera 40 kW)
@@ -315,7 +320,7 @@ const CorePresupuesto = {
 
     let subtotalManoObraBocas=0;
     if(datosProyecto.calcularPorSAU){
-      let factorRendimiento = datosProyecto.esInstalacionVista ? P.factoresSAU.coeficienteBocaVista : P.factoresSAU.coeficienteBocaEmbutida;
+      let factorRendimiento = esVista ? P.factoresSAU.coeficienteBocaVista : P.factoresSAU.coeficienteBocaEmbutida;
       let jornalBase = datosProyecto.jornalBase || P.factoresSAU.jornalBaseMedioOficial;
       let manoObraBaseImponible = totalBocasContadas*factorRendimiento*jornalBase;
       subtotalManoObraBocas = datosProyecto.aplicaBpsUnificado ? manoObraBaseImponible*P.factoresSAU.multiplicadorBpsUnificado : manoObraBaseImponible;
@@ -328,6 +333,7 @@ const CorePresupuesto = {
 
     return { cliente:datosProyecto.cliente, ubicacion:datosProyecto.ubicacion, fechaEmision:datosProyecto.fecha||new Date().toLocaleDateString('es-UY'),
       totalBocas:totalBocasContadas, desgloseAmbientes, ingenieriaTableros,
+      materiales:{ canoMetros:Math.round(totalBocasContadas*mCano), cableMetros:Math.round(totalBocasContadas*mCable*3), cajas:totalBocasContadas },
       costos:{ subtotalMateriales:Math.round(totalMateriales-costoSubterraneo-costoTableros-costoMedidaIndirecta),
         subtotalTableros:Math.round(costoTableros), subtotalMedidaIndirecta:Math.round(costoMedidaIndirecta),
         subtotalInfraestructuraSubterraneaUte:Math.round(costoSubterraneo),
@@ -354,14 +360,19 @@ function createProject(){
   const inp=document.getElementById('newProjName'), name=inp.value.trim();
   if(!name){ toast('Escribí un nombre'); return; }
   projects.push({ id:Date.now(), name, cliente:'', ubicacion:'', fecha:new Date().toLocaleDateString('es-UY'),
-    perfilCalidad:'estandar', jornalBase:core.factoresSAU.jornalBaseMedioOficial,
-    calcularPorSAU:true, aplicaBpsUnificado:true, esInstalacionVista:false, esEntornoIncendio:false,
-    requiereSubTableroExterior:false, soloInspeccionaCanalizacion:false, cantidadVisitasObra:2,
+    tipoInstalacion:'embutida', perfilCalidad:'estandar', cantidadTableros:1,
+    jornalBase:core.factoresSAU.jornalBaseMedioOficial, metrosCanoPorPuesta:4, metrosCablePorPuesta:8,
+    calcularPorSAU:true, aplicaBpsUnificado:true, soloInspeccionaCanalizacion:false, cantidadVisitasObra:2,
     llevaTramoSubterraneo:false, metrosSubterraneo:0, tieneCambioDireccionSubterraneo:false,
     encabezado:'', notasLegales:DEFAULT_NOTAS, ambientes:[] });
   saveDB(); inp.value=''; renderHome();
 }
-function openProject(id){ activeId=id; navTo('proj'); }
+function openProject(id){ activeId=id; const p=proj(); if(p){ // migración de proyectos previos
+    if(p.tipoInstalacion==null) p.tipoInstalacion = p.esInstalacionVista?'vista':(p.esEntornoIncendio?'embutidaIgnifuga':'embutida');
+    if(p.cantidadTableros==null) p.cantidadTableros = p.requiereSubTableroExterior?2:1;
+    if(p.metrosCanoPorPuesta==null) p.metrosCanoPorPuesta=4;
+    if(p.metrosCablePorPuesta==null) p.metrosCablePorPuesta=8;
+    saveDB(); } navTo('proj'); }
 function delProject(id,ev){ ev.stopPropagation(); if(!confirm('¿Borrar el proyecto?'))return; projects=projects.filter(p=>p.id!==id); saveDB(); renderHome(); }
 function renderHome(){
   const l=document.getElementById('projectsList');
@@ -421,33 +432,54 @@ function switchTab(t){
   if(t==='ambientes') renderAmbientes();
   if(t==='ingenieria') renderIngenieria();
   if(t==='resultados') renderResultados();
+  updateSummary();
 }
 function setP(field,val){ const p=proj(); if(!p)return; p[field]=val; saveDB(); }
 
 /* ---- Fase 1: Datos ---- */
+const TIPO_INST = [['embutida','Embutida (corrugado naranja)'],['embutidaIgnifuga','Embutida ignífuga (caño azul)'],['vista','Vista / cablecanal exterior'],['daisa','Daisa (industrial estanco)']];
 function renderDatos(){
   const p=proj(); if(!p)return;
   document.getElementById('tab-datos').innerHTML = `
     <div class="field"><label>Cliente</label><input class="input" value="${esc(p.cliente)}" oninput="setP('cliente',this.value)"></div>
     <div class="field"><label>Ubicación de la obra</label><input class="input" value="${esc(p.ubicacion)}" oninput="setP('ubicacion',this.value)"></div>
     <div class="field"><label>Fecha</label><input class="input" value="${esc(p.fecha)}" oninput="setP('fecha',this.value)"></div>
-    <div class="field"><label>Línea de módulos (calidad)</label>
-      <select class="sel" onchange="setP('perfilCalidad',this.value)">
-        ${['economico','estandar','diseno','premium'].map(k=>`<option value="${k}" ${p.perfilCalidad===k?'selected':''}>${MARCA_LABELS[k]}</option>`).join('')}
+
+    <div class="sec-title">Tipo de obra</div>
+    <div class="field"><label>Tipo de instalación / canalización</label>
+      <select class="sel" onchange="setP('tipoInstalacion',this.value); updateSummary()">
+        ${TIPO_INST.map(([v,t])=>`<option value="${v}" ${p.tipoInstalacion===v?'selected':''}>${t}</option>`).join('')}
       </select></div>
+    <div class="field"><label>Línea de módulos (calidad)</label>
+      <select class="sel" onchange="setP('perfilCalidad',this.value); updateSummary()">
+        ${['economico','estandar','diseno','premium'].map(k=>`<option value="${k}" ${p.perfilCalidad===k?'selected':''}>${MARCA_LABELS[k]}</option>`).join('')}
+      </select>
+      <button class="btn btn-sm" style="margin-top:8px; width:100%;" onclick="openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Ver / editar precios de módulos (Core)</button>
+    </div>
+    <div class="field"><label>Cantidad de tableros</label><input type="number" min="1" class="input" value="${p.cantidadTableros}" oninput="setP('cantidadTableros',Math.max(1,+this.value||1)); updateSummary()"></div>
+
+    <div class="sec-title">Cables y caños (por puesta)</div>
+    <div class="field"><label>Metros de caño por puesta</label><input type="number" step="0.5" min="0" class="input" value="${p.metrosCanoPorPuesta}" oninput="setP('metrosCanoPorPuesta',+this.value||0)"></div>
+    <div class="field"><label>Metros de cable por puesta (se multiplica ×3: fase, neutro, tierra)</label><input type="number" step="0.5" min="0" class="input" value="${p.metrosCablePorPuesta}" oninput="setP('metrosCablePorPuesta',+this.value||0)"></div>
+
+    <div class="sec-title">Mano de obra</div>
     <div class="field"><label>Jornal base ½ oficial ($)</label><input type="number" class="input" value="${p.jornalBase}" oninput="setP('jornalBase',+this.value||0)"></div>
     ${chk('calcularPorSAU','Calcular mano de obra por rendimiento SAU', p.calcularPorSAU)}
     ${chk('aplicaBpsUnificado','Obra formalizada Ley 14.411 (BPS +75.8%)', p.aplicaBpsUnificado)}
-    ${chk('esInstalacionVista','Instalación vista (si no, embutida)', p.esInstalacionVista)}
-    ${chk('esEntornoIncendio','Entorno de riesgo de incendio (caño azul)', p.esEntornoIncendio)}
-    ${chk('requiereSubTableroExterior','Sub-tablero exterior T2 (jardín/piscina)', p.requiereSubTableroExterior)}
     ${chk('soloInspeccionaCanalizacion','Solo inspecciona (amurado lo hace el albañil)', p.soloInspeccionaCanalizacion)}
     <div class="sub-in" id="sub-visitas" style="${p.soloInspeccionaCanalizacion?'':'display:none'}"><span>Visitas de obra</span><input type="number" class="input" value="${p.cantidadVisitasObra}" oninput="setP('cantidadVisitasObra',+this.value||0)"></div>
-    ${chk('llevaTramoSubterraneo','Acometida con tramo subterráneo (UTE)', p.llevaTramoSubterraneo)}
+
+    <div class="sec-title">Acometida UTE</div>
+    ${chk('llevaTramoSubterraneo','Acometida con tramo subterráneo', p.llevaTramoSubterraneo)}
     <div id="sub-subte" style="${p.llevaTramoSubterraneo?'':'display:none'}">
       <div class="sub-in"><span>Metros</span><input type="number" class="input" value="${p.metrosSubterraneo}" oninput="setP('metrosSubterraneo',+this.value||0)"></div>
       ${chk('tieneCambioDireccionSubterraneo','Tiene cambio de dirección', p.tieneCambioDireccionSubterraneo,'margin-left:36px')}
     </div>`;
+}
+function updateSummary(){ const p=proj(); const el=document.getElementById('pdSummary'); if(!p||!el)return;
+  const r=CorePresupuesto.calcularProyecto(p);
+  const tipo=(TIPO_INST.find(x=>x[0]===p.tipoInstalacion)||['','Embutida'])[1];
+  el.textContent = `${tipo.split(' (')[0]} · ${MARCA_LABELS[p.perfilCalidad]} · ${p.cantidadTableros} tablero(s) · ${(p.ambientes||[]).length} ambiente(s) · ${r.totalBocas} bocas`;
 }
 function chk(field,label,val,style){ return `<label class="chk" style="${style||''}"><input type="checkbox" ${val?'checked':''} onchange="toggleP('${field}',this.checked)"><span class="mark"></span>${label}</label>`; }
 function toggleP(field,val){ setP(field,val); if(field==='soloInspeccionaCanalizacion') document.getElementById('sub-visitas').style.display=val?'flex':'none'; if(field==='llevaTramoSubterraneo') document.getElementById('sub-subte').style.display=val?'block':'none'; }
@@ -526,6 +558,12 @@ function renderResultados(){
       ${r.desgloseAmbientes.map(a=>`<tr><td>${esc(a.nombre)}</td><td class="q">${a.puestas}</td><td class="q">${money(a.subtotalMateriales)}</td></tr>`).join('')||'<tr><td class="card-sub">Sin ambientes.</td></tr>'}
     </tbody></table></div>
     <div class="totbox">
+      <div class="totrow"><span>Cable estimado (×3 conductores)</span><span>${r.materiales.cableMetros} m</span></div>
+      <div class="totrow"><span>Caño / canaleta estimado</span><span>${r.materiales.canoMetros} m</span></div>
+      <div class="totrow"><span>Cajas</span><span>${r.materiales.cajas}</span></div>
+      <div class="totrow"><span>Bocas</span><span>${r.totalBocas}</span></div>
+    </div>
+    <div class="totbox">
       <div class="totrow"><span>Materiales (módulos, caños, cajas, PAT, iluminación)</span><span>${money(c.subtotalMateriales)}</span></div>
       <div class="totrow"><span>Tableros y protecciones</span><span>${money(c.subtotalTableros)}</span></div>
       ${c.subtotalMedidaIndirecta>0?`<div class="totrow"><span>Medida indirecta (UTE)</span><span>${money(c.subtotalMedidaIndirecta)}</span></div>`:''}
@@ -550,6 +588,10 @@ function exportExcel(){
   ing.T1.circuitos.forEach(ci=>aoa.push(['T1 '+ci.id, ci.tipo, ci.destino]));
   ing.T2.circuitos.forEach(ci=>aoa.push(['T2 '+ci.id, ci.tipo, ci.destino]));
   ing.alertasSeguridad.forEach(a=>aoa.push(['Alerta', a]));
+  aoa.push([]); aoa.push(['MATERIALES ESTIMADOS']);
+  aoa.push(['Cable (m, ×3 conductores)', r.materiales.cableMetros]);
+  aoa.push(['Caño / canaleta (m)', r.materiales.canoMetros]);
+  aoa.push(['Cajas', r.materiales.cajas]);
   aoa.push([]); aoa.push(['COSTOS']);
   aoa.push(['Materiales (módulos, caños, cajas, PAT, iluminación)', c.subtotalMateriales]);
   aoa.push(['Tableros y protecciones', c.subtotalTableros]);
@@ -569,6 +611,7 @@ function exportCSV(){
   R.push(['Cliente',p.cliente]); R.push(['Ubicacion',p.ubicacion]); R.push(['Fecha',p.fecha]); R.push([]);
   R.push(['Ambiente','Bocas','Materiales']);
   r.desgloseAmbientes.forEach(a=>R.push([a.nombre,a.puestas,Math.round(a.subtotalMateriales)]));
+  R.push([]); R.push(['Cable m (x3)',r.materiales.cableMetros]); R.push(['Cano/canaleta m',r.materiales.canoMetros]); R.push(['Cajas',r.materiales.cajas]);
   R.push([]); R.push(['Materiales',c.subtotalMateriales]); R.push(['Tableros y protecciones',c.subtotalTableros]);
   if(c.subtotalMedidaIndirecta>0) R.push(['Medida indirecta',c.subtotalMedidaIndirecta]);
   if(c.subtotalInfraestructuraSubterraneaUte>0) R.push(['Subterraneo UTE',c.subtotalInfraestructuraSubterraneaUte]);
