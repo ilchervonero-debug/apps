@@ -160,7 +160,7 @@ Versión = número de caché del SW.
   = chatarra (sin volqueta). localStorage (obras + config).
 - **Nota:** a futuro **fusionar con APU/HA-Calc** (mismo esquema de Config/rubros).
 
-### iLVolt — `apps/ilvolt/` · v7 · en grilla
+### iLVolt — `apps/ilvolt/` · v9 · herramientas afinadas
 - **Qué es:** **presupuesto de instalaciones eléctricas** (Uruguay). Primera app que
   estrena la estructura iLStyle 1.8 completa (Core + Proyectos → Dashboard por fases →
   Resultados aparte).
@@ -186,6 +186,16 @@ Versión = número de caché del SW.
   visitas de inspección). Spec completa en `apps/ilvolt/CORE-SPEC.md`.
 - **Export:** Excel (.xlsx) + CSV + Imprimir/PDF (limpio, encabezado + firmas + notas,
   sin marca de app). localStorage (core editable + proyectos).
+- **Herramientas** (FAB en proyecto + menú hamburguesa):
+  - *Armador de tablero:* grilla real DIN (filas de 12; tamaños 2/4/8/12/24/36/48;
+    cajas UTE plástica/estanca/metálica/PRFV con IP). Cada llave ocupa sus **polos/módulos
+    reales** (general y diferencial = 2, térmica = 1, elegible 1–4 vía `grid-column:span`);
+    amperajes por tipo; en térmica se **elige la curva** (B/C/D → label "D16", "C10").
+    Regletas neutro/tierra al costado. Export PDF.
+  - *Calculadora por bloques* (estilo Excel, no convencional): cada bloque (ej. Habitación 1)
+    suma sus valores con **total propio**, y hay **Total general** de todos los bloques.
+  - *Bitácora:* notas de "lo que se está haciendo" con **dictado de voz** (Web Speech API
+    es-UY, se van acumulando) — para gente que no escribe. Igual criterio que el canvas iLFrame.
 
 ---
 

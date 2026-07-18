@@ -153,12 +153,26 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
 .regleta{flex:1; min-height:82px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:600; writing-mode:vertical-rl; letter-spacing:1px;}
 .regleta.n{background:#2b8be0;}
 .regleta.t{background:#1e9e6a;}
-/* Calculadora de metros */
-.mt-total{font-size:34px; font-weight:600; color:var(--red); text-align:center; margin:6px 0 12px;}
-.mt-row{display:flex; justify-content:space-between; padding:9px 4px; border-bottom:1px solid var(--gray-l); font-size:16px;}
+/* Calculadora por bloques */
+.mb-card{background:var(--white); border:1px solid var(--gray-m); border-radius:12px; padding:14px 14px 12px; margin-bottom:14px;}
+.mb-card .input{width:100%; margin-bottom:8px;}
+.mb-vals{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+.mb-val{display:inline-flex; align-items:center; gap:8px; background:var(--gray-l); border-radius:8px; padding:8px 12px; font-size:18px;}
+.mb-val b{font-weight:400; color:var(--red); cursor:pointer; font-size:20px; line-height:1;}
+.mb-tot{display:flex; justify-content:space-between; align-items:baseline; border-top:1px solid var(--gray-l); padding-top:10px; font-size:18px;}
+.mb-tot b{font-weight:500; color:var(--red); font-size:24px;}
+.mb-global{display:flex; justify-content:space-between; align-items:baseline; padding:14px 16px; border:1.5px solid var(--red); border-radius:12px; font-size:20px;}
+.mb-global b{font-weight:500; color:var(--red); font-size:28px;}
+.mb-card .del{float:right; border:none; background:none; color:var(--gray-t); font-size:20px; cursor:pointer; padding:0 4px;}
 /* Bitácora */
-.bt-note{background:var(--white); border:1px solid var(--gray-m); border-left:4px solid var(--red); border-radius:10px; padding:14px 16px; margin-bottom:12px; font-size:16px;}
+.bt-edit{min-height:110px; border:1.5px solid var(--gray-m); border-radius:12px; padding:14px 16px; font-size:18px; line-height:1.5; margin-bottom:10px; outline:none;}
+.bt-edit:focus{border-color:var(--red);}
+.bt-edit:empty:before{content:attr(data-ph); color:var(--gray-t);}
+#btMic.rec{border-color:var(--red); color:var(--red);}
+#btMic.rec .ic{stroke:var(--red);}
+.bt-note{background:var(--white); border:1px solid var(--gray-m); border-left:4px solid var(--red); border-radius:10px; padding:14px 16px; margin-bottom:12px; font-size:16px; white-space:pre-wrap;}
 .bt-note .d{font-size:13px; color:var(--gray-t); margin-top:4px;}
+.bt-note .x{float:right; border:none; background:none; color:var(--gray-t); font-size:18px; cursor:pointer;}
 </style>
 </head>
 <body>
@@ -224,7 +238,7 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
     <h3><span style="color:var(--red);font-weight:800;">iL</span><span style="color:var(--plata);font-weight:800;">Volt</span></h3>
     <div class="row" onclick="closeMenu();openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Core · Tarifas y precios</div>
     <div class="row" onclick="closeMenu();openTools()"><svg class="ic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg>Herramientas</div>
-    <div class="ver">iLVolt · versión 1.8 · presupuesto eléctrico (UY)</div>
+    <div class="ver">iLVolt · versión 1.9 · presupuesto eléctrico (UY)</div>
   </div>
 </div>
 
@@ -238,7 +252,7 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
   <div class="sheet">
     <h3>Herramientas</h3>
     <div class="row" onclick="closeTools();openTablero()"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16M13 4v16M18 4v16"/></svg>Armador de tablero</div>
-    <div class="row" onclick="closeTools();openMetros()"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8h18v8H3z"/><path d="M7 8v4M11 8v6M15 8v4M19 8v6"/></svg>Calculadora de metros</div>
+    <div class="row" onclick="closeTools();openMetros()"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8h18v8H3z"/><path d="M7 8v4M11 8v6M15 8v4M19 8v6"/></svg>Calculadora</div>
     <div class="row" onclick="closeTools();openBita()"><svg class="ic" viewBox="0 0 24 24"><path d="M4 4h13l3 3v13H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Bitácora</div>
   </div>
 </div>
@@ -257,18 +271,11 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
 
 <!-- Herramienta: Calculadora de metros -->
 <div class="tool" id="toolMetros">
-  <header><span class="t">Calculadora de metros</span><button class="btn-text" onclick="closeTool('toolMetros')">Cerrar</button></header>
+  <header><span class="t">Calculadora</span><button class="btn-text" onclick="closeTool('toolMetros')">Cerrar</button></header>
   <div class="tscroll">
-    <div class="mt-total" id="mtTotal">0,00 m</div>
-    <div class="add-bar">
-      <input type="number" step="0.01" id="mtInput" class="input" placeholder="Metros del tramo…" inputmode="decimal">
-      <button class="btn btn-red" onclick="mtAdd()">Sumar</button>
-    </div>
-    <div style="display:flex; gap:8px; margin-bottom:16px;">
-      <button class="btn" style="flex:1;" onclick="mtUndo()">Borrar último</button>
-      <button class="btn" style="flex:1;" onclick="mtClear()">Vaciar</button>
-    </div>
-    <div id="mtList"></div>
+    <button class="btn btn-red" style="width:100%; margin-bottom:14px;" onclick="mbAdd()">+ Agregar bloque</button>
+    <div id="mbList"></div>
+    <div id="mbGlobal" class="mb-global"></div>
   </div>
 </div>
 
@@ -276,9 +283,10 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
 <div class="tool" id="toolBita">
   <header><span class="t">Bitácora</span><button class="btn-text" onclick="closeTool('toolBita')">Cerrar</button></header>
   <div class="tscroll">
-    <div class="add-bar">
-      <input type="text" id="btInput" class="input" placeholder="Anotá algo para acordarte…">
-      <button class="btn btn-red" onclick="btAdd()">Guardar</button>
+    <div id="btEdit" class="bt-edit" contenteditable="true" data-ph="Escribí o dictá lo que estás haciendo…"></div>
+    <div style="display:flex; gap:8px; margin:10px 0 16px;">
+      <button class="btn" id="btMic" onclick="btDictar()"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>Dictar</button>
+      <button class="btn btn-red" style="flex:1;" onclick="btAdd()">Agregar nota</button>
     </div>
     <div id="btList"></div>
   </div>
@@ -288,8 +296,10 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
 <div class="ov" id="llaveOv" style="z-index:300" onclick="if(event.target===this)document.getElementById('llaveOv').classList.remove('on')">
   <div class="sheet">
     <h3>¿Qué llave va acá?</h3>
-    <div class="field"><label>Tipo</label><select id="lvTipo" class="sel" onchange="lvSyncAmp()"></select></div>
-    <div class="field"><label>Amperaje / calibre</label><select id="lvAmp" class="sel"></select></div>
+    <div class="field"><label>Tipo</label><select id="lvTipo" class="sel" onchange="lvSyncTipo()"></select></div>
+    <div class="field" id="lvCurvaField"><label>Curva de la térmica</label><select id="lvCurva" class="sel"><option value="B">Curva B (viviendas)</option><option value="C" selected>Curva C (uso general)</option><option value="D">Curva D (motores)</option></select></div>
+    <div class="field"><label>Polos (módulos que ocupa)</label><select id="lvPolos" class="sel"><option value="1">1 polo · 1 módulo</option><option value="2">2 polos · 2 módulos</option><option value="3">3 polos · 3 módulos</option><option value="4">4 polos · 4 módulos</option></select></div>
+    <div class="field"><label>Amperaje</label><select id="lvAmp" class="sel"></select></div>
     <div class="field"><label>Nombre / ambiente</label><input id="lvNom" class="input" placeholder="Alumbrado, Tomas, Cocina…"></div>
     <div class="field"><label>De dónde viene</label><input id="lvVia" class="input" placeholder="Red, T1, Diferencial…"></div>
     <div style="display:flex; gap:8px;">
@@ -946,7 +956,9 @@ function closeTool(id){ document.getElementById(id).classList.remove('on'); }
 
 // ---- Armador de tablero ----
 const TIPOS_LLAVE=[['termica','Térmica'],['diferencial','Diferencial'],['general','General']];
-const AMPS={ termica:['C6','C10','C16','C20','C25','C32','C40'], diferencial:['2×25 30mA','2×40 30mA','4×40 30mA'], general:['C40','C50','C63'] };
+const AMPS={ termica:['6A','10A','16A','20A','25A','32A','40A'], diferencial:['25A 30mA','40A 30mA','63A 30mA'], general:['40A','50A','63A'] };
+const POL_DEF={ termica:1, diferencial:2, general:2 };
+function lblLlave(k){ if(k.tipo==='termica') return (k.curva||'C')+String(k.amp||'').replace('A',''); return k.amp||''; }
 function symLlave(t){
   if(t==='diferencial') return '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M12 8v8M9 11l3-3 3 3"/>';
   if(t==='general') return '<path d="M7 4v5M7 15v5"/><path d="M7 9l9 5"/><circle cx="7" cy="4" r="1.4"/>';
@@ -969,10 +981,11 @@ function renderTableros(){
   const l=document.getElementById('tablerosList');
   if(!tableros.length){ l.innerHTML='<div class="empty">Sin tableros. Agregá el primero con el botón de arriba.</div>'; return; }
   l.innerHTML=tableros.map(t=>{
-    let slots=''; for(let i=0;i<t.size;i++){ const k=t.llaves[i];
-      slots += k
-        ? `<div class="mod filled" onclick="lvOpen(${t.id},${i})"><svg class="sym" viewBox="0 0 24 24">${symLlave(k.tipo)}</svg><span class="amp">${esc(k.amp||'')}</span><span class="nom">${esc(k.nom||'')}</span>${k.via?`<span class="via">←${esc(k.via)}</span>`:''}</div>`
-        : `<div class="mod empty" onclick="lvOpen(${t.id},${i})">+</div>`;
+    let slots=''; const cov={};
+    for(let i=0;i<t.size;i++){ if(cov[i]) continue; const k=t.llaves[i];
+      if(k){ const pol=Math.min(k.polos||POL_DEF[k.tipo]||1, t.size-i); for(let j=1;j<pol;j++) cov[i+j]=1;
+        slots += `<div class="mod filled" style="grid-column:span ${pol}" onclick="lvOpen(${t.id},${i})"><svg class="sym" viewBox="0 0 24 24">${symLlave(k.tipo)}</svg><span class="amp">${esc(lblLlave(k))}</span><span class="nom">${esc(k.nom||'')}</span>${k.via?`<span class="via">←${esc(k.via)}</span>`:''}</div>`;
+      } else slots += `<div class="mod empty" onclick="lvOpen(${t.id},${i})">+</div>`;
     }
     const reg=(t.neutro||t.tierra)?`<div class="regletas">${t.neutro?'<div class="regleta n">NEUTRO</div>':''}${t.tierra?'<div class="regleta t">TIERRA</div>':''}</div>`:'';
     const cols=Math.min(t.size,12); // filas de 12 como la caja real
@@ -999,7 +1012,7 @@ function printTableros(){
   if(!tableros.length){ toast('No hay tableros'); return; }
   const tn={termica:'Térmica',diferencial:'Diferencial',general:'General'};
   const secc=tableros.map(t=>{
-    const filas=[]; for(let i=0;i<t.size;i++){ const k=t.llaves[i]; if(k) filas.push(`<tr><td>${i+1}</td><td>${tn[k.tipo]||''}</td><td>${esc(k.amp||'')}</td><td>${esc(k.nom||'')}</td><td>${esc(k.via||'')}</td></tr>`); }
+    const filas=[]; for(let i=0;i<t.size;i++){ const k=t.llaves[i]; if(k) filas.push(`<tr><td>${i+1}</td><td>${tn[k.tipo]||''}${k.tipo==='termica'&&k.curva?' '+k.curva:''}</td><td>${esc(lblLlave(k))} · ${k.polos||POL_DEF[k.tipo]||1}P</td><td>${esc(k.nom||'')}</td><td>${esc(k.via||'')}</td></tr>`); }
     const reg=[t.neutro?'Neutro':'', t.tierra?'Tierra':''].filter(Boolean).join(' · ');
     const cajaN=(CAJAS.find(c=>c[0]===(t.caja||'embutir'))||['','']) [1];
     return `<h3>${esc(t.nombre)} · ${t.size} módulos · ${esc(cajaN)}${reg?' · Regletas: '+reg:''}</h3>
@@ -1021,33 +1034,66 @@ function lvOpen(tid,idx){
   _tabSel={tid,idx};
   const t=tableros.find(x=>x.id===tid), k=t.llaves[idx]||{};
   document.getElementById('lvTipo').innerHTML=TIPOS_LLAVE.map(([v,n])=>`<option value="${v}" ${((k.tipo||'termica')===v)?'selected':''}>${n}</option>`).join('');
-  lvSyncAmp(k.amp); document.getElementById('lvNom').value=k.nom||''; document.getElementById('lvVia').value=k.via||'';
+  lvSyncTipo(k.amp, k.polos?String(k.polos):null);
+  document.getElementById('lvCurva').value=k.curva||'C';
+  document.getElementById('lvNom').value=k.nom||''; document.getElementById('lvVia').value=k.via||'';
   document.getElementById('llaveOv').classList.add('on');
 }
-function lvSyncAmp(sel){ const t=document.getElementById('lvTipo').value; document.getElementById('lvAmp').innerHTML=(AMPS[t]||[]).map(x=>`<option ${x===sel?'selected':''}>${x}</option>`).join(''); }
+function lvSyncTipo(sel,polSel){
+  const t=document.getElementById('lvTipo').value;
+  document.getElementById('lvAmp').innerHTML=(AMPS[t]||[]).map(x=>`<option ${x===sel?'selected':''}>${x}</option>`).join('');
+  document.getElementById('lvCurvaField').style.display = t==='termica'?'block':'none';
+  document.getElementById('lvPolos').value = polSel || String(POL_DEF[t]||1);
+}
 function lvGuardar(){ if(!_tabSel)return; const t=tableros.find(x=>x.id===_tabSel.tid); if(!t)return;
-  t.llaves[_tabSel.idx]={tipo:document.getElementById('lvTipo').value, amp:document.getElementById('lvAmp').value, nom:document.getElementById('lvNom').value.trim(), via:document.getElementById('lvVia').value.trim()};
-  saveTab(); document.getElementById('llaveOv').classList.remove('on'); renderTableros(); }
+  const tipo=document.getElementById('lvTipo').value, polos=+document.getElementById('lvPolos').value||1, i=_tabSel.idx;
+  const k={tipo, polos, amp:document.getElementById('lvAmp').value, nom:document.getElementById('lvNom').value.trim(), via:document.getElementById('lvVia').value.trim()};
+  if(tipo==='termica') k.curva=document.getElementById('lvCurva').value;
+  for(let j=1;j<polos;j++) delete t.llaves[i+j];   // libera los módulos que ocupa
+  t.llaves[i]=k; saveTab(); document.getElementById('llaveOv').classList.remove('on'); renderTableros(); }
 function lvBorrar(){ if(!_tabSel)return; const t=tableros.find(x=>x.id===_tabSel.tid); if(t){ delete t.llaves[_tabSel.idx]; saveTab(); } document.getElementById('llaveOv').classList.remove('on'); renderTableros(); }
 
-// ---- Calculadora de metros (con memoria) ----
-let mtTramos=JSON.parse(localStorage.getItem('ilvolt_metros')||'[]');
-function saveMt(){ localStorage.setItem('ilvolt_metros', JSON.stringify(mtTramos)); }
-function openMetros(){ document.getElementById('toolMetros').classList.add('on'); renderMetros(); }
-function mtAdd(){ const v=+document.getElementById('mtInput').value; if(!v)return; mtTramos.push(v); saveMt(); document.getElementById('mtInput').value=''; renderMetros(); }
-function mtUndo(){ mtTramos.pop(); saveMt(); renderMetros(); }
-function mtClear(){ if(!mtTramos.length||!confirm('¿Vaciar la cuenta?'))return; mtTramos=[]; saveMt(); renderMetros(); }
-function renderMetros(){
-  const tot=mtTramos.reduce((a,b)=>a+b,0);
-  document.getElementById('mtTotal').textContent=(Math.round(tot*100)/100).toLocaleString('es-UY')+' m';
-  document.getElementById('mtList').innerHTML=mtTramos.map((v,i)=>`<div class="mt-row"><span>Tramo ${i+1}</span><span>${(Math.round(v*100)/100).toLocaleString('es-UY')} m</span></div>`).reverse().join('')||'<div class="empty">Sin tramos. Sumá el primero.</div>';
+// ---- Calculadora por bloques (tipo Excel) ----
+let calcB=JSON.parse(localStorage.getItem('ilvolt_calc')||'[]');
+const cnf=(n)=>(Math.round(n*100)/100).toLocaleString('es-UY');
+function saveCalc(){ localStorage.setItem('ilvolt_calc', JSON.stringify(calcB)); }
+function openMetros(){ document.getElementById('toolMetros').classList.add('on'); renderCalc(); }
+function mbAdd(){ calcB.push({id:Date.now(), nombre:'Bloque '+(calcB.length+1), vals:[]}); saveCalc(); renderCalc(); }
+function mbDel(id){ calcB=calcB.filter(x=>x.id!==id); saveCalc(); renderCalc(); }
+function mbNom(id,v){ const b=calcB.find(x=>x.id===id); if(b){ b.nombre=v; saveCalc(); const g=document.getElementById('mbtotlbl_'+id); if(g) g.textContent='Total '+v; } }
+function mbAddVal(id){ const inp=document.getElementById('mbin_'+id), v=+inp.value; if(!v)return; const b=calcB.find(x=>x.id===id); b.vals.push(v); saveCalc(); renderCalc(); const ni=document.getElementById('mbin_'+id); if(ni) ni.focus(); }
+function mbDelVal(id,i){ const b=calcB.find(x=>x.id===id); b.vals.splice(i,1); saveCalc(); renderCalc(); }
+function renderCalc(){
+  const l=document.getElementById('mbList');
+  l.innerHTML=calcB.map(b=>{ const tot=b.vals.reduce((a,x)=>a+x,0);
+    return `<div class="mb-card">
+      <div class="tabhead"><input class="input tn" value="${esc(b.nombre)}" oninput="mbNom(${b.id},this.value)"><button class="btn-text" onclick="mbDel(${b.id})">Borrar</button></div>
+      <div class="mb-vals">${b.vals.map((v,i)=>`<span class="mb-val">${cnf(v)}<b onclick="mbDelVal(${b.id},${i})">×</b></span>`).join('')||'<span class="card-sub">Sin valores todavía</span>'}</div>
+      <div class="add-bar" style="margin-bottom:6px;"><input type="number" step="0.01" inputmode="decimal" id="mbin_${b.id}" class="input" placeholder="Sumar un valor…" onkeydown="if(event.key==='Enter')mbAddVal(${b.id})"><button class="btn btn-red" onclick="mbAddVal(${b.id})">+</button></div>
+      <div class="mb-tot"><span id="mbtotlbl_${b.id}">Total ${esc(b.nombre)}</span><b>${cnf(tot)}</b></div>
+    </div>`;
+  }).join('')||'<div class="empty">Sin bloques. Agregá el primero (ej: Habitación 1) y sumale sus valores.</div>';
+  const g=calcB.reduce((a,b)=>a+b.vals.reduce((s,x)=>s+x,0),0);
+  document.getElementById('mbGlobal').innerHTML = calcB.length ? `<span>Total general</span><b>${cnf(g)}</b>` : '';
 }
 
-// ---- Bitácora ----
+// ---- Bitácora (con dictado de voz) ----
 let bita=JSON.parse(localStorage.getItem('ilvolt_bitacora')||'[]');
+let _dict=null;
 function saveBt(){ localStorage.setItem('ilvolt_bitacora', JSON.stringify(bita)); }
 function openBita(){ document.getElementById('toolBita').classList.add('on'); renderBita(); }
-function btAdd(){ const t=document.getElementById('btInput').value.trim(); if(!t)return; bita.unshift({id:Date.now(), t, d:new Date().toLocaleString('es-UY')}); saveBt(); document.getElementById('btInput').value=''; renderBita(); }
+function btDictar(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast('Dictado no disponible en este navegador'); return; }
+  const mic=document.getElementById('btMic');
+  if(_dict){ _dict.stop(); _dict=null; mic.classList.remove('rec'); return; }
+  const rec=new SR(); rec.lang='es-UY'; rec.continuous=true; rec.interimResults=false;
+  rec.onresult=(e)=>{ const el=document.getElementById('btEdit'); for(let i=e.resultIndex;i<e.results.length;i++) if(e.results[i].isFinal) el.textContent += (el.textContent?' ':'')+e.results[i][0].transcript; };
+  rec.onend=()=>{ _dict=null; mic.classList.remove('rec'); };
+  rec.onerror=()=>{ _dict=null; mic.classList.remove('rec'); toast('Error de dictado'); };
+  rec.start(); _dict=rec; mic.classList.add('rec'); toast('Dictando… tocá "Dictar" para parar');
+}
+function btAdd(){ const el=document.getElementById('btEdit'); const t=(el.textContent||'').trim(); if(!t)return; if(_dict){ _dict.stop(); _dict=null; document.getElementById('btMic').classList.remove('rec'); } bita.unshift({id:Date.now(), t, d:new Date().toLocaleString('es-UY')}); saveBt(); el.textContent=''; renderBita(); }
 function btDel(id){ bita=bita.filter(x=>x.id!==id); saveBt(); renderBita(); }
 function renderBita(){
   document.getElementById('btList').innerHTML=bita.map(n=>`<div class="bt-note">${esc(n.t)}<div class="d">${esc(n.d)} · <span onclick="btDel(${n.id})" style="color:var(--red);cursor:pointer">borrar</span></div></div>`).join('')||'<div class="empty">Sin notas.</div>';
