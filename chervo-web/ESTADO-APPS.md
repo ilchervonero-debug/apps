@@ -99,8 +99,9 @@ Versión = número de caché del SW.
 
 ### iLDraw-Volt — `apps/ildraw-volt/` · v1 (SW ildraw-volt-v1) · canvas de iLVolt
 - **Qué es:** **variante de iLDraw para iLVolt** (app separada; iLDraw queda intacto de
-  motor). Mismo dibujo técnico + dos cosas propias del rubro eléctrico. Se accederá
-  **desde iLVolt** (menú del dashboard/landing — pendiente enganchar el link).
+  motor). Mismo dibujo técnico + dos cosas propias del rubro eléctrico. Se accede
+  **desde iLVolt** → Herramientas → *"Canvas · plano y simbología"* (FAB del proyecto y menú
+  hamburguesa) → abre `/apps/ildraw-volt/`; el "Volver" regresa a iLVolt.
 - **FAB de electricidad (2º FAB):** simbología **UNIT Uruguay** (tomas línea/Schuko/piso,
   interruptores simple/bip/conmutador/intermedio/dimmer, centro Xe/aplique Xa, pulsador,
   sensor; tablero, seccionador, térmica, diferencial, contactor, guardamotor, relé,
