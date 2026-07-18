@@ -135,13 +135,14 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
 /* Grilla del tablero */
 .tabhead{display:flex; align-items:center; gap:10px; margin:6px 0 6px;}
 .tabhead .tn{font-size:18px; flex:1;}
-.tab-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:6px 0 18px;}
-.mod{border:1.5px dashed var(--gray-m); border-radius:9px; min-height:82px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; padding:6px; background:var(--white); text-align:center;}
+.grid-scroll{flex:1; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px;}
+.tab-grid{display:grid; gap:6px; margin:2px 0 4px;}
+.mod{border:1.5px dashed var(--gray-m); border-radius:9px; min-height:78px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; padding:5px 3px; background:var(--white); text-align:center; overflow:hidden;}
 .mod.empty{color:var(--gray-t); font-size:26px;}
 .mod.filled{border-style:solid; border-color:var(--red);}
-.mod .sym{width:26px; height:26px; fill:none; stroke:var(--ink); stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round;}
-.mod .amp{font-size:13px; font-weight:600; color:var(--ink);}
-.mod .nom{font-size:12px; color:var(--gray-t); line-height:1.1;}
+.mod .sym{width:22px; height:22px; fill:none; stroke:var(--ink); stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round;}
+.mod .amp{font-size:12px; font-weight:600; color:var(--ink);}
+.mod .nom{font-size:11px; color:var(--gray-t); line-height:1.05; max-width:58px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .mod .via{font-size:10px; color:var(--red);}
 /* Regletas de neutro/tierra al lado del tablero */
 .tabhead .tn{flex:1; min-width:0;}
@@ -223,7 +224,7 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
     <h3><span style="color:var(--red);font-weight:800;">iL</span><span style="color:var(--plata);font-weight:800;">Volt</span></h3>
     <div class="row" onclick="closeMenu();openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Core · Tarifas y precios</div>
     <div class="row" onclick="closeMenu();openTools()"><svg class="ic" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg>Herramientas</div>
-    <div class="ver">iLVolt · versión 1.7 · presupuesto eléctrico (UY)</div>
+    <div class="ver">iLVolt · versión 1.8 · presupuesto eléctrico (UY)</div>
   </div>
 </div>
 
@@ -955,11 +956,14 @@ let tableros=JSON.parse(localStorage.getItem('ilvolt_tableros')||'[]');
 let _tabSel=null;
 function saveTab(){ localStorage.setItem('ilvolt_tableros', JSON.stringify(tableros)); }
 function openTablero(){ document.getElementById('toolTablero').classList.add('on'); renderTableros(); }
-const TAB_SIZES=[4,6,8,12,18,24,36];
-function addTablero(){ tableros.push({id:Date.now(), nombre:'Tablero '+(tableros.length+1), size:12, llaves:{}, neutro:true, tierra:true}); saveTab(); renderTableros(); }
+// Capacidades reglamentarias reales (cajas DIN por filas de 12)
+const TAB_SIZES=[2,4,8,12,24,36,48];
+const CAJAS=[['embutir','Plástica embutir · IP40'],['sobreponer','Plástica sobreponer · IP40'],['estanca','Estanca IP65 (intemperie)'],['metalico','Metálica frente muerto'],['prfv','Poliéster PRFV (fachada/pilar)']];
+function addTablero(){ tableros.push({id:Date.now(), nombre:'Tablero '+(tableros.length+1), size:12, caja:'embutir', llaves:{}, neutro:true, tierra:true}); saveTab(); renderTableros(); }
 function delTablero(id){ if(!confirm('¿Borrar el tablero?'))return; tableros=tableros.filter(t=>t.id!==id); saveTab(); renderTableros(); }
 function setTabNom(id,v){ const t=tableros.find(x=>x.id===id); if(t){ t.nombre=v; saveTab(); } }
 function setTabSize(id,v){ const t=tableros.find(x=>x.id===id); if(t){ t.size=+v; saveTab(); renderTableros(); } }
+function setTabCaja(id,v){ const t=tableros.find(x=>x.id===id); if(t){ t.caja=v; saveTab(); } }
 function toggleReg(id,campo){ const t=tableros.find(x=>x.id===id); if(t){ t[campo]=!t[campo]; saveTab(); renderTableros(); } }
 function renderTableros(){
   const l=document.getElementById('tablerosList');
@@ -971,17 +975,23 @@ function renderTableros(){
         : `<div class="mod empty" onclick="lvOpen(${t.id},${i})">+</div>`;
     }
     const reg=(t.neutro||t.tierra)?`<div class="regletas">${t.neutro?'<div class="regleta n">NEUTRO</div>':''}${t.tierra?'<div class="regleta t">TIERRA</div>':''}</div>`:'';
+    const cols=Math.min(t.size,12); // filas de 12 como la caja real
+    const filas=Math.ceil(t.size/12);
     return `<div style="margin-bottom:24px;">
       <div class="tabhead">
         <input class="input tn" style="flex:1; min-width:0;" value="${esc(t.nombre)}" oninput="setTabNom(${t.id},this.value)">
-        <select class="sel" style="width:112px; flex:none;" onchange="setTabSize(${t.id},this.value)">${TAB_SIZES.map(s=>`<option value="${s}" ${t.size===s?'selected':''}>${s} mód.</option>`).join('')}</select>
         <button class="btn-text" onclick="delTablero(${t.id})">Borrar</button>
+      </div>
+      <div style="display:flex; gap:8px; margin:8px 0;">
+        <select class="sel" style="flex:none; width:118px;" onchange="setTabSize(${t.id},this.value)">${TAB_SIZES.map(s=>`<option value="${s}" ${t.size===s?'selected':''}>${s} mód.</option>`).join('')}</select>
+        <select class="sel" style="flex:1; min-width:0;" onchange="setTabCaja(${t.id},this.value)">${CAJAS.map(([v,n])=>`<option value="${v}" ${(t.caja||'embutir')===v?'selected':''}>${n}</option>`).join('')}</select>
       </div>
       <div class="reg-chips">
         <button class="chip ${t.neutro?'on':''}" onclick="toggleReg(${t.id},'neutro')">Regleta neutro</button>
         <button class="chip ${t.tierra?'on':''}" onclick="toggleReg(${t.id},'tierra')">Regleta tierra</button>
       </div>
-      <div style="display:flex; gap:8px; margin-top:8px;">${reg}<div class="tab-grid" style="flex:1">${slots}</div></div>
+      <div style="font-size:13px; color:var(--gray-t); margin:6px 0 2px;">${t.size} módulos · ${filas} fila(s) de 12</div>
+      <div style="display:flex; gap:8px; margin-top:2px;">${reg}<div class="grid-scroll"><div class="tab-grid" style="grid-template-columns:repeat(${cols},64px)">${slots}</div></div></div>
     </div>`;
   }).join('');
 }
@@ -991,7 +1001,8 @@ function printTableros(){
   const secc=tableros.map(t=>{
     const filas=[]; for(let i=0;i<t.size;i++){ const k=t.llaves[i]; if(k) filas.push(`<tr><td>${i+1}</td><td>${tn[k.tipo]||''}</td><td>${esc(k.amp||'')}</td><td>${esc(k.nom||'')}</td><td>${esc(k.via||'')}</td></tr>`); }
     const reg=[t.neutro?'Neutro':'', t.tierra?'Tierra':''].filter(Boolean).join(' · ');
-    return `<h3>${esc(t.nombre)} · ${t.size} módulos${reg?' · Regletas: '+reg:''}</h3>
+    const cajaN=(CAJAS.find(c=>c[0]===(t.caja||'embutir'))||['','']) [1];
+    return `<h3>${esc(t.nombre)} · ${t.size} módulos · ${esc(cajaN)}${reg?' · Regletas: '+reg:''}</h3>
       <table><thead><tr><th>#</th><th>Tipo</th><th>Calibre</th><th>Nombre / ambiente</th><th>Viene de</th></tr></thead>
       <tbody>${filas.join('')||'<tr><td colspan="5" style="color:#888">Sin llaves cargadas.</td></tr>'}</tbody></table>`;
   }).join('');
