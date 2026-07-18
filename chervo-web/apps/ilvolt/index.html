@@ -105,6 +105,22 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
 
 #toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(8px); background:rgba(28,28,28,.92); color:#fff; padding:11px 20px; border-radius:22px; font-size:16px; opacity:0; transition:.2s; pointer-events:none; z-index:200;}
 #toast.on{opacity:1; transform:translateX(-50%) translateY(0);}
+
+/* Panel de advertencias (abajo, fijo) */
+.warnbar{flex-shrink:0; border-top:1px solid var(--gray-m); background:var(--white); max-height:44dvh; overflow-y:auto;}
+.warnbar .wb-head{display:flex; align-items:center; gap:10px; padding:13px 18px; cursor:pointer; font-size:16px; color:var(--ink);}
+.warnbar .wb-head .ic{width:22px; height:22px;}
+.warnbar.prob .wb-head{color:var(--red);}
+.warnbar.prob .wb-head .ic{stroke:var(--red);}
+.warnbar .wb-count{font-weight:600;}
+.warnbar .wb-see{margin-left:auto; font-size:14px; color:var(--gray-t);}
+.warnbar .wb-list{display:none; padding:0 18px 12px;}
+.warnbar.open .wb-list{display:block;}
+.wb-item{border-top:1px solid var(--gray-l); padding:11px 0;}
+.wb-item .wb-q{font-size:16px; color:var(--ink);}
+.wb-item.error .wb-q{color:var(--red);}
+.wb-item .wb-w{font-size:14px; color:var(--gray-t);}
+.wb-item .wb-fix{font-size:15px; color:var(--ink); margin-top:2px;}
 </style>
 </head>
 <body>
@@ -165,6 +181,7 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
       <div id="tab-ingenieria" style="display:none;"></div>
       <div id="tab-resultados" style="display:none;"></div>
     </div></div>
+    <div id="warnBar" class="warnbar"></div>
   </div>
 
 </div>
@@ -174,7 +191,7 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
   <div class="sheet">
     <h3><span style="color:var(--red);font-weight:800;">iL</span><span style="color:var(--plata);font-weight:800;">Volt</span></h3>
     <div class="row" onclick="closeMenu();openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Core · Tarifas y precios</div>
-    <div class="ver">iLVolt · versión 1.3 · presupuesto eléctrico (UY)</div>
+    <div class="ver">iLVolt · versión 1.4 · presupuesto eléctrico (UY)</div>
   </div>
 </div>
 
@@ -222,6 +239,15 @@ const money = (n)=> '$ '+Math.round(n).toLocaleString('es-UY');
 const num = (n)=> (Math.round(n*100)/100).toLocaleString('es-UY');
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
+// Secciones de cable (mm² → ampacidad aprox en caño, cobre; br = térmica típica)
+const SECS=[{k:'cable1_0',mm:1.0,amp:11,br:6},{k:'cable1_5',mm:1.5,amp:15,br:10},{k:'cable2_0',mm:2.0,amp:18,br:16},{k:'cable4',mm:4,amp:26,br:25},{k:'cable6',mm:6,amp:34,br:32}];
+const secByMm=(mm)=>SECS.find(s=>s.mm===mm)||SECS[2];
+function seccionReqMm(amb){ const ext=amb.tipo==='exterior'||amb.tipo==='patio';
+  const tomas=(amb.tomas10a||0)+(amb.tomasSchuko||0)+(amb.tomasSchukoCorte||0)+(amb.interruptoresCombinados||0)+(amb.modulosUsb||0);
+  let mm=1.5; if(tomas>0) mm=2.0; if(amb.tieneHornoAnafe||amb.tieneTermofon||(ext&&amb.tieneBombaOFiltrado)) mm=4; return mm; }
+function usaMm(amb){ return (amb.grosorCable && amb.grosorCable!=='auto') ? parseFloat(String(amb.grosorCable).replace(',','.')) : seccionReqMm(amb); }
+const GROSORES=[['auto','Automático'],['1.5','1,5 mm²'],['2.0','2,0 mm²'],['4','4 mm²'],['6','6 mm²']];
+
 // Texto profesional del presupuesto (fijo, bien expresado)
 const DOC_INCLUYE = ['Mano de obra para los trabajos descritos.','Materiales indicados en este presupuesto.','Pruebas de funcionamiento.','Limpieza básica del área de trabajo.'];
 const DOC_NOINCLUYE = ['Trabajos de albañilería.','Pintura y terminaciones.','Reparación de revestimientos.','Trabajos no especificados.','Materiales no detallados.','Modificaciones solicitadas una vez aceptado el presupuesto.'];
@@ -253,7 +279,7 @@ const CorePresupuesto = {
     ingenieriaTableros.T1.circuitos.push({id:"C2", tipo:"Tomas Generales 10A", destino:"Dormitorios y Estar"});
     ingenieriaTableros.totalTermicas+=2; ingenieriaTableros.totalDiferenciales+=1;
     let diferencialCocinaAsignado=false;
-    let tot={toma10a:0,schuko:0,schukoCorte:0,combinado:0,usb:0,luces:0,paneles:0,sensores:0,reflectores:0,bombas:0};
+    let tot={toma10a:0,schuko:0,schukoCorte:0,combinado:0,usb:0,luces:0,paneles:0,sensores:0,reflectores:0,bombas:0,canoM:0,cableSec:{}};
 
     (datosProyecto.ambientes||[]).forEach(amb=>{
       let costoMaterialesAmb=0, puestasAmb=0;
@@ -262,6 +288,9 @@ const CorePresupuesto = {
       totalBocasContadas += puestasAmb;
       tot.toma10a+=(amb.tomas10a||0); tot.schuko+=(amb.tomasSchuko||0); tot.schukoCorte+=(amb.tomasSchukoCorte||0); tot.combinado+=(amb.interruptoresCombinados||0); tot.usb+=(amb.modulosUsb||0); tot.luces+=(amb.lucesLed||0); tot.paneles+=(amb.panelesLed||0);
       if(amb.tipo==='exterior'||amb.tipo==='patio'){ tot.sensores+=(amb.sensoresMovimiento||0); tot.reflectores+=(amb.reflectoresLed||0); if(amb.tieneBombaOFiltrado) tot.bombas++; }
+      const largoAmb = puestasAmb*mCano;                 // recorrido del ambiente (caño)
+      const secUsa = secByMm(usaMm(amb));                // sección de cable del ambiente
+      tot.canoM += largoAmb; tot.cableSec[secUsa.mm] = (tot.cableSec[secUsa.mm]||0) + largoAmb*3;
       costoMaterialesAmb += (amb.tomas10a||0)*preciosLinea.toma10a;
       costoMaterialesAmb += (amb.tomasSchuko||0)*preciosLinea.schuko;
       costoMaterialesAmb += (amb.tomasSchukoCorte||0)*preciosLinea.schukoCorte;
@@ -270,8 +299,8 @@ const CorePresupuesto = {
       costoMaterialesAmb += (amb.lucesLed||0)*P.iluminacion.dicroicaLed;
       costoMaterialesAmb += (amb.panelesLed||0)*P.iluminacion.panelLedPlafones;
       costoMaterialesAmb += puestasAmb*precioCaja;
-      costoMaterialesAmb += puestasAmb*mCano*precioCano;                 // caño/canaleta según tipo
-      costoMaterialesAmb += puestasAmb*mCable*3*P.cables.cable2_0;       // cable: 3 conductores por puesta
+      costoMaterialesAmb += largoAmb*precioCano;                         // caño = recorrido
+      costoMaterialesAmb += largoAmb*3*P.cables[secUsa.k];               // cable = recorrido × 3 conductores, sección elegida
 
       if(amb.tipo==="cocina"){
         totalPotenciaEstimadaW+=3500;
@@ -355,8 +384,8 @@ const CorePresupuesto = {
     addM('Reflector exterior LED', tot.reflectores, 'u', P.iluminacion.reflectorExteriorLed);
     addM('Bomba / filtrado', tot.bombas, 'u', P.fuerzaExterior.bombaAguaPiscina);
     addM('Caja de conexión', totalBocasContadas, 'u', precioCaja);
-    addM('Caño / canaleta', totalBocasContadas*mCano, 'm', precioCano);
-    addM('Cable (×3 conductores)', totalBocasContadas*mCable*3, 'm', P.cables.cable2_0);
+    addM('Caño / canaleta', tot.canoM, 'm', precioCano);
+    Object.keys(tot.cableSec).sort((a,b)=>a-b).forEach(mm=>{ const s=secByMm(parseFloat(mm)); addM('Cable '+String(mm).replace('.',',')+' mm²', tot.cableSec[mm], 'm', P.cables[s.k]); });
     addM('Gabinete principal', 1, 'u', gabPrincipal);
     addM('Gabinete adicional', Math.max(0,(datosProyecto.cantidadTableros||1)-1), 'u', T.gabinete8);
     addM('Térmica 1P', ingenieriaTableros.totalTermicas, 'u', T.termica1P16);
@@ -366,8 +395,8 @@ const CorePresupuesto = {
     addM('Kit puesta a tierra', 1, 'u', P.subterraneo.kitPAT);
 
     return { cliente:datosProyecto.cliente, ubicacion:datosProyecto.ubicacion, fechaEmision:datosProyecto.fecha||new Date().toLocaleDateString('es-UY'),
-      totalBocas:totalBocasContadas, desgloseAmbientes, ingenieriaTableros, listaMateriales:lista,
-      materiales:{ canoMetros:Math.round(totalBocasContadas*mCano), cableMetros:Math.round(totalBocasContadas*mCable*3), cajas:totalBocasContadas },
+      totalBocas:totalBocasContadas, potenciaW:Math.round(totalPotenciaEstimadaW), desgloseAmbientes, ingenieriaTableros, listaMateriales:lista,
+      materiales:{ canoMetros:Math.round(tot.canoM), cableMetros:Math.round(Object.values(tot.cableSec).reduce((a,b)=>a+b,0)), cajas:totalBocasContadas },
       costos:{ subtotalMateriales:Math.round(totalMateriales-costoSubterraneo-costoTableros-costoMedidaIndirecta),
         subtotalTableros:Math.round(costoTableros), subtotalMedidaIndirecta:Math.round(costoMedidaIndirecta),
         subtotalInfraestructuraSubterraneaUte:Math.round(costoSubterraneo),
@@ -410,6 +439,7 @@ function openProject(id){ activeId=id; const p=proj(); if(p){ // migración de p
     if(p.cantidadTableros==null) p.cantidadTableros = p.requiereSubTableroExterior?2:1;
     if(p.metrosCanoPorPuesta==null) p.metrosCanoPorPuesta=4;
     if(p.metrosCablePorPuesta==null) p.metrosCablePorPuesta=8;
+    (p.ambientes||[]).forEach(a=>{ if(a.grosorCable==null) a.grosorCable='auto'; });
     if(p.materialesModo==null){ p.materialesModo='incluidos'; p.impuestos='ivaIncluido'; p.validezDias=15;
       p.empresa=p.empresa||''; p.telefono=''; p.electricistaNombre=''; p.presupuestoNro=''; p.trabajos='';
       p.formaPago=''; p.tiempoEjecucion=''; p.inicioObra='';
@@ -474,9 +504,42 @@ function switchTab(t){
   if(t==='ambientes') renderAmbientes();
   if(t==='ingenieria') renderIngenieria();
   if(t==='resultados') renderResultados();
-  updateSummary();
+  refreshLive();
 }
-function setP(field,val){ const p=proj(); if(!p)return; p[field]=val; saveDB(); }
+function refreshLive(){ updateSummary(); renderWarnings(); }
+
+/* ==================== Validación (advertencias) ==================== */
+function validar(p){
+  const W=[]; const add=(nivel,que,donde,corregir)=>W.push({nivel,que,donde,corregir});
+  const r=CorePresupuesto.calcularProyecto(p);
+  if(!(p.ambientes||[]).length) add('aviso','No hay ambientes cargados','Ambientes','Agregá al menos un ambiente.');
+  (p.ambientes||[]).forEach(a=>{
+    const ext=a.tipo==='exterior'||a.tipo==='patio';
+    const req=seccionReqMm(a), usa=usaMm(a); const nombre=a.nombre||'Ambiente sin nombre';
+    if(usa<req) add('error','Cable subdimensionado ('+String(usa).replace('.',',')+' mm²)', nombre, 'Usá al menos '+String(req).replace('.',',')+' mm² para esta carga.');
+    const puestas=(a.tomas10a||0)+(a.tomasSchuko||0)+(a.tomasSchukoCorte||0)+(a.interruptoresCombinados||0)+(a.modulosUsb||0)+(a.lucesLed||0);
+    const L=10+puestas*3, s=secByMm(usa), I=s.br;
+    const caida=2*0.0175*L*I/(usa*230)*100, lim=req<=1.5?3:5;
+    if(caida>lim) add('aviso','Caída de tensión alta ('+caida.toFixed(1)+'%)', nombre, 'Subí la sección o acortá el recorrido (límite '+lim+'%).');
+    const tomas=(a.tomas10a||0)+(a.tomasSchuko||0)+(a.tomasSchukoCorte||0);
+    if(tomas>15) add('aviso','Muchas tomas en un circuito ('+tomas+')', nombre, 'Dividí en dos circuitos (máx. ~15).');
+    if((a.tipo==='bano'||ext)&&tomas>0) add('aviso','Zona húmeda/exterior con tomas', nombre, 'Debe llevar diferencial 30 mA exclusivo.');
+  });
+  if(r.potenciaW>40000) add('error','Carga supera 40 kW ('+(r.potenciaW/1000).toFixed(1)+' kW)','Tablero','Requiere medida indirecta UTE (CM doble + CT + CI).');
+  return W;
+}
+function renderWarnings(){
+  const p=proj(); const bar=document.getElementById('warnBar'); if(!p||!bar)return;
+  const W=validar(p);
+  if(!W.length){ bar.className='warnbar'; bar.innerHTML='<div class="wb-head"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Instalación sin advertencias</div>'; bar._key=''; return; }
+  const errs=W.filter(x=>x.nivel==='error').length;
+  bar.className='warnbar prob'+(bar.classList.contains('open')?' open':'');
+  bar.innerHTML='<div class="wb-head" onclick="this.parentElement.classList.toggle(\'open\')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span class="wb-count">'+W.length+' advertencia(s)'+(errs?' · '+errs+' error(es)':'')+'</span><span class="wb-see">ver ▾</span></div><div class="wb-list">'+W.map(x=>'<div class="wb-item '+x.nivel+'"><div class="wb-q">'+esc(x.que)+'</div><div class="wb-w">'+esc(x.donde)+'</div><div class="wb-fix">→ '+esc(x.corregir)+'</div></div>').join('')+'</div>';
+  const key=W.map(x=>x.que+x.donde).join('|');
+  if(errs && key!==bar._key) toast('⚠ Revisá las advertencias abajo');
+  bar._key=key;
+}
+function setP(field,val){ const p=proj(); if(!p)return; p[field]=val; saveDB(); refreshLive(); }
 
 /* ---- Fase 1: Datos ---- */
 const TIPO_INST = [['embutida','Embutida (corrugado naranja)'],['embutidaIgnifuga','Embutida ignífuga (caño azul)'],['vista','Vista / cablecanal exterior'],['daisa','Daisa (industrial estanco)']];
@@ -500,9 +563,8 @@ function renderDatos(){
     </div>
     <div class="field"><label>Cantidad de tableros</label><input type="number" min="1" class="input" value="${p.cantidadTableros}" oninput="setP('cantidadTableros',Math.max(1,+this.value||1)); updateSummary()"></div>
 
-    <div class="sec-title">Cables y caños (por puesta)</div>
-    <div class="field"><label>Metros de caño por puesta</label><input type="number" step="0.5" min="0" class="input" value="${p.metrosCanoPorPuesta}" oninput="setP('metrosCanoPorPuesta',+this.value||0)"></div>
-    <div class="field"><label>Metros de cable por puesta (se multiplica ×3: fase, neutro, tierra)</label><input type="number" step="0.5" min="0" class="input" value="${p.metrosCablePorPuesta}" oninput="setP('metrosCablePorPuesta',+this.value||0)"></div>
+    <div class="sec-title">Caño (por puesta)</div>
+    <div class="field"><label>Metros de caño por puesta — el cable sale de acá ×3 (fase, neutro, tierra)</label><input type="number" step="0.5" min="0" class="input" value="${p.metrosCanoPorPuesta}" oninput="setP('metrosCanoPorPuesta',+this.value||0)"></div>
 
     <div class="sec-title">Mano de obra</div>
     <div class="field"><label>Jornal base ½ oficial ($)</label><input type="number" class="input" value="${p.jornalBase}" oninput="setP('jornalBase',+this.value||0)"></div>
@@ -562,11 +624,15 @@ function ambienteCard(a){
       ${chkA(a.id,'tieneTermofon','Termofón',a.tieneTermofon)}
       ${ext?chkA(a.id,'tieneBombaOFiltrado','Bomba / filtrado piscina',a.tieneBombaOFiltrado):''}
     </div>
+    <div class="field" style="margin-top:8px;"><label>Cable (grosor) — Automático elige según la carga</label>
+      <select class="sel" onchange="setAmb(${a.id},'grosorCable',this.value,true)">
+        ${GROSORES.map(([v,t])=>`<option value="${v}" ${String(a.grosorCable||'auto')===v?'selected':''}>${t}${v==='auto'?' ('+String(seccionReqMm(a)).replace('.',',')+' mm²)':''}</option>`).join('')}
+      </select></div>
   </div>`;
 }
 function chkA(id,field,label,val){ return `<label class="chk"><input type="checkbox" ${val?'checked':''} onchange="setAmb(${id},'${field}',this.checked,true)"><span class="mark"></span>${label}</label>`; }
-function addAmbiente(){ const p=proj(); p.ambientes.push({id:Date.now(), nombre:'', tipo:'dormitorio', tomas10a:0,tomasSchuko:0,tomasSchukoCorte:0,interruptoresCombinados:0,modulosUsb:0,lucesLed:0,panelesLed:0,sensoresMovimiento:0,reflectoresLed:0,tieneHornoAnafe:false,tieneTermofon:false,tieneBombaOFiltrado:false}); saveDB(); renderAmbientes(); }
-function setAmb(id,field,val,rerender){ const p=proj(), a=p.ambientes.find(x=>x.id===id); if(!a)return; a[field]=val; saveDB(); if(rerender) renderAmbientes(); }
+function addAmbiente(){ const p=proj(); p.ambientes.push({id:Date.now(), nombre:'', tipo:'dormitorio', tomas10a:0,tomasSchuko:0,tomasSchukoCorte:0,interruptoresCombinados:0,modulosUsb:0,lucesLed:0,panelesLed:0,sensoresMovimiento:0,reflectoresLed:0,tieneHornoAnafe:false,tieneTermofon:false,tieneBombaOFiltrado:false,grosorCable:'auto'}); saveDB(); renderAmbientes(); }
+function setAmb(id,field,val,rerender){ const p=proj(), a=p.ambientes.find(x=>x.id===id); if(!a)return; a[field]=val; saveDB(); if(rerender) renderAmbientes(); refreshLive(); }
 function delAmb(id){ const p=proj(); p.ambientes=p.ambientes.filter(x=>x.id!==id); saveDB(); renderAmbientes(); }
 
 /* ---- Fase 3: Ingeniería (sin costos) ---- */
