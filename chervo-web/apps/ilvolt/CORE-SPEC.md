@@ -55,3 +55,19 @@
   termofón 2 kW, bomba 1.5 kW.
 - Mano de obra SAU = bocas × coef × jornal × (BPS 1.758 si aplica); o bocas × $800 (fijo).
   + peinado = térmicas × $400. + visitas × $2.500 si solo inspecciona.
+
+## 5. Catálogo ampliado del Core (v1.1)
+
+El Core ahora carga toda la base de precios de Ángel (Uruguay 2026), editable:
+- **Módulos** por 4 líneas (Económica embutido / Estándar Atenea / Diseño Duomo /
+  Premium Cambre) con: interruptor, toma 10A, Schuko 16A, Schuko c/corte, USB, combinado.
+- **Corrugado** naranja/azul/reforzado en Ø20/25/32. **Rígido PVC** Ø20/25/32 (tira 3m),
+  caja pase IP54, caja embutir 10×5. **Cables** 1.0/1.5/2.0/4/6mm².
+- **Daisa** 3/4"–1"–1¼", conector, caja aluminio, grampa omega. **Canal exterior**
+  (cablecanal 20×10 / 60×40 / 100×50 + accesorios).
+- **Subterráneo/PAT** (PVC 63mm, cámara 40×40, kit PAT).
+- **Iluminación** (dicroica, panel, reflector, sensor) y **fuerza** (bomba, toma ext. IP55).
+- **Tableros y protecciones** y **Medida indirecta**: el motor ahora suma el material del
+  gabinete (dimensionado por nº de circuitos) + térmicas + diferenciales, y el combo de
+  medida indirecta si supera 40 kW. **Estos precios son referencias editables** — la base
+  de Ángel no incluía tableros/protecciones; cargar los reales en el Core.

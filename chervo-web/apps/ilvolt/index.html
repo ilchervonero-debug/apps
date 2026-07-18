@@ -173,7 +173,7 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
   <div class="sheet">
     <h3><span style="color:var(--red);font-weight:800;">iL</span><span style="color:var(--plata);font-weight:800;">Volt</span></h3>
     <div class="row" onclick="closeMenu();openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Core · Tarifas y precios</div>
-    <div class="ver">iLVolt · versión 1.0 · presupuesto eléctrico (UY)</div>
+    <div class="ver">iLVolt · versión 1.1 · presupuesto eléctrico (UY)</div>
   </div>
 </div>
 
@@ -192,14 +192,21 @@ const CORE_DEFAULT = {
   manoDeObra: { bocaFijo:800, peinadoLlave:400, visitaInspeccion:2500 },
   factoresSAU: { jornalBaseMedioOficial:2500, coeficienteBocaEmbutida:0.522, coeficienteBocaVista:0.418, multiplicadorBpsUnificado:1.758 },
   marcasModulos: {
-    economico:{ interruptor:105, toma10a:116, schuko:163, usb:600, schukoCorte:280 },
-    estandar: { interruptor:75,  toma10a:85,  schuko:229, usb:600, schukoCorte:350 },
-    diseno:   { interruptor:180, toma10a:210, schuko:325, usb:650, schukoCorte:480 },
-    premium:  { interruptor:240, toma10a:280, schuko:410, usb:750, schukoCorte:590 }
+    economico:{ interruptor:105, toma10a:120, schuko:180, schukoCorte:350, usb:600, combinado:149 },
+    estandar: { interruptor:75,  toma10a:85,  schuko:229, schukoCorte:350, usb:600, combinado:139 },
+    diseno:   { interruptor:180, toma10a:210, schuko:325, schukoCorte:350, usb:650, combinado:285 },
+    premium:  { interruptor:240, toma10a:280, schuko:410, schukoCorte:350, usb:750, combinado:290 }
   },
-  canalizacion: { corrugadoNaranjaMetro:15, corrugadoAzulMetro:25, corrugadoReforzadoMetro:26, cajaEmbutir10x5:45, daisaTuboMetro:100, daisaConector:130, daisaCajaAluminio:440, pvcSubterrano63mmMetro:90, camaraRegistro40x40:1800, kitPuestaATierra:1500 },
+  corrugado: { d20Naranja:15, d25Naranja:19, d32Naranja:31, d20Azul:25, d25Azul:35, d32Azul:45, d20Reforzado:26, d25Reforzado:32 },
+  rigido: { d20Tira3m:175, d25Tira3m:210, d32Tira3m:345, cajaPaseIP54:169, caja10x5:45 },
+  cables: { cable1_0:11, cable1_5:15, cable2_0:20, cable4:33, cable6:48 },
+  daisa: { tubo34Metro:110, tubo1Metro:141, tubo114Metro:209, conector34:130, cajaAluminio:440, grampaOmega1:125 },
+  canalExterior: { canaleta20x10:139, canaleta60x40:289, canaleta100x50:799, accesorios:94 },
+  tableros: { gabinete4:700, gabinete8:1200, gabinete12:1800, gabinete18:2600, gabinete24:3600, gabinete36:5200, termica1P16:320, termica1P25:360, termica2P25:620, diferencial2P25_30:1400, diferencial2P40_30:1600, rielDIN:120, peineBipolar:260 },
+  medidaIndirecta: { gabineteCMdoble:9000, celdaCT:6500, celdaCI:4500, barraCobreEstanada:2500 },
+  subterraneo: { pvc63Metro:90, camara40x40:1800, kitPAT:1500 },
   iluminacion: { dicroicaLed:180, panelLedPlafones:450, reflectorExteriorLed:650, sensorMovimientoFotocelula:550 },
-  fuerzaExterior: { bombaAguaPiscina:4500 }
+  fuerzaExterior: { bombaAguaPiscina:4500, tomaExteriorIP55:365 }
 };
 let core = mergeCore(JSON.parse(localStorage.getItem('ilvolt_core')||'null'));
 function mergeCore(saved){ const c=JSON.parse(JSON.stringify(CORE_DEFAULT)); if(saved){ for(const g in c){ if(saved[g]) for(const k in c[g]){ if(g==='marcasModulos'){ for(const m in c[g][k]) if(saved[g][k]&&saved[g][k][m]!=null) c[g][k][m]=saved[g][k][m]; } else if(saved[g][k]!=null) c[g][k]=saved[g][k]; } } } return c; }
@@ -237,18 +244,19 @@ const CorePresupuesto = {
     (datosProyecto.ambientes||[]).forEach(amb=>{
       let costoMaterialesAmb=0, puestasAmb=0;
       const preciosLinea = P.marcasModulos[datosProyecto.perfilCalidad] || P.marcasModulos.estandar;
-      puestasAmb += (amb.tomas10a||0)+(amb.tomasSchuko||0)+(amb.tomasSchukoCorte||0)+(amb.modulosUsb||0)+(amb.lucesLed||0);
+      puestasAmb += (amb.tomas10a||0)+(amb.tomasSchuko||0)+(amb.tomasSchukoCorte||0)+(amb.interruptoresCombinados||0)+(amb.modulosUsb||0)+(amb.lucesLed||0);
       totalBocasContadas += puestasAmb;
       costoMaterialesAmb += (amb.tomas10a||0)*preciosLinea.toma10a;
       costoMaterialesAmb += (amb.tomasSchuko||0)*preciosLinea.schuko;
       costoMaterialesAmb += (amb.tomasSchukoCorte||0)*preciosLinea.schukoCorte;
+      costoMaterialesAmb += (amb.interruptoresCombinados||0)*preciosLinea.combinado;
       costoMaterialesAmb += (amb.modulosUsb||0)*preciosLinea.usb;
       costoMaterialesAmb += (amb.lucesLed||0)*P.iluminacion.dicroicaLed;
       costoMaterialesAmb += (amb.panelesLed||0)*P.iluminacion.panelLedPlafones;
-      costoMaterialesAmb += puestasAmb*P.canalizacion.cajaEmbutir10x5;
-      let precioCañoUso = datosProyecto.esEntornoIncendio ? P.canalizacion.corrugadoAzulMetro : P.canalizacion.corrugadoNaranjaMetro;
+      costoMaterialesAmb += puestasAmb*P.rigido.caja10x5;
+      let precioCañoUso = datosProyecto.esEntornoIncendio ? P.corrugado.d20Azul : P.corrugado.d20Naranja;
       costoMaterialesAmb += puestasAmb*4*precioCañoUso;
-      costoMaterialesAmb += puestasAmb*6*P.canalizacion.corrugadoNaranjaMetro;
+      costoMaterialesAmb += puestasAmb*6*P.corrugado.d20Naranja;
 
       if(amb.tipo==="cocina"){
         totalPotenciaEstimadaW+=3500;
@@ -283,16 +291,27 @@ const CorePresupuesto = {
 
     let costoSubterraneo=0;
     if(datosProyecto.llevaTramoSubterraneo){
-      costoSubterraneo += (datosProyecto.metrosSubterraneo||0)*(P.canalizacion.pvcSubterrano63mmMetro*2);
+      costoSubterraneo += (datosProyecto.metrosSubterraneo||0)*(P.subterraneo.pvc63Metro*2);
       let cantidadCamaras=2;
       if((datosProyecto.metrosSubterraneo||0)>15 || datosProyecto.tieneCambioDireccionSubterraneo) cantidadCamaras += Math.floor((datosProyecto.metrosSubterraneo||0)/15);
-      costoSubterraneo += cantidadCamaras*P.canalizacion.camaraRegistro40x40;
+      costoSubterraneo += cantidadCamaras*P.subterraneo.camara40x40;
       totalMateriales += costoSubterraneo;
     }
-    totalMateriales += P.canalizacion.kitPuestaATierra;
+    totalMateriales += P.subterraneo.kitPAT;
 
     if(totalPotenciaEstimadaW>40000){ ingenieriaTableros.requiereMedidaIndirecta=true;
       ingenieriaTableros.alertasSeguridad.push("CRÍTICO: La carga calculada supera los 40 kW. Se debe presupuestar e instalar Puesto de Medida Indirecta (Gabinetes acoplados CM doble + CT + CI) con barras de cobre estañadas."); }
+
+    // Tableros y protecciones (material): gabinete + térmicas + diferenciales
+    const T=P.tableros;
+    let modulosDIN = ingenieriaTableros.totalTermicas + ingenieriaTableros.totalDiferenciales + 1;
+    let gabPrincipal = modulosDIN<=4?T.gabinete4:modulosDIN<=8?T.gabinete8:modulosDIN<=12?T.gabinete12:modulosDIN<=18?T.gabinete18:modulosDIN<=24?T.gabinete24:T.gabinete36;
+    let costoTableros = gabPrincipal + ingenieriaTableros.totalTermicas*T.termica1P16 + ingenieriaTableros.totalDiferenciales*T.diferencial2P40_30 + (ingenieriaTableros.T2.circuitos.length? T.gabinete8 : 0);
+    totalMateriales += costoTableros;
+
+    // Medida indirecta (si supera 40 kW)
+    let costoMedidaIndirecta = 0;
+    if(ingenieriaTableros.requiereMedidaIndirecta){ const mi=P.medidaIndirecta; costoMedidaIndirecta = mi.gabineteCMdoble+mi.celdaCT+mi.celdaCI+mi.barraCobreEstanada; totalMateriales += costoMedidaIndirecta; }
 
     let subtotalManoObraBocas=0;
     if(datosProyecto.calcularPorSAU){
@@ -309,7 +328,9 @@ const CorePresupuesto = {
 
     return { cliente:datosProyecto.cliente, ubicacion:datosProyecto.ubicacion, fechaEmision:datosProyecto.fecha||new Date().toLocaleDateString('es-UY'),
       totalBocas:totalBocasContadas, desgloseAmbientes, ingenieriaTableros,
-      costos:{ subtotalMaterialesModulosYCaños:Math.round(totalMateriales-costoSubterraneo), subtotalInfraestructuraSubterraneaUte:Math.round(costoSubterraneo),
+      costos:{ subtotalMateriales:Math.round(totalMateriales-costoSubterraneo-costoTableros-costoMedidaIndirecta),
+        subtotalTableros:Math.round(costoTableros), subtotalMedidaIndirecta:Math.round(costoMedidaIndirecta),
+        subtotalInfraestructuraSubterraneaUte:Math.round(costoSubterraneo),
         totalMaterialesNeto:Math.round(totalMateriales), totalManoObraNeto:Math.round(totalManoObra), TOTAL:Math.round(totalMateriales+totalManoObra) } };
   }
 };
@@ -358,12 +379,19 @@ function renderHome(){
 const CORE_LABELS = {
   manoDeObra:{__t:'Mano de obra', bocaFijo:'Boca (trato fijo)', peinadoLlave:'Peinado llave / tablero', visitaInspeccion:'Visita de inspección'},
   factoresSAU:{__t:'Factores SAU / BPS', jornalBaseMedioOficial:'Jornal base ½ oficial', coeficienteBocaEmbutida:'Coef. boca embutida', coeficienteBocaVista:'Coef. boca vista', multiplicadorBpsUnificado:'Multiplicador BPS unificado'},
-  canalizacion:{__t:'Canalización', corrugadoNaranjaMetro:'Corrugado naranja $/m', corrugadoAzulMetro:'Corrugado azul ignífugo $/m', corrugadoReforzadoMetro:'Corrugado reforzado $/m', cajaEmbutir10x5:'Caja embutir 10×5', daisaTuboMetro:'Daisa tubo $/m', daisaConector:'Daisa conector', daisaCajaAluminio:'Daisa caja aluminio', pvcSubterrano63mmMetro:'PVC subterráneo 63mm $/m', camaraRegistro40x40:'Cámara registro 40×40', kitPuestaATierra:'Kit puesta a tierra'},
+  corrugado:{__t:'Corrugado ($/m)', d20Naranja:'Naranja Ø20', d25Naranja:'Naranja Ø25', d32Naranja:'Naranja Ø32', d20Azul:'Azul ignífugo Ø20', d25Azul:'Azul ignífugo Ø25', d32Azul:'Azul ignífugo Ø32', d20Reforzado:'Reforzado losa Ø20', d25Reforzado:'Reforzado losa Ø25'},
+  rigido:{__t:'Rígido PVC / cajas', d20Tira3m:'Rígido Ø20 (tira 3m)', d25Tira3m:'Rígido Ø25 (tira 3m)', d32Tira3m:'Rígido Ø32 (tira 3m)', cajaPaseIP54:'Caja pase exterior IP54', caja10x5:'Caja embutir 10×5'},
+  cables:{__t:'Cables ($/m)', cable1_0:'Unipolar 1.0mm²', cable1_5:'Unipolar 1.5mm²', cable2_0:'Unipolar 2.0mm²', cable4:'Unipolar 4mm²', cable6:'Unipolar 6mm²'},
+  daisa:{__t:'Daisa (industrial estanco)', tubo34Metro:'Caño 3/4" $/m', tubo1Metro:'Caño 1" $/m', tubo114Metro:'Caño 1¼" $/m', conector34:'Conector 3/4"', cajaAluminio:'Caja aluminio', grampaOmega1:'Grampa omega 1"'},
+  canalExterior:{__t:'Canal exterior (cablecanal)', canaleta20x10:'Canaleta 20×10 (2m)', canaleta60x40:'Canaleta 60×40 (2m)', canaleta100x50:'Canaleta 100×50 (2m)', accesorios:'Accesorios (curva/ángulo/T)'},
+  tableros:{__t:'Tableros y protecciones', gabinete4:'Gabinete 4 mód.', gabinete8:'Gabinete 8 mód.', gabinete12:'Gabinete 12 mód.', gabinete18:'Gabinete 18 mód.', gabinete24:'Gabinete 24 mód.', gabinete36:'Gabinete 36 mód.', termica1P16:'Térmica 1P 16A', termica1P25:'Térmica 1P 25A', termica2P25:'Térmica 2P 25A', diferencial2P25_30:'Diferencial 2P 25A 30mA', diferencial2P40_30:'Diferencial 2P 40A 30mA', rielDIN:'Riel DIN', peineBipolar:'Peine bipolar'},
+  medidaIndirecta:{__t:'Medida indirecta (>40 kW)', gabineteCMdoble:'Gabinete CM doble', celdaCT:'Celda CT', celdaCI:'Celda CI', barraCobreEstanada:'Barra cobre estañada'},
+  subterraneo:{__t:'Subterráneo / PAT (UTE)', pvc63Metro:'PVC 63mm $/m', camara40x40:'Cámara registro 40×40', kitPAT:'Kit puesta a tierra'},
   iluminacion:{__t:'Iluminación', dicroicaLed:'Dicroica LED', panelLedPlafones:'Panel / plafón LED', reflectorExteriorLed:'Reflector exterior LED', sensorMovimientoFotocelula:'Sensor / fotocélula'},
-  fuerzaExterior:{__t:'Fuerza exterior', bombaAguaPiscina:'Bomba agua / piscina'}
+  fuerzaExterior:{__t:'Fuerza exterior', bombaAguaPiscina:'Bomba agua / piscina', tomaExteriorIP55:'Toma exterior IP55'}
 };
-const MARCA_LABELS = { economico:'Económica', estandar:'Estándar (Atenea)', diseno:'Diseño (Duomo)', premium:'Premium (Cambre)' };
-const MOD_LABELS = { interruptor:'Interruptor', toma10a:'Toma 10A', schuko:'Schuko', usb:'USB', schukoCorte:'Schuko c/corte' };
+const MARCA_LABELS = { economico:'Económica (embutido)', estandar:'Estándar (Atenea)', diseno:'Diseño (Duomo)', premium:'Premium (Cambre)' };
+const MOD_LABELS = { interruptor:'Interruptor', toma10a:'Toma 10A', schuko:'Schuko 16A', schukoCorte:'Schuko c/corte', usb:'USB', combinado:'Combinado' };
 function renderCore(){
   let h='';
   for(const g in CORE_LABELS){ const L=CORE_LABELS[g];
@@ -448,6 +476,7 @@ function ambienteCard(a){
       ${nf(a.id,'tomas10a','Tomas 10A',a.tomas10a)}
       ${nf(a.id,'tomasSchuko','Schuko 16A',a.tomasSchuko)}
       ${nf(a.id,'tomasSchukoCorte','Schuko c/corte',a.tomasSchukoCorte)}
+      ${nf(a.id,'interruptoresCombinados','Combinados',a.interruptoresCombinados)}
       ${nf(a.id,'modulosUsb','Módulos USB',a.modulosUsb)}
       ${nf(a.id,'lucesLed','Luces / dicroicas',a.lucesLed)}
       ${nf(a.id,'panelesLed','Paneles LED',a.panelesLed)}
@@ -462,7 +491,7 @@ function ambienteCard(a){
   </div>`;
 }
 function chkA(id,field,label,val){ return `<label class="chk"><input type="checkbox" ${val?'checked':''} onchange="setAmb(${id},'${field}',this.checked,true)"><span class="mark"></span>${label}</label>`; }
-function addAmbiente(){ const p=proj(); p.ambientes.push({id:Date.now(), nombre:'', tipo:'dormitorio', tomas10a:0,tomasSchuko:0,tomasSchukoCorte:0,modulosUsb:0,lucesLed:0,panelesLed:0,sensoresMovimiento:0,reflectoresLed:0,tieneHornoAnafe:false,tieneTermofon:false,tieneBombaOFiltrado:false}); saveDB(); renderAmbientes(); }
+function addAmbiente(){ const p=proj(); p.ambientes.push({id:Date.now(), nombre:'', tipo:'dormitorio', tomas10a:0,tomasSchuko:0,tomasSchukoCorte:0,interruptoresCombinados:0,modulosUsb:0,lucesLed:0,panelesLed:0,sensoresMovimiento:0,reflectoresLed:0,tieneHornoAnafe:false,tieneTermofon:false,tieneBombaOFiltrado:false}); saveDB(); renderAmbientes(); }
 function setAmb(id,field,val,rerender){ const p=proj(), a=p.ambientes.find(x=>x.id===id); if(!a)return; a[field]=val; saveDB(); if(rerender) renderAmbientes(); }
 function delAmb(id){ const p=proj(); p.ambientes=p.ambientes.filter(x=>x.id!==id); saveDB(); renderAmbientes(); }
 
@@ -497,8 +526,10 @@ function renderResultados(){
       ${r.desgloseAmbientes.map(a=>`<tr><td>${esc(a.nombre)}</td><td class="q">${a.puestas}</td><td class="q">${money(a.subtotalMateriales)}</td></tr>`).join('')||'<tr><td class="card-sub">Sin ambientes.</td></tr>'}
     </tbody></table></div>
     <div class="totbox">
-      <div class="totrow"><span>Materiales (módulos y caños)</span><span>${money(c.subtotalMaterialesModulosYCaños)}</span></div>
-      <div class="totrow"><span>Infraestructura subterránea UTE</span><span>${money(c.subtotalInfraestructuraSubterraneaUte)}</span></div>
+      <div class="totrow"><span>Materiales (módulos, caños, cajas, PAT, iluminación)</span><span>${money(c.subtotalMateriales)}</span></div>
+      <div class="totrow"><span>Tableros y protecciones</span><span>${money(c.subtotalTableros)}</span></div>
+      ${c.subtotalMedidaIndirecta>0?`<div class="totrow"><span>Medida indirecta (UTE)</span><span>${money(c.subtotalMedidaIndirecta)}</span></div>`:''}
+      ${c.subtotalInfraestructuraSubterraneaUte>0?`<div class="totrow"><span>Infraestructura subterránea UTE</span><span>${money(c.subtotalInfraestructuraSubterraneaUte)}</span></div>`:''}
       <div class="totrow"><span>Materiales neto</span><span>${money(c.totalMaterialesNeto)}</span></div>
       <div class="totrow"><span>Mano de obra neto</span><span>${money(c.totalManoObraNeto)}</span></div>
       <div class="totrow big"><span>TOTAL PROYECTO</span><span>${money(c.TOTAL)}</span></div>
@@ -520,8 +551,10 @@ function exportExcel(){
   ing.T2.circuitos.forEach(ci=>aoa.push(['T2 '+ci.id, ci.tipo, ci.destino]));
   ing.alertasSeguridad.forEach(a=>aoa.push(['Alerta', a]));
   aoa.push([]); aoa.push(['COSTOS']);
-  aoa.push(['Materiales (módulos y caños)', c.subtotalMaterialesModulosYCaños]);
-  aoa.push(['Infraestructura subterránea UTE', c.subtotalInfraestructuraSubterraneaUte]);
+  aoa.push(['Materiales (módulos, caños, cajas, PAT, iluminación)', c.subtotalMateriales]);
+  aoa.push(['Tableros y protecciones', c.subtotalTableros]);
+  if(c.subtotalMedidaIndirecta>0) aoa.push(['Medida indirecta (UTE)', c.subtotalMedidaIndirecta]);
+  if(c.subtotalInfraestructuraSubterraneaUte>0) aoa.push(['Infraestructura subterránea UTE', c.subtotalInfraestructuraSubterraneaUte]);
   aoa.push(['Materiales neto', c.totalMaterialesNeto]);
   aoa.push(['Mano de obra neto', c.totalManoObraNeto]);
   aoa.push(['TOTAL PROYECTO', c.TOTAL]);
@@ -536,7 +569,10 @@ function exportCSV(){
   R.push(['Cliente',p.cliente]); R.push(['Ubicacion',p.ubicacion]); R.push(['Fecha',p.fecha]); R.push([]);
   R.push(['Ambiente','Bocas','Materiales']);
   r.desgloseAmbientes.forEach(a=>R.push([a.nombre,a.puestas,Math.round(a.subtotalMateriales)]));
-  R.push([]); R.push(['Materiales neto',c.totalMaterialesNeto]); R.push(['Mano de obra neto',c.totalManoObraNeto]); R.push(['TOTAL',c.TOTAL]);
+  R.push([]); R.push(['Materiales',c.subtotalMateriales]); R.push(['Tableros y protecciones',c.subtotalTableros]);
+  if(c.subtotalMedidaIndirecta>0) R.push(['Medida indirecta',c.subtotalMedidaIndirecta]);
+  if(c.subtotalInfraestructuraSubterraneaUte>0) R.push(['Subterraneo UTE',c.subtotalInfraestructuraSubterraneaUte]);
+  R.push(['Materiales neto',c.totalMaterialesNeto]); R.push(['Mano de obra neto',c.totalManoObraNeto]); R.push(['TOTAL',c.TOTAL]);
   const csv=R.map(row=>row.map(x=>{const s=String(x==null?'':x); return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(';')).join('\n');
   const a=document.createElement('a'); a.download='iLVolt_'+p.name.replace(/[^\w\-]+/g,'_')+'.csv';
   a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'})); a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); toast('CSV generado');
@@ -567,7 +603,10 @@ function imprimir(){
     <table><thead><tr><th>Tablero</th><th>Circuito</th><th>Destino</th></tr></thead><tbody>${circ}</tbody></table>
     <h3>Costos</h3>
     <div class="tot">
-      <div><span>Materiales neto</span><span>${money(c.totalMaterialesNeto)}</span></div>
+      <div><span>Materiales</span><span>${money(c.subtotalMateriales)}</span></div>
+      <div><span>Tableros y protecciones</span><span>${money(c.subtotalTableros)}</span></div>
+      ${c.subtotalMedidaIndirecta>0?`<div><span>Medida indirecta (UTE)</span><span>${money(c.subtotalMedidaIndirecta)}</span></div>`:''}
+      ${c.subtotalInfraestructuraSubterraneaUte>0?`<div><span>Infraestructura subterránea UTE</span><span>${money(c.subtotalInfraestructuraSubterraneaUte)}</span></div>`:''}
       <div><span>Mano de obra neto</span><span>${money(c.totalManoObraNeto)}</span></div>
       <div class="big"><span>TOTAL PROYECTO</span><span>${money(c.TOTAL)}</span></div>
     </div>

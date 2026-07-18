@@ -1,4 +1,4 @@
-const CACHE = 'ilvolt-v1';
+const CACHE = 'ilvolt-v2';
 const ASSETS = [
   '/apps/ilvolt/',
   '/apps/ilvolt/index.html',
