@@ -175,8 +175,17 @@ Todos comparten el mismo molde para verse hermanos:
 
 ## 7. Botones e íconos: "el texto es el botón"
 
-- Acciones secundarias = **texto** (sin recuadro). El recuadro/relleno se reserva a la
-  **acción primaria única** (guardar, +, =).
+- **SIN botones pintados (regla que prima).** **Ningún** botón lleva relleno de color
+  sólido — tampoco el rojo. Todo botón = fondo **blanco/transparente** + **borde** +
+  **ícono** monolínea (y texto ≥16px, opcional). La **jerarquía se marca con el color
+  del borde y del ícono/texto, no con relleno**:
+  - **Acción primaria** (Crear, Agregar, Guardar, Exportar, `+`, `=`): **borde e
+    ícono/texto rojos `#FE0000`** sobre blanco.
+  - **Acción secundaria**: **texto sin recuadro**, o borde gris `#DCDCD8` con texto tinta.
+  - **Activo / seleccionado / enfocado**: **borde rojo** (igual que los íconos, §6).
+  - **Presionado**: gris apenas más oscuro o `transform:scale(.96)`. **Nunca rosado,
+    nunca relleno.**
+  - Los íconos dentro de un botón heredan el color: `.btn .ic{stroke:currentColor}`.
 - Menús: fila = ícono monolínea + etiqueta. Ícono en tinta, acento rojo mínimo.
 - **Nada de logo/ícono de app antes del nombre en el header.** El nombre (wordmark iL/HA)
   va **a la izquierda**, solo. El **wordmark** es una sola letra/tipografía: **mismo grosor
@@ -224,10 +233,59 @@ Todos comparten el mismo molde para verse hermanos:
 - El documento exportado lleva el membrete arriba (si se cargó) y el **detalle completo**
   del registro — no un resumen recortado.
 - CSV y Respaldo son directos (no pasan por el modal): no necesitan membrete.
+- **Formatos unificados (los mismos en TODAS las apps), con el mismo ícono y nombre:**
+  - **Excel** (`.xlsx`) — tabla lista para planilla (usa SheetJS por CDN → requiere internet).
+  - **CSV** — texto separado por `;`, **funciona sin internet** (respaldo del Excel).
+  - **Imprimir → Guardar PDF** — un solo ícono/acción de imprimir; el PDF sale del
+    diálogo del sistema ("Guardar como PDF"). El documento es **limpio**: solo el
+    **encabezado editable** (+ logo si se cargó) y el detalle — **sin el nombre de la app
+    ni ningún dato que el usuario no escribió** (referencia: Bitácora).
+  - **Respaldo** (`.json`) opcional — copia restaurable / mover de equipo.
 
 ---
 
-_Versión iLStyle 1.7 — wordmark de un solo grosor/tamaño (solo cambia el color; primera
+## 9. FAB y herramientas (apps con lienzo)
+
+Para apps con canvas/plano (iLDraw, iLFrame, iLWall, Cielorraso…):
+
+- **FAB cuadrado con esquinas redondeadas** (`border-radius:14px`), **nunca círculo**.
+  Fondo **blanco**, **borde rojo 1.5px**, ícono rojo fino (~28px), lado ~**56px**, sombra
+  suave. Presionado = gris muy claro o `scale`.
+- **Herramientas** que despliega (barra/panel): íconos **negros `#1C1C1C` por defecto**;
+  al **activarse pasan a rojo con borde rojo** (`box-shadow:inset 0 0 0 1.5px #FE0000`),
+  **sin fondo gris**. **Nunca botones grises.**
+- Misma forma, tamaño y comportamiento en todas las apps (se van a unir en una sola).
+
+---
+
+## 10. Estructura de navegación (apps de cómputo / construcción)
+
+Las apps de construcción mantienen **la misma secuencia de 3 niveles** (así son
+intercambiables y se podrán unir en una sola app):
+
+1. **Landing** = **Core (Cuore)** + **Proyectos**.
+   - *Core*: datos base / configuración global / precios-aportes (lo que comparten todos
+     los proyectos). Se entra desde una tarjeta arriba.
+   - *Proyectos*: lista de obras/proyectos (crear / abrir / borrar).
+   - Header: nombre a la izquierda, **hamburguesa (☰) a la derecha** (Config + versión + cuenta).
+2. **Proyecto = Dashboard.** Donde se **cargan y gestionan** los elementos del proyecto
+   (rubros, tipos, componentes). Flecha **←** a la izquierda para volver al landing.
+   El dashboard **solo carga/suma**; no muestra el detalle calculado de cada ítem.
+3. **Hoja** = **canvas** (dibujo/plano) **o salida** (resumen / cómputo / exportación).
+   Se abre desde el dashboard. La salida es la que lleva el desglose, los totales y los
+   botones de exportación (§8).
+
+Regla: **Landing (Core + Proyectos) → Dashboard → Hoja (canvas o salida).** Iconos,
+FABs, formas, tamaños, impresiones y tipos de archivo (Excel/CSV/PDF) **iguales** en todas.
+
+---
+
+_Versión iLStyle 1.8 — SIN botones pintados: todo botón es ícono + borde que cambia de
+color (rojo = primaria/activa), nunca relleno sólido; FAB cuadrado (esquinas redondeadas,
+blanco + borde rojo) con herramientas negras que se vuelven rojas con borde rojo al
+activarse; estructura de navegación unificada Landing(Core+Proyectos) → Dashboard → Hoja
+(canvas/salida); formatos de exportación unificados (Excel .xlsx + CSV + Imprimir/PDF
+limpio sin marca de app). Versión 1.7 — wordmark de un solo grosor/tamaño (solo cambia el color; primera
 parte roja, resto plata, sin negrita ni fino); sin logo de app antes del nombre; nombre a
 la izquierda y menú hamburguesa (☰) a la **derecha** en el landing (Configuración +
 versión + cuenta), flecha ← de volver dentro de un registro; exportación con un ícono flat

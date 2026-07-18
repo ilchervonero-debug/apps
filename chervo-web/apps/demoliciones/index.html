@@ -40,9 +40,11 @@ header{background:var(--white); padding:14px 18px; display:flex; align-items:cen
 .input:focus{outline:none; border-color:var(--red);}
 .sel{padding:12px; border:1px solid var(--gray-m); border-radius:8px; font-size:16px; background:var(--white); color:var(--ink); max-width:100%;}
 .sel:focus{outline:none; border-color:var(--red);}
-.btn{border:none; padding:13px 16px; border-radius:8px; font-size:16px; cursor:pointer; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap;}
-.btn-red{background:var(--red); color:var(--white);}
-.btn-out{background:var(--white); color:var(--ink); border:1px solid var(--gray-m);}
+/* Sin botones pintados: fondo blanco + borde; el color del borde marca jerarquía */
+.btn{border:1.5px solid var(--gray-m); padding:12px 16px; border-radius:8px; font-size:16px; cursor:pointer; font-weight:500; display:flex; align-items:center; justify-content:center; gap:8px; white-space:nowrap; background:var(--white); color:var(--ink);}
+.btn .ic{stroke:currentColor;}
+.btn-red{background:var(--white); color:var(--red); border-color:var(--red);}
+.btn-out{background:var(--white); color:var(--ink); border-color:var(--gray-m);}
 .btn-sm{padding:10px 13px; font-size:15px;}
 .btn-text{background:none; border:none; color:var(--red); padding:11px 6px; font-size:16px; cursor:pointer; white-space:nowrap;}
 .btn:active,.btn-text:active{filter:brightness(.94);}
@@ -146,7 +148,7 @@ textarea.enc:focus{outline:none; border-color:var(--red);}
         <textarea class="enc" id="encInput" placeholder="Empresa, cliente, obra, dirección…" oninput="setHeader(this.value)"></textarea>
         <div style="display:flex; gap:8px; margin-bottom:10px;">
           <button class="btn btn-red" style="flex:1;" onclick="exportExcel()">
-            <svg class="ic" viewBox="0 0 24 24" style="stroke:#fff"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l2 3-2 3M15 13l-2 3 2 3"/></svg>
+            <svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l2 3-2 3M15 13l-2 3 2 3"/></svg>
             Excel
           </button>
           <button class="btn btn-out" style="flex:1;" onclick="exportCSV()">
@@ -180,7 +182,7 @@ textarea.enc:focus{outline:none; border-color:var(--red);}
     <div class="cfg-row"><label>Capacidad volqueta (m³)</label><input type="number" id="cfg_volq"></div>
     <div class="cfg-row"><label>Flete por volqueta ($)</label><input type="number" id="cfg_flete"></div>
     <button class="btn btn-red" style="width:100%; margin-top:8px;" onclick="saveConfig()">Guardar</button>
-    <div class="ver">Demoliciones · versión 1.3</div>
+    <div class="ver">Demoliciones · versión 1.4</div>
   </div>
 </div>
 

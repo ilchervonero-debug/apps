@@ -141,7 +141,7 @@ Versión = número de caché del SW.
 - **Qué es:** **gastos compartidos** de Gerardo y Ana Gracia (predio/ruta 26).
   Registra gastos por persona y calcula total combinado y saldos.
 
-### Demoliciones — `apps/demoliciones/` · v4 · en grilla
+### Demoliciones — `apps/demoliciones/` · v5 · en grilla
 - **Qué es:** **APU de demoliciones** para reformas residenciales (Uruguay).
   Spec en `apps/demoliciones/APU_DEMOLICIONES.md` (fuente de verdad).
 - **Wordmark:** "Demoliciones" en **plata** con la "D" roja (nombres nunca en negro).
@@ -167,6 +167,10 @@ Versión = número de caché del SW.
   en la grilla del `index.html`.
 
 ## Pendientes conocidos
+- **Alinear todas las apps al estándar iLStyle 1.8**: botones sin relleno (ícono +
+  borde que cambia de color), FAB cuadrado, estructura Landing(Core+Proyectos) →
+  Dashboard → Hoja, y export unificada (Excel + CSV + Imprimir/PDF limpio).
+  Aplicado en **Demoliciones** (referencia viva); faltan las demás.
 - iLFrame: cuantificar el material de cierre/tapa de la comanda A/B/T.
 - iLWall: ajustar coeficientes de cómputo si Ángel los define distinto.
 - APU CORE: decidir si la tarjeta de grilla se renombra a HA-Calc.
