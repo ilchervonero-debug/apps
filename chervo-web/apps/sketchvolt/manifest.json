@@ -1,0 +1,14 @@
+{
+  "name": "SketchVolt",
+  "short_name": "SketchVolt",
+  "description": "Dibujo eléctrico a escala y presentación (planos A4/A3/A2)",
+  "start_url": "/apps/sketchvolt/",
+  "scope": "/apps/sketchvolt/",
+  "display": "standalone",
+  "background_color": "#F2F2F0",
+  "theme_color": "#F2F2F0",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/apps/sketchvolt/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

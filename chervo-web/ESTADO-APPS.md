@@ -114,6 +114,28 @@ Versión = número de caché del SW.
   en coordenadas mundo (panea/zoomea con todo) y **no** sale en el export (queda como
   referencia).
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
+- **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
+
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v1) · app pro
+- **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
+  instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
+  (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
+- **Estructura (shell):** Landing **Proyectos** (localStorage `sketchvolt_proy`) → **dashboard
+  del proyecto** (cliente, obra, y **directriz**: escala 1/100·1/75·1/50 + hoja A4/A3/A2 +
+  orientación) → **Plantas** (nombre + escala + hoja; heredan la directriz) → **Canvas**.
+- **Mundo en metros reales** (PPM=100 px/m). Grilla en metros: **0.15 · 0.50 · 1.00 · 3.00**.
+  **Origen 0,0** marcable (botón mira). Coordenadas y cotas en metros.
+- **Importar plano** (imagen/foto/PDF) + **Calibrar por referencia**: tocás 2 puntos de una
+  medida conocida (ej. 0.15 del muro), ingresás los metros y el plano se **escala a magnitud
+  real**. Opacidad/escala/fijar/editar.
+- **Símbolos UNIT** con **escala** (selector 1/100·1/75·1/50; def = escala de la planta) y
+  **altura desde el piso** (cm) por elemento (enchufes 30, etc.).
+- **Salida:** *Hoja a escala (PDF)* → plotea a **A4/A3/A2** a la escala de la planta, con
+  **caja de rótulo** (Obra, Cliente, Plano, Fecha, Escala, Lámina) y marco limpio. Si la planta
+  no tiene hoja → espacio infinito (export normal).
+- **Persistencia por planta** (objetos, origen, plano+transform, grilla) con autosave.
+- **Pendiente (próximo):** lápiz de cableado con largo, leyenda automática, capas eléctricas,
+  conteo de bocas, collage (varios planos a la vez), rótulo con campos editables.
 
 ### iLMe — `apps/ilme/` · v15 · en grilla
 - **Qué es:** agenda personal — memoria, **rutinas** y pagos.
