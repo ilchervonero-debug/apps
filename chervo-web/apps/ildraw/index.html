@@ -204,6 +204,39 @@ body{display:flex;flex-direction:column;background:#fff;}
 }
 #landscape-warn svg{width:52px;height:52px;opacity:.35;}
 #landscape-warn p{font-size:14px;color:#666;font-family:var(--font);}
+
+/* FAB ELECTRICIDAD — segundo FAB, al lado del de herramientas */
+#btn-elec{position:fixed;right:82px;top:10%;width:56px;height:56px;border-radius:14px;
+  background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.12);z-index:160;}
+#btn-elec:active{background:#f2f2f7;}
+#btn-elec svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+/* PANEL SIMBOLOGÍA UNIT */
+#panel-unit{position:fixed;top:calc(10% + 68px);right:0;background:#fff;border:1px solid #e5e5ea;
+  border-radius:16px 0 16px 16px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:150;
+  display:none;flex-direction:column;padding:12px;width:300px;max-height:68vh;}
+#panel-unit.open{display:flex;animation:phDown .18s ease;}
+.pu-scroll{overflow-y:auto;padding-right:4px;scrollbar-width:thin;}
+.pu-title{font-size:14px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;
+  margin:10px 0 6px;font-weight:600;border-bottom:1px solid #e5e5ea;padding-bottom:3px;}
+.pu-title:first-child{margin-top:0;}
+.pu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.pu-item{background:#f7f7f8;border:1.5px solid transparent;border-radius:10px;padding:9px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;text-align:center;}
+.pu-item:active{border-color:var(--accent);}
+.pu-item svg{width:30px;height:30px;fill:none;stroke:var(--ink);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+.pu-item span{font-size:14px;color:var(--ink);line-height:1.05;pointer-events:none;}
+/* BARRA DE PLANO DE FONDO (calco) */
+#fondoBar{position:fixed;left:0;right:0;bottom:var(--prop);background:#fff;border-top:1px solid #e5e5ea;
+  padding:9px 12px;z-index:80;display:none;}
+#fondoBar.show{display:block;}
+.fb-row{display:flex;align-items:center;gap:9px;overflow-x:auto;scrollbar-width:none;}
+.fb-row::-webkit-scrollbar{display:none;}
+.fb-l{font-size:15px;color:var(--label);white-space:nowrap;flex-shrink:0;}
+#fondoBar input[type=range]{accent-color:var(--accent);flex-shrink:0;width:92px;}
+.fb-btn{flex-shrink:0;padding:8px 15px;border-radius:9px;border:1.5px solid var(--accent);background:#fff;
+  color:var(--accent);font-family:var(--font);font-size:16px;font-weight:500;cursor:pointer;}
+.fb-btn.ghost{border-color:#d0d0d3;color:var(--ink);}
 </style>
 </head>
 <body>
@@ -224,7 +257,9 @@ body{display:flex;flex-direction:column;background:#fff;}
   <button class="ti ti-t" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <div class="tg">
     <button class="tb" data-tip="Exportar" onclick="openExport()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+    <button class="tb" data-tip="Importar plano" onclick="importPlano()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
     <button class="tb" data-tip="Nuevo" onclick="newDoc()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
+    <input type="file" id="planoInput" accept="image/*,application/pdf,.dxf" style="display:none" onchange="onImportFile(event)">
   </div>
   <button class="ti ti-t on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
   <select onchange="cellPx=+this.value;render()" style="background:#f2f2f7;color:var(--ink);border:1px solid #e5e5ea;border-radius:6px;padding:3px 6px;font-size:10px;font-family:var(--font);flex-shrink:0">
@@ -264,6 +299,45 @@ body{display:flex;flex-direction:column;background:#fff;}
       <button class="phb" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg></button>
       <button class="phb" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg></button>
       <button class="phb" data-t="erase" onclick="ST('erase');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<!-- FAB ELECTRICIDAD -->
+<button id="btn-elec" data-tip="Electricidad" onclick="toggleUnit()">
+  <svg viewBox="0 0 24 24"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z"/></svg>
+</button>
+
+<!-- PANEL SIMBOLOGÍA UNIT (Uruguay) -->
+<div id="panel-unit">
+  <div class="pu-scroll">
+    <div class="pu-title">Residenciales / Control</div>
+    <div class="pu-grid">
+      <div class="pu-item" data-block="toma_linea" onclick="pickUnit(this,'Toma en línea')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Toma línea</span></div>
+      <div class="pu-item" data-block="toma_schuko" onclick="pickUnit(this,'Toma Schuko')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20 Z" fill="#1c1c1e"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Schuko</span></div>
+      <div class="pu-item" data-block="toma_bip_caja" onclick="pickUnit(this,'Toma en piso')"><svg viewBox="0 0 32 32"><rect x="6" y="6" width="20" height="20"/><path d="M10 22 A 6 6 0 0 1 22 22"/></svg><span>Toma piso</span></div>
+      <div class="pu-item" data-block="int_unipolar" onclick="pickUnit(this,'Interruptor simple')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="3" fill="#1c1c1e"/><line x1="16" y1="13" x2="16" y2="6"/><line x1="16" y1="6" x2="22" y2="6"/></svg><span>Int. simple</span></div>
+      <div class="pu-item" data-block="int_bipolar" onclick="pickUnit(this,'Interruptor bipolar')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="3" fill="#1c1c1e"/><line x1="16" y1="13" x2="16" y2="6"/><line x1="16" y1="6" x2="22" y2="6"/><line x1="19" y1="8" x2="24" y2="13"/></svg><span>Int. bip.</span></div>
+      <div class="pu-item" data-block="int_combinacion" onclick="pickUnit(this,'Conmutador')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="3" fill="#1c1c1e"/><line x1="16" y1="13" x2="16" y2="6"/><line x1="16" y1="6" x2="22" y2="6"/><line x1="16" y1="19" x2="16" y2="26"/><line x1="16" y1="26" x2="10" y2="26"/></svg><span>Combinac.</span></div>
+      <div class="pu-item" data-block="int_intermedio" onclick="pickUnit(this,'Conmutador intermedio')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="3"/><line x1="16" y1="13" x2="16" y2="6"/><line x1="16" y1="6" x2="22" y2="6"/><line x1="16" y1="19" x2="16" y2="26"/><line x1="16" y1="26" x2="10" y2="26"/><circle cx="16" cy="16" r="1.5" fill="#1c1c1e"/></svg><span>Intermedio</span></div>
+      <div class="pu-item" data-block="int_dimmer" onclick="pickUnit(this,'Atenuador')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="4"/><line x1="13.5" y1="18.5" x2="21" y2="11"/><path d="M21 11 h-3 M21 11 v3"/></svg><span>Dimmer</span></div>
+      <div class="pu-item" data-block="caja_techo" onclick="pickUnit(this,'Centro de techo')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><line x1="10" y1="10" x2="22" y2="22"/><line x1="22" y1="10" x2="10" y2="22"/></svg><span>Centro Xe</span></div>
+      <div class="pu-item" data-block="caja_pared" onclick="pickUnit(this,'Aplique de pared')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><line x1="10" y1="10" x2="22" y2="22"/><line x1="22" y1="10" x2="10" y2="22"/><line x1="4" y1="16" x2="8" y2="16"/></svg><span>Aplique Xa</span></div>
+      <div class="pu-item" data-block="pulsador" onclick="pickUnit(this,'Pulsador')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><circle cx="16" cy="16" r="2" fill="#1c1c1e"/></svg><span>Pulsador</span></div>
+      <div class="pu-item" data-block="sensor_mov" onclick="pickUnit(this,'Sensor de movimiento')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="9"/><text x="16" y="19" text-anchor="middle" font-size="9" font-weight="bold">SM</text></svg><span>Sensor</span></div>
+    </div>
+    <div class="pu-title">Potencia / Tablero</div>
+    <div class="pu-grid">
+      <div class="pu-item" data-block="tablero_dist" onclick="pickUnit(this,'Tablero')"><svg viewBox="0 0 32 32"><rect x="5" y="8" width="22" height="16"/><path d="M5 8 L27 24 L5 24 Z" fill="#1c1c1e"/></svg><span>Tablero</span></div>
+      <div class="pu-item" data-block="int_seccionador" onclick="pickUnit(this,'Seccionador')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><line x1="16" y1="12" x2="22" y2="24"/><line x1="16" y1="24" x2="16" y2="28"/></svg><span>Seccionador</span></div>
+      <div class="pu-item" data-block="int_termomagnetico" onclick="pickUnit(this,'Térmica')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12 M13 10 L19 14"/><line x1="16" y1="12" x2="22" y2="24"/><line x1="16" y1="24" x2="16" y2="28"/></svg><span>Térmica</span></div>
+      <div class="pu-item" data-block="int_diferencial" onclick="pickUnit(this,'Diferencial')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><line x1="16" y1="12" x2="22" y2="22"/><circle cx="18" cy="23" r="3"/><line x1="16" y1="26" x2="16" y2="28"/></svg><span>Diferencial</span></div>
+      <div class="pu-item" data-block="contactor" onclick="pickUnit(this,'Contactor')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><rect x="9" y="12" width="4" height="4"/><line x1="16" y1="12" x2="22" y2="24"/><line x1="16" y1="24" x2="16" y2="28"/></svg><span>Contactor</span></div>
+      <div class="pu-item" data-block="guardamotor" onclick="pickUnit(this,'Guardamotor')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="10"/><rect x="12" y="10" width="8" height="12"/><line x1="16" y1="22" x2="16" y2="28"/></svg><span>Guardamotor</span></div>
+      <div class="pu-item" data-block="rele_termico" onclick="pickUnit(this,'Relé térmico')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><path d="M16 14 q6 3 0 6"/><line x1="16" y1="22" x2="16" y2="28"/></svg><span>Relé térm.</span></div>
+      <div class="pu-item" data-block="fusible_secc" onclick="pickUnit(this,'Fusible')"><svg viewBox="0 0 32 32"><rect x="10" y="12" width="12" height="6"/><line x1="6" y1="15" x2="26" y2="15"/><line x1="12" y1="9" x2="16" y2="5"/></svg><span>Fusible</span></div>
+      <div class="pu-item" data-block="medidor_kwh" onclick="pickUnit(this,'Medidor')"><svg viewBox="0 0 32 32"><rect x="5" y="8" width="22" height="16"/><text x="16" y="19" text-anchor="middle" font-size="8" font-weight="bold">kWh</text></svg><span>Medidor</span></div>
+      <div class="pu-item" data-block="toma_tierra" onclick="pickUnit(this,'Puesta a tierra')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="18"/><line x1="6" y1="18" x2="26" y2="18"/><line x1="10" y1="22" x2="22" y2="22"/><line x1="14" y1="26" x2="18" y2="26"/></svg><span>Tierra</span></div>
     </div>
   </div>
 </div>
@@ -323,8 +397,32 @@ body{display:flex;flex-direction:column;background:#fff;}
     <input type="range" id="pbEraserSize" min="10" max="80" value="24" style="width:60px">
     <div class="pdiv"></div>
   </div>
+  <div id="grpBlock" style="display:none;align-items:center;gap:6px">
+    <span class="pl">Giro</span>
+    <select id="pbGiro" onchange="setBlockGiro(this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select>
+    <span class="pl">Tam</span>
+    <input type="range" id="pbBlockTam" min="16" max="70" value="30" style="width:62px" oninput="setBlockTam(this.value)">
+    <div class="pdiv"></div>
+  </div>
   <span id="pbHint" style="display:none"></span>
   <span id="coord">0, 0</span>
+</div>
+
+<!-- BARRA PLANO DE FONDO (calco) -->
+<div id="fondoBar">
+  <div id="fondoAdjust" class="fb-row">
+    <span class="fb-l">Opacidad</span>
+    <input type="range" id="fondoOpac" min="10" max="100" value="50" oninput="setFondoOpacity(this.value)">
+    <span class="fb-l">Escala</span>
+    <input type="range" id="fondoScale" min="20" max="300" value="100" oninput="setFondoScale(this.value)">
+    <button class="fb-btn" onclick="fijarFondo()">Fijar plano</button>
+    <button class="fb-btn ghost" onclick="quitarFondo()">Quitar</button>
+  </div>
+  <div id="fondoFixed" class="fb-row" style="display:none">
+    <span class="fb-l">Plano fijo</span>
+    <button class="fb-btn" onclick="editarFondo()">Editar / escalar</button>
+    <button class="fb-btn ghost" onclick="quitarFondo()">Quitar</button>
+  </div>
 </div>
 
 <!-- COLOR PALETTE -->
@@ -409,6 +507,11 @@ let rotId=null,rotOrig=null,rotCenter=null,rotStartAngle=0,rotCurrent=0;
 let etId=null,tpX=0,tpY=0;
 // pan/pinch
 let panning=false,panRef=null,pinching=false,pinch0=null,touches={};
+// fondo (plano de calco importado: imagen/foto/pdf/dxf)
+let fondoImg=null,fondoAprobado=false,modoAjusteFondo=false;
+let imgScale=1,imgScaleBase=1,imgOpacity=0.5,imgX=0,imgY=0,fondoDrag=null;
+// bloque de simbología eléctrica UNIT
+let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueTam=30;
 
 const w2s=(wx,wy)=>({x:wx*vpZ+vpX,y:wy*vpZ+vpY});
 const s2w=(sx,sy)=>({x:(sx-vpX)/vpZ,y:(sy-vpY)/vpZ});
@@ -474,9 +577,24 @@ function setDash(lt,z){ctx.setLineDash(lt==='dashed'?[8*z,5*z]:lt==='dotted'?[2*
 function render(){
   ctx.clearRect(0,0,cv.width,cv.height);
   drawGrid();
+  drawFondo();
   objects.filter(o=>o.type==='hatch').forEach(drawObj);
   objects.filter(o=>o.type!=='hatch').forEach(drawObj);
   drawPreview();
+}
+
+// PLANO DE FONDO (calco) — se dibuja en coordenadas mundo, así panea/zoomea con todo.
+function drawFondo(){
+  if(!fondoImg||_exporting)return;
+  const s=w2s(imgX,imgY),w=fondoImg.width*vpZ*imgScale,h=fondoImg.height*vpZ*imgScale;
+  ctx.save();
+  ctx.globalAlpha=imgOpacity;
+  ctx.drawImage(fondoImg,s.x,s.y,w,h);
+  ctx.restore();
+  if(modoAjusteFondo){
+    ctx.save();ctx.strokeStyle='#FE0000';ctx.lineWidth=1.5;ctx.setLineDash([7,5]);
+    ctx.strokeRect(s.x,s.y,w,h);ctx.restore();
+  }
 }
 
 function drawGrid(){
@@ -524,6 +642,119 @@ function drawObj(obj){
     case 'dim2':{ctx.setLineDash([]);drawDim2Obj(obj);break;}
     case 'arc':{drawArcObj(obj);break;}
     case 'hatch':{ctx.setLineDash([]);drawHatchObj(obj);break;}
+    case 'block':{ctx.setLineDash([]);renderSimbologiaUNIT(obj.pts[0][0],obj.pts[0][1],obj.blockType,obj.size||30,obj.rotation||0,obj.color||'#1c1c1e');break;}
+  }
+  ctx.restore();
+}
+
+// SIMBOLOGÍA ELÉCTRICA UNIT (Uruguay) — trazo fino monolínea, escala/gira con el objeto.
+function renderSimbologiaUNIT(wx,wy,tipo,sizeW,deg,col){
+  const s=w2s(wx,wy),size=sizeW*vpZ,r=size/2;
+  ctx.save();
+  ctx.setLineDash([]);
+  ctx.translate(s.x,s.y);
+  ctx.rotate(deg*Math.PI/180);
+  ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1.1*vpZ;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  switch(tipo){
+    case 'toma_linea':
+      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI,true);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke();break;
+    case 'toma_schuko':
+      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI,true);ctx.fill();
+      ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke();break;
+    case 'toma_bip_caja':
+      ctx.beginPath();ctx.rect(-r,-r,size,size);ctx.stroke();
+      ctx.beginPath();ctx.arc(0,r*0.2,r*0.5,0,Math.PI,true);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.7,r*0.2);ctx.lineTo(r*0.7,r*0.2);ctx.stroke();break;
+    case 'int_unipolar':
+      ctx.beginPath();ctx.arc(0,0,r*0.25,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.moveTo(0,-r*0.25);ctx.lineTo(0,-r);ctx.lineTo(r*0.5,-r);ctx.stroke();break;
+    case 'int_bipolar':
+      ctx.beginPath();ctx.arc(0,0,r*0.25,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.moveTo(0,-r*0.25);ctx.lineTo(0,-r);ctx.lineTo(r*0.5,-r);
+      ctx.moveTo(r*0.15,-r*0.6);ctx.lineTo(r*0.5,-r*0.2);ctx.stroke();break;
+    case 'int_combinacion':
+      ctx.beginPath();ctx.arc(0,0,r*0.25,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.moveTo(0,-r*0.25);ctx.lineTo(0,-r);ctx.lineTo(r*0.5,-r);
+      ctx.moveTo(0,r*0.25);ctx.lineTo(0,r);ctx.lineTo(-r*0.5,r);ctx.stroke();break;
+    case 'int_intermedio':
+      ctx.beginPath();ctx.arc(0,0,r*0.25,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,-r*0.25);ctx.lineTo(0,-r);ctx.lineTo(r*0.5,-r);
+      ctx.moveTo(0,r*0.25);ctx.lineTo(0,r);ctx.lineTo(-r*0.5,r);ctx.stroke();
+      ctx.beginPath();ctx.arc(0,0,r*0.1,0,Math.PI*2);ctx.fill();break;
+    case 'int_dimmer':
+      ctx.beginPath();ctx.arc(0,0,r*0.35,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.25,r*0.25);ctx.lineTo(r*0.6,-r*0.6);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(r*0.3,-r*0.6);ctx.lineTo(r*0.6,-r*0.6);ctx.lineTo(r*0.6,-r*0.3);ctx.stroke();break;
+    case 'caja_techo':
+      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.5,-r*0.5);ctx.lineTo(r*0.5,r*0.5);
+      ctx.moveTo(r*0.5,-r*0.5);ctx.lineTo(-r*0.5,r*0.5);ctx.stroke();
+      ctx.font=`bold ${9*vpZ}px sans-serif`;ctx.fillText('E',r*0.6,-r*0.2);break;
+    case 'caja_pared':
+      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.5,-r*0.5);ctx.lineTo(r*0.5,r*0.5);
+      ctx.moveTo(r*0.5,-r*0.5);ctx.lineTo(-r*0.5,r*0.5);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.7,0);ctx.lineTo(-r,0);ctx.stroke();
+      ctx.font=`bold ${9*vpZ}px sans-serif`;ctx.fillText('A',r*0.6,-r*0.2);break;
+    case 'pulsador':
+      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.arc(0,0,r*0.15,0,Math.PI*2);ctx.fill();break;
+    case 'sensor_mov':
+      ctx.beginPath();ctx.arc(0,0,r*0.8,0,Math.PI*2);ctx.stroke();
+      ctx.font=`bold ${8*vpZ}px sans-serif`;ctx.textAlign='center';ctx.fillText('SM',0,r*0.3);break;
+    case 'tablero_dist':
+      ctx.beginPath();ctx.rect(-r,-r*0.6,size,size*1.2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r,-r*0.6);ctx.lineTo(r,r*0.6);ctx.lineTo(-r,r*0.6);ctx.closePath();ctx.fill();break;
+    case 'int_seccionador':
+      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,r*0.6);ctx.lineTo(0,r);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.3,-r*0.7);ctx.lineTo(r*0.3,-r*0.4);
+      ctx.moveTo(-r*0.3,-r*0.5);ctx.lineTo(r*0.3,-r*0.2);ctx.stroke();break;
+    case 'int_termomagnetico':
+      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,r*0.6);ctx.lineTo(0,r);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.3,-r*0.7);ctx.lineTo(r*0.3,-r*0.4);
+      ctx.moveTo(-r*0.3,-r*0.5);ctx.lineTo(r*0.3,-r*0.2);
+      ctx.moveTo(-r*0.3,-r*0.3);ctx.lineTo(r*0.3,0);ctx.stroke();break;
+    case 'int_diferencial':
+      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
+      ctx.beginPath();ctx.arc(0,r*0.6,r*0.2,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,r*0.8);ctx.lineTo(0,r);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.3,-r*0.7);ctx.lineTo(r*0.3,-r*0.4);
+      ctx.moveTo(-r*0.3,-r*0.5);ctx.lineTo(r*0.3,-r*0.2);ctx.stroke();break;
+    case 'contactor':
+      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,r*0.6);ctx.lineTo(0,r);ctx.stroke();
+      ctx.beginPath();ctx.rect(-r*0.4,-r*0.8,r*0.4,r*0.4);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.3,-r*0.3);ctx.lineTo(r*0.3,0);
+      ctx.moveTo(-r*0.3,-r*0.5);ctx.lineTo(r*0.3,-r*0.2);ctx.stroke();break;
+    case 'guardamotor':
+      ctx.beginPath();ctx.rect(-r*0.6,-r,size*0.6,size);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,r);ctx.stroke();
+      ctx.font=`500 ${8*vpZ}px sans-serif`;ctx.textAlign='center';ctx.fillText('I>',0,r*0.4);break;
+    case 'rele_termico':
+      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,r*0.6);ctx.lineTo(0,r);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,r*0.1);ctx.quadraticCurveTo(r*0.4,r*0.3,0,r*0.5);ctx.stroke();break;
+    case 'fusible_secc':
+      ctx.beginPath();ctx.rect(-r*0.8,-r*0.3,size*0.8,size*0.6);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.4,-r*0.3);ctx.lineTo(0,-r*0.8);ctx.stroke();break;
+    case 'medidor_kwh':
+      ctx.beginPath();ctx.rect(-r,-r*0.6,size,size*1.2);ctx.stroke();
+      ctx.font=`bold ${8*vpZ}px sans-serif`;ctx.textAlign='center';ctx.fillText('kWh',0,r*0.15);break;
+    case 'toma_tierra':
+      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,r*0.2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.7,r*0.2);ctx.lineTo(r*0.7,r*0.2);
+      ctx.moveTo(-r*0.4,r*0.5);ctx.lineTo(r*0.4,r*0.5);
+      ctx.moveTo(-r*0.15,r*0.8);ctx.lineTo(r*0.15,r*0.8);ctx.stroke();break;
   }
   ctx.restore();
 }
@@ -951,6 +1182,13 @@ function onTE(e){
 
 // CORE HANDLERS
 function handleDown(wp,rawW,scrn){
+  if(modoAjusteFondo){fondoDrag={mx:rawW.x,my:rawW.y,ix:imgX,iy:imgY};drawing=true;return;}
+  if(tool==='block'){
+    if(!bloqueSel){toast('Elegí un símbolo');return;}
+    saveHistory();
+    objects.push({type:'block',pts:[[wp.x,wp.y]],blockType:bloqueSel,size:bloqueTam,rotation:bloqueGiro,color,id:nextId++});
+    render();toast(bloqueNom+' ✓');return;
+  }
   if(tool==='select'){
     // Check arc grip first
     for(let i=objects.length-1;i>=0;i--){
@@ -1050,6 +1288,7 @@ function commitHatch(){
 }
 
 function handleMove(wp,raw,scrn){
+  if(modoAjusteFondo&&drawing&&fondoDrag){imgX=fondoDrag.ix+(raw.x-fondoDrag.mx);imgY=fondoDrag.iy+(raw.y-fondoDrag.my);render();return;}
   if(panning&&!pinching){vpX=panRef.vx+scrn.x-panRef.sx;vpY=panRef.vy+scrn.y-panRef.sy;render();return;}
   dragCurW={...wp};
   if(tool==='eraser'&&drawing){doEraseAt(wp);render();return;}
@@ -1064,6 +1303,7 @@ function handleMove(wp,raw,scrn){
 }
 
 function handleUp(wp,scrn){
+  if(modoAjusteFondo){drawing=false;fondoDrag=null;return;}
   if(panning){panning=false;return;}
   if(tool==='select'&&arcEditDragging){arcEditDragging=false;arcEditId=null;arcEditOrig=null;drawing=false;render();return;}
   if(tool==='eraser'){drawing=false;render();return;}
@@ -1088,7 +1328,7 @@ function handleUp(wp,scrn){
   }
   if(tool==='dim')return;
   if(tool==='move'||tool==='copy'){doMovEnd();return;}
-  if(['hatch','pline','select','trim','erase','eraser','text'].includes(tool))return;
+  if(['hatch','pline','select','trim','erase','eraser','text','block'].includes(tool))return;
   if(tool==='circle'&&drawing){
     const r=hyp((dragCurW.x-dragStartW.x)*vpZ,(dragCurW.y-dragStartW.y)*vpZ)/vpZ;
     if(r>2/vpZ)objects.push({type:'circle',pts:[[dragStartW.x,dragStartW.y]],r,color,strokeW,lineType,id:nextId++});else history.pop();
@@ -1166,6 +1406,7 @@ document.getElementById('etinput').addEventListener('keydown',e=>{if(e.key==='En
 // HIT TEST
 function hitTest(wp,obj,T){
   if(!obj.pts)return false;
+  if(obj.type==='block')return hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])<(obj.size||30)/2+T*0.4;
   if(obj.type==='circle')return Math.abs(hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])-obj.r)<T*2;
   if(obj.type==='poly'){const c=obj.pts[0],r=obj.r,n=obj.sides||4;for(let i=0;i<n;i++){const a0=(-Math.PI/2)+(2*Math.PI*i/n),a1=(-Math.PI/2)+(2*Math.PI*(i+1)/n);if(distPS(wp,[c[0]+r*Math.cos(a0),c[1]+r*Math.sin(a0)],[c[0]+r*Math.cos(a1),c[1]+r*Math.sin(a1)])<T)return true;}return false;}
   if(obj.type==='text')return hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])<T*3;
@@ -1228,6 +1469,7 @@ document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr'
 // TOOLBAR
 function ST(t){
   tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];
+  if(t!=='block')bloqueSel=null;
   dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;dim2Drawing=false;setHint('');
   document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
@@ -1241,8 +1483,9 @@ function ST(t){
   document.getElementById('grpHatch').style.display=t==='hatch'?'flex':'none';
   document.getElementById('grpEraser').style.display=t==='eraser'?'flex':'none';
   document.getElementById('grpDim').style.display=(t==='dim'||t==='dim2')?'flex':'none';
+  document.getElementById('grpBlock').style.display=t==='block'?'flex':'none';
   const names={select:'Seleccionar',line:'Línea',arc:'Arco · arrastrá de A a B · seleccionar y mover grip ↕ para curvar',pline:'Polilínea · mover + doble toque cierra',rect:'Rectángulo',circle:'Círculo',poly:'Polígono',pen:'Trazo libre',text:'Texto',dim:'Cota · A → B → posición',dim2:'Cota directa · arrastrá A → B',hatch:'Relleno · toques + doble toque cierra',eraser:'Goma',trim:'Trim',erase:'Borrar objeto',move:'Mover',copy:'Copiar'};
-  document.getElementById('pbTool').textContent=names[t]||t;
+  document.getElementById('pbTool').textContent=t==='block'?(bloqueNom||'Símbolo'):(names[t]||t);
   render();
 }
 function toggleSnap(){snapOn=!snapOn;document.getElementById('snapBtn').classList.toggle('on',snapOn);toast('Snap '+(snapOn?'ON':'OFF'));}
@@ -1367,6 +1610,138 @@ function setDimFont(sz){
   });
 }
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+// ══════════ SIMBOLOGÍA ELÉCTRICA (FAB) ══════════
+let _unitOpen=false;
+function toggleUnit(){_unitOpen=!_unitOpen;document.getElementById('panel-unit').classList.toggle('open',_unitOpen);if(_unitOpen)closeTools();}
+function closeUnit(){_unitOpen=false;document.getElementById('panel-unit').classList.remove('open');}
+document.addEventListener('click',function(e){if(!e.target.closest('#panel-unit')&&!e.target.closest('#btn-elec'))closeUnit();},{passive:true});
+function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;closeUnit();ST('block');toast('Tocá el plano para colocar · '+nom);}
+function setBlockGiro(v){bloqueGiro=+v;}
+function setBlockTam(v){bloqueTam=+v;}
+
+// ══════════ IMPORTAR PLANO (imagen / foto / PDF / DXF) ══════════
+function importPlano(){document.getElementById('planoInput').click();}
+function onImportFile(e){
+  const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  const name=(f.name||'').toLowerCase();
+  // Ojo: el orden importa — algunos navegadores le ponen MIME "image/vnd.dxf" al .dxf.
+  if(name.endsWith('.pdf')||f.type==='application/pdf'){fondoFromPDF(f);return;}
+  if(name.endsWith('.dxf')){const r=new FileReader();r.onload=ev=>{try{const ents=parseDXF(ev.target.result);const url=rasterizeDXF(ents);if(url)fondoFromImageURL(url);else toast('DXF sin geometría legible');}catch(err){toast('No se pudo leer el DXF');}};r.readAsText(f);return;}
+  if((f.type||'').startsWith('image/')||/\.(png|jpe?g|gif|webp|bmp|heic|heif|svg)$/.test(name)){const r=new FileReader();r.onload=ev=>fondoFromImageURL(ev.target.result);r.readAsDataURL(f);return;}
+  toast('Formato no soportado (imagen, PDF o DXF)');
+}
+function fondoFromImageURL(url){
+  const img=new Image();
+  img.onload=()=>{fondoImg=img;centrarFondo();imgOpacity=0.5;modoAjusteFondo=true;fondoAprobado=false;closeTools();closeUnit();ST('select');showFondoBar();render();toast('Plano cargado · calibrá y fijá');};
+  img.onerror=()=>toast('No se pudo cargar la imagen');
+  img.src=url;
+}
+function centrarFondo(){
+  if(!fondoImg)return;
+  const vw=cv.width/vpZ,vh=cv.height/vpZ;
+  imgScaleBase=Math.min(vw*0.8/fondoImg.width,vh*0.8/fondoImg.height);
+  if(!isFinite(imgScaleBase)||imgScaleBase<=0)imgScaleBase=1;
+  imgScale=imgScaleBase;
+  const c=s2w(cv.width/2,cv.height/2);
+  imgX=c.x-(fondoImg.width*imgScale)/2;imgY=c.y-(fondoImg.height*imgScale)/2;
+  const sl=document.getElementById('fondoScale');if(sl)sl.value=100;
+  const op=document.getElementById('fondoOpac');if(op)op.value=50;
+}
+function setFondoOpacity(v){imgOpacity=v/100;render();}
+function setFondoScale(v){
+  if(!fondoImg)return;
+  const cx=imgX+fondoImg.width*imgScale/2,cy=imgY+fondoImg.height*imgScale/2;
+  imgScale=imgScaleBase*(v/100);
+  imgX=cx-fondoImg.width*imgScale/2;imgY=cy-fondoImg.height*imgScale/2;
+  render();
+}
+function fijarFondo(){modoAjusteFondo=false;fondoAprobado=true;showFondoBar();render();toast('Plano fijo ✓');}
+function editarFondo(){modoAjusteFondo=true;fondoAprobado=false;showFondoBar();render();toast('Plano liberado · movelo o reescalalo');}
+function quitarFondo(){fondoImg=null;fondoAprobado=false;modoAjusteFondo=false;showFondoBar();render();toast('Plano quitado');}
+function showFondoBar(){
+  const bar=document.getElementById('fondoBar');
+  if(!fondoImg){bar.classList.remove('show');return;}
+  bar.classList.add('show');
+  document.getElementById('fondoAdjust').style.display=modoAjusteFondo?'flex':'none';
+  document.getElementById('fondoFixed').style.display=modoAjusteFondo?'none':'flex';
+}
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+async function fondoFromPDF(file){
+  toast('Procesando PDF…');
+  try{
+    if(!window.pdfjsLib)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    if(window.pdfjsLib&&pdfjsLib.GlobalWorkerOptions)pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf=await file.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    const page=await pdf.getPage(1);
+    const vp=page.getViewport({scale:2});
+    const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+    await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+    fondoFromImageURL(c.toDataURL('image/png'));
+  }catch(err){toast('No se pudo leer el PDF (¿sin internet?)');}
+}
+// DXF ASCII → parser mínimo (LINE/LWPOLYLINE/POLYLINE/CIRCLE/ARC/TEXT) → raster para calco.
+function parseDXF(text){
+  const raw=text.split(/\r\n|\r|\n/),tok=[];
+  for(let k=0;k+1<raw.length;k+=2){const c=parseInt(raw[k].trim(),10);if(!isNaN(c))tok.push({c,v:raw[k+1]});}
+  const ents=[];let cur=null,plineOpen=null;
+  const flush=()=>{if(cur){ents.push(cur);cur=null;}};
+  for(const t of tok){
+    const v=(t.v||'').trim();
+    if(t.c===0){
+      const type=v.toUpperCase();
+      if(type==='VERTEX'){cur=null;continue;}
+      if(type==='SEQEND'){if(plineOpen){ents.push(plineOpen);plineOpen=null;}cur=null;continue;}
+      flush();
+      if(type==='LINE')cur={type:'LINE',a:[0,0],b:[0,0]};
+      else if(type==='CIRCLE')cur={type:'CIRCLE',c:[0,0],r:0};
+      else if(type==='ARC')cur={type:'ARC',c:[0,0],r:0,a0:0,a1:0};
+      else if(type==='LWPOLYLINE')cur={type:'PL',pts:[],closed:false,_x:0};
+      else if(type==='POLYLINE'){plineOpen={type:'PL',pts:[],closed:false,_x:0};cur=null;}
+      else if(type==='TEXT'||type==='MTEXT')cur={type:'TEXT',p:[0,0],h:1,t:''};
+      else cur=null;
+      continue;
+    }
+    if(t.c===10){const x=parseFloat(v);if(cur){if(cur.type==='LINE')cur.a[0]=x;else if(cur.type==='CIRCLE'||cur.type==='ARC')cur.c[0]=x;else if(cur.type==='TEXT')cur.p[0]=x;else if(cur.type==='PL')cur._x=x;}else if(plineOpen)plineOpen._x=x;}
+    else if(t.c===20){const y=parseFloat(v);if(cur){if(cur.type==='LINE')cur.a[1]=y;else if(cur.type==='CIRCLE'||cur.type==='ARC')cur.c[1]=y;else if(cur.type==='TEXT')cur.p[1]=y;else if(cur.type==='PL')cur.pts.push([cur._x,y]);}else if(plineOpen)plineOpen.pts.push([plineOpen._x,y]);}
+    else if(t.c===11&&cur&&cur.type==='LINE')cur.b[0]=parseFloat(v);
+    else if(t.c===21&&cur&&cur.type==='LINE')cur.b[1]=parseFloat(v);
+    else if(t.c===40&&cur){if(cur.type==='CIRCLE'||cur.type==='ARC')cur.r=parseFloat(v);else if(cur.type==='TEXT')cur.h=parseFloat(v);}
+    else if(t.c===50&&cur&&cur.type==='ARC')cur.a0=parseFloat(v);
+    else if(t.c===51&&cur&&cur.type==='ARC')cur.a1=parseFloat(v);
+    else if(t.c===70){const bit=(parseInt(v,10)&1)===1;if(cur&&cur.type==='PL')cur.closed=bit;else if(plineOpen)plineOpen.closed=bit;}
+    else if(t.c===1&&cur&&cur.type==='TEXT')cur.t=v;
+  }
+  flush();
+  return ents;
+}
+function rasterizeDXF(ents){
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  const ext=(x,y)=>{if(!isFinite(x)||!isFinite(y))return;if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;};
+  for(const e of ents){
+    if(e.type==='LINE'){ext(e.a[0],e.a[1]);ext(e.b[0],e.b[1]);}
+    else if(e.type==='CIRCLE'||e.type==='ARC'){ext(e.c[0]-e.r,e.c[1]-e.r);ext(e.c[0]+e.r,e.c[1]+e.r);}
+    else if(e.type==='PL')for(const p of e.pts)ext(p[0],p[1]);
+    else if(e.type==='TEXT')ext(e.p[0],e.p[1]);
+  }
+  if(!isFinite(minX))return null;
+  const w=Math.max(1,maxX-minX),h=Math.max(1,maxY-minY),pad=20;
+  const scale=Math.min(1600/w,1600/h,80);
+  const c=document.createElement('canvas');c.width=Math.round(w*scale)+pad*2;c.height=Math.round(h*scale)+pad*2;
+  const g=c.getContext('2d');
+  g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
+  g.strokeStyle='#1c1c1e';g.fillStyle='#1c1c1e';g.lineWidth=1;g.lineCap='round';g.lineJoin='round';
+  const X=x=>pad+(x-minX)*scale,Y=y=>c.height-pad-(y-minY)*scale;
+  for(const e of ents){
+    if(e.type==='LINE'){g.beginPath();g.moveTo(X(e.a[0]),Y(e.a[1]));g.lineTo(X(e.b[0]),Y(e.b[1]));g.stroke();}
+    else if(e.type==='CIRCLE'){g.beginPath();g.arc(X(e.c[0]),Y(e.c[1]),e.r*scale,0,Math.PI*2);g.stroke();}
+    else if(e.type==='ARC'){g.beginPath();g.arc(X(e.c[0]),Y(e.c[1]),e.r*scale,-e.a1*Math.PI/180,-e.a0*Math.PI/180);g.stroke();}
+    else if(e.type==='PL'&&e.pts.length){g.beginPath();g.moveTo(X(e.pts[0][0]),Y(e.pts[0][1]));for(let i=1;i<e.pts.length;i++)g.lineTo(X(e.pts[i][0]),Y(e.pts[i][1]));if(e.closed)g.closePath();g.stroke();}
+    else if(e.type==='TEXT'&&e.t){g.font=Math.max(8,e.h*scale)+'px sans-serif';g.fillText(e.t,X(e.p[0]),Y(e.p[1]));}
+  }
+  return c.toDataURL('image/png');
+}
+
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(tool==='arc'&&arcPh>0){arcPh=0;arcA=null;arcB=null;setHint('');render();}
@@ -1403,7 +1778,7 @@ if('serviceWorker' in navigator){
   <div id="ilsx-sheet">
     <div id="ilsx-grip"></div>
     <div class="ilsx-app"><b>iL</b>Draw</div>
-    <div class="ilsx-ver">versión 3.0</div>
+    <div class="ilsx-ver">versión 3.1 · electricidad + plano</div>
     <a class="ilsx-row" href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Volver a iLStorage</a>
     <div class="ilsx-foot">iLStorage</div>
   </div>

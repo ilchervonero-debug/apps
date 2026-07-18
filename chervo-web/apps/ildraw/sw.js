@@ -1,4 +1,4 @@
-const CACHE = 'ildraw-v11';
+const CACHE = 'ildraw-v12';
 const ASSETS = [
   '/apps/ildraw/',
   '/apps/ildraw/index.html',
@@ -23,7 +23,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url;
-  if (url.includes('googleapis.com') || url.includes('gstatic.com/firebasejs') || url.includes('firebaseio.com') || url.includes('supabase.co')) return;
+  if (url.includes('googleapis.com') || url.includes('gstatic.com/firebasejs') || url.includes('firebaseio.com') || url.includes('supabase.co') || url.includes('cdnjs.cloudflare.com')) return;
   const req = e.request;
   const isHTML = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
   if (isHTML) {
