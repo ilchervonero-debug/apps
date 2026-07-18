@@ -1,0 +1,19 @@
+{
+  "name": "iLDraw Volt",
+  "short_name": "iLDraw Volt",
+  "description": "Canvas de iLVolt — dibujo técnico con simbología eléctrica y plano de fondo",
+  "start_url": "/apps/ildraw-volt/",
+  "scope": "/apps/ildraw-volt/",
+  "display": "standalone",
+  "background_color": "#F2F2F0",
+  "theme_color": "#F2F2F0",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/apps/ildraw-volt/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

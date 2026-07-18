@@ -1,9 +1,9 @@
-const CACHE = 'ildraw-v11';
+const CACHE = 'ildraw-volt-v1';
 const ASSETS = [
-  '/apps/ildraw/',
-  '/apps/ildraw/index.html',
-  '/apps/ildraw/manifest.json',
-  '/apps/ildraw/icon-192.svg'
+  '/apps/ildraw-volt/',
+  '/apps/ildraw-volt/index.html',
+  '/apps/ildraw-volt/manifest.json',
+  '/apps/ildraw-volt/icon-192.svg'
 ];
 
 self.addEventListener('install', e => {
@@ -23,14 +23,14 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = e.request.url;
-  if (url.includes('googleapis.com') || url.includes('gstatic.com/firebasejs') || url.includes('firebaseio.com') || url.includes('supabase.co')) return;
+  if (url.includes('googleapis.com') || url.includes('gstatic.com/firebasejs') || url.includes('firebaseio.com') || url.includes('supabase.co') || url.includes('cdnjs.cloudflare.com')) return;
   const req = e.request;
   const isHTML = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
   if (isHTML) {
     // network-first: siempre la ultima version si hay internet
     e.respondWith(
       fetch(req).then(res => { caches.open(CACHE).then(c => c.put(req, res.clone())); return res; })
-        .catch(() => caches.match(req).then(r => r || caches.match('/apps/ildraw/index.html')))
+        .catch(() => caches.match(req).then(r => r || caches.match('/apps/ildraw-volt/index.html')))
     );
   } else {
     e.respondWith(
