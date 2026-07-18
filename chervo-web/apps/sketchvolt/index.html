@@ -278,6 +278,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 .fb-btn{flex-shrink:0;padding:8px 15px;border-radius:9px;border:1.5px solid var(--accent);background:#fff;
   color:var(--accent);font-family:var(--font);font-size:16px;font-weight:500;cursor:pointer;}
 .fb-btn.ghost{border-color:#d0d0d3;color:var(--ink);}
+.cdot{width:22px;height:22px;border-radius:50%;border:1.5px solid #d0d0d3;cursor:pointer;flex-shrink:0;padding:0;}
 </style>
 </head>
 <body>
@@ -295,8 +296,9 @@ body{display:flex;flex-direction:column;background:#fff;}
 <div class="scr" id="scrHome">
   <div class="scr-head"><div class="wm">Sketch<b>Volt</b></div></div>
   <div class="scr-body">
-    <h2>Proyectos</h2>
-    <div class="sub">Dibujo eléctrico a escala · planos A4 · A3 · A2</div>
+    <button class="btn-r" style="font-size:19px;padding:15px;margin-bottom:8px" onclick="abrirLienzoLibre()">Dibujar ahora · lienzo libre</button>
+    <div class="sub" style="margin-bottom:20px">Dibujá sin vueltas. Los proyectos son para <b>guardar y sacar láminas a escala</b> (A4·A3·A2).</div>
+    <h2>Mis proyectos</h2>
     <div id="proyList"></div>
     <div class="sec-t">Nuevo proyecto</div>
     <div class="fld"><label>Nombre del proyecto</label><input id="npNom" placeholder="Ej: Casa Melo"></div>
@@ -364,7 +366,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 
 <!-- BAR 1 -->
 <div class="bar">
-  <div class="bar-logo" onclick="goDash()" style="cursor:pointer">Sketch<span>Volt</span></div>
+  <div class="bar-logo" onclick="goHome()" style="cursor:pointer" data-tip="Proyectos">Sketch<span>Volt</span></div>
   <button class="ti ti-t" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
   <button class="ti ti-t" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <div class="tg">
@@ -430,11 +432,11 @@ body{display:flex;flex-direction:column;background:#fff;}
       <div class="pu-item" data-block="toma_linea" onclick="pickUnit(this,'Toma en línea')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Toma línea</span></div>
       <div class="pu-item" data-block="toma_schuko" onclick="pickUnit(this,'Toma Schuko')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20 Z" fill="#1c1c1e"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Schuko</span></div>
       <div class="pu-item" data-block="toma_bip_caja" onclick="pickUnit(this,'Toma en piso')"><svg viewBox="0 0 32 32"><rect x="6" y="6" width="20" height="20"/><path d="M10 22 A 6 6 0 0 1 22 22"/></svg><span>Toma piso</span></div>
-      <div class="pu-item" data-block="int_unipolar" onclick="pickUnit(this,'Interruptor simple')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="3" fill="#1c1c1e"/><line x1="16" y1="13" x2="16" y2="6"/><line x1="16" y1="6" x2="22" y2="6"/></svg><span>Int. simple</span></div>
-      <div class="pu-item" data-block="int_bipolar" onclick="pickUnit(this,'Interruptor bipolar')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="3" fill="#1c1c1e"/><line x1="16" y1="13" x2="16" y2="6"/><line x1="16" y1="6" x2="22" y2="6"/><line x1="19" y1="8" x2="24" y2="13"/></svg><span>Int. bip.</span></div>
-      <div class="pu-item" data-block="int_combinacion" onclick="pickUnit(this,'Conmutador')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="3" fill="#1c1c1e"/><line x1="16" y1="13" x2="16" y2="6"/><line x1="16" y1="6" x2="22" y2="6"/><line x1="16" y1="19" x2="16" y2="26"/><line x1="16" y1="26" x2="10" y2="26"/></svg><span>Combinac.</span></div>
-      <div class="pu-item" data-block="int_intermedio" onclick="pickUnit(this,'Conmutador intermedio')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="3"/><line x1="16" y1="13" x2="16" y2="6"/><line x1="16" y1="6" x2="22" y2="6"/><line x1="16" y1="19" x2="16" y2="26"/><line x1="16" y1="26" x2="10" y2="26"/><circle cx="16" cy="16" r="1.5" fill="#1c1c1e"/></svg><span>Intermedio</span></div>
-      <div class="pu-item" data-block="int_dimmer" onclick="pickUnit(this,'Atenuador')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="4"/><line x1="13.5" y1="18.5" x2="21" y2="11"/><path d="M21 11 h-3 M21 11 v3"/></svg><span>Dimmer</span></div>
+      <div class="pu-item" data-block="int_unipolar" onclick="pickUnit(this,'Interruptor simple')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/></svg><span>Int. simple</span></div>
+      <div class="pu-item" data-block="int_bipolar" onclick="pickUnit(this,'Interruptor bipolar')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/><line x1="14.5" y1="19.5" x2="19.5" y2="13"/></svg><span>Int. bip.</span></div>
+      <div class="pu-item" data-block="int_combinacion" onclick="pickUnit(this,'Conmutador')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/></svg><span>Combinac.</span></div>
+      <div class="pu-item" data-block="int_intermedio" onclick="pickUnit(this,'Conmutador intermedio')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/><circle cx="16.8" cy="16.2" r="2.8"/><line x1="15" y1="14.4" x2="18.6" y2="18"/><line x1="18.6" y1="14.4" x2="15" y2="18"/></svg><span>Intermedio</span></div>
+      <div class="pu-item" data-block="int_dimmer" onclick="pickUnit(this,'Atenuador')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/><path d="M13 20 L18 14 L20 17"/></svg><span>Dimmer</span></div>
       <div class="pu-item" data-block="caja_techo" onclick="pickUnit(this,'Centro de techo')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><line x1="10" y1="10" x2="22" y2="22"/><line x1="22" y1="10" x2="10" y2="22"/></svg><span>Centro Xe</span></div>
       <div class="pu-item" data-block="caja_pared" onclick="pickUnit(this,'Aplique de pared')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><line x1="10" y1="10" x2="22" y2="22"/><line x1="22" y1="10" x2="10" y2="22"/><line x1="4" y1="16" x2="8" y2="16"/></svg><span>Aplique Xa</span></div>
       <div class="pu-item" data-block="pulsador" onclick="pickUnit(this,'Pulsador')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><circle cx="16" cy="16" r="2" fill="#1c1c1e"/></svg><span>Pulsador</span></div>
@@ -442,7 +444,7 @@ body{display:flex;flex-direction:column;background:#fff;}
     </div>
     <div class="pu-title">Potencia / Tablero</div>
     <div class="pu-grid">
-      <div class="pu-item" data-block="tablero_dist" onclick="pickUnit(this,'Tablero')"><svg viewBox="0 0 32 32"><rect x="5" y="8" width="22" height="16"/><path d="M5 8 L27 24 L5 24 Z" fill="#1c1c1e"/></svg><span>Tablero</span></div>
+      <div class="pu-item" data-block="tablero_dist" onclick="pickUnit(this,'Tablero')"><svg viewBox="0 0 32 32"><path d="M4 9 L16 16 L4 23 Z" fill="#1c1c1e" stroke="none"/><path d="M28 9 L16 16 L28 23 Z" fill="#1c1c1e" stroke="none"/></svg><span>Tablero</span></div>
       <div class="pu-item" data-block="int_seccionador" onclick="pickUnit(this,'Seccionador')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><line x1="16" y1="12" x2="22" y2="24"/><line x1="16" y1="24" x2="16" y2="28"/></svg><span>Seccionador</span></div>
       <div class="pu-item" data-block="int_termomagnetico" onclick="pickUnit(this,'Térmica')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12 M13 10 L19 14"/><line x1="16" y1="12" x2="22" y2="24"/><line x1="16" y1="24" x2="16" y2="28"/></svg><span>Térmica</span></div>
       <div class="pu-item" data-block="int_diferencial" onclick="pickUnit(this,'Diferencial')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><line x1="16" y1="12" x2="22" y2="22"/><circle cx="18" cy="23" r="3"/><line x1="16" y1="26" x2="16" y2="28"/></svg><span>Diferencial</span></div>
@@ -519,6 +521,12 @@ body{display:flex;flex-direction:column;background:#fff;}
     <span class="pl">Altura piso</span>
     <input type="number" id="pbAlt" value="30" min="0" step="5" style="width:52px;font-size:16px" oninput="bloqueAltura=+this.value||0"><span class="pl">cm</span>
     <div class="pdiv"></div>
+    <span class="pl">Color</span>
+    <button class="cdot" style="background:#1c1c1e" onclick="setBlockColor('#1c1c1e')"></button>
+    <button class="cdot" style="background:#FE0000" onclick="setBlockColor('#FE0000')"></button>
+    <button class="cdot" style="background:#007aff" onclick="setBlockColor('#007aff')"></button>
+    <button class="cdot" style="background:#34c759" onclick="setBlockColor('#34c759')"></button>
+    <div class="pdiv"></div>
   </div>
   <span id="pbHint" style="display:none"></span>
   <span id="coord">0, 0</span>
@@ -563,6 +571,7 @@ body{display:flex;flex-direction:column;background:#fff;}
   <div class="ci" onclick="ctxDo('scale')"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>Escalar</div>
   <div class="ci" onclick="ctxDo('rotate')"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg>Rotar</div>
   <div class="ci" id="ciEdit" style="display:none" onclick="ctxDo('edit')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</div>
+  <div class="ci" onclick="ctxDo('color')"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 000 20 3 3 0 002.5-4.6c-.4-.6-.5-1.4 0-2 .4-.5 1-.4 1.5-.4H18a4 4 0 004-4 10 10 0 00-10-9z"/></svg>Color</div>
   <div class="ci danger" onclick="ctxDo('delete')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Eliminar</div>
 </div>
 
@@ -625,6 +634,7 @@ let planta=null;            // planta abierta (con hoja/denom/orient/rotulo/obje
 let calibPts=[];            // calibración por referencia (2 puntos)
 let calibrando=false;
 let bloqueAltura=30;        // altura desde el piso (cm) del próximo bloque
+let _recolorId=null;        // recolorear un objeto puesto
 let tool='select',color='#1c1c1e',strokeW=2,lineType='solid';
 let objects=[],nextId=1,history=[],redo=[];
 let _exporting=false;
@@ -653,7 +663,7 @@ let panning=false,panRef=null,pinching=false,pinch0=null,touches={};
 let fondoImg=null,fondoAprobado=false,modoAjusteFondo=false;
 let imgScale=1,imgScaleBase=1,imgOpacity=0.5,imgX=0,imgY=0,fondoDrag=null;
 // bloque de simbología eléctrica UNIT
-let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueTam=30;
+let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueTam=50;
 
 const w2s=(wx,wy)=>({x:wx*vpZ+vpX,y:wy*vpZ+vpY});
 const s2w=(sx,sy)=>({x:(sx-vpX)/vpZ,y:(sy-vpY)/vpZ});
@@ -830,37 +840,39 @@ function renderSimbologiaUNIT(wx,wy,tipo,sizeW,deg,col){
   ctx.rotate(deg*Math.PI/180);
   ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1.1*vpZ;ctx.lineCap='round';ctx.lineJoin='round';
   ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  // Llave UNIT: círculo en la base + palanca diagonal + banderola en la punta.
+  const llave=(marks)=>{
+    const cx=-r*0.5,cy=r*0.55,cr=r*0.17,tx=r*0.5,ty=-r*0.55;
+    ctx.beginPath();ctx.arc(cx,cy,cr,0,Math.PI*2);ctx.stroke();
+    const ang=Math.atan2(ty-cy,tx-cx),sx=cx+Math.cos(ang)*cr,sy=cy+Math.sin(ang)*cr;
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(tx,ty);ctx.stroke();
+    const px=-Math.sin(ang),py=Math.cos(ang);
+    ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx+px*r*0.34,ty+py*r*0.34);ctx.stroke();     // banderola
+    const mx=(sx+tx)/2,my=(sy+ty)/2;
+    if(marks==='bip'){ ctx.beginPath();ctx.moveTo(mx+px*r*0.17,my+py*r*0.17);ctx.lineTo(mx-px*r*0.17,my-py*r*0.17);ctx.stroke(); }
+    else if(marks==='inter'){ const rr=r*0.17;
+      ctx.beginPath();ctx.arc(mx,my,rr,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(mx-rr*0.7,my-rr*0.7);ctx.lineTo(mx+rr*0.7,my+rr*0.7);ctx.moveTo(mx+rr*0.7,my-rr*0.7);ctx.lineTo(mx-rr*0.7,my+rr*0.7);ctx.stroke(); }
+    else if(marks==='dim'){ const ax=tx-Math.cos(ang)*r*0.34,ay=ty-Math.sin(ang)*r*0.34;
+      ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax-px*r*0.3,ay-py*r*0.3);ctx.lineTo(ax-px*r*0.3+Math.cos(ang)*r*0.28,ay-py*r*0.3+Math.sin(ang)*r*0.28);ctx.stroke(); }
+  };
   switch(tipo){
     case 'toma_linea':
       ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI,true);ctx.stroke();
       ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke();break;
     case 'toma_schuko':
-      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI,true);ctx.fill();
-      ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke();break;
+      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI,true);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke();
+      ctx.beginPath();ctx.arc(0,0,r*0.4,0,Math.PI,true);ctx.fill();break;
     case 'toma_bip_caja':
       ctx.beginPath();ctx.rect(-r,-r,size,size);ctx.stroke();
       ctx.beginPath();ctx.arc(0,r*0.2,r*0.5,0,Math.PI,true);ctx.stroke();
       ctx.beginPath();ctx.moveTo(-r*0.7,r*0.2);ctx.lineTo(r*0.7,r*0.2);ctx.stroke();break;
-    case 'int_unipolar':
-      ctx.beginPath();ctx.arc(0,0,r*0.25,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.moveTo(0,-r*0.25);ctx.lineTo(0,-r);ctx.lineTo(r*0.5,-r);ctx.stroke();break;
-    case 'int_bipolar':
-      ctx.beginPath();ctx.arc(0,0,r*0.25,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.moveTo(0,-r*0.25);ctx.lineTo(0,-r);ctx.lineTo(r*0.5,-r);
-      ctx.moveTo(r*0.15,-r*0.6);ctx.lineTo(r*0.5,-r*0.2);ctx.stroke();break;
-    case 'int_combinacion':
-      ctx.beginPath();ctx.arc(0,0,r*0.25,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.moveTo(0,-r*0.25);ctx.lineTo(0,-r);ctx.lineTo(r*0.5,-r);
-      ctx.moveTo(0,r*0.25);ctx.lineTo(0,r);ctx.lineTo(-r*0.5,r);ctx.stroke();break;
-    case 'int_intermedio':
-      ctx.beginPath();ctx.arc(0,0,r*0.25,0,Math.PI*2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,-r*0.25);ctx.lineTo(0,-r);ctx.lineTo(r*0.5,-r);
-      ctx.moveTo(0,r*0.25);ctx.lineTo(0,r);ctx.lineTo(-r*0.5,r);ctx.stroke();
-      ctx.beginPath();ctx.arc(0,0,r*0.1,0,Math.PI*2);ctx.fill();break;
-    case 'int_dimmer':
-      ctx.beginPath();ctx.arc(0,0,r*0.35,0,Math.PI*2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.25,r*0.25);ctx.lineTo(r*0.6,-r*0.6);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(r*0.3,-r*0.6);ctx.lineTo(r*0.6,-r*0.6);ctx.lineTo(r*0.6,-r*0.3);ctx.stroke();break;
+    case 'int_unipolar': llave(); break;
+    case 'int_combinacion': llave(); break;
+    case 'int_bipolar': llave('bip'); break;
+    case 'int_intermedio': llave('inter'); break;
+    case 'int_dimmer': llave('dim'); break;
     case 'caja_techo':
       ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI*2);ctx.stroke();
       ctx.beginPath();ctx.moveTo(-r*0.5,-r*0.5);ctx.lineTo(r*0.5,r*0.5);
@@ -879,8 +891,8 @@ function renderSimbologiaUNIT(wx,wy,tipo,sizeW,deg,col){
       ctx.beginPath();ctx.arc(0,0,r*0.8,0,Math.PI*2);ctx.stroke();
       ctx.font=`bold ${8*vpZ}px sans-serif`;ctx.textAlign='center';ctx.fillText('SM',0,r*0.3);break;
     case 'tablero_dist':
-      ctx.beginPath();ctx.rect(-r,-r*0.6,size,size*1.2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r,-r*0.6);ctx.lineTo(r,r*0.6);ctx.lineTo(-r,r*0.6);ctx.closePath();ctx.fill();break;
+      ctx.beginPath();ctx.moveTo(-r,-r*0.55);ctx.lineTo(0,0);ctx.lineTo(-r,r*0.55);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(r,-r*0.55);ctx.lineTo(0,0);ctx.lineTo(r,r*0.55);ctx.closePath();ctx.fill();break;
     case 'int_seccionador':
       ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
       ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
@@ -1215,6 +1227,7 @@ function ctxDo(action){
   else if(action==='scale'){scaleId=obj.id;scaleOrig=JSON.parse(JSON.stringify(obj));document.getElementById('scSlider').value=100;document.getElementById('scVal').textContent='100%';document.getElementById('scmod').classList.add('show');}
   else if(action==='rotate'){startRotate(obj);}
   else if(action==='edit'){etId=obj.id;document.getElementById('etinput').value=obj.type==='text'?obj.text:(obj.label||'');document.getElementById('etmod').classList.add('show');setTimeout(()=>document.getElementById('etinput').focus(),120);}
+  else if(action==='color'){_recolorId=obj.id;const p=document.getElementById('colorPalette');p.style.left='50%';p.style.transform='translateX(-50%)';p.style.bottom='90px';p.style.top='auto';p.classList.add('show');toast('Elegí el color');}
   ctxObjId=null;
 }
 
@@ -1636,7 +1649,10 @@ function threePointArc(p1,p2,p3){
 
 // COLOR
 function togglePalette(e){e.stopPropagation();const p=document.getElementById('colorPalette');if(p.classList.contains('show')){p.classList.remove('show');return;}const btn=document.getElementById('colorBtn');const r=btn.getBoundingClientRect();p.style.left=Math.min(r.left,window.innerWidth-175)+'px';p.style.bottom=(window.innerHeight-r.top+8)+'px';p.style.top='auto';p.classList.add('show');}
-function pickColor(el){color=el.dataset.c;document.querySelectorAll('.cp').forEach(d=>d.classList.remove('on'));el.classList.add('on');document.getElementById('colorBtn').style.background=color;document.getElementById('colorPalette').classList.remove('show');}
+function pickColor(el){
+  const c=el.dataset.c;
+  if(_recolorId){const o=objects.find(x=>x.id===_recolorId);if(o){saveHistory();o.color=c;render();}_recolorId=null;const p=document.getElementById('colorPalette');p.classList.remove('show');p.style.transform='';toast('Color cambiado');return;}
+  color=c;document.querySelectorAll('.cp').forEach(d=>d.classList.remove('on'));el.classList.add('on');document.getElementById('colorBtn').style.background=color;document.getElementById('colorPalette').classList.remove('show');}
 
 // HINT
 function setHint(msg){const el=document.getElementById('pbHint');el.textContent=msg;el.style.display=msg?'inline':'none';}
@@ -1798,7 +1814,8 @@ function closeUnit(){_unitOpen=false;document.getElementById('panel-unit').class
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-unit')&&!e.target.closest('#btn-elec'))closeUnit();},{passive:true});
 function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;closeUnit();ST('block');toast('Tocá el plano para colocar · '+nom);}
 function setBlockGiro(v){bloqueGiro=+v;}
-function setBlockScale(denom){ bloqueTam=0.3*(+denom); }   // 1/100→30px mundo(0.30m) · 1/50→15px(0.15m)
+function setBlockColor(c){color=c;document.getElementById('colorBtn').style.background=c;document.querySelectorAll('.cp').forEach(d=>d.classList.toggle('on',d.dataset.c===c));toast('Color: nuevos símbolos');}
+function setBlockScale(denom){ bloqueTam=0.5*(+denom); }   // 5mm en papel a esa escala (1/100→50px=0.50m · 1/50→25px=0.25m)
 
 // ══════════ IMPORTAR PLANO (imagen / foto / PDF / DXF) ══════════
 function importPlano(){document.getElementById('planoInput').click();}
@@ -1942,9 +1959,19 @@ function goHome(){ if(planta)savePlanta(); planta=null;proy=null;
   document.getElementById('scrProj').classList.remove('on');
   document.getElementById('scrHome').classList.add('on');
   renderProyList(); }
+function abrirLienzoLibre(){
+  let sp=proyectos.find(p=>p.id==='__libre');
+  if(!sp){ sp={id:'__libre',nombre:'Lienzo libre',cliente:'',obra:'',denom:100,hoja:'inf',orient:'horiz',plantas:[]}; proyectos.push(sp); }
+  proy=sp;
+  if(!sp.plantas.length) sp.plantas.push({id:'l1',nombre:'Dibujo',hoja:'inf',denom:100,orient:'horiz',objects:[],nextId:1,originX:0,originY:0,gridM:1});
+  persistProy();
+  document.getElementById('scrHome').classList.remove('on');
+  document.getElementById('scrProj').classList.remove('on');
+  openPlanta(sp.plantas[0].id);
+}
 function renderProyList(){
   const l=document.getElementById('proyList');
-  l.innerHTML=proyectos.map(p=>`<div class="card2" onclick="openProy('${p.id}')">
+  l.innerHTML=proyectos.filter(p=>p.id!=='__libre').map(p=>`<div class="card2" onclick="openProy('${p.id}')">
     <div><div class="t">${esc(p.nombre)}</div><div class="d">${esc(p.cliente||'')}${p.obra?' · '+esc(p.obra):''} · ${(p.plantas||[]).length} planta(s)</div></div>
     <div style="display:flex;align-items:center;gap:4px"><button class="del" onclick="event.stopPropagation();delProy('${p.id}')">✕</button>
     <span class="go"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span></div></div>`).join('')
@@ -2022,7 +2049,7 @@ function openPlanta(id){
   document.getElementById('scrHome').classList.remove('on');
   document.getElementById('scrProj').classList.remove('on');
   // escala de bloque por defecto = escala de la planta
-  bloqueTam=0.3*(planta.denom||100); const pe=document.getElementById('pbEsc'); if(pe)pe.value=planta.denom||100;
+  bloqueTam=0.5*(planta.denom||100); const pe=document.getElementById('pbEsc'); if(pe)pe.value=planta.denom||100;
   resize();
   // encuadrar la hoja en pantalla
   const sz=sheetWorldSize();
@@ -2196,8 +2223,7 @@ function imprimirConteo(){
 window.addEventListener('beforeunload',()=>{ if(planta)savePlanta(); });
 
 resize();
-renderProyList();
-document.getElementById('scrHome').classList.add('on');
+abrirLienzoLibre();
 if(screen.orientation && screen.orientation.lock){
   screen.orientation.lock('portrait').catch(()=>{});
 }

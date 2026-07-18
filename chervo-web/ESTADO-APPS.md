@@ -137,8 +137,13 @@ Versión = número de caché del SW.
 - **Hoja de conteo de materiales:** botón en la barra → cuenta símbolos por tipo + metros de
   trazado (líneas/polilíneas/arcos), **por planta o por todo el proyecto**, imprimible en PDF
   (A4, con encabezado del proyecto). Base para enganchar el presupuesto (**iLVolt 2.0**).
-- **Pendiente (próximo):** lápiz de cableado con largo, leyenda automática, capas eléctricas,
-  collage (varios planos a la vez), rótulo con campos editables.
+- **Entrada libre:** al abrir va **directo a un lienzo libre** (sin formularios); Proyectos es
+  opcional (se entra por el logo) para guardar/organizar y sacar láminas a escala.
+- **Símbolos UNIT reales** (UNIT 821:2015): toma = semicírculo/domo, Schuko = domo relleno,
+  interruptor = círculo + palanca con banderola, conmutador intermedio = ⊗ en la palanca,
+  luz/centro = ⊗, pulsador = ⊙, tablero = moño, tierra = tres barras. Color editable por símbolo.
+- **Pendiente (próximo):** lápiz **inteligente** (vincular llave↔luz y dar largo de cableado),
+  leyenda automática, capas eléctricas, collage (varios planos a la vez), rótulo editable.
 - **Visión:** SketchVolt será la app **principal**; sumándole el core de presupuesto de iLVolt
   queda como **iLVolt 2.0**.
 
