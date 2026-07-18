@@ -141,7 +141,7 @@ Versión = número de caché del SW.
 - **Qué es:** **gastos compartidos** de Gerardo y Ana Gracia (predio/ruta 26).
   Registra gastos por persona y calcula total combinado y saldos.
 
-### Demoliciones — `apps/demoliciones/` · v2 · en grilla
+### Demoliciones — `apps/demoliciones/` · v3 · en grilla
 - **Qué es:** **APU de demoliciones** para reformas residenciales (Uruguay).
   Spec en `apps/demoliciones/APU_DEMOLICIONES.md` (fuente de verdad).
 - **Wordmark:** "Demoliciones" en **plata** con la "D" roja (nombres nunca en negro).
@@ -149,8 +149,8 @@ Versión = número de caché del SW.
   - *Rubros* (dashboard) = **solo carga** de datos: cantidad, acarreo,
     insalubridad, consumibles. **No muestra resultados por rubro ni totales.**
   - *Resumen* = lo **sumado**: tabla desglosada + totales, **encabezado editable**,
-    export **Excel (.xlsx, SheetJS)** y **PDF limpio** (solo encabezado + tabla,
-    **sin marca de app**).
+    export **Excel (.xlsx, SheetJS)** + **CSV** (offline) + **Imprimir/guardar PDF**
+    (vista limpia: solo encabezado + tabla, **sin marca de app**).
 - **Lógica:** 12 rubros con rendimiento (matriz §2) → H Ofi + H Peón
   (× acarreo × insalubridad), Costo MO, herramientas (10% pesados), GG (15%),
   **precio con cascada** (+ % beneficio), **escombro** (espesor × esponjamiento o

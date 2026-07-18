@@ -143,16 +143,20 @@ textarea.enc:focus{outline:none; border-color:var(--red);}
       <div id="tab-resumen" style="display:none;">
         <div class="enc-lbl">Encabezado (editable)</div>
         <textarea class="enc" id="encInput" placeholder="Empresa, cliente, obra, dirección…" oninput="setHeader(this.value)"></textarea>
-        <div style="display:flex; gap:8px; margin-bottom:18px;">
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
           <button class="btn btn-red" style="flex:1;" onclick="exportExcel()">
             <svg class="ic" viewBox="0 0 24 24" style="stroke:#fff"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l2 3-2 3M15 13l-2 3 2 3"/></svg>
             Excel
           </button>
-          <button class="btn btn-out" style="flex:1;" onclick="exportPDF()">
-            <svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
-            PDF
+          <button class="btn btn-out" style="flex:1;" onclick="exportCSV()">
+            <svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="16" x2="16" y2="16"/></svg>
+            CSV
           </button>
         </div>
+        <button class="btn btn-out" style="width:100%; margin-bottom:18px;" onclick="imprimir()">
+          <svg class="ic" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir o guardar PDF
+        </button>
         <div class="tbl-wrap"><table class="mtable" id="sumTable"></table></div>
         <div class="totbox" id="sumTotals"></div>
       </div>
@@ -175,7 +179,7 @@ textarea.enc:focus{outline:none; border-color:var(--red);}
     <div class="cfg-row"><label>Capacidad volqueta (m³)</label><input type="number" id="cfg_volq"></div>
     <div class="cfg-row"><label>Flete por volqueta ($)</label><input type="number" id="cfg_flete"></div>
     <button class="btn btn-red" style="width:100%; margin-top:8px;" onclick="saveConfig()">Guardar</button>
-    <div class="ver">Demoliciones · versión 1.1</div>
+    <div class="ver">Demoliciones · versión 1.2</div>
   </div>
 </div>
 
@@ -383,8 +387,29 @@ function exportExcel(){
   toast('Excel generado');
 }
 
-// ---------- Export PDF (limpio, encabezado editable, sin marca) ----------
-function exportPDF(){
+// ---------- Export CSV (funciona sin internet) ----------
+function exportCSV(){
+  const p=proj(); if(!p||!p.items.length){ toast('Sin rubros para exportar'); return; }
+  const R=[];
+  (p.header||'').split('\n').forEach(l=>{ if(l.trim()) R.push([l]); });
+  if(R.length) R.push([]);
+  R.push(['Rubro','Unidad','Cantidad','H Ofi','H Peon','Costo MO','Herr+GG','Escombro m3','Precio']);
+  for(const r of sumRows(p)) R.push([r.label, r.u, r.cant, +r.hOfi.toFixed(2), +r.hPeon.toFixed(2), Math.round(r.mo), Math.round(r.herrgg), r.chatarra?'chatarra':+r.vol.toFixed(2), Math.round(r.precio)]);
+  const t=computeObra(p);
+  R.push([]);
+  R.push(['Trabajos','','','','','','','',Math.round(t.precio)]);
+  R.push(['Escombro m3','','','','','','',+t.vol.toFixed(2),'']);
+  R.push(['Volquetas','','','','','','',t.volquetas,'']);
+  R.push(['Fletes','','','','','','','',Math.round(t.fletes)]);
+  R.push(['TOTAL OBRA','','','','','','','',Math.round(t.total)]);
+  const csv=R.map(row=>row.map(c=>{ const s=String(c); return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }).join(';')).join('\n');
+  const a=document.createElement('a'); a.download='Demoliciones_'+p.name.replace(/[^\w\-]+/g,'_')+'.csv';
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'})); a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500); toast('CSV generado');
+}
+
+// ---------- Imprimir (limpio, encabezado editable, sin marca) → guardar PDF ----------
+function imprimir(){
   const p=proj(); if(!p||!p.items.length){ toast('Sin rubros para exportar'); return; }
   const t=computeObra(p);
   const enc=(p.header||'').split('\n').filter(l=>l.trim()).map(l=>`<div>${esc(l)}</div>`).join('');

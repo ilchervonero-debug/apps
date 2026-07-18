@@ -1,4 +1,4 @@
-const CACHE = 'demoliciones-v2';
+const CACHE = 'demoliciones-v3';
 const ASSETS = [
   '/apps/demoliciones/',
   '/apps/demoliciones/index.html',
