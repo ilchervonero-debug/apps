@@ -88,12 +88,24 @@ Versión = número de caché del SW.
 - **Nota:** coeficientes estándar steel frame (desperdicio placa 10%, ~20
   tornillos/m², fijación cada 60cm, barra 6m). Ajustar si Ángel da los suyos.
 
-### iLDraw — `apps/ildraw/` · v11 · en grilla
+### iLDraw — `apps/ildraw/` · v3.1 (SW v12) · dibujo + electricidad + plano
 - **Qué es:** pizarra de **dibujo técnico** / croquis (líneas, arcos, polilíneas,
-  rect, círculo, polígono, texto, cotas, hatch; goma/trim).
+  rect, círculo, polígono, texto, cotas, hatch; goma/trim). **Herramienta que se suma
+  a iLVolt** (se accederá desde el menú del dashboard/landing).
 - **iLStyle:** `--accent #FE0000`, íconos stroke 1.1; **FAB cuadrado** (esquinas
   redondeadas); íconos de herramienta **negros → rojos + borde rojo al activarse**;
   sin botones grises.
+- **FAB de electricidad (2º FAB):** simbología **UNIT Uruguay** (tomas línea/Schuko/piso,
+  interruptores simple/bip/conmutador/intermedio/dimmer, centro Xe/aplique Xa, pulsador,
+  sensor; tablero, seccionador, térmica, diferencial, contactor, guardamotor, relé,
+  fusible, medidor, tierra). Se elige un símbolo y se **coloca en el plano** (objeto
+  `block`): ocupa su tamaño real, con **giro** (0/90/180/270) y **tamaño** ajustables;
+  entra al undo y al export (PNG/PDF).
+- **Importar plano de fondo (calco):** botón en la barra → **imagen, foto, PDF** (pdf.js
+  por CDN) o **DXF** (parser propio → raster). Se **calibra** con opacidad + escala,
+  se **mueve**, se **Fija** y se puede **reeditar/reescalar** después. El plano se dibuja
+  en coordenadas mundo (panea/zoomea con todo) y **no** sale en el export (queda como
+  referencia).
 - **Export explícito** DXF / PNG / PDF, siempre **limpio sin grilla**.
 
 ### iLMe — `apps/ilme/` · v15 · en grilla
