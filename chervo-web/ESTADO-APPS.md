@@ -160,7 +160,7 @@ Versión = número de caché del SW.
   = chatarra (sin volqueta). localStorage (obras + config).
 - **Nota:** a futuro **fusionar con APU/HA-Calc** (mismo esquema de Config/rubros).
 
-### iLVolt — `apps/ilvolt/` · v3 · en grilla
+### iLVolt — `apps/ilvolt/` · v4 · en grilla
 - **Qué es:** **presupuesto de instalaciones eléctricas** (Uruguay). Primera app que
   estrena la estructura iLStyle 1.8 completa (Core + Proyectos → Dashboard por fases →
   Resultados aparte).

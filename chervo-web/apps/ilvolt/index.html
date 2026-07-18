@@ -174,7 +174,7 @@ textarea{resize:vertical; min-height:70px; line-height:1.5;}
   <div class="sheet">
     <h3><span style="color:var(--red);font-weight:800;">iL</span><span style="color:var(--plata);font-weight:800;">Volt</span></h3>
     <div class="row" onclick="closeMenu();openCore()"><svg class="ic" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>Core · Tarifas y precios</div>
-    <div class="ver">iLVolt · versión 1.2 · presupuesto eléctrico (UY)</div>
+    <div class="ver">iLVolt · versión 1.3 · presupuesto eléctrico (UY)</div>
   </div>
 </div>
 
@@ -222,7 +222,14 @@ const money = (n)=> '$ '+Math.round(n).toLocaleString('es-UY');
 const num = (n)=> (Math.round(n*100)/100).toLocaleString('es-UY');
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-const DEFAULT_NOTAS = "Presupuesto estimado, válido por 15 días. Sujeto a verificación en obra. No incluye gestiones ante UTE ni obra civil (amurado) salvo indicación expresa. Precios sujetos a disponibilidad y tipo de cambio.";
+// Texto profesional del presupuesto (fijo, bien expresado)
+const DOC_INCLUYE = ['Mano de obra para los trabajos descritos.','Materiales indicados en este presupuesto.','Pruebas de funcionamiento.','Limpieza básica del área de trabajo.'];
+const DOC_NOINCLUYE = ['Trabajos de albañilería.','Pintura y terminaciones.','Reparación de revestimientos.','Trabajos no especificados.','Materiales no detallados.','Modificaciones solicitadas una vez aceptado el presupuesto.'];
+const DOC_CONSID = ['El presupuesto fue realizado con la información disponible al momento de su confección.','Cualquier trabajo adicional será presupuestado por separado.','Si durante la ejecución aparecen situaciones no visibles al momento del presupuesto, serán comunicadas antes de continuar.','El cliente deberá permitir el acceso a la obra y disponer del suministro eléctrico cuando sea necesario.'];
+const DOC_GARANTIA = 'La garantía cubre únicamente la mano de obra realizada. No cubre materiales provistos por el cliente, intervenciones de terceros, sobrecargas, daños por humedad, fenómenos climáticos ni modificaciones posteriores a la instalación.';
+const DOC_MATNOTA = 'La lista de materiales es orientativa. Las cantidades de cables, caños corrugados y accesorios pueden variar durante la ejecución debido al recorrido definitivo de la instalación o a imprevistos propios de la obra.';
+const MAT_MODO = [['manoObra','Mano de obra únicamente'],['incluidos','Materiales incluidos'],['cliente','Materiales suministrados por el cliente']];
+const IMPUESTOS = [['final','Precio final'],['ivaIncluido','IVA incluido'],['ivaNoIncluido','IVA no incluido']];
 
 /* ==================== MOTOR (Core JS integrado) ==================== */
 const CorePresupuesto = {
@@ -246,12 +253,15 @@ const CorePresupuesto = {
     ingenieriaTableros.T1.circuitos.push({id:"C2", tipo:"Tomas Generales 10A", destino:"Dormitorios y Estar"});
     ingenieriaTableros.totalTermicas+=2; ingenieriaTableros.totalDiferenciales+=1;
     let diferencialCocinaAsignado=false;
+    let tot={toma10a:0,schuko:0,schukoCorte:0,combinado:0,usb:0,luces:0,paneles:0,sensores:0,reflectores:0,bombas:0};
 
     (datosProyecto.ambientes||[]).forEach(amb=>{
       let costoMaterialesAmb=0, puestasAmb=0;
       const preciosLinea = P.marcasModulos[datosProyecto.perfilCalidad] || P.marcasModulos.estandar;
       puestasAmb += (amb.tomas10a||0)+(amb.tomasSchuko||0)+(amb.tomasSchukoCorte||0)+(amb.interruptoresCombinados||0)+(amb.modulosUsb||0)+(amb.lucesLed||0);
       totalBocasContadas += puestasAmb;
+      tot.toma10a+=(amb.tomas10a||0); tot.schuko+=(amb.tomasSchuko||0); tot.schukoCorte+=(amb.tomasSchukoCorte||0); tot.combinado+=(amb.interruptoresCombinados||0); tot.usb+=(amb.modulosUsb||0); tot.luces+=(amb.lucesLed||0); tot.paneles+=(amb.panelesLed||0);
+      if(amb.tipo==='exterior'||amb.tipo==='patio'){ tot.sensores+=(amb.sensoresMovimiento||0); tot.reflectores+=(amb.reflectoresLed||0); if(amb.tieneBombaOFiltrado) tot.bombas++; }
       costoMaterialesAmb += (amb.tomas10a||0)*preciosLinea.toma10a;
       costoMaterialesAmb += (amb.tomasSchuko||0)*preciosLinea.schuko;
       costoMaterialesAmb += (amb.tomasSchukoCorte||0)*preciosLinea.schukoCorte;
@@ -331,8 +341,32 @@ const CorePresupuesto = {
     totalManoObra = subtotalManoObraBocas + subtotalManoObraTableros;
     if(datosProyecto.soloInspeccionaCanalizacion) totalManoObra += (datosProyecto.cantidadVisitasObra||2)*P.manoDeObra.visitaInspeccion;
 
+    // Lista de materiales (BOM) para el presupuesto
+    const preciosL = P.marcasModulos[datosProyecto.perfilCalidad]||P.marcasModulos.estandar;
+    const lista=[]; const addM=(item,cant,unidad,precio)=>{ if(cant>0.0001) lista.push({item, cant:Math.round(cant*100)/100, unidad, precio:Math.round(precio), subtotal:Math.round(cant*precio)}); };
+    addM('Módulo toma 10A', tot.toma10a, 'u', preciosL.toma10a);
+    addM('Módulo Schuko 16A', tot.schuko, 'u', preciosL.schuko);
+    addM('Módulo Schuko c/corte', tot.schukoCorte, 'u', preciosL.schukoCorte);
+    addM('Módulo combinado', tot.combinado, 'u', preciosL.combinado);
+    addM('Módulo USB', tot.usb, 'u', preciosL.usb);
+    addM('Dicroica / luz LED', tot.luces, 'u', P.iluminacion.dicroicaLed);
+    addM('Panel / plafón LED', tot.paneles, 'u', P.iluminacion.panelLedPlafones);
+    addM('Sensor / fotocélula', tot.sensores, 'u', P.iluminacion.sensorMovimientoFotocelula);
+    addM('Reflector exterior LED', tot.reflectores, 'u', P.iluminacion.reflectorExteriorLed);
+    addM('Bomba / filtrado', tot.bombas, 'u', P.fuerzaExterior.bombaAguaPiscina);
+    addM('Caja de conexión', totalBocasContadas, 'u', precioCaja);
+    addM('Caño / canaleta', totalBocasContadas*mCano, 'm', precioCano);
+    addM('Cable (×3 conductores)', totalBocasContadas*mCable*3, 'm', P.cables.cable2_0);
+    addM('Gabinete principal', 1, 'u', gabPrincipal);
+    addM('Gabinete adicional', Math.max(0,(datosProyecto.cantidadTableros||1)-1), 'u', T.gabinete8);
+    addM('Térmica 1P', ingenieriaTableros.totalTermicas, 'u', T.termica1P16);
+    addM('Diferencial 2P 30mA', ingenieriaTableros.totalDiferenciales, 'u', T.diferencial2P40_30);
+    if(ingenieriaTableros.requiereMedidaIndirecta){ const mi=P.medidaIndirecta; addM('Gabinete CM doble',1,'u',mi.gabineteCMdoble); addM('Celda CT',1,'u',mi.celdaCT); addM('Celda CI',1,'u',mi.celdaCI); addM('Barra cobre estañada',1,'u',mi.barraCobreEstanada); }
+    if(datosProyecto.llevaTramoSubterraneo){ addM('Caño PVC 63mm subterráneo', (datosProyecto.metrosSubterraneo||0)*2, 'm', P.subterraneo.pvc63Metro); let cam=2; if((datosProyecto.metrosSubterraneo||0)>15||datosProyecto.tieneCambioDireccionSubterraneo) cam+=Math.floor((datosProyecto.metrosSubterraneo||0)/15); addM('Cámara registro 40×40', cam, 'u', P.subterraneo.camara40x40); }
+    addM('Kit puesta a tierra', 1, 'u', P.subterraneo.kitPAT);
+
     return { cliente:datosProyecto.cliente, ubicacion:datosProyecto.ubicacion, fechaEmision:datosProyecto.fecha||new Date().toLocaleDateString('es-UY'),
-      totalBocas:totalBocasContadas, desgloseAmbientes, ingenieriaTableros,
+      totalBocas:totalBocasContadas, desgloseAmbientes, ingenieriaTableros, listaMateriales:lista,
       materiales:{ canoMetros:Math.round(totalBocasContadas*mCano), cableMetros:Math.round(totalBocasContadas*mCable*3), cajas:totalBocasContadas },
       costos:{ subtotalMateriales:Math.round(totalMateriales-costoSubterraneo-costoTableros-costoMedidaIndirecta),
         subtotalTableros:Math.round(costoTableros), subtotalMedidaIndirecta:Math.round(costoMedidaIndirecta),
@@ -364,7 +398,11 @@ function createProject(){
     jornalBase:core.factoresSAU.jornalBaseMedioOficial, metrosCanoPorPuesta:4, metrosCablePorPuesta:8,
     calcularPorSAU:true, aplicaBpsUnificado:true, soloInspeccionaCanalizacion:false, cantidadVisitasObra:2,
     llevaTramoSubterraneo:false, metrosSubterraneo:0, tieneCambioDireccionSubterraneo:false,
-    encabezado:'', notasLegales:DEFAULT_NOTAS, ambientes:[] });
+    empresa:'', telefono:'', electricistaNombre:'', presupuestoNro:'', trabajos:'',
+    materialesModo:'incluidos', impuestos:'ivaIncluido',
+    incluyeTramiteUTE:false, incluyeFirmaTecnica:false, incluyeBajadaUTE:false, incluyeCertificacion:false,
+    validezDias:15, formaPago:'', tiempoEjecucion:'', inicioObra:'',
+    ambientes:[] });
   saveDB(); inp.value=''; renderHome();
 }
 function openProject(id){ activeId=id; const p=proj(); if(p){ // migración de proyectos previos
@@ -372,6 +410,10 @@ function openProject(id){ activeId=id; const p=proj(); if(p){ // migración de p
     if(p.cantidadTableros==null) p.cantidadTableros = p.requiereSubTableroExterior?2:1;
     if(p.metrosCanoPorPuesta==null) p.metrosCanoPorPuesta=4;
     if(p.metrosCablePorPuesta==null) p.metrosCablePorPuesta=8;
+    if(p.materialesModo==null){ p.materialesModo='incluidos'; p.impuestos='ivaIncluido'; p.validezDias=15;
+      p.empresa=p.empresa||''; p.telefono=''; p.electricistaNombre=''; p.presupuestoNro=''; p.trabajos='';
+      p.formaPago=''; p.tiempoEjecucion=''; p.inicioObra='';
+      p.incluyeTramiteUTE=false; p.incluyeFirmaTecnica=false; p.incluyeBajadaUTE=false; p.incluyeCertificacion=false; }
     saveDB(); } navTo('proj'); }
 function delProject(id,ev){ ev.stopPropagation(); if(!confirm('¿Borrar el proyecto?'))return; projects=projects.filter(p=>p.id!==id); saveDB(); renderHome(); }
 function renderHome(){
@@ -547,114 +589,181 @@ function renderResultados(){
   const p=proj(); if(!p)return;
   const r = CorePresupuesto.calcularProyecto(p);
   const c = r.costos;
+  const chkD=(field,label)=>`<label class="chk"><input type="checkbox" ${p[field]?'checked':''} onchange="setP('${field}',this.checked)"><span class="mark"></span>${label}</label>`;
   document.getElementById('tab-resultados').innerHTML = `
-    <div class="field"><label>Encabezado del presupuesto (editable)</label><textarea oninput="setP('encabezado',this.value)" placeholder="Empresa, técnico, contacto…">${esc(p.encabezado)}</textarea></div>
+    <div class="sec-title">Encabezado / empresa</div>
+    <div class="field"><label>Empresa (membrete)</label><input class="input" value="${esc(p.empresa)}" oninput="setP('empresa',this.value)"></div>
+    <div class="g2">
+      <div class="field"><label>Teléfono</label><input class="input" value="${esc(p.telefono)}" oninput="setP('telefono',this.value)"></div>
+      <div class="field"><label>Presupuesto N.º</label><input class="input" value="${esc(p.presupuestoNro)}" oninput="setP('presupuestoNro',this.value)"></div>
+    </div>
+    <div class="field"><label>Electricista (nombre)</label><input class="input" value="${esc(p.electricistaNombre)}" oninput="setP('electricistaNombre',this.value)"></div>
+    <div class="card-sub" style="margin-bottom:10px;">Cliente, obra, dirección y fecha se toman de la pestaña Datos.</div>
+
+    <div class="sec-title">Trabajos a realizar</div>
+    <textarea oninput="setP('trabajos',this.value)" placeholder="Descripción de los trabajos presupuestados…">${esc(p.trabajos)}</textarea>
+
+    <div class="sec-title">Materiales</div>
+    <div class="field"><select class="sel" onchange="setP('materialesModo',this.value)">${MAT_MODO.map(([v,t])=>`<option value="${v}" ${p.materialesModo===v?'selected':''}>${t}</option>`).join('')}</select></div>
+
+    <div class="sec-title">UTE</div>
+    ${chkD('incluyeTramiteUTE','Incluye trámite ante UTE')}
+    ${chkD('incluyeFirmaTecnica','Incluye firma técnica')}
+    ${chkD('incluyeBajadaUTE','Incluye bajada de UTE')}
+    ${chkD('incluyeCertificacion','Incluye certificación')}
+
+    <div class="sec-title">Impuestos</div>
+    <div class="field"><select class="sel" onchange="setP('impuestos',this.value)">${IMPUESTOS.map(([v,t])=>`<option value="${v}" ${p.impuestos===v?'selected':''}>${t}</option>`).join('')}</select></div>
+
+    <div class="sec-title">Condiciones</div>
+    <div class="g2">
+      <div class="field"><label>Validez (días)</label><input type="number" class="input" value="${p.validezDias}" oninput="setP('validezDias',+this.value||0)"></div>
+      <div class="field"><label>Tiempo de ejecución</label><input class="input" value="${esc(p.tiempoEjecucion)}" oninput="setP('tiempoEjecucion',this.value)"></div>
+    </div>
+    <div class="field"><label>Forma de pago</label><input class="input" value="${esc(p.formaPago)}" oninput="setP('formaPago',this.value)"></div>
+    <div class="field"><label>Inicio de obra</label><input class="input" value="${esc(p.inicioObra)}" oninput="setP('inicioObra',this.value)"></div>
+
+    <div class="sec-title">Salida del presupuesto</div>
     <div style="display:flex; gap:8px; margin-bottom:10px;">
       <button class="btn btn-red" style="flex:1;" onclick="exportExcel()"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l2 3-2 3M15 13l-2 3 2 3"/></svg>Excel</button>
       <button class="btn" style="flex:1;" onclick="exportCSV()"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="16" x2="16" y2="16"/></svg>CSV</button>
     </div>
     <button class="btn" style="width:100%; margin-bottom:16px;" onclick="imprimir()"><svg class="ic" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir o guardar PDF</button>
-    <div class="tbl-wrap"><table class="mtable"><thead><tr><th>Ambiente</th><th class="q">Bocas</th><th class="q">Materiales</th></tr></thead><tbody>
-      ${r.desgloseAmbientes.map(a=>`<tr><td>${esc(a.nombre)}</td><td class="q">${a.puestas}</td><td class="q">${money(a.subtotalMateriales)}</td></tr>`).join('')||'<tr><td class="card-sub">Sin ambientes.</td></tr>'}
-    </tbody></table></div>
+
     <div class="totbox">
-      <div class="totrow"><span>Cable estimado (×3 conductores)</span><span>${r.materiales.cableMetros} m</span></div>
-      <div class="totrow"><span>Caño / canaleta estimado</span><span>${r.materiales.canoMetros} m</span></div>
-      <div class="totrow"><span>Cajas</span><span>${r.materiales.cajas}</span></div>
+      <div class="totrow"><span>Cable estimado</span><span>${r.materiales.cableMetros} m</span></div>
+      <div class="totrow"><span>Caño / canaleta</span><span>${r.materiales.canoMetros} m</span></div>
       <div class="totrow"><span>Bocas</span><span>${r.totalBocas}</span></div>
     </div>
     <div class="totbox">
-      <div class="totrow"><span>Materiales (módulos, caños, cajas, PAT, iluminación)</span><span>${money(c.subtotalMateriales)}</span></div>
+      <div class="totrow"><span>Materiales</span><span>${money(c.subtotalMateriales)}</span></div>
       <div class="totrow"><span>Tableros y protecciones</span><span>${money(c.subtotalTableros)}</span></div>
       ${c.subtotalMedidaIndirecta>0?`<div class="totrow"><span>Medida indirecta (UTE)</span><span>${money(c.subtotalMedidaIndirecta)}</span></div>`:''}
       ${c.subtotalInfraestructuraSubterraneaUte>0?`<div class="totrow"><span>Infraestructura subterránea UTE</span><span>${money(c.subtotalInfraestructuraSubterraneaUte)}</span></div>`:''}
-      <div class="totrow"><span>Materiales neto</span><span>${money(c.totalMaterialesNeto)}</span></div>
-      <div class="totrow"><span>Mano de obra neto</span><span>${money(c.totalManoObraNeto)}</span></div>
+      <div class="totrow"><span>Mano de obra</span><span>${money(c.totalManoObraNeto)}</span></div>
       <div class="totrow big"><span>TOTAL PROYECTO</span><span>${money(c.TOTAL)}</span></div>
-    </div>
-    <div class="field"><label>Notas legales / deslinde comercial (editable)</label><textarea oninput="setP('notasLegales',this.value)">${esc(p.notasLegales)}</textarea></div>`;
+    </div>`;
 }
 
 /* ==================== Export ==================== */
 function exportExcel(){
   const p=proj(); if(!p) return; if(typeof XLSX==='undefined'){ toast('Necesitás conexión para el Excel'); return; }
   const r=CorePresupuesto.calcularProyecto(p), c=r.costos, ing=r.ingenieriaTableros; const aoa=[];
-  (p.encabezado||'').split('\n').forEach(l=>{ if(l.trim()) aoa.push([l]); });
-  aoa.push(['Cliente', p.cliente]); aoa.push(['Ubicación', p.ubicacion]); aoa.push(['Fecha', p.fecha]); aoa.push(['Línea', MARCA_LABELS[p.perfilCalidad]]); aoa.push([]);
-  aoa.push(['AMBIENTE','BOCAS','MATERIALES']);
-  r.desgloseAmbientes.forEach(a=>aoa.push([a.nombre, a.puestas, Math.round(a.subtotalMateriales)]));
-  aoa.push([]); aoa.push(['INGENIERÍA DE TABLEROS']);
-  aoa.push(['Térmicas', ing.totalTermicas]); aoa.push(['Diferenciales', ing.totalDiferenciales]); aoa.push(['Medida indirecta', ing.requiereMedidaIndirecta?'SÍ (>40 kW)':'No']);
-  ing.T1.circuitos.forEach(ci=>aoa.push(['T1 '+ci.id, ci.tipo, ci.destino]));
-  ing.T2.circuitos.forEach(ci=>aoa.push(['T2 '+ci.id, ci.tipo, ci.destino]));
-  ing.alertasSeguridad.forEach(a=>aoa.push(['Alerta', a]));
-  aoa.push([]); aoa.push(['MATERIALES ESTIMADOS']);
-  aoa.push(['Cable (m, ×3 conductores)', r.materiales.cableMetros]);
-  aoa.push(['Caño / canaleta (m)', r.materiales.canoMetros]);
-  aoa.push(['Cajas', r.materiales.cajas]);
+  if(p.empresa) aoa.push([p.empresa]);
+  if(p.telefono||p.electricistaNombre) aoa.push([[p.telefono&&('Tel: '+p.telefono),p.electricistaNombre].filter(Boolean).join(' · ')]);
+  aoa.push(['PRESUPUESTO DE INSTALACIÓN ELÉCTRICA']); aoa.push([]);
+  aoa.push(['Cliente', p.cliente]); aoa.push(['Obra', p.name]); aoa.push(['Dirección', p.ubicacion]);
+  aoa.push(['Fecha', p.fecha]); if(p.presupuestoNro) aoa.push(['Presupuesto N.º', p.presupuestoNro]);
+  aoa.push(['Línea de módulos', MARCA_LABELS[p.perfilCalidad]]); aoa.push([]);
+  if(p.trabajos){ aoa.push(['TRABAJOS A REALIZAR']); p.trabajos.split('\n').forEach(l=>l.trim()&&aoa.push([l])); aoa.push([]); }
+  // Lista de materiales (BOM)
+  aoa.push(['LISTA DE MATERIALES ('+(MAT_MODO.find(x=>x[0]===p.materialesModo)||['','—'])[1]+')']);
+  aoa.push(['Material','Cantidad','Unidad','P. unit.','Subtotal']);
+  r.listaMateriales.forEach(m=>aoa.push([m.item, m.cant, m.unidad, m.precio, m.subtotal]));
+  aoa.push([]); aoa.push(['Cable total (m, ×3 conductores)', r.materiales.cableMetros]);
+  aoa.push(['Caño / canaleta total (m)', r.materiales.canoMetros]); aoa.push(['Bocas', r.totalBocas]);
   aoa.push([]); aoa.push(['COSTOS']);
-  aoa.push(['Materiales (módulos, caños, cajas, PAT, iluminación)', c.subtotalMateriales]);
+  aoa.push(['Materiales', c.subtotalMateriales]);
   aoa.push(['Tableros y protecciones', c.subtotalTableros]);
   if(c.subtotalMedidaIndirecta>0) aoa.push(['Medida indirecta (UTE)', c.subtotalMedidaIndirecta]);
   if(c.subtotalInfraestructuraSubterraneaUte>0) aoa.push(['Infraestructura subterránea UTE', c.subtotalInfraestructuraSubterraneaUte]);
-  aoa.push(['Materiales neto', c.totalMaterialesNeto]);
-  aoa.push(['Mano de obra neto', c.totalManoObraNeto]);
-  aoa.push(['TOTAL PROYECTO', c.TOTAL]);
-  const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:34},{wch:26},{wch:16}];
+  aoa.push(['Mano de obra', c.totalManoObraNeto]);
+  aoa.push(['TOTAL '+((IMPUESTOS.find(x=>x[0]===p.impuestos)||['','—'])[1]), c.TOTAL]);
+  const ws=XLSX.utils.aoa_to_sheet(aoa); ws['!cols']=[{wch:36},{wch:12},{wch:9},{wch:12},{wch:13}];
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Presupuesto');
   XLSX.writeFile(wb, 'iLVolt_'+p.name.replace(/[^\w\-]+/g,'_')+'.xlsx'); toast('Excel generado');
 }
 function exportCSV(){
   const p=proj(); if(!p) return;
   const r=CorePresupuesto.calcularProyecto(p), c=r.costos; const R=[];
-  (p.encabezado||'').split('\n').forEach(l=>{ if(l.trim()) R.push([l]); });
-  R.push(['Cliente',p.cliente]); R.push(['Ubicacion',p.ubicacion]); R.push(['Fecha',p.fecha]); R.push([]);
-  R.push(['Ambiente','Bocas','Materiales']);
-  r.desgloseAmbientes.forEach(a=>R.push([a.nombre,a.puestas,Math.round(a.subtotalMateriales)]));
-  R.push([]); R.push(['Cable m (x3)',r.materiales.cableMetros]); R.push(['Cano/canaleta m',r.materiales.canoMetros]); R.push(['Cajas',r.materiales.cajas]);
+  if(p.empresa) R.push([p.empresa]);
+  R.push(['Cliente',p.cliente]); R.push(['Obra',p.name]); R.push(['Direccion',p.ubicacion]); R.push(['Fecha',p.fecha]);
+  if(p.presupuestoNro) R.push(['Presupuesto N',p.presupuestoNro]); R.push([]);
+  R.push(['Material','Cantidad','Unidad','P.unit','Subtotal']);
+  r.listaMateriales.forEach(m=>R.push([m.item,m.cant,m.unidad,m.precio,m.subtotal]));
+  R.push([]); R.push(['Cable m (x3)',r.materiales.cableMetros]); R.push(['Cano/canaleta m',r.materiales.canoMetros]); R.push(['Bocas',r.totalBocas]);
   R.push([]); R.push(['Materiales',c.subtotalMateriales]); R.push(['Tableros y protecciones',c.subtotalTableros]);
   if(c.subtotalMedidaIndirecta>0) R.push(['Medida indirecta',c.subtotalMedidaIndirecta]);
   if(c.subtotalInfraestructuraSubterraneaUte>0) R.push(['Subterraneo UTE',c.subtotalInfraestructuraSubterraneaUte]);
-  R.push(['Materiales neto',c.totalMaterialesNeto]); R.push(['Mano de obra neto',c.totalManoObraNeto]); R.push(['TOTAL',c.TOTAL]);
+  R.push(['Mano de obra',c.totalManoObraNeto]); R.push(['TOTAL',c.TOTAL]);
   const csv=R.map(row=>row.map(x=>{const s=String(x==null?'':x); return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(';')).join('\n');
   const a=document.createElement('a'); a.download='iLVolt_'+p.name.replace(/[^\w\-]+/g,'_')+'.csv';
   a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'})); a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500); toast('CSV generado');
 }
 function imprimir(){
   const p=proj(); if(!p) return;
-  const r=CorePresupuesto.calcularProyecto(p), c=r.costos, ing=r.ingenieriaTableros;
-  const enc=(p.encabezado||'').split('\n').filter(l=>l.trim()).map(l=>`<div>${esc(l)}</div>`).join('');
-  const amb=r.desgloseAmbientes.map(a=>`<tr><td>${esc(a.nombre)}</td><td class="q">${a.puestas}</td><td class="q">${money(a.subtotalMateriales)}</td></tr>`).join('');
-  const circ=[...ing.T1.circuitos.map(x=>['T1',x]),...ing.T2.circuitos.map(x=>['T2',x])].map(([t,x])=>`<tr><td>${t} · ${x.id}</td><td>${esc(x.tipo)}</td><td>${esc(x.destino)}</td></tr>`).join('');
+  const r=CorePresupuesto.calcularProyecto(p), c=r.costos;
+  const inc=p.materialesModo==='incluidos';
+  const ul=(arr)=>'<ul>'+arr.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>';
+  const incluye = DOC_INCLUYE.filter((x,i)=> i!==1 || inc); // el ítem de materiales solo si van incluidos
+  const showPrices = inc;
+  const matRows = r.listaMateriales.map(m=>`<tr><td>${esc(m.item)}</td><td class="q">${m.cant}</td><td>${m.unidad}</td>${showPrices?`<td class="q">${money(m.precio)}</td><td class="q">${money(m.subtotal)}</td>`:''}</tr>`).join('') || `<tr><td colspan="5" style="color:#888">Sin materiales cargados.</td></tr>`;
+  const cond=[];
+  cond.push(['Validez del presupuesto', (p.validezDias||'—')+' días']);
+  if(p.formaPago) cond.push(['Forma de pago', p.formaPago]);
+  if(p.tiempoEjecucion) cond.push(['Tiempo estimado de ejecución', p.tiempoEjecucion]);
+  if(p.inicioObra) cond.push(['Inicio de obra', p.inicioObra]);
+  const ute=[['Trámite ante UTE',p.incluyeTramiteUTE],['Firma técnica',p.incluyeFirmaTecnica],['Bajada de UTE',p.incluyeBajadaUTE],['Certificación',p.incluyeCertificacion]];
+  const impLabel=(IMPUESTOS.find(x=>x[0]===p.impuestos)||['','—'])[1];
+  const matModoLabel=(MAT_MODO.find(x=>x[0]===p.materialesModo)||['','—'])[1];
   const w=window.open('','_blank'); if(!w){ toast('Permití la ventana emergente'); return; }
-  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Presupuesto</title>
-    <style>@page{size:A4 portrait;margin:15mm}*{font-family:'Segoe UI',Arial,sans-serif}body{color:#1C1C1C;font-size:12px}
-    .enc{font-size:14px;line-height:1.5;border-bottom:2px solid #FE0000;padding-bottom:8px;margin-bottom:10px}
-    .meta{color:#555;margin-bottom:14px}
-    h3{font-size:14px;margin:14px 0 6px;border-bottom:1px solid #999;padding-bottom:3px}
-    table{width:100%;border-collapse:collapse;margin-bottom:8px}th{text-align:left;font-size:10px;text-transform:uppercase;color:#777;border-bottom:1px solid #999;padding:5px 4px}
+  w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Presupuesto ${esc(p.presupuestoNro||'')}</title>
+    <style>@page{size:A4 portrait;margin:14mm}*{font-family:'Segoe UI',Arial,sans-serif}body{color:#1C1C1C;font-size:12px;line-height:1.5}
+    .membrete{font-size:20px;font-weight:700}.sub{color:#555;font-size:12px;margin-bottom:10px}
+    .band{border-top:2px solid #FE0000;margin:8px 0 12px}
+    h2{font-size:20px;text-align:center;margin:4px 0 12px;letter-spacing:.3px}
+    h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#FE0000;margin:16px 0 5px;border-bottom:1px solid #ddd;padding-bottom:3px}
+    .datos div{display:flex;gap:8px;padding:2px 0}.datos b{min-width:130px;color:#555;font-weight:600}
+    ul{margin:0 0 4px 18px;padding:0}li{margin:2px 0}
+    table{width:100%;border-collapse:collapse;margin:4px 0 8px}th{text-align:left;font-size:10px;text-transform:uppercase;color:#777;border-bottom:1px solid #999;padding:5px 4px}
     td{padding:5px 4px;border-bottom:1px solid #eee}.q{text-align:right;white-space:nowrap}
-    .tot div{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
-    .tot .big{font-size:19px;font-weight:700;color:#FE0000;border-top:2px solid #FE0000;margin-top:6px;padding-top:8px}
-    .firmas{display:flex;gap:40px;margin-top:40px}.firmas div{flex:1;border-top:1px solid #333;padding-top:6px;text-align:center;font-size:12px;color:#555}
-    .notas{margin-top:18px;font-size:11px;color:#666;line-height:1.5}</style></head><body>
-    ${enc?`<div class="enc">${enc}</div>`:''}
-    <div class="meta">${esc(p.cliente||'')}${p.ubicacion?' · '+esc(p.ubicacion):''} · ${esc(p.fecha)} · Línea ${esc(MARCA_LABELS[p.perfilCalidad])}</div>
-    <h3>Ambientes</h3>
-    <table><thead><tr><th>Ambiente</th><th class="q">Bocas</th><th class="q">Materiales</th></tr></thead><tbody>${amb}</tbody></table>
-    <h3>Ingeniería de tableros (${ing.totalTermicas} térmicas · ${ing.totalDiferenciales} diferenciales${ing.requiereMedidaIndirecta?' · Medida indirecta':''})</h3>
-    <table><thead><tr><th>Tablero</th><th>Circuito</th><th>Destino</th></tr></thead><tbody>${circ}</tbody></table>
-    <h3>Costos</h3>
-    <div class="tot">
-      <div><span>Materiales</span><span>${money(c.subtotalMateriales)}</span></div>
-      <div><span>Tableros y protecciones</span><span>${money(c.subtotalTableros)}</span></div>
-      ${c.subtotalMedidaIndirecta>0?`<div><span>Medida indirecta (UTE)</span><span>${money(c.subtotalMedidaIndirecta)}</span></div>`:''}
-      ${c.subtotalInfraestructuraSubterraneaUte>0?`<div><span>Infraestructura subterránea UTE</span><span>${money(c.subtotalInfraestructuraSubterraneaUte)}</span></div>`:''}
-      <div><span>Mano de obra neto</span><span>${money(c.totalManoObraNeto)}</span></div>
-      <div class="big"><span>TOTAL PROYECTO</span><span>${money(c.TOTAL)}</span></div>
+    .nota{font-size:11px;color:#666;font-style:italic;margin-top:4px}
+    .precio{margin-top:10px;border:2px solid #FE0000;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+    .precio b{font-size:24px;color:#FE0000}.precio .imp{font-size:12px;color:#555}
+    .cols{display:flex;gap:26px}.cols>div{flex:1}
+    .firmas{display:flex;gap:40px;margin-top:36px}.firmas div{flex:1;border-top:1px solid #333;padding-top:6px;font-size:12px;color:#555}
+    .avoid{page-break-inside:avoid}</style></head><body>
+    <div class="membrete">${esc(p.empresa||'Presupuesto')}</div>
+    <div class="sub">${[p.telefono&&('Tel: '+esc(p.telefono)), p.electricistaNombre&&esc(p.electricistaNombre)].filter(Boolean).join(' · ')}</div>
+    <div class="band"></div>
+    <h2>Presupuesto de instalación eléctrica</h2>
+
+    <div class="datos">
+      <div><b>Cliente</b><span>${esc(p.cliente||'—')}</span></div>
+      <div><b>Obra</b><span>${esc(p.name||'—')}</span></div>
+      <div><b>Dirección</b><span>${esc(p.ubicacion||'—')}</span></div>
+      <div><b>Fecha</b><span>${esc(p.fecha||'—')}</span></div>
+      ${p.presupuestoNro?`<div><b>Presupuesto N.º</b><span>${esc(p.presupuestoNro)}</span></div>`:''}
     </div>
-    <div class="firmas"><div>Firma del técnico</div><div>Firma del cliente</div></div>
-    ${p.notasLegales?`<div class="notas">${esc(p.notasLegales)}</div>`:''}
+
+    ${p.trabajos?`<h3>Trabajos a realizar</h3><div>${esc(p.trabajos).replace(/\n/g,'<br>')}</div>`:''}
+
+    <div class="cols avoid">
+      <div><h3>El presupuesto incluye</h3>${ul(incluye)}</div>
+      <div><h3>No incluye</h3>${ul(DOC_NOINCLUYE)}</div>
+    </div>
+
+    <h3>Materiales</h3>
+    <div>${esc(matModoLabel)}.</div>
+    <table class="avoid"><thead><tr><th>Material</th><th class="q">Cant.</th><th>Unidad</th>${showPrices?'<th class="q">P. unit.</th><th class="q">Subtotal</th>':''}</tr></thead><tbody>${matRows}</tbody></table>
+    <div class="nota">${DOC_MATNOTA}</div>
+
+    <h3>Condiciones</h3>
+    <div class="datos">${cond.map(([k,v])=>`<div><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('')}</div>
+
+    <div class="cols avoid">
+      <div><h3>Consideraciones</h3>${ul(DOC_CONSID)}</div>
+      <div><h3>UTE</h3>${ul(ute.map(([t,b])=>`${b?'Incluye':'No incluye'} ${t.toLowerCase()}`))}</div>
+    </div>
+
+    <h3>Garantía</h3><div>${DOC_GARANTIA}</div>
+
+    <div class="precio avoid"><div><div class="imp">${esc(impLabel)}</div><div style="font-size:13px">Total del presupuesto</div></div><b>${money(c.TOTAL)}</b></div>
+
+    <div class="firmas avoid">
+      <div><b>Aceptación del cliente</b><br>Nombre:<br><br>Firma:<br><br>Fecha:</div>
+      <div><b>Electricista</b><br>Nombre: ${esc(p.electricistaNombre||'')}<br>Empresa: ${esc(p.empresa||'')}<br>Teléfono: ${esc(p.telefono||'')}<br><br>Firma:</div>
+    </div>
     <script>onload=function(){setTimeout(function(){print()},150)}<\/script></body></html>`);
   w.document.close(); toast('PDF · elegí "Guardar como PDF"');
 }
