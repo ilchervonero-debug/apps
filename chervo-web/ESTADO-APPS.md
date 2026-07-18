@@ -120,9 +120,14 @@ Versión = número de caché del SW.
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
-- **Estructura (shell):** Landing **Proyectos** (localStorage `sketchvolt_proy`) → **dashboard
-  del proyecto** (cliente, obra, y **directriz**: escala 1/100·1/75·1/50 + hoja A4/A3/A2 +
-  orientación) → **Plantas** (nombre + escala + hoja; heredan la directriz) → **Canvas**.
+- **Estructura (shell), sin fricción:** Landing **Proyectos** (localStorage `sketchvolt_proy`)
+  con **"+ Nuevo proyecto"** (nombre + descripción; nada obligatorio) → **dashboard del
+  proyecto**: nombre editable, **General del dibujo** (escala 1/100·1/75·1/50 + **lienzo**
+  A4/A3/A2 + orientación), datos de rótulo colapsables, y lista de **Planos/Hojas**. Al abrir
+  un proyecto **ya viene la "Hoja 1" precargada**; cada plano tiene su **flecha "Dibujar" → canvas**
+  y **"+ Agregar plano"** suma Hoja 2, 3… (auto-nombre, hereda escala/lienzo, editable por plano).
+  No hay que llenar nada para entrar. También hay **"Dibujar sin proyecto · lienzo libre"**.
+  Logo = volver al dashboard; back del dashboard = Proyectos.
 - **Mundo en metros reales** (PPM=100 px/m). Grilla en metros: **0.15 · 0.50 · 1.00 · 3.00**.
   **Origen 0,0** marcable (botón mira). Coordenadas y cotas en metros.
 - **Importar plano** (imagen/foto/PDF) + **Calibrar por referencia**: tocás 2 puntos de una

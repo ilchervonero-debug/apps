@@ -279,6 +279,22 @@ body{display:flex;flex-direction:column;background:#fff;}
   color:var(--accent);font-family:var(--font);font-size:16px;font-weight:500;cursor:pointer;}
 .fb-btn.ghost{border-color:#d0d0d3;color:var(--ink);}
 .cdot{width:22px;height:22px;border-radius:50%;border:1.5px solid #d0d0d3;cursor:pointer;flex-shrink:0;padding:0;}
+.np-add{width:100%;background:#fff;border:1.5px dashed #FE0000;color:#FE0000;border-radius:11px;padding:13px;font-size:17px;font-family:var(--font);cursor:pointer;}
+.pj-title{font-size:24px;font-weight:500;color:var(--ink);border:none;border-bottom:1.5px solid transparent;background:none;width:100%;padding:4px 2px;margin:4px 0 14px;font-family:var(--font);}
+.pj-title:focus{outline:none;border-bottom-color:#FE0000;}
+details.mas{margin:2px 0 6px;}
+details.mas summary{font-size:15px;color:#7a7a7a;cursor:pointer;padding:6px 2px;list-style:none;}
+details.mas summary::-webkit-details-marker{display:none;}
+details.mas summary:before{content:'▸ ';color:#FE0000;}
+details.mas[open] summary:before{content:'▾ ';}
+.plano{background:#fff;border:1px solid #e5e5ea;border-radius:14px;padding:12px 14px;margin-bottom:10px;}
+.plano .pl-nom{font-size:19px;color:var(--ink);border:none;background:none;width:100%;padding:2px;font-family:var(--font);}
+.plano .pl-nom:focus{outline:none;}
+.plano .pl-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.plano .pl-row select{font-size:15px;font-family:var(--font);border:1.5px solid #dcdcd8;border-radius:8px;padding:7px 8px;color:var(--ink);background:#fff;}
+.plano .pl-draw{margin-left:auto;background:#fff;border:1.5px solid #FE0000;color:#FE0000;border-radius:9px;padding:9px 16px;font-size:16px;font-weight:500;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:7px;}
+.plano .pl-draw svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;}
+.plano .pl-del{background:none;border:none;color:#c00;font-size:19px;cursor:pointer;padding:4px 6px;}
 </style>
 </head>
 <body>
@@ -296,23 +312,15 @@ body{display:flex;flex-direction:column;background:#fff;}
 <div class="scr" id="scrHome">
   <div class="scr-head"><div class="wm">Sketch<b>Volt</b></div></div>
   <div class="scr-body">
-    <button class="btn-r" style="font-size:19px;padding:15px;margin-bottom:8px" onclick="abrirLienzoLibre()">Dibujar ahora · lienzo libre</button>
-    <div class="sub" style="margin-bottom:20px">Dibujá sin vueltas. Los proyectos son para <b>guardar y sacar láminas a escala</b> (A4·A3·A2).</div>
-    <h2>Mis proyectos</h2>
+    <h2>Proyectos</h2>
     <div id="proyList"></div>
-    <div class="sec-t">Nuevo proyecto</div>
-    <div class="fld"><label>Nombre del proyecto</label><input id="npNom" placeholder="Ej: Casa Melo"></div>
-    <div class="fld2">
-      <div class="fld"><label>Cliente</label><input id="npCli" placeholder="Ángel Nieves"></div>
-      <div class="fld"><label>Obra / ubicación</label><input id="npObra" placeholder="Melo, Cerro Largo"></div>
+    <button class="np-add" id="npAddBtn" onclick="toggleNp()">+ Nuevo proyecto</button>
+    <div id="npForm" style="display:none;margin-top:6px">
+      <div class="fld"><label>Nombre</label><input id="npNom" placeholder="Casa Melo"></div>
+      <div class="fld"><label>Descripción (opcional)</label><input id="npDesc" placeholder="Instalación eléctrica"></div>
+      <button class="btn-r" onclick="crearProy()">Crear proyecto</button>
     </div>
-    <div class="sec-t">Directriz (por defecto para las plantas)</div>
-    <div class="fld2">
-      <div class="fld"><label>Escala</label><select id="npEsc"><option value="100">1/100</option><option value="75">1/75</option><option value="50">1/50</option></select></div>
-      <div class="fld"><label>Hoja</label><select id="npHoja"><option value="A4">A4</option><option value="A3" selected>A3</option><option value="A2">A2</option><option value="inf">Sin hoja (infinito)</option></select></div>
-      <div class="fld"><label>Orientación</label><select id="npOri"><option value="horiz">Horizontal</option><option value="vert">Vertical</option></select></div>
-    </div>
-    <button class="btn-r" onclick="crearProy()">Crear proyecto</button>
+    <button class="btn-g" style="margin-top:20px" onclick="abrirLienzoLibre()">Dibujar sin proyecto · lienzo libre</button>
   </div>
 </div>
 
@@ -324,25 +332,23 @@ body{display:flex;flex-direction:column;background:#fff;}
     <div id="pjName" style="font-size:17px;color:#7a7a7a;margin-left:auto;"></div>
   </div>
   <div class="scr-body">
-    <h2 id="pjTitle">Proyecto</h2>
-    <div class="sec-t">Datos del proyecto (van al rótulo)</div>
+    <input id="pjTitle" class="pj-title" oninput="pjName2()" placeholder="Proyecto">
+    <div class="fld"><label>Descripción</label><input id="pjDesc" oninput="pjEdit()" placeholder="Instalación eléctrica"></div>
+    <div class="sec-t">General del dibujo</div>
     <div class="fld2">
-      <div class="fld"><label>Cliente</label><input id="pjCli" oninput="pjEdit()"></div>
-      <div class="fld"><label>Obra / ubicación</label><input id="pjObra" oninput="pjEdit()"></div>
+      <div class="fld"><label>Escala</label><select id="pjEsc" onchange="pjEdit()"><option value="100">1/100</option><option value="75">1/75</option><option value="50">1/50</option></select></div>
+      <div class="fld"><label>Lienzo</label><select id="pjHoja" onchange="pjEdit()"><option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="inf">Sin hoja</option></select></div>
+      <div class="fld"><label>Orientación</label><select id="pjOri" onchange="pjEdit()"><option value="horiz">Apaisado</option><option value="vert">Vertical</option></select></div>
     </div>
-    <div class="fld2">
-      <div class="fld"><label>Escala directriz</label><select id="pjEsc" oninput="pjEdit()"><option value="100">1/100</option><option value="75">1/75</option><option value="50">1/50</option></select></div>
-      <div class="fld"><label>Hoja directriz</label><select id="pjHoja" oninput="pjEdit()"><option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="inf">Sin hoja</option></select></div>
-      <div class="fld"><label>Orientación</label><select id="pjOri" oninput="pjEdit()"><option value="horiz">Horizontal</option><option value="vert">Vertical</option></select></div>
-    </div>
-    <div class="sec-t">Plantas</div>
-    <div id="plantaList"></div>
-    <div class="fld"><label>Nueva planta</label><input id="plNom" placeholder="Ej: Planta baja"></div>
-    <div class="fld2">
-      <div class="fld"><label>Escala</label><select id="plEsc"></select></div>
-      <div class="fld"><label>Hoja</label><select id="plHoja"><option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="inf">Sin hoja</option><option value="__def" selected>(directriz)</option></select></div>
-    </div>
-    <button class="btn-r" onclick="crearPlanta()">Agregar planta</button>
+    <details class="mas"><summary>Datos para el rótulo (cliente, obra)</summary>
+      <div class="fld2" style="margin-top:10px">
+        <div class="fld"><label>Cliente</label><input id="pjCli" oninput="pjEdit()"></div>
+        <div class="fld"><label>Obra / ubicación</label><input id="pjObra" oninput="pjEdit()"></div>
+      </div>
+    </details>
+    <div class="sec-t">Planos / hojas</div>
+    <div id="planoList"></div>
+    <button class="np-add" onclick="agregarPlano()">+ Agregar plano</button>
   </div>
 </div>
 
@@ -366,7 +372,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 
 <!-- BAR 1 -->
 <div class="bar">
-  <div class="bar-logo" onclick="goHome()" style="cursor:pointer" data-tip="Proyectos">Sketch<span>Volt</span></div>
+  <div class="bar-logo" onclick="goDash()" style="cursor:pointer" data-tip="Volver">Sketch<span>Volt</span></div>
   <button class="ti ti-t" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
   <button class="ti ti-t" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <div class="tg">
@@ -1972,37 +1978,43 @@ function abrirLienzoLibre(){
 function renderProyList(){
   const l=document.getElementById('proyList');
   l.innerHTML=proyectos.filter(p=>p.id!=='__libre').map(p=>`<div class="card2" onclick="openProy('${p.id}')">
-    <div><div class="t">${esc(p.nombre)}</div><div class="d">${esc(p.cliente||'')}${p.obra?' · '+esc(p.obra):''} · ${(p.plantas||[]).length} planta(s)</div></div>
+    <div><div class="t">${esc(p.nombre)}</div><div class="d">${p.desc?esc(p.desc)+' · ':''}${(p.plantas||[]).length} plano(s)</div></div>
     <div style="display:flex;align-items:center;gap:4px"><button class="del" onclick="event.stopPropagation();delProy('${p.id}')">✕</button>
     <span class="go"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span></div></div>`).join('')
-    || '<div class="empty2">Todavía no hay proyectos. Creá el primero abajo.</div>';
+    || '<div class="empty2">Todavía no hay proyectos. Tocá <b>+ Nuevo proyecto</b>.</div>';
 }
+function toggleNp(){ const f=document.getElementById('npForm'),b=document.getElementById('npAddBtn');
+  const on=f.style.display==='none'; f.style.display=on?'block':'none'; b.style.display=on?'none':'block';
+  if(on)setTimeout(()=>document.getElementById('npNom').focus(),80); }
 function crearProy(){
-  const nom=document.getElementById('npNom').value.trim(); if(!nom){toast('Poné un nombre');return;}
-  const p={id:uid(),nombre:nom,cliente:document.getElementById('npCli').value.trim(),
-    obra:document.getElementById('npObra').value.trim(),
-    denom:+document.getElementById('npEsc').value,hoja:document.getElementById('npHoja').value,
-    orient:document.getElementById('npOri').value,plantas:[]};
+  let nom=document.getElementById('npNom').value.trim();
+  if(!nom)nom='Proyecto '+(proyectos.filter(p=>p.id!=='__libre').length+1);
+  const p={id:uid(),nombre:nom,desc:document.getElementById('npDesc').value.trim(),
+    cliente:'',obra:'',denom:100,hoja:'A3',orient:'horiz',plantas:[]};
   proyectos.unshift(p);persistProy();
-  document.getElementById('npNom').value='';document.getElementById('npCli').value='';document.getElementById('npObra').value='';
+  document.getElementById('npNom').value='';document.getElementById('npDesc').value='';
+  document.getElementById('npForm').style.display='none';document.getElementById('npAddBtn').style.display='block';
   openProy(p.id);
 }
-function delProy(id){ if(!confirm('¿Borrar el proyecto y sus plantas?'))return; proyectos=proyectos.filter(p=>p.id!==id);persistProy();renderProyList(); }
+function delProy(id){ if(!confirm('¿Borrar el proyecto y sus planos?'))return; proyectos=proyectos.filter(p=>p.id!==id);persistProy();renderProyList(); }
 
 function openProy(id){
   proy=proyectos.find(p=>p.id===id); if(!proy)return;
+  if(!proy.plantas||!proy.plantas.length){ proy.plantas=[nuevoPlano('Hoja 1')]; persistProy(); }
   document.getElementById('scrHome').classList.remove('on');
   document.getElementById('scrProj').classList.add('on');
-  document.getElementById('pjTitle').textContent=proy.nombre;
-  document.getElementById('pjName').textContent=proy.nombre;
+  document.getElementById('pjTitle').value=proy.nombre;
+  document.getElementById('pjDesc').value=proy.desc||'';
   document.getElementById('pjCli').value=proy.cliente||'';
   document.getElementById('pjObra').value=proy.obra||'';
   document.getElementById('pjEsc').value=proy.denom||100;
   document.getElementById('pjHoja').value=proy.hoja||'A3';
   document.getElementById('pjOri').value=proy.orient||'horiz';
-  fillPlEsc();renderPlantaList();
+  renderPlanos();
 }
+function pjName2(){ if(!proy)return; proy.nombre=document.getElementById('pjTitle').value.trim()||proy.nombre; persistProy(); }
 function pjEdit(){ if(!proy)return;
+  proy.desc=document.getElementById('pjDesc').value.trim();
   proy.cliente=document.getElementById('pjCli').value.trim();
   proy.obra=document.getElementById('pjObra').value.trim();
   proy.denom=+document.getElementById('pjEsc').value;
@@ -2010,28 +2022,25 @@ function pjEdit(){ if(!proy)return;
   proy.orient=document.getElementById('pjOri').value;
   persistProy();
 }
-function fillPlEsc(){ const s=document.getElementById('plEsc');
-  s.innerHTML='<option value="__def">Directriz (1/'+(proy.denom||100)+')</option><option value="100">1/100</option><option value="75">1/75</option><option value="50">1/50</option>';
+function nuevoPlano(nombre){ return {id:uid(),nombre,hoja:proy.hoja||'A3',denom:proy.denom||100,orient:proy.orient||'horiz',
+  objects:[],nextId:1,originX:0,originY:0,fondoURL:null,fondoT:null,gridM:1}; }
+const _opt=(v,cur,t)=>`<option value="${v}" ${String(cur)===String(v)?'selected':''}>${t}</option>`;
+function renderPlanos(){
+  const l=document.getElementById('planoList');
+  l.innerHTML=(proy.plantas||[]).map(pl=>`<div class="plano">
+    <input class="pl-nom" value="${esc(pl.nombre)}" oninput="renombrarPlano('${pl.id}',this.value)">
+    <div class="pl-row">
+      <select onchange="planoEsc('${pl.id}',this.value)">${_opt(100,pl.denom,'1/100')}${_opt(75,pl.denom,'1/75')}${_opt(50,pl.denom,'1/50')}</select>
+      <select onchange="planoHoja('${pl.id}',this.value)">${_opt('A4',pl.hoja,'A4')}${_opt('A3',pl.hoja,'A3')}${_opt('A2',pl.hoja,'A2')}${_opt('inf',pl.hoja,'Sin hoja')}</select>
+      <button class="pl-del" onclick="delPlanta('${pl.id}')">✕</button>
+      <button class="pl-draw" onclick="openPlanta('${pl.id}')"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Dibujar</button>
+    </div></div>`).join('');
 }
-function renderPlantaList(){
-  const l=document.getElementById('plantaList');
-  l.innerHTML=(proy.plantas||[]).map(pl=>`<div class="card2" onclick="openPlanta('${pl.id}')">
-    <div><div class="t">${esc(pl.nombre)}</div><div class="d">Hoja ${pl.hoja==='inf'?'infinita':pl.hoja} · 1/${pl.denom} · ${(pl.objects||[]).length} objetos</div></div>
-    <div style="display:flex;align-items:center;gap:4px"><button class="del" onclick="event.stopPropagation();delPlanta('${pl.id}')">✕</button>
-    <span class="go"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span></div></div>`).join('')
-    || '<div class="empty2">Sin plantas. Agregá la primera.</div>';
-}
-function crearPlanta(){
-  const nom=document.getElementById('plNom').value.trim(); if(!nom){toast('Poné un nombre');return;}
-  let hoja=document.getElementById('plHoja').value; if(hoja==='__def')hoja=proy.hoja;
-  let denom=document.getElementById('plEsc').value; denom=(denom==='__def')?(proy.denom||100):+denom;
-  const pl={id:uid(),nombre:nom,hoja,denom,orient:proy.orient||'horiz',
-    objects:[],nextId:1,originX:0,originY:0,fondoURL:null,fondoT:null,gridM:1};
-  proy.plantas=proy.plantas||[];proy.plantas.push(pl);persistProy();
-  document.getElementById('plNom').value='';
-  openPlanta(pl.id);
-}
-function delPlanta(id){ if(!confirm('¿Borrar esta planta?'))return; proy.plantas=proy.plantas.filter(p=>p.id!==id);persistProy();renderPlantaList(); }
+function agregarPlano(){ const n=(proy.plantas||[]).length+1; proy.plantas=proy.plantas||[]; proy.plantas.push(nuevoPlano('Hoja '+n)); persistProy(); renderPlanos(); }
+function renombrarPlano(id,v){ const pl=proy.plantas.find(p=>p.id===id); if(pl){pl.nombre=v;persistProy();} }
+function planoEsc(id,v){ const pl=proy.plantas.find(p=>p.id===id); if(pl){pl.denom=+v;persistProy();} }
+function planoHoja(id,v){ const pl=proy.plantas.find(p=>p.id===id); if(pl){pl.hoja=v;persistProy();} }
+function delPlanta(id){ if(!confirm('¿Borrar este plano?'))return; proy.plantas=proy.plantas.filter(p=>p.id!==id);persistProy();renderPlanos(); }
 
 function openPlanta(id){
   planta=proy.plantas.find(p=>p.id===id); if(!planta)return;
@@ -2057,10 +2066,13 @@ function openPlanta(id){
   else { vpZ=1;vpX=cv.width/2-originX;vpY=cv.height/2-originY; }
   ST('select');render();
 }
-function goDash(){ if(!planta){ if(proy){document.getElementById('scrProj').classList.add('on');} else {document.getElementById('scrHome').classList.add('on');renderProyList();} return; }
-  savePlanta(); planta=null;
+function goDash(){
+  if(planta)savePlanta();
+  // El lienzo libre no tiene dashboard: vuelve a Proyectos.
+  if(!proy||proy.id==='__libre'){ planta=null;proy=null; document.getElementById('scrProj').classList.remove('on'); document.getElementById('scrHome').classList.add('on'); renderProyList(); return; }
+  planta=null;
   document.getElementById('scrProj').classList.add('on');
-  renderPlantaList();
+  openProy(proy.id);
 }
 function savePlanta(){
   if(!planta)return;
@@ -2223,7 +2235,8 @@ function imprimirConteo(){
 window.addEventListener('beforeunload',()=>{ if(planta)savePlanta(); });
 
 resize();
-abrirLienzoLibre();
+renderProyList();
+document.getElementById('scrHome').classList.add('on');
 if(screen.orientation && screen.orientation.lock){
   screen.orientation.lock('portrait').catch(()=>{});
 }
