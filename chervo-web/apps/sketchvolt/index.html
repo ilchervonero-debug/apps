@@ -276,8 +276,8 @@ body{display:flex;flex-direction:column;background:#fff;}
   color:var(--accent);font-family:var(--font);font-size:16px;font-weight:500;cursor:pointer;}
 .fb-btn.ghost{border-color:#d0d0d3;color:var(--ink);}
 .cdot{width:22px;height:22px;border-radius:50%;border:1.5px solid #d0d0d3;cursor:pointer;flex-shrink:0;padding:0;}
-/* Barra inferior vacía cuando no hay nada seleccionado ni activo (minimalismo) */
-#propbar.empty>*{display:none!important;}
+/* Barra inferior: cuando no hay nada seleccionado ni activo, DESAPARECE del todo */
+#propbar.empty{display:none!important;}
 #propbar{flex-wrap:wrap;min-height:var(--prop);height:auto;}
 .cmd-btn{flex-shrink:0;padding:8px 14px;border-radius:9px;border:1.5px solid #dcdcd8;background:#fff;color:var(--ink);font-size:16px;font-family:var(--font);cursor:pointer;}
 .cmd-btn.on{border-color:var(--accent);color:var(--accent);}
@@ -364,6 +364,8 @@ details.mas[open] summary:before{content:'▾ ';}
     <div class="sec-t">Planos / hojas</div>
     <div id="planoList"></div>
     <button class="np-add" onclick="agregarPlano()">+ Agregar plano</button>
+    <div class="sec-t">Consultar</div>
+    <button class="btn-g" onclick="openConteo()">Conteo de materiales del proyecto</button>
   </div>
 </div>
 
@@ -390,16 +392,11 @@ details.mas[open] summary:before{content:'▾ ';}
   <div class="bar-logo" onclick="goDash()" style="cursor:pointer" data-tip="Volver">Sketch<span>Volt</span></div>
   <button class="ti ti-t" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
   <button class="ti ti-t" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
-  <div class="tg">
-    <button class="tb" data-tip="Exportar" onclick="openBottomPanel('export')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-    <button class="tb" data-tip="Importar plano" onclick="importPlano()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
-    <button class="tb" data-tip="Conteo de materiales" onclick="openConteo()"><svg viewBox="0 0 24 24"><path d="M9 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2h-3"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M8 11h2M8 15h2M13 11h3M13 15h3"/></svg></button>
-    <button class="tb" data-tip="Nuevo" onclick="newDoc()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
-    <input type="file" id="planoInput" accept="image/*,application/pdf,.dxf" style="display:none" onchange="onImportFile(event)">
-  </div>
-  <button class="ti ti-t on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+  <button class="ti ti-t" data-tip="Imagen" onclick="openImagen()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
   <button class="ti ti-t" data-tip="Grilla" onclick="openBottomPanel('grid')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></button>
-  <button class="ti ti-t" id="origBtn" data-tip="Fijar 0,0" onclick="toggleOrigin()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg></button>
+  <button class="ti ti-t on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+  <button class="ti ti-t" data-tip="Exportar" onclick="openBottomPanel('export')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+  <input type="file" id="planoInput" accept="image/*,application/pdf,.dxf" style="display:none" onchange="onImportFile(event)">
   <div style="flex:1"></div>
   <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')" style="margin-right:8px;margin-left:14px;border-left:2px solid rgba(0,0,0,.12);padding-left:10px;border-radius:0 8px 8px 0"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
 </div>
@@ -589,27 +586,20 @@ details.mas[open] summary:before{content:'▾ ';}
     <button class="cmd-btn" onclick="closeBottomPanel();doExport('dxf')">DXF</button>
     <button class="cmd-btn" onclick="closeBottomPanel()" style="margin-left:auto">✕</button>
   </div>
+  <div id="grpImage" style="display:none;align-items:center;gap:8px">
+    <span class="pl">Imagen</span>
+    <span class="pl">Op</span><input type="range" id="fondoOpac" min="10" max="100" value="50" style="width:70px" oninput="setFondoOpacity(this.value)">
+    <span class="pl">Escala</span><input type="range" id="fondoScale" min="20" max="300" value="100" style="width:80px" oninput="setFondoScale(this.value)">
+    <button class="cmd-btn" id="imgEditBtn" onclick="toggleEditFondo()">Fijar</button>
+    <button class="cmd-btn" onclick="startCalib()">Calibrar</button>
+    <button class="cmd-btn" onclick="importPlano()">+ Nueva</button>
+    <button class="cmd-btn" onclick="quitarFondo()">Quitar</button>
+    <button class="cmd-btn" onclick="closeBottomPanel()" style="margin-left:auto">✕</button>
+  </div>
   <span id="pbHint" style="display:none"></span>
   <span id="coord" style="margin-left:auto">0, 0</span>
 </div>
 
-<!-- BARRA PLANO DE FONDO (calco) -->
-<div id="fondoBar">
-  <div id="fondoAdjust" class="fb-row">
-    <span class="fb-l">Opacidad</span>
-    <input type="range" id="fondoOpac" min="10" max="100" value="50" oninput="setFondoOpacity(this.value)">
-    <span class="fb-l">Escala</span>
-    <input type="range" id="fondoScale" min="20" max="300" value="100" oninput="setFondoScale(this.value)">
-    <button class="fb-btn" onclick="startCalib()">Calibrar (medida real)</button>
-    <button class="fb-btn" onclick="fijarFondo()">Fijar plano</button>
-    <button class="fb-btn ghost" onclick="quitarFondo()">Quitar</button>
-  </div>
-  <div id="fondoFixed" class="fb-row" style="display:none">
-    <span class="fb-l">Plano fijo</span>
-    <button class="fb-btn" onclick="editarFondo()">Editar / escalar</button>
-    <button class="fb-btn ghost" onclick="quitarFondo()">Quitar</button>
-  </div>
-</div>
 
 <!-- COLOR PALETTE -->
 <div id="colorPalette">
@@ -1925,13 +1915,22 @@ function openBottomPanel(mode){
   _panelMode=mode; selId=null; document.getElementById('grpSel').style.display='none';
   document.getElementById('grpGrid').style.display = mode==='grid'?'flex':'none';
   document.getElementById('grpExport').style.display = mode==='export'?'flex':'none';
+  document.getElementById('grpImage').style.display = mode==='image'?'flex':'none';
+  if(mode==='image'){ const be=document.getElementById('imgEditBtn'); if(be)be.textContent=modoAjusteFondo?'Fijar':'Editar'; }
   refreshBottom(); render();
 }
-function closeBottomPanel(){ _panelMode=null;
+function closeBottomPanel(){
+  if(_panelMode==='image'&&modoAjusteFondo){ modoAjusteFondo=false; fondoAprobado=true; savePlanta(); }
+  _panelMode=null;
   document.getElementById('grpGrid').style.display='none';
   document.getElementById('grpExport').style.display='none';
-  refreshBottom();
+  document.getElementById('grpImage').style.display='none';
+  refreshBottom(); render();
 }
+function openImagen(){ if(!fondoImg){ importPlano(); } else openBottomPanel('image'); }
+function toggleEditFondo(){ modoAjusteFondo=!modoAjusteFondo; fondoAprobado=!modoAjusteFondo;
+  const be=document.getElementById('imgEditBtn'); if(be)be.textContent=modoAjusteFondo?'Fijar':'Editar';
+  savePlanta(); render(); toast(modoAjusteFondo?'Movelo o reescalalo':'Plano fijo'); }
 function setGrid(m){ gridM=m; cellPx=PPM*gridM; if(planta)planta.gridM=m; markDirty(); closeBottomPanel(); render(); toast('Grilla '+m+' m'); }
 // ── PROPIEDADES DEL OBJETO SELECCIONADO ──
 function selObj(){ return selId!=null?objects.find(o=>o.id===selId):null; }
@@ -1969,7 +1968,7 @@ function onImportFile(e){
 let fondoURL=null;   // dataURL del plano (para persistir en la planta)
 function fondoFromImageURL(url){
   const img=new Image();
-  img.onload=()=>{fondoImg=img;fondoURL=url;centrarFondo();imgOpacity=0.5;modoAjusteFondo=true;fondoAprobado=false;closeTools();closeUnit();ST('select');showFondoBar();render();savePlanta();toast('Plano cargado · calibrá y fijá');};
+  img.onload=()=>{fondoImg=img;fondoURL=url;centrarFondo();imgOpacity=0.5;modoAjusteFondo=true;fondoAprobado=false;closeTools();closeUnit();ST('select');openBottomPanel('image');render();savePlanta();toast('Movelo, calibrá y fijá');};
   img.onerror=()=>toast('No se pudo cargar la imagen');
   img.src=url;
 }
@@ -1992,20 +1991,10 @@ function setFondoScale(v){
   imgX=cx-fondoImg.width*imgScale/2;imgY=cy-fondoImg.height*imgScale/2;
   render();
 }
-function fijarFondo(){modoAjusteFondo=false;fondoAprobado=true;showFondoBar();render();toast('Plano fijo ✓');}
-function editarFondo(){modoAjusteFondo=true;fondoAprobado=false;showFondoBar();render();toast('Plano liberado · movelo o reescalalo');}
-function quitarFondo(){fondoImg=null;fondoAprobado=false;modoAjusteFondo=false;showFondoBar();render();toast('Plano quitado');}
-function showFondoBar(){
-  const bar=document.getElementById('fondoBar');
-  if(!fondoImg){bar.classList.remove('show');bar.classList.remove('editing');document.getElementById('propbar').style.display='';return;}
-  bar.classList.add('show');
-  document.getElementById('fondoAdjust').style.display=modoAjusteFondo?'flex':'none';
-  document.getElementById('fondoFixed').style.display=modoAjusteFondo?'none':'flex';
-  // Barra dinámica: editando la imagen → sólo controles de imagen, se oculta la propbar.
-  bar.classList.toggle('editing',modoAjusteFondo);
-  document.getElementById('propbar').style.display=modoAjusteFondo?'none':'';
-  refreshBottom();
-}
+function fijarFondo(){modoAjusteFondo=false;fondoAprobado=true;render();toast('Plano fijo ✓');}
+function editarFondo(){modoAjusteFondo=true;fondoAprobado=false;render();}
+function quitarFondo(){fondoImg=null;fondoURL=null;fondoAprobado=false;modoAjusteFondo=false;closeBottomPanel();render();savePlanta();toast('Plano quitado');}
+function showFondoBar(){}   // (obsoleto: la imagen ahora es un panel de la barra inferior)
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function fondoFromPDF(file){
   toast('Procesando PDF…');
@@ -2356,8 +2345,8 @@ function conteoData(){
     return {cnt,lineM}; }
   return contarObjs(objects);
 }
-function openConteo(){ if(planta)savePlanta(); _ctScope='planta';
-  document.getElementById('segPl').classList.add('on');document.getElementById('segPr').classList.remove('on');
+function openConteo(){ if(planta)savePlanta(); _ctScope=planta?'planta':'proy';
+  document.getElementById('segPl').classList.toggle('on',_ctScope==='planta');document.getElementById('segPr').classList.toggle('on',_ctScope==='proy');
   document.getElementById('scrConteo').classList.add('on'); renderConteo(); }
 function cerrarConteo(){ document.getElementById('scrConteo').classList.remove('on'); }
 function setConteo(s){ _ctScope=s;
