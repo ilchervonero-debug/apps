@@ -452,6 +452,10 @@ details.mas[open] summary:before{content:'▾ ';}
 <!-- PANEL SIMBOLOGÍA UNIT (Uruguay) -->
 <div id="panel-unit">
   <div class="pu-scroll">
+    <button onclick="traerReferencias()" style="width:100%;margin-bottom:10px;padding:11px;border:1.5px dashed #FE0000;background:#fff;color:#FE0000;border-radius:11px;font-family:var(--font);font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+      Traer caja de referencias
+    </button>
     <div class="pu-title">Residenciales / Control</div>
     <div class="pu-grid">
       <div class="pu-item" data-block="toma_linea" onclick="pickUnit(this,'Toma en línea')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Toma línea</span></div>
@@ -479,6 +483,11 @@ details.mas[open] summary:before{content:'▾ ';}
       <div class="pu-item" data-block="fusible_secc" onclick="pickUnit(this,'Fusible')"><svg viewBox="0 0 32 32"><rect x="10" y="12" width="12" height="6"/><line x1="6" y1="15" x2="26" y2="15"/><line x1="12" y1="9" x2="16" y2="5"/></svg><span>Fusible</span></div>
       <div class="pu-item" data-block="medidor_kwh" onclick="pickUnit(this,'Medidor')"><svg viewBox="0 0 32 32"><rect x="5" y="8" width="22" height="16"/><text x="16" y="19" text-anchor="middle" font-size="8" font-weight="bold">kWh</text></svg><span>Medidor</span></div>
       <div class="pu-item" data-block="toma_tierra" onclick="pickUnit(this,'Puesta a tierra')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="18"/><line x1="6" y1="18" x2="26" y2="18"/><line x1="10" y1="22" x2="22" y2="22"/><line x1="14" y1="26" x2="18" y2="26"/></svg><span>Tierra</span></div>
+    </div>
+    <div class="pu-title">Aire acondicionado</div>
+    <div class="pu-grid">
+      <div class="pu-item" data-block="aire_ac" onclick="pickUnit(this,'Equipo aire acond.')"><svg viewBox="0 0 32 32"><rect x="4" y="11" width="24" height="10" rx="2"/><line x1="7" y1="16.5" x2="25" y2="16.5"/></svg><span>Equipo AC</span></div>
+      <div class="pu-item" data-block="motor_ac" onclick="pickUnit(this,'Motor aire acond.')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/><text x="16" y="20" text-anchor="middle" font-size="12" font-weight="bold">M</text></svg><span>Motor AC</span></div>
     </div>
   </div>
 </div>
@@ -1012,6 +1021,16 @@ function renderSimbologiaUNIT(wx,wy,tipo,sizeW,deg,col,flip){
       ctx.beginPath();ctx.moveTo(-r*0.7,r*0.2);ctx.lineTo(r*0.7,r*0.2);
       ctx.moveTo(-r*0.4,r*0.5);ctx.lineTo(r*0.4,r*0.5);
       ctx.moveTo(-r*0.15,r*0.8);ctx.lineTo(r*0.15,r*0.8);ctx.stroke();break;
+    // "Aberraciones" (fuera de UNIT, pero necesarias para la vivienda)
+    case 'aire_ac':   // equipo de aire (split de pared)
+      ctx.beginPath();
+      if(ctx.roundRect)ctx.roundRect(-r,-r*0.4,size,size*0.8,r*0.18); else ctx.rect(-r,-r*0.4,size,size*0.8);
+      ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-r*0.75,r*0.05);ctx.lineTo(r*0.75,r*0.05);ctx.stroke();break;
+    case 'motor_ac':  // motor / condensadora exterior
+      ctx.beginPath();ctx.arc(0,0,r*0.82,0,Math.PI*2);ctx.stroke();
+      ctx.font=`600 ${Math.round(size*0.42)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('M',0,0);break;
   }
   ctx.restore();
 }
@@ -1631,7 +1650,7 @@ function doEraseAt(wp){
 }
 
 // MOVE/COPY
-function doMovStart(wp){const T=28/vpZ;for(let i=objects.length-1;i>=0;i--){if(hitTest(wp,objects[i],T)){const obj=objects[i];if(tool==='copy'){saveHistory();const cl=JSON.parse(JSON.stringify(obj));cl.id=nextId++;objects.push(cl);movId=cl.id;movOrigPts=JSON.parse(JSON.stringify(cl.pts));}else{saveHistory();movId=obj.id;movOrigPts=JSON.parse(JSON.stringify(obj.pts));}movStart={...wp};drawing=true;return;}}toast('Tocá el objeto');}
+function doMovStart(wp){const T=28/vpZ;for(let i=objects.length-1;i>=0;i--){if(hitTest(wp,objects[i],T)){const obj=objects[i];if(tool==='copy'){saveHistory();const cl=JSON.parse(JSON.stringify(obj));cl.id=nextId++;delete cl.ref;objects.push(cl);movId=cl.id;movOrigPts=JSON.parse(JSON.stringify(cl.pts));}else{saveHistory();movId=obj.id;movOrigPts=JSON.parse(JSON.stringify(obj.pts));}movStart={...wp};drawing=true;return;}}toast('Tocá el objeto');}
 function doMovDrag(wp){if(!movId||!movOrigPts)return;const obj=objects.find(o=>o.id===movId);if(!obj)return;const dx=wp.x-movStart.x,dy=wp.y-movStart.y;obj.pts=movOrigPts.map(p=>[p[0]+dx,p[1]+dy]);render();}
 function doMovEnd(){movId=null;movOrigPts=null;movStart=null;drawing=false;render();}
 
@@ -1892,6 +1911,40 @@ function toggleUnit(){_unitOpen=!_unitOpen;document.getElementById('panel-unit')
 function closeUnit(){_unitOpen=false;document.getElementById('panel-unit').classList.remove('open');}
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-unit')&&!e.target.closest('#btn-elec'))closeUnit();},{passive:true});
 function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;ultimoSimbolo={sel:bloqueSel,nom,svg:el.querySelector('svg')};closeUnit();fabElecIcon(ultimoSimbolo.svg);ST('block');toast('Tocá para estampar · '+nom);}
+// ── CAJA DE REFERENCIAS (leyenda de vivienda) — se trae al plano; copiás desde acá ──
+// Cada símbolo es un bloque marcado `ref:true`: SE IMPRIME y sirve de paleta, pero NO
+// se cuenta en el conteo (y al copiarlo, la copia sí cuenta). Cada uno con su color.
+const REF_VIVIENDA=[
+  ['caja_techo','Centro de luz','#FE0000'],
+  ['caja_pared','Brazo de luz exterior','#34c759'],
+  ['toma_linea','Toma corriente','#007aff'],
+  ['toma_bip_caja','Toma con corte','#FE0000'],
+  ['int_unipolar','Interruptor común','#FE0000'],
+  ['int_combinacion','Interruptor combinado','#FE0000'],
+  ['int_intermedio','Conmutador intermedio','#FE0000'],
+  ['tablero_dist','Tablero llaves térmicas','#00c7be'],
+  ['aire_ac','Equipo aire acondicionado','#1c1c1e'],
+  ['motor_ac','Motor aire acondicionado','#1c1c1e']
+];
+function traerReferencias(){
+  closeUnit(); closeTools();
+  saveHistory();
+  const tl=s2w(28,96);                 // esquina sup-izq de la caja, en un punto visible
+  const sym=40, rowH=70, pad=26, titleH=54;
+  const x0=tl.x+pad, y0=tl.y+pad+titleH;
+  const boxW=560, boxH=pad*2+titleH+REF_VIVIENDA.length*rowH;
+  // marco de la caja
+  objects.push({type:'rect',pts:[[tl.x,tl.y],[tl.x+boxW,tl.y+boxH]],color:'#1c1c1e',strokeW:1,lineType:'solid',id:nextId++});
+  // título
+  objects.push({type:'text',pts:[[x0,tl.y+pad+34]],text:'REFERENCIAS',fontSize:36,fontFamily:'sans',color:'#1c1c1e',id:nextId++});
+  REF_VIVIENDA.forEach(([b,nom,col],i)=>{
+    const cy=y0+i*rowH+rowH*0.4;
+    objects.push({type:'block',pts:[[x0+sym*0.6,cy]],blockType:b,cm:sym,rotation:0,altura:0,color:col,ref:true,id:nextId++});
+    objects.push({type:'text',pts:[[x0+sym*1.6,cy+12]],text:nom,fontSize:30,fontFamily:'sans',color:'#1c1c1e',id:nextId++});
+  });
+  markDirty(); ST('select'); render();
+  toast('Caja de referencias · copiá desde acá (herramienta Copiar)');
+}
 function fabElecIcon(svg){ if(!svg)return; const f=document.getElementById('btn-elec'),old=f.querySelector('svg'); if(old){const c=svg.cloneNode(true);old.replaceWith(c);} f.dataset.sym='1'; }
 // FAB electricidad: si hay un símbolo en cursor lo re-arma (estampar otro); si está armado abre el panel para cambiar.
 function fabElec(){
@@ -2349,14 +2402,15 @@ const NOM_BLOQUE={toma_linea:'Toma en línea',toma_schuko:'Toma Schuko',toma_bip
   int_intermedio:'Conmutador intermedio',int_dimmer:'Atenuador (dimmer)',caja_techo:'Centro de techo',
   caja_pared:'Aplique de pared',pulsador:'Pulsador',sensor_mov:'Sensor de movimiento',tablero_dist:'Tablero',
   int_seccionador:'Seccionador',int_termomagnetico:'Térmica',int_diferencial:'Diferencial',contactor:'Contactor',
-  guardamotor:'Guardamotor',rele_termico:'Relé térmico',fusible_secc:'Fusible',medidor_kwh:'Medidor',toma_tierra:'Puesta a tierra'};
+  guardamotor:'Guardamotor',rele_termico:'Relé térmico',fusible_secc:'Fusible',medidor_kwh:'Medidor',toma_tierra:'Puesta a tierra',
+  aire_ac:'Equipo aire acondicionado',motor_ac:'Motor aire acondicionado'};
 function blkNom(k){return NOM_BLOQUE[k]||k;}
 function cnf(n){return (Math.round(n*100)/100).toLocaleString('es-UY');}
 function segLen(o){return getSegs(o).reduce((s,seg)=>s+hyp(seg[1][0]-seg[0][0],seg[1][1]-seg[0][1]),0);}
 function contarObjs(objs){
   const cnt={};let lineM=0;
   for(const o of objs||[]){
-    if(o.type==='block')cnt[o.blockType]=(cnt[o.blockType]||0)+1;
+    if(o.type==='block'){ if(o.ref)continue; cnt[o.blockType]=(cnt[o.blockType]||0)+1; }   // la caja de referencias no cuenta
     else if(o.type==='line'||o.type==='pline'||o.type==='pen'||o.type==='arc')lineM+=segLen(o)/PPM;
   }
   return {cnt,lineM};
