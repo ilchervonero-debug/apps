@@ -618,7 +618,9 @@ details.mas[open] summary:before{content:'▾ ';}
     <div class="pdiv"></div>
     <button id="gmGroup" class="cmd-btn" onclick="agruparSel()">Agrupar</button>
     <button id="gmUngroup" class="cmd-btn" onclick="desagruparSel()">Desagrupar</button>
-    <button id="gmEdit" class="pib" data-tip="Editar grupo" onclick="editarGrupo()"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg></button>
+    <button id="gmMakeComp" class="cmd-btn" onclick="crearComponente()">Componente</button>
+    <button id="gmIndep" class="cmd-btn" onclick="independizarComp()">Independizar</button>
+    <button id="gmEdit" class="pib" data-tip="Editar" onclick="editarGrupo()"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg></button>
     <span class="fi"><span class="fl">Color</span>
       <button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
     <button class="pib danger" data-tip="Borrar" onclick="selDelete()" style="margin-left:auto"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
@@ -925,20 +927,20 @@ function drawFondo(){
 function drawGrid(){
   if(_exporting)return;
   ctx.save();
-  // Subdivisiones finas = celda de grilla elegida (ultra sutil, casi imperceptible)
+  // Subdivisiones finas = celda de grilla elegida. Trazo DELGADO pero visible (es para trabajar).
   const cs=cellPx*vpZ;
   if(cs>=7){
     const ox=((vpX%cs)+cs)%cs,oy=((vpY%cs)+cs)%cs;
-    ctx.strokeStyle='rgba(139,0,0,0.045)';ctx.lineWidth=.5;
+    ctx.strokeStyle='rgba(139,0,0,0.11)';ctx.lineWidth=.5;
     for(let x=ox;x<cv.width;x+=cs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
     for(let y=oy;y<cv.height;y+=cs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
   }
-  // Módulos métricos = cada METRO. Líneas finas, presentes pero NO protagonistas.
-  // Si los metros quedan muy juntos en pantalla (vista general), se atenúan aún más para no ensuciar.
+  // Módulos métricos = cada METRO. Línea fina (no gorda) pero NOTORIA como guía de trabajo.
+  // Solo si los metros quedan muy juntos (vista general) se atenúa un poco para no ser una malla.
   const ms=PPM*vpZ;
   if(ms>=6){
     const ox=((vpX%ms)+ms)%ms,oy=((vpY%ms)+ms)%ms;
-    const op=ms<26?0.06:0.12;                 // densos = más tenues
+    const op=ms<14?0.12:0.24;
     ctx.strokeStyle='rgba(139,0,0,'+op+')';ctx.lineWidth=.7;
     for(let x=ox;x<cv.width;x+=ms){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
     for(let y=oy;y<cv.height;y+=ms){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
@@ -1794,7 +1796,14 @@ function doMovStart(wp){const T=28/vpZ;
 }
 function doMovDrag(wp){ if(!movSet||!movStart)return; const dx=wp.x-movStart.x,dy=wp.y-movStart.y;
   movSet.forEach(m=>{ const o=objects.find(x=>x.id===m.id); if(o)o.pts=m.orig.map(p=>[p[0]+dx,p[1]+dy]); }); render(); }
-function doMovEnd(){ movSet=null; movId=null; movStart=null; drawing=false; markDirty(); render(); }
+function doMovEnd(){
+  // Si movés un miembro DENTRO de un componente (modo aislado), propagá el mismo desplazamiento
+  // a la pieza equivalente de todas las instancias (lógica SketchUp).
+  if(editGroupId && movSet){ movSet.forEach(m=>{ const o=objects.find(x=>x.id===m.id);
+    if(o&&o.comp!=null&&m.orig&&m.orig[0]){ const dx=o.pts[0][0]-m.orig[0][0], dy=o.pts[0][1]-m.orig[0][1];
+      if(dx||dy) compSiblings(o).forEach(s=>{ s.pts=s.pts.map(p=>[p[0]+dx,p[1]+dy]); }); } }); }
+  movSet=null; movId=null; movStart=null; drawing=false; markDirty(); render();
+}
 
 // ERASE
 function doErase(wp){const T=28/vpZ;for(let i=objects.length-1;i>=0;i--){if(hitTest(wp,objects[i],T)){saveHistory();objects.splice(i,1);render();toast('Eliminado');return;}}toast('Tocá el objeto');}
@@ -2174,15 +2183,35 @@ function selectAt(wp){ const T=28/vpZ;
   if(!editGroupId) setSel([]);
   showSelBar(); render();
 }
-// Aplica la propiedad a TODA la selección (uno, varios o grupo), un solo render al final.
-function selSet(k,v){ if(!selIds.length)return; saveHistory(); selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)o[k]=v;}); markDirty(); render(); }
+// Aplica la propiedad a TODA la selección. Si se está EDITANDO dentro de un componente
+// (modo aislado) y el objeto pertenece a un componente, el cambio se PROPAGA a todas las
+// instancias (mismo cidx) — lógica SketchUp.
+function selSet(k,v){ if(!selIds.length)return; saveHistory();
+  selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(!o)return; o[k]=v;
+    if(editGroupId && o.comp!=null) compSiblings(o).forEach(s=>{s[k]=v;});
+  });
+  markDirty(); render(); }
 function selDelete(){ if(!selIds.length)return; saveHistory(); const del=new Set(selIds); objects=objects.filter(x=>!del.has(x.id)); setSel([]); markDirty(); showSelBar(); render(); toast('Borrado'); }
-// ── GRUPOS ──
+// ── GRUPOS y COMPONENTES ──
+// group = instancia (miembros que se mueven juntos). comp = definición compartida entre
+// instancias; cidx = índice del hijo dentro de la definición (para emparejar entre copias).
+function compSiblings(o){ if(!o||o.comp==null||o.cidx==null)return []; return objects.filter(x=>x.comp===o.comp && x.cidx===o.cidx && x.id!==o.id); }
 function _selIsWholeGroup(){ if(selIds.length<2)return false;
   const gids=[...new Set(selIds.map(id=>{const o=objects.find(x=>x.id===id);return o?o.group:null;}))];
   return gids.length===1 && gids[0]!=null && groupIds(gids[0]).length===selIds.length; }
+function _selIsComponent(){ if(!selIds.length)return false; return selIds.every(id=>{const o=objects.find(x=>x.id===id);return o&&o.comp!=null;}) && new Set(selIds.map(id=>objects.find(x=>x.id===id).comp)).size===1; }
 function agruparSel(){ if(selIds.length<2)return; saveHistory(); const g=uid(); selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)o.group=g;}); markDirty(); showSelBar(); render(); toast('Agrupado'); }
-function desagruparSel(){ if(!selIds.length)return; saveHistory(); selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)delete o.group;}); markDirty(); showSelBar(); render(); toast('Desagrupado'); }
+function desagruparSel(){ if(!selIds.length)return; saveHistory(); selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o){delete o.group;delete o.comp;delete o.cidx;}}); markDirty(); showSelBar(); render(); toast('Desagrupado'); }
+// Convertir la selección/grupo en COMPONENTE (definición compartida). Sus copias quedan vinculadas.
+function crearComponente(){ if(!selIds.length)return; saveHistory();
+  const def=uid();
+  const g = _selIsWholeGroup()? objects.find(x=>x.id===selIds[0]).group : uid();
+  selIds.forEach((id,i)=>{const o=objects.find(x=>x.id===id);if(o){o.group=g;o.comp=def;o.cidx=i;}});
+  markDirty(); showSelBar(); render(); toast('Componente creado · las copias se editan juntas'); }
+// "Hacer único": rompe el vínculo de esta instancia (queda grupo independiente).
+function independizarComp(){ if(!selIds.length)return; saveHistory(); const ng=uid();
+  selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o){delete o.comp;delete o.cidx;o.group=ng;}});
+  markDirty(); showSelBar(); render(); toast('Instancia independizada'); }
 function editarGrupo(){ const o=objects.find(x=>x.id===selIds[0]); if(!o||!o.group)return; editGroupId=o.group; setSel([]); showGroupEditBar(true); _hideAllGrp(); refreshBottom(); render(); toast('Editá un elemento del grupo · Terminar para salir'); }
 function terminarGrupoEdit(){ editGroupId=null; setSel([]); showGroupEditBar(false); applyToolBar(); render(); }
 function terminarSel(){ setSel([]); applyToolBar(); render(); }
@@ -2196,13 +2225,16 @@ function showSelBar(){
   // 2+ seleccionados → barra de grupo/multiselección
   if(selIds.length>=2){
     const whole=_selIsWholeGroup();
+    const isComp=_selIsComponent();
     const gm=document.getElementById('grpMulti');
-    document.getElementById('gmGroup').style.display=whole?'none':'';
-    document.getElementById('gmUngroup').style.display=whole?'':'none';
-    document.getElementById('gmEdit').style.display=whole?'':'none';
-    document.getElementById('gmCount').textContent=whole?('Grupo · '+selIds.length):(selIds.length+' seleccionados');
+    document.getElementById('gmGroup').style.display=whole?'none':'';                 // Agrupar (si aún no es grupo)
+    document.getElementById('gmUngroup').style.display=(whole&&!isComp)?'':'none';     // Desagrupar (grupo simple)
+    document.getElementById('gmMakeComp').style.display=(whole&&!isComp)?'':'none';    // Componente (convertir grupo)
+    document.getElementById('gmIndep').style.display=isComp?'':'none';                 // Independizar (romper vínculo)
+    document.getElementById('gmEdit').style.display=whole?'':'none';                   // Editar (grupo o componente)
+    document.getElementById('gmCount').textContent=isComp?('Componente · '+selIds.length):(whole?('Grupo · '+selIds.length):(selIds.length+' seleccionados'));
     gm.style.display='flex';
-    const pt=document.getElementById('pbTool'); if(pt)pt.textContent=whole?'Grupo':'Selección';
+    const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isComp?'Componente':(whole?'Grupo':'Selección');
     _syncSwatches(); refreshBottom(); return;
   }
   // 1 seleccionado → propiedades del objeto

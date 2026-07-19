@@ -116,7 +116,16 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v16) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v18) · app pro
+- **Spec de refactor (lote D):** **Grilla** afinada — trazo DELGADO pero **notoria para trabajar**
+  (metros `rgba(139,0,0,.24)` lineWidth .7, subdivisiones `rgba(139,0,0,.11)`). **2B GRUPO vs
+  COMPONENTE (lógica SketchUp) IMPLEMENTADO:** `comp` = definición compartida, `cidx` = índice de
+  hijo; **Componente** (botón, convierte un grupo) queda vinculado entre copias; **editar un
+  miembro en modo aislado PROPAGA a todas las instancias** (color/tamaño/línea vía `selSet` y el
+  desplazamiento vía `doMovEnd`, ambos gated en `editGroupId`); **Independizar** rompe el vínculo de
+  una instancia (grupo suelto). La copia de un componente hereda `comp`/`cidx` (nueva instancia).
+  Verificado e2e (crear, copiar, editar-propaga, independizar). Guardado
+  `SKETCHVOLT-cables-presupuesto.py` (código de Ángel para el futuro "lápiz inteligente").
 - **Spec de refactor (lote C — hojas 4A):** formatos **+A1 (841×594)** en dashboard y por-plano;
   **medidas de usuario** (`custom` + ancho/alto mm en el dashboard, `hojaMM()` con fallback a
   `proy.customW/H`); **impresión de TODAS las láminas desde el dashboard** (`imprimirLaminas()`
