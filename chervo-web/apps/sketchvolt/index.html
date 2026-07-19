@@ -925,19 +925,21 @@ function drawFondo(){
 function drawGrid(){
   if(_exporting)return;
   ctx.save();
-  // Subdivisiones finas = celda de grilla elegida
+  // Subdivisiones finas = celda de grilla elegida (ultra sutil, casi imperceptible)
   const cs=cellPx*vpZ;
-  if(cs>=6){
+  if(cs>=7){
     const ox=((vpX%cs)+cs)%cs,oy=((vpY%cs)+cs)%cs;
-    ctx.strokeStyle='rgba(139,0,0,0.07)';ctx.lineWidth=.5;
+    ctx.strokeStyle='rgba(139,0,0,0.045)';ctx.lineWidth=.5;
     for(let x=ox;x<cv.width;x+=cs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
     for(let y=oy;y<cv.height;y+=cs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
   }
-  // Módulos métricos = cada METRO (1 m), independiente de la celda elegida
+  // Módulos métricos = cada METRO. Líneas finas, presentes pero NO protagonistas.
+  // Si los metros quedan muy juntos en pantalla (vista general), se atenúan aún más para no ensuciar.
   const ms=PPM*vpZ;
   if(ms>=6){
     const ox=((vpX%ms)+ms)%ms,oy=((vpY%ms)+ms)%ms;
-    ctx.strokeStyle='rgba(139,0,0,0.22)';ctx.lineWidth=1;
+    const op=ms<26?0.06:0.12;                 // densos = más tenues
+    ctx.strokeStyle='rgba(139,0,0,'+op+')';ctx.lineWidth=.7;
     for(let x=ox;x<cv.width;x+=ms){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
     for(let y=oy;y<cv.height;y+=ms){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
   }
