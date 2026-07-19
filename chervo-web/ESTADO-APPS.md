@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v14) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v15) · app pro
+- **Spec de refactor (lote B — grupos):** **Espejo/transformación del grupo como UNIDAD** con
+  **eje baricéntrico global** (`mirrorSet` usa el bounds de toda la selección, no el centro de cada
+  pieza) → el grupo ya no se desarma. En **edición aislada** el cuadro de propiedades del elemento
+  tocado funciona (props + edición aplican dentro del aislado). Pendiente mayor: **2B grupo vs
+  componente** y **4A medidas de usuario + impresión desde el dashboard**.
 - **Spec de refactor (lote A):** `selSet` aplica a TODA la selección (multi/grupo). **Grilla en
   BORDÓ BAJO**: módulos por metro `rgba(139,0,0,.22)` + subdivisiones finas `rgba(139,0,0,.07)`
   (casi imperceptibles, ganan nitidez al zoom in). **Nombre de herramienta suelto** arriba-izq de

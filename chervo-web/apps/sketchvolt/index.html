@@ -1387,11 +1387,22 @@ document.addEventListener('pointerdown',e=>{
   if(pop&&!pop.contains(e.target)&&!e.target.closest('.cpick'))pop.classList.remove('show');
 },{capture:true,passive:true});
 
-function mirrorObj(o){
-  if(o.type==='block'){ o.flip=!o.flip; if(o.rotation)o.rotation=(360-o.rotation)%360; return; }
-  if(!o.pts||!o.pts.length)return;
-  const xs=o.pts.map(p=>p[0]), cx=(Math.min(...xs)+Math.max(...xs))/2;
+// Espeja UN objeto alrededor de un eje vertical dado (cx). Si no se pasa cx, usa su propio centro.
+function mirrorObj(o,cx){
+  if(!o||!o.pts||!o.pts.length)return;
+  if(cx==null){ const xs=o.pts.map(p=>p[0]); cx=(Math.min(...xs)+Math.max(...xs))/2; }
   o.pts=o.pts.map(p=>[2*cx-p[0],p[1]]);
+  if(o.type==='block'){ o.flip=!o.flip; o.rotation=(360-(o.rotation||0))%360; }
+}
+// Espeja TODO el conjunto como UNIDAD: eje baricéntrico global (centro del bounds de la selección),
+// no el centro de cada elemento por separado (así no se desarma el grupo).
+function mirrorSet(ids){
+  if(!ids||!ids.length)return;
+  let minX=Infinity,maxX=-Infinity;
+  ids.forEach(id=>{ const o=objects.find(x=>x.id===id); const bb=objBounds(o); if(bb){ if(bb.minX<minX)minX=bb.minX; if(bb.maxX>maxX)maxX=bb.maxX; } });
+  if(!isFinite(minX))return;
+  const cx=(minX+maxX)/2;               // pivote global del grupo
+  ids.forEach(id=>{ const o=objects.find(x=>x.id===id); if(o)mirrorObj(o,cx); });
 }
 function ctxDo(action){
   document.getElementById('ctx').classList.remove('show');
@@ -1402,7 +1413,7 @@ function ctxDo(action){
   if(action==='delete'){saveHistory();const del=new Set(set);objects=objects.filter(o=>!del.has(o.id));setSel([]);markDirty();showSelBar();render();}
   else if(action==='move'){ST('move');setSel(set);toast('Tocá y arrastrá');}       // ST limpia selección; la re-ponemos
   else if(action==='copy'){ST('copy');setSel(set);toast('Tocá y arrastrá para copiar');}
-  else if(action==='mirror'){saveHistory();set.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)mirrorObj(o);});markDirty();render();toast('Espejo aplicado');}
+  else if(action==='mirror'){saveHistory();mirrorSet(set);markDirty();render();toast('Espejo aplicado');}
   else if(action==='rotate'){ if(set.length>1){toast('Rotar: elegí un solo objeto');} else startRotate(obj); }
   ctxObjId=null;
 }
