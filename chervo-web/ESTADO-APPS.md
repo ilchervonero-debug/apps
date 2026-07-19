@@ -146,10 +146,15 @@ Versión = número de caché del SW.
 - **0,0 con ejes X (→) e Y (↑)** en la **esquina inferior-izquierda**; el dibujo parte de ahí (AutoCAD).
 - **Long-press = fila de íconos**, SOLO ubicación: **Mover, Copiar, Rotar, Espejo, Borrar**
   (sin color/editar/escalar — eso es redundante; va todo abajo).
-- **Barra inferior = propiedades dinámicas** (línea de comando): al **seleccionar** un objeto
-  aparecen sus propiedades — **grosor, tipo de línea, color** (+ tamaño/giro/altura en símbolos);
-  al tener una **herramienta** activa, sus opciones; al **editar la imagen**, sólo los controles
-  de imagen y **el resto desaparece**. Nada fijo redundante.
+- **Barra inferior = comando/propiedades dinámica y VACÍA por defecto** (minimalismo): sólo aparece
+  algo cuando hace falta. **Seleccionar** un objeto → sus propiedades (grosor, tipo de línea, color,
+  + tamaño/giro/altura en símbolos); **herramienta** activa → sus opciones; **editar imagen** → sólo
+  controles de imagen; **Grilla** (ícono arriba) → tamaños abajo; **Exportar** (ícono arriba) →
+  Hoja PDF/PNG/DXF abajo. La **flecha/escape** siempre visible. Menos íconos arriba, todo abajo.
+- **Rotar** arreglado (los símbolos giran por su ángulo, no solo por puntos). **Touch** con umbral
+  de long-press (no se cancela por micro-movimiento) → más sensible.
+- **Pendiente:** "+" de nueva imagen (collage/varios planos) e integrar los controles de imagen
+  como un modo más de la barra inferior.
 - **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
   barra de propiedades → **Tamaño (mm), Giro, Altura, Color** editables en vivo + **Borrar**
   (long-press = menú mover/copiar/escalar/rotar). Todo aplica al objeto seleccionado.
