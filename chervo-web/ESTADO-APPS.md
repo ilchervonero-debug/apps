@@ -133,8 +133,12 @@ Versión = número de caché del SW.
 - **Importar plano** (imagen/foto/PDF) + **Calibrar por referencia**: tocás 2 puntos de una
   medida conocida (ej. 0.15 del muro), ingresás los metros y el plano se **escala a magnitud
   real**. Opacidad/escala/fijar/editar.
-- **Símbolos UNIT** con **escala** (selector 1/100·1/75·1/50; def = escala de la planta) y
-  **altura desde el piso** (cm) por elemento (enchufes 30, etc.).
+- **Símbolos UNIT en mm de papel** (selector 5·8·10·15 mm; def 5). El tamaño mundo se calcula
+  de los mm según la escala de la planta → **imprimen siempre a los mm elegidos** a cualquier
+  escala. **Altura desde el piso** (cm) por elemento. **Edición a 1:1** (1 m = 100 px) para verlos bien.
+- **Comandos de estampado:** elegís el símbolo (FAB rayo) → estampás **uno** → queda
+  **seleccionado (azul) esperando edición** y volvés al **cursor (escape)**; el FAB guarda el
+  último símbolo: tocá el rayo para **re-estampar** (o de nuevo para abrir el panel y cambiar).
 - **Salida:** *Hoja a escala (PDF)* → plotea a **A4/A3/A2** a la escala de la planta, con
   **caja de rótulo** (Obra, Cliente, Plano, Fecha, Escala, Lámina) y marco limpio. Si la planta
   no tiene hoja → espacio infinito (export normal).

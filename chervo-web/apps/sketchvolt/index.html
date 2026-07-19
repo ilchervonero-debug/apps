@@ -426,7 +426,7 @@ details.mas[open] summary:before{content:'▾ ';}
 </div>
 
 <!-- FAB ELECTRICIDAD -->
-<button id="btn-elec" data-tip="Electricidad" onclick="toggleUnit()">
+<button id="btn-elec" data-tip="Electricidad" onclick="fabElec()">
   <svg viewBox="0 0 24 24"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z"/></svg>
 </button>
 
@@ -522,8 +522,8 @@ details.mas[open] summary:before{content:'▾ ';}
   <div id="grpBlock" style="display:none;align-items:center;gap:6px">
     <span class="pl">Giro</span>
     <select id="pbGiro" onchange="setBlockGiro(this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select>
-    <span class="pl">Escala</span>
-    <select id="pbEsc" onchange="setBlockScale(this.value)"><option value="100">1/100</option><option value="75">1/75</option><option value="50">1/50</option></select>
+    <span class="pl">Tamaño</span>
+    <select id="pbMM" onchange="setBlockMM(this.value)"><option value="5">5 mm</option><option value="8">8 mm</option><option value="10">10 mm</option><option value="15">15 mm</option></select>
     <span class="pl">Altura piso</span>
     <input type="number" id="pbAlt" value="30" min="0" step="5" style="width:52px;font-size:16px" oninput="bloqueAltura=+this.value||0"><span class="pl">cm</span>
     <div class="pdiv"></div>
@@ -669,7 +669,11 @@ let panning=false,panRef=null,pinching=false,pinch0=null,touches={};
 let fondoImg=null,fondoAprobado=false,modoAjusteFondo=false;
 let imgScale=1,imgScaleBase=1,imgOpacity=0.5,imgX=0,imgY=0,fondoDrag=null;
 // bloque de simbología eléctrica UNIT
-let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueTam=50;
+let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueMM=5;   // tamaño del símbolo en mm de papel
+let selId=null;                 // objeto seleccionado esperando edición
+let ultimoSimbolo=null;         // último símbolo usado (para re-estampar desde el FAB)
+// px de mundo de un símbolo: mm de papel → metros reales según la escala de la planta.
+function blkWorldPx(o){ const mm=(o&&o.mm)||bloqueMM||5; const denom=(planta&&planta.denom)||100; return mm/1000*denom*PPM; }
 
 const w2s=(wx,wy)=>({x:wx*vpZ+vpX,y:wy*vpZ+vpY});
 const s2w=(sx,sy)=>({x:(sx-vpX)/vpZ,y:(sy-vpY)/vpZ});
@@ -806,7 +810,7 @@ function drawGrid(){
 
 function drawObj(obj){
   if(!obj||!obj.pts)return;
-  const sel=obj.id===movId||obj.id===scaleId||obj.id===rotId;
+  const sel=obj.id===movId||obj.id===scaleId||obj.id===rotId||obj.id===selId;
   ctx.save();
   if(sel){ctx.strokeStyle='#007aff';}
   ctx.strokeStyle=obj.color||'#1c1c1e';ctx.fillStyle=obj.color||'#1c1c1e';
@@ -832,7 +836,7 @@ function drawObj(obj){
     case 'dim2':{ctx.setLineDash([]);drawDim2Obj(obj);break;}
     case 'arc':{drawArcObj(obj);break;}
     case 'hatch':{ctx.setLineDash([]);drawHatchObj(obj);break;}
-    case 'block':{ctx.setLineDash([]);renderSimbologiaUNIT(obj.pts[0][0],obj.pts[0][1],obj.blockType,obj.size||30,obj.rotation||0,obj.color||'#1c1c1e');break;}
+    case 'block':{ctx.setLineDash([]);renderSimbologiaUNIT(obj.pts[0][0],obj.pts[0][1],obj.blockType,blkWorldPx(obj),obj.rotation||0,(sel?'#007aff':(obj.color||'#1c1c1e')));break;}
   }
   ctx.restore();
 }
@@ -1210,13 +1214,14 @@ function doCtxAt(wp,sp){
   const T=28/vpZ;
   for(let i=objects.length-1;i>=0;i--){
     if(hitTest(wp,objects[i],T)){
-      ctxObjId=objects[i].id;
+      ctxObjId=objects[i].id; selId=objects[i].id; render();
       document.getElementById('ciEdit').style.display=['text','dim','dim2'].includes(objects[i].type)?'flex':'none';
       const m=document.getElementById('ctx');m.classList.add('show');
       let lx=sp.x,ty=sp.y+8;if(lx+185>window.innerWidth)lx=window.innerWidth-190;if(ty+260>window.innerHeight)ty=sp.y-270;
       m.style.left=lx+'px';m.style.top=ty+'px';return;
     }
   }
+  if(selId!==null){ selId=null; render(); }
 }
 document.addEventListener('pointerdown',e=>{
   if(!document.getElementById('ctx').contains(e.target))document.getElementById('ctx').classList.remove('show');
@@ -1386,8 +1391,12 @@ function handleDown(wp,rawW,scrn){
   if(tool==='block'){
     if(!bloqueSel){toast('Elegí un símbolo');return;}
     saveHistory();
-    objects.push({type:'block',pts:[[wp.x,wp.y]],blockType:bloqueSel,size:bloqueTam,rotation:bloqueGiro,altura:bloqueAltura,color,id:nextId++});
-    markDirty();render();toast(bloqueNom+' · '+bloqueAltura+'cm ✓');return;
+    const nid=nextId++;
+    objects.push({type:'block',pts:[[wp.x,wp.y]],blockType:bloqueSel,mm:bloqueMM,rotation:bloqueGiro,altura:bloqueAltura,color,id:nid});
+    markDirty();
+    ST('select');            // comando de estampado: vuelve al cursor (escape)
+    selId=nid;               // el símbolo queda seleccionado, esperando edición
+    render();toast(bloqueNom+' ✓ · tocá el rayo para estampar otro');return;
   }
   if(tool==='select'){
     // Check arc grip first
@@ -1606,7 +1615,7 @@ document.getElementById('etinput').addEventListener('keydown',e=>{if(e.key==='En
 // HIT TEST
 function hitTest(wp,obj,T){
   if(!obj.pts)return false;
-  if(obj.type==='block')return hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])<(obj.size||30)/2+T*0.4;
+  if(obj.type==='block')return hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])<blkWorldPx(obj)/2+T*0.4;
   if(obj.type==='circle')return Math.abs(hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])-obj.r)<T*2;
   if(obj.type==='poly'){const c=obj.pts[0],r=obj.r,n=obj.sides||4;for(let i=0;i<n;i++){const a0=(-Math.PI/2)+(2*Math.PI*i/n),a1=(-Math.PI/2)+(2*Math.PI*(i+1)/n);if(distPS(wp,[c[0]+r*Math.cos(a0),c[1]+r*Math.sin(a0)],[c[0]+r*Math.cos(a1),c[1]+r*Math.sin(a1)])<T)return true;}return false;}
   if(obj.type==='text')return hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])<T*3;
@@ -1671,7 +1680,7 @@ document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr'
 
 // TOOLBAR
 function ST(t){
-  tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];
+  tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];selId=null;
   if(t!=='block')bloqueSel=null;
   dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;dim2Drawing=false;setHint('');
   document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
@@ -1818,10 +1827,18 @@ let _unitOpen=false;
 function toggleUnit(){_unitOpen=!_unitOpen;document.getElementById('panel-unit').classList.toggle('open',_unitOpen);if(_unitOpen)closeTools();}
 function closeUnit(){_unitOpen=false;document.getElementById('panel-unit').classList.remove('open');}
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-unit')&&!e.target.closest('#btn-elec'))closeUnit();},{passive:true});
-function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;closeUnit();ST('block');toast('Tocá el plano para colocar · '+nom);}
+function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;ultimoSimbolo={sel:bloqueSel,nom,svg:el.querySelector('svg')};closeUnit();fabElecIcon(ultimoSimbolo.svg);ST('block');toast('Tocá para estampar · '+nom);}
+function fabElecIcon(svg){ if(!svg)return; const f=document.getElementById('btn-elec'),old=f.querySelector('svg'); if(old){const c=svg.cloneNode(true);old.replaceWith(c);} f.dataset.sym='1'; }
+// FAB electricidad: si hay un símbolo en cursor lo re-arma (estampar otro); si está armado abre el panel para cambiar.
+function fabElec(){
+  if(_unitOpen){ closeUnit(); return; }
+  if(tool==='block'){ toggleUnit(); return; }
+  if(ultimoSimbolo){ bloqueSel=ultimoSimbolo.sel; bloqueNom=ultimoSimbolo.nom; ST('block'); toast('Tocá para estampar · '+bloqueNom); return; }
+  toggleUnit();
+}
 function setBlockGiro(v){bloqueGiro=+v;}
 function setBlockColor(c){color=c;document.getElementById('colorBtn').style.background=c;document.querySelectorAll('.cp').forEach(d=>d.classList.toggle('on',d.dataset.c===c));toast('Color: nuevos símbolos');}
-function setBlockScale(denom){ bloqueTam=0.5*(+denom); }   // 5mm en papel a esa escala (1/100→50px=0.50m · 1/50→25px=0.25m)
+function setBlockMM(v){ bloqueMM=+v; }
 
 // ══════════ IMPORTAR PLANO (imagen / foto / PDF / DXF) ══════════
 function importPlano(){document.getElementById('planoInput').click();}
@@ -2058,12 +2075,11 @@ function openPlanta(id){
   document.getElementById('scrHome').classList.remove('on');
   document.getElementById('scrProj').classList.remove('on');
   // escala de bloque por defecto = escala de la planta
-  bloqueTam=0.5*(planta.denom||100); const pe=document.getElementById('pbEsc'); if(pe)pe.value=planta.denom||100;
+  bloqueMM=5; const pe=document.getElementById('pbMM'); if(pe)pe.value=5;
   resize();
-  // encuadrar la hoja en pantalla
-  const sz=sheetWorldSize();
-  if(sz){ const pad=40; vpZ=Math.min((cv.width-pad*2)/sz.w,(cv.height-pad*2)/sz.h); vpX=pad-originX*vpZ; vpY=pad-originY*vpZ; }
-  else { vpZ=1;vpX=cv.width/2-originX;vpY=cv.height/2-originY; }
+  // Edición a 1:1 (1 m = 100 px): los símbolos se ven a tamaño real, no minúsculos.
+  // La hoja se encuadra recién al imprimir/exportar; acá se dibuja cómodo y se panea/zoomea a mano.
+  vpZ=1; vpX=70-originX; vpY=150-originY;
   ST('select');render();
 }
 function goDash(){
