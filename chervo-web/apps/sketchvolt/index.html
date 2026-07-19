@@ -1765,7 +1765,6 @@ function ST(t){
   refreshBottom();render();
 }
 function toggleSnap(){snapOn=!snapOn;document.getElementById('snapBtn').classList.toggle('on',snapOn);toast('Snap '+(snapOn?'ON':'OFF'));}
-function newDoc(){if(!confirm('¿Nuevo documento?'))return;saveHistory();objects=[];nextId=1;render();}
 // ── EXPORTACIÓN (explícita: DXF / PNG / PDF · siempre limpio, sin grilla) ──
 function openExport(){
   if(!objects.length){toast('Nada para exportar');return;}
