@@ -1,7 +1,7 @@
 {
   "name": "SketchVolt",
   "short_name": "SketchVolt",
-  "description": "Dibujo eléctrico a escala y presentación (planos A4/A3/A2)",
+  "description": "Dibujo eléctrico a escala y presentación (planos A4/A3/A2/A1 y a medida)",
   "start_url": "/apps/sketchvolt/",
   "scope": "/apps/sketchvolt/",
   "display": "standalone",
