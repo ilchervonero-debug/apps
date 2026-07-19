@@ -611,7 +611,7 @@ details.mas[open] summary:before{content:'▾ ';}
     </span>
     <span class="fi"><span class="fl">Color</span>
       <button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
-    <button class="pib" data-tip="Agrupar / Componente" onclick="openGrpDialog()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="13" height="13" rx="2"/><rect x="8" y="8" width="13" height="13" rx="2"/></svg></button>
+    <button class="pib" data-tip="Agrupar / Componente" onclick="openGrpDialog()"><svg viewBox="0 0 24 24"><path d="M6 3.2h12M6 20.8h12M3.2 6v12M20.8 6v12" stroke-dasharray="1.6 2"/><rect x="1.4" y="1.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="19.4" y="1.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="1.4" y="19.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="19.4" y="19.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="6.5" y="6.5" width="7.5" height="7.5" rx="1"/><rect x="10" y="10" width="7.5" height="7.5" rx="1"/></svg></button>
     <button class="pib danger" data-tip="Borrar" onclick="selDelete()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
   </div>
   <div id="grpMulti" style="display:none;align-items:center;gap:8px">
@@ -620,7 +620,7 @@ details.mas[open] summary:before{content:'▾ ';}
       <span class="fl" id="gmKind">GRUPO</span>
       <span id="gmName" style="font-size:16px;color:var(--ink)"></span></span>
     <div class="pdiv"></div>
-    <button id="gmGroupBtn" class="pib" data-tip="Agrupar / Componente" onclick="openGrpDialog()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="13" height="13" rx="2"/><rect x="8" y="8" width="13" height="13" rx="2"/></svg></button>
+    <button id="gmGroupBtn" class="pib" data-tip="Agrupar / Componente" onclick="openGrpDialog()"><svg viewBox="0 0 24 24"><path d="M6 3.2h12M6 20.8h12M3.2 6v12M20.8 6v12" stroke-dasharray="1.6 2"/><rect x="1.4" y="1.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="19.4" y="1.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="1.4" y="19.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="19.4" y="19.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="6.5" y="6.5" width="7.5" height="7.5" rx="1"/><rect x="10" y="10" width="7.5" height="7.5" rx="1"/></svg></button>
     <button id="gmEdit" class="pib" data-tip="Editar" onclick="editarGrupo()"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg></button>
     <button id="gmDecomp" class="pib" data-tip="Descomponer" onclick="desagruparSel()"><svg viewBox="0 0 24 24"><polyline points="9 3 3 3 3 9"/><polyline points="15 3 21 3 21 9"/><polyline points="15 21 21 21 21 15"/><polyline points="9 21 3 21 3 15"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg></button>
     <span class="fi" id="gmScaleField"><span class="fl"><svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"><polyline points="15 4 20 4 20 9"/><polyline points="9 20 4 20 4 15"/><line x1="20" y1="4" x2="13" y2="11"/><line x1="4" y1="20" x2="11" y2="13"/></svg></span>
@@ -699,7 +699,7 @@ details.mas[open] summary:before{content:'▾ ';}
     <button type="button" class="cmd-btn" id="grpKindComp" onclick="setGrpKind('comp')" style="flex:1;text-align:center">Componente</button>
   </div>
   <p id="grpKindHint" style="font-size:14px;color:var(--label);margin:0;line-height:1.4"></p>
-  <input type="text" id="grpModalName" placeholder="Nombre (ej: Mesa, Toma doble)">
+  <input type="text" id="grpModalName" placeholder="Ponle un nombre (opcional)">
   <div class="mrow"><button onclick="cancelGrpModal()">Cancelar</button><button class="ok" onclick="confirmGrpModal()">Crear</button></div>
 </div></div>
 

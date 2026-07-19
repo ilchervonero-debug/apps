@@ -116,7 +116,10 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v25) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v26) · app pro
+- **Ícono de agrupar = el de referencia de Ángel** (dos cuadros dentro de un **marco punteado con
+  4 esquinas/tiradores**, estilo "selección"), no dos cuadros pelados. Y **fuera el ejemplo inventado
+  "Toma doble"** del placeholder → ahora dice *"Ponle un nombre (opcional)"*.
 - **Flujo de grupo/componente simplificado (lote F — pedido de Ángel):** el nombre **se fija al
   crear y ya no se cambia**. Un solo **ícono de agrupar** (dos cuadros) abre el **diálogo** que:
   (1) deja **elegir Grupo o Componente** (segmentado, borde rojo = activo) con una línea que explica
