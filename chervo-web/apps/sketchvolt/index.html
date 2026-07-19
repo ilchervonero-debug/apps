@@ -615,6 +615,9 @@ details.mas[open] summary:before{content:'▾ ';}
   </div>
   <div id="grpMulti" style="display:none;align-items:center;gap:8px">
     <span id="gmCount" class="pl" style="font-size:13px;color:#007aff"></span>
+    <span class="fi" id="gmNameField" style="display:none">
+      <span class="fl" id="gmKind">GRUPO</span>
+      <input id="gmName" type="text" placeholder="sin nombre" style="width:118px;font-size:16px;font-family:var(--font);color:var(--ink);background:#f2f2f7;border:1px solid #e5e5ea;border-radius:6px;padding:3px 7px" onchange="setGroupName(this.value)"></span>
     <div class="pdiv"></div>
     <button id="gmGroup" class="cmd-btn" onclick="agruparSel()">Agrupar</button>
     <button id="gmUngroup" class="cmd-btn" onclick="desagruparSel()">Desagrupar</button>
@@ -2237,6 +2240,14 @@ function crearComponente(){ if(!selIds.length)return; saveHistory();
 function independizarComp(){ if(!selIds.length)return; saveHistory(); const ng=uid();
   selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o){delete o.comp;delete o.cidx;o.group=ng;}});
   markDirty(); showSelBar(); render(); toast('Instancia independizada'); }
+// Nombre (etiqueta) del grupo/componente. En componente el nombre es de la DEFINICIÓN → todas
+// las instancias comparten nombre; en grupo, es de ese grupo.
+function _selName(){ if(!selIds.length)return ''; const o=objects.find(x=>x.id===selIds[0]); if(!o)return'';
+  return (o.comp!=null? o.cname : o.gname) || ''; }
+function setGroupName(v){ if(!selIds.length)return; v=(v||'').trim();
+  if(_selIsComponent()){ const def=objects.find(x=>x.id===selIds[0]).comp; objects.forEach(o=>{if(o.comp===def)o.cname=v;}); }
+  else { selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)o.gname=v;}); }
+  markDirty(); }
 function editarGrupo(){ const o=objects.find(x=>x.id===selIds[0]); if(!o||!o.group)return; editGroupId=o.group; setSel([]); showGroupEditBar(true); _hideAllGrp(); refreshBottom(); render(); toast('Editá un elemento del grupo · Terminar para salir'); }
 function terminarGrupoEdit(){ editGroupId=null; setSel([]); showGroupEditBar(false); applyToolBar(); render(); }
 function terminarSel(){ setSel([]); applyToolBar(); render(); }
@@ -2261,9 +2272,16 @@ function showSelBar(){
     document.getElementById('gmColorField').style.display=isComp?'none':'inline-flex';
     // Escala de instancia (por fuera del editor): disponible en grupo y componente.
     _setScaleBase=null; const gms=document.getElementById('gmScale'); if(gms)gms.value=100;
-    document.getElementById('gmCount').textContent=isComp?('Componente · '+selIds.length):(whole?('Grupo · '+selIds.length):(selIds.length+' seleccionados'));
+    // Etiqueta/nombre: grupo o componente muestran un nombre editable; una selección suelta, el conteo.
+    const named=whole; // grupo o componente
+    document.getElementById('gmNameField').style.display=named?'inline-flex':'none';
+    document.getElementById('gmCount').style.display=named?'none':'';
+    if(named){ document.getElementById('gmKind').textContent=isComp?'COMPONENTE':'GRUPO';
+      document.getElementById('gmName').value=_selName(); }
+    else { document.getElementById('gmCount').textContent=selIds.length+' seleccionados'; }
     gm.style.display='flex';
-    const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isComp?'Componente':(whole?'Grupo':'Selección');
+    const nm=_selName();
+    const pt=document.getElementById('pbTool'); if(pt)pt.textContent=(isComp?'Componente':(whole?'Grupo':'Selección'))+(nm?' · '+nm:'');
     _syncSwatches(); refreshBottom(); return;
   }
   // 1 seleccionado → propiedades del objeto
