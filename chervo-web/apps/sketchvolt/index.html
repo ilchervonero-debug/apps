@@ -128,6 +128,15 @@ body{display:flex;flex-direction:column;background:#fff;}
 /* Coordenada cartesiana: texto negro suelto arriba-izquierda del canvas (sin fondo ni caja) */
 #coord{position:absolute;top:8px;left:12px;z-index:20;font-size:14px;color:#1c1c1e;
   white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;}
+/* Chip flotante del modo aislado (editar grupo) */
+#groupEditBar{display:none;position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:210;
+  background:#fff;border:1.5px solid var(--accent);border-radius:20px;padding:5px 6px 5px 14px;
+  align-items:center;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,.14);}
+#groupEditBar.show{display:flex;}
+#groupEditBar .get{font-size:14px;color:var(--ink);white-space:nowrap;}
+#groupEditBar button{border:none;background:var(--accent);color:#fff;border-radius:14px;padding:6px 14px;
+  font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;}
+#groupEditBar button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 #pbTool{font-size:11px;font-weight:500;color:var(--ink);white-space:nowrap;flex-shrink:0;}
 #pbHint{font-size:11px;color:var(--accent);white-space:nowrap;flex-shrink:0;font-weight:500;}
 /* Campo apilado: rótulo ARRIBA, control ABAJO (evita el slide lateral) */
@@ -494,6 +503,9 @@ details.mas[open] summary:before{content:'▾ ';}
 
 <div id="wrap"><canvas id="cv"></canvas><span id="coord">0, 0</span></div>
 
+<!-- Chip del modo aislado (editar grupo) -->
+<div id="groupEditBar"><span class="get">Editando grupo</span><button onclick="terminarGrupoEdit()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Terminar</button></div>
+
 <!-- PROPBAR (abajo) — barra dinámica: un solo contexto a la vez -->
 <div id="propbar">
   <span id="pbTool">Seleccionar</span>
@@ -587,6 +599,17 @@ details.mas[open] summary:before{content:'▾ ';}
     <span class="fi"><span class="fl">Color</span>
       <button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
     <button class="pib danger" data-tip="Borrar" onclick="selDelete()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+  </div>
+  <div id="grpMulti" style="display:none;align-items:center;gap:8px">
+    <span id="gmCount" class="pl" style="font-size:13px;color:#007aff"></span>
+    <div class="pdiv"></div>
+    <button id="gmGroup" class="cmd-btn" onclick="agruparSel()">Agrupar</button>
+    <button id="gmUngroup" class="cmd-btn" onclick="desagruparSel()">Desagrupar</button>
+    <button id="gmEdit" class="pib" data-tip="Editar grupo" onclick="editarGrupo()"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg></button>
+    <span class="fi"><span class="fl">Color</span>
+      <button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
+    <button class="pib danger" data-tip="Borrar" onclick="selDelete()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+    <button class="pib ok" data-tip="Terminar" onclick="terminarSel()" style="margin-left:auto"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
   </div>
   <div id="grpGrid" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Grilla · guía de dibujo</span>
@@ -690,7 +713,7 @@ let dimPh=0,dimA=null,dimB=null,dimFontSize=10;
 // arc — 3 clicks: A, B, ctrl point
 let arcPh=0,arcA=null,arcB=null,arcEditId=null,arcEditOrig=null,arcEditDragging=false;
 // move/copy
-let movId=null,movOrigPts=null,movStart=null;
+let movId=null,movStart=null;
 // context
 let ctxObjId=null,longTimer=null;
 // escala del objeto seleccionado (barra de propiedades)
@@ -706,7 +729,22 @@ let fondoImg=null,fondoAprobado=false,modoAjusteFondo=false;
 let imgScale=1,imgScaleBase=1,imgOpacity=0.5,imgX=0,imgY=0,fondoDrag=null;
 // bloque de simbología eléctrica UNIT
 let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueCM=40;   // tamaño REAL del símbolo (cm), unificado con la grilla/cotas
-let selId=null;                 // objeto seleccionado esperando edición
+let selId=null;                 // objeto seleccionado (compat: cuando hay UNO solo)
+let selIds=[];                  // selección múltiple (fuente de verdad)
+let editGroupId=null;           // modo aislado: editando los miembros de este grupo
+let marquee=null;               // recuadro de selección por arrastre {x0,y0,x1,y1}
+let movSet=null;                // conjunto que se mueve/copia junto (grupo o multiselección)
+// selección: mantené selId sincronizado (uno solo) para el camino de propiedades existente
+function setSel(ids){ selIds=(ids||[]).slice(); selId = selIds.length===1?selIds[0]:null; }
+function groupIds(gid){ return objects.filter(o=>o.group===gid).map(o=>o.id); }
+function expandGroups(ids){ const set=new Set(ids); for(const id of ids){ const o=objects.find(x=>x.id===id); if(o&&o.group) groupIds(o.group).forEach(g=>set.add(g)); } return [...set]; }
+function objBounds(o){ if(!o||!o.pts||!o.pts.length)return null;
+  let a=Infinity,b=Infinity,c=-Infinity,d=-Infinity; const ext=(x,y)=>{if(x<a)a=x;if(y<b)b=y;if(x>c)c=x;if(y>d)d=y;};
+  if((o.type==='circle'||o.type==='poly')&&o.pts[0]){const[cx,cy]=o.pts[0],r=o.r||0;ext(cx-r,cy-r);ext(cx+r,cy+r);}
+  else if(o.type==='block'){const[cx,cy]=o.pts[0],r=blkWorldPx(o)/2;ext(cx-r,cy-r);ext(cx+r,cy+r);}
+  else o.pts.forEach(p=>ext(p[0],p[1]));
+  return {minX:a,minY:b,maxX:c,maxY:d};
+}
 let ultimoSimbolo=null;         // último símbolo usado (para re-estampar desde el FAB)
 // Tamaño del símbolo en MEDIDA REAL (cm), unificado con el resto del dibujo.
 // px de mundo = cm/100 * PPM. Al imprimir, la escala de la hoja lo reduce como a todo lo demás.
@@ -878,11 +916,13 @@ function drawGrid(){
 
 function drawObj(obj){
   if(!obj||!obj.pts)return;
-  const sel=obj.id===movId||obj.id===rotId||obj.id===selId;
+  const sel=obj.id===movId||obj.id===rotId||selIds.includes(obj.id);
   ctx.save();
-  if(sel){ctx.strokeStyle='#007aff';}
+  if(editGroupId && obj.group!==editGroupId) ctx.globalAlpha=0.28;   // modo aislado: atenúa lo de afuera
   ctx.strokeStyle=obj.color||'#1c1c1e';ctx.fillStyle=obj.color||'#1c1c1e';
   ctx.lineWidth=(obj.strokeW||2)*vpZ;ctx.lineCap='round';ctx.lineJoin='round';
+  // resaltar la selección (los bloques se resaltan solos, más abajo)
+  if(sel && obj.type!=='block'){ ctx.strokeStyle='#007aff'; ctx.fillStyle='#007aff'; ctx.lineWidth=Math.max(obj.strokeW||2,2)*vpZ+0.5; }
   setDash(obj.lineType||'solid',vpZ);
   switch(obj.type){
     case 'line':{const a=w2s(...obj.pts[0]),b=w2s(...obj.pts[1]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();break;}
@@ -1115,7 +1155,7 @@ function drawHatchObj(obj){
     else if(pat==='dots'){for(let x=x0;x<x1+step;x+=step)for(let y=y0;y<y1+step;y+=step){ctx.beginPath();ctx.arc(x,y,1.2,0,Math.PI*2);ctx.fill();}}
     ctx.restore();}
   ctx.globalAlpha=Math.min(opac+.1,.5);ctx.strokeStyle=obj.color;ctx.lineWidth=.5;ctx.stroke();
-  if(obj.id===movId||obj.id===selId){ctx.globalAlpha=1;obj.pts.forEach(p=>{const s=w2s(...p);ctx.beginPath();ctx.arc(s.x,s.y,5,0,Math.PI*2);ctx.fillStyle='#007aff';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();});}
+  if(obj.id===movId||selIds.includes(obj.id)){ctx.globalAlpha=1;obj.pts.forEach(p=>{const s=w2s(...p);ctx.beginPath();ctx.arc(s.x,s.y,5,0,Math.PI*2);ctx.fillStyle='#007aff';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();});}
   ctx.restore();
 }
 
@@ -1162,6 +1202,16 @@ function drawArrow(fx,fy,tx,ty,col){
 }
 
 function drawPreview(){
+  // RECUADRO de selección (arrastre): azul=ventana (izq→der), verde punteado=cruce (der→izq)
+  if(tool==='select'&&marquee){
+    const a=w2s(marquee.x0,marquee.y0),b=w2s(marquee.x1,marquee.y1);
+    const cross=marquee.x1<marquee.x0;
+    const x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.abs(b.x-a.x),h=Math.abs(b.y-a.y);
+    ctx.save();ctx.setLineDash(cross?[6,4]:[]);ctx.lineWidth=1.2;
+    ctx.strokeStyle=cross?'#34c759':'#007aff';
+    ctx.fillStyle=cross?'rgba(52,199,89,.10)':'rgba(0,122,255,.10)';
+    ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);ctx.restore();
+  }
   // DIM2 preview
   if(tool==='dim2'&&drawing&&dragStartW&&dragCurW){
     ctx.save();ctx.strokeStyle=color;ctx.lineWidth=1;ctx.lineCap='round';ctx.globalAlpha=.7;ctx.setLineDash([3*vpZ,3*vpZ]);
@@ -1296,14 +1346,18 @@ function cancelLP(){clearTimeout(longTimer);longTimer=null;lpStartS=null;}
 function doCtxAt(wp,sp){
   const T=28/vpZ;
   for(let i=objects.length-1;i>=0;i--){
-    if(hitTest(wp,objects[i],T)){
-      ctxObjId=objects[i].id; selId=objects[i].id; showSelBar(); render();
+    const o=objects[i]; if(editGroupId&&o.group!==editGroupId)continue;
+    if(hitTest(wp,o,T)){
+      ctxObjId=o.id;
+      // si el objeto es de un grupo (y no estás en modo aislado), el menú opera sobre el grupo
+      if(!(selIds.length>1&&selIds.includes(o.id))) setSel((o.group&&!editGroupId)?groupIds(o.group):[o.id]);
+      showSelBar(); render();
       const m=document.getElementById('ctx');m.classList.add('show');
       let lx=sp.x-130,ty=sp.y-70;if(lx<8)lx=8;if(lx+270>window.innerWidth)lx=window.innerWidth-270;if(ty<60)ty=sp.y+16;
       m.style.left=lx+'px';m.style.top=ty+'px';return;
     }
   }
-  if(selId!==null){ selId=null; render(); }
+  if(selIds.length){ setSel([]); showSelBar(); render(); }
 }
 document.addEventListener('pointerdown',e=>{
   if(!document.getElementById('ctx').contains(e.target))document.getElementById('ctx').classList.remove('show');
@@ -1321,11 +1375,13 @@ function ctxDo(action){
   document.getElementById('ctx').classList.remove('show');
   if(!ctxObjId)return;
   const obj=objects.find(o=>o.id===ctxObjId);if(!obj)return;
-  if(action==='delete'){saveHistory();objects=objects.filter(o=>o.id!==ctxObjId);render();}
-  else if(action==='move'){ST('move');toast('Tocá y arrastrá');}
-  else if(action==='copy'){ST('copy');toast('Tocá y arrastrá para copiar');}
-  else if(action==='mirror'){saveHistory();mirrorObj(obj);markDirty();render();toast('Espejo aplicado');}
-  else if(action==='rotate'){startRotate(obj);}
+  // conjunto: si hay selección múltiple/grupo, opera sobre todos
+  const set = (selIds.length>1)? selIds.slice() : [ctxObjId];
+  if(action==='delete'){saveHistory();const del=new Set(set);objects=objects.filter(o=>!del.has(o.id));setSel([]);markDirty();showSelBar();render();}
+  else if(action==='move'){ST('move');setSel(set);toast('Tocá y arrastrá');}       // ST limpia selección; la re-ponemos
+  else if(action==='copy'){ST('copy');setSel(set);toast('Tocá y arrastrá para copiar');}
+  else if(action==='mirror'){saveHistory();set.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)mirrorObj(o);});markDirty();render();toast('Espejo aplicado');}
+  else if(action==='rotate'){ if(set.length>1){toast('Rotar: elegí un solo objeto');} else startRotate(obj); }
   ctxObjId=null;
 }
 
@@ -1479,7 +1535,7 @@ function handleDown(wp,rawW,scrn){
     objects.push({type:'block',pts:[[wp.x,wp.y]],blockType:bloqueSel,cm:bloqueCM,rotation:bloqueGiro,altura:bloqueAltura,color,id:nid});
     markDirty();
     ST('select');            // comando de estampado: vuelve al cursor (escape)
-    selId=nid;               // el símbolo queda seleccionado, esperando edición
+    setSel([nid]);           // el símbolo queda seleccionado, esperando edición
     showSelBar();render();toast(bloqueNom+' ✓ · tocá el rayo para estampar otro');return;
   }
   if(tool==='select'){
@@ -1495,7 +1551,12 @@ function handleDown(wp,rawW,scrn){
         }
       }
     }
-    selectAt(wp);return;   // toque simple = seleccionar (propiedades); long-press = menú
+    // ¿tocó un objeto? → seleccionar (grupo-aware). Si no → arranca el RECUADRO de arrastre.
+    const T=28/vpZ; let hit=false;
+    for(let i=objects.length-1;i>=0;i--){ const o=objects[i]; if(editGroupId&&o.group!==editGroupId)continue; if(hitTest(wp,o,T)){hit=true;break;} }
+    if(hit){ selectAt(wp); }
+    else { marquee={x0:rawW.x,y0:rawW.y,x1:rawW.x,y1:rawW.y}; drawing=true; }   // recuadro en coords crudas (sin snap)
+    return;
   }
   if(tool==='text'){tpX=rawW.x;tpY=rawW.y;document.getElementById('tmod').classList.add('show');setTimeout(()=>document.getElementById('tinput').focus(),120);return;}
   if(tool==='trim'){doTrim(wp);return;}
@@ -1583,6 +1644,7 @@ function commitHatch(){
 function handleMove(wp,raw,scrn){
   if(modoAjusteFondo&&drawing&&fondoDrag){imgX=fondoDrag.ix+(raw.x-fondoDrag.mx);imgY=fondoDrag.iy+(raw.y-fondoDrag.my);render();return;}
   if(panning&&!pinching){vpX=panRef.vx+scrn.x-panRef.sx;vpY=panRef.vy+scrn.y-panRef.sy;render();return;}
+  if(tool==='select'&&marquee){ marquee.x1=raw.x; marquee.y1=raw.y; render(); return; }
   dragCurW={...wp};
   if(tool==='eraser'&&drawing){doEraseAt(wp);render();return;}
   if(tool==='pen'&&drawing)penPts.push([raw.x,raw.y]);
@@ -1598,6 +1660,22 @@ function handleMove(wp,raw,scrn){
 function handleUp(wp,scrn){
   if(modoAjusteFondo){drawing=false;fondoDrag=null;return;}
   if(panning){panning=false;return;}
+  // RECUADRO de selección terminado
+  if(tool==='select'&&marquee){
+    const dx=Math.abs(marquee.x1-marquee.x0),dy=Math.abs(marquee.y1-marquee.y0);
+    if(dx<3/vpZ&&dy<3/vpZ){ if(!editGroupId)setSel([]); marquee=null;drawing=false;showSelBar();render();return; } // fue un toque = deseleccionar
+    const cross=marquee.x1<marquee.x0;
+    const rx0=Math.min(marquee.x0,marquee.x1),ry0=Math.min(marquee.y0,marquee.y1),rx1=Math.max(marquee.x0,marquee.x1),ry1=Math.max(marquee.y0,marquee.y1);
+    let ids=[];
+    for(const o of objects){ if(editGroupId&&o.group!==editGroupId)continue; const bb=objBounds(o); if(!bb)continue;
+      const inside=bb.minX>=rx0&&bb.maxX<=rx1&&bb.minY>=ry0&&bb.maxY<=ry1;
+      const touch=!(bb.maxX<rx0||bb.minX>rx1||bb.maxY<ry0||bb.minY>ry1);
+      if(cross?touch:inside) ids.push(o.id); }
+    if(!editGroupId) ids=expandGroups(ids);   // si roza un grupo, entra el grupo entero
+    setSel(ids); marquee=null;drawing=false; showSelBar(); render();
+    toast(ids.length? (ids.length+' seleccionado'+(ids.length>1?'s':'')) : 'Nada en el recuadro');
+    return;
+  }
   if(tool==='select'&&arcEditDragging){arcEditDragging=false;arcEditId=null;arcEditOrig=null;drawing=false;render();return;}
   if(tool==='eraser'){drawing=false;render();return;}
   if(tool==='dim2'){
@@ -1649,10 +1727,31 @@ function doEraseAt(wp){
   if(toRemove.length){[...new Set(toRemove)].sort((a,b)=>b-a).forEach(i=>objects.splice(i,1));toAdd.forEach(o=>objects.push(o));}
 }
 
-// MOVE/COPY
-function doMovStart(wp){const T=28/vpZ;for(let i=objects.length-1;i>=0;i--){if(hitTest(wp,objects[i],T)){const obj=objects[i];if(tool==='copy'){saveHistory();const cl=JSON.parse(JSON.stringify(obj));cl.id=nextId++;delete cl.ref;objects.push(cl);movId=cl.id;movOrigPts=JSON.parse(JSON.stringify(cl.pts));}else{saveHistory();movId=obj.id;movOrigPts=JSON.parse(JSON.stringify(obj.pts));}movStart={...wp};drawing=true;return;}}toast('Tocá el objeto');}
-function doMovDrag(wp){if(!movId||!movOrigPts)return;const obj=objects.find(o=>o.id===movId);if(!obj)return;const dx=wp.x-movStart.x,dy=wp.y-movStart.y;obj.pts=movOrigPts.map(p=>[p[0]+dx,p[1]+dy]);render();}
-function doMovEnd(){movId=null;movOrigPts=null;movStart=null;drawing=false;render();}
+// MOVE/COPY — mueve/copia UN objeto, un GRUPO o toda la selección múltiple, junto.
+function doMovStart(wp){const T=28/vpZ;
+  for(let i=objects.length-1;i>=0;i--){ if(hitTest(wp,objects[i],T)){ const obj=objects[i];
+    // conjunto a operar: selección múltiple > grupo del objeto > el objeto solo
+    let set;
+    if(selIds.length>1 && selIds.includes(obj.id)) set=selIds.slice();
+    else if(obj.group && !editGroupId) set=groupIds(obj.group);
+    else set=[obj.id];
+    saveHistory();
+    if(tool==='copy'){
+      const newIds=[];
+      set.forEach(id=>{ const o=objects.find(x=>x.id===id); if(!o)return; const cl=JSON.parse(JSON.stringify(o)); cl.id=nextId++; delete cl.ref; newIds.push(cl.id); objects.push(cl); });
+      if(set.length>1){ const g=uid(); newIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)o.group=g;}); }  // la copia de un grupo sigue agrupada
+      movSet=newIds.map(id=>({id,orig:JSON.parse(JSON.stringify(objects.find(x=>x.id===id).pts))}));
+      setSel(newIds);
+    } else {
+      movSet=set.map(id=>({id,orig:JSON.parse(JSON.stringify(objects.find(x=>x.id===id).pts))}));
+    }
+    movId=movSet[0].id; movStart={...wp}; drawing=true; return;
+  }}
+  toast('Tocá el objeto');
+}
+function doMovDrag(wp){ if(!movSet||!movStart)return; const dx=wp.x-movStart.x,dy=wp.y-movStart.y;
+  movSet.forEach(m=>{ const o=objects.find(x=>x.id===m.id); if(o)o.pts=m.orig.map(p=>[p[0]+dx,p[1]+dy]); }); render(); }
+function doMovEnd(){ movSet=null; movId=null; movStart=null; drawing=false; markDirty(); render(); }
 
 // ERASE
 function doErase(wp){const T=28/vpZ;for(let i=objects.length-1;i>=0;i--){if(hitTest(wp,objects[i],T)){saveHistory();objects.splice(i,1);render();toast('Eliminado');return;}}toast('Tocá el objeto');}
@@ -1749,7 +1848,7 @@ function threePointArc(p1,p2,p3){
 
 // COLOR — un único selector: la pastilla (.cpick) abre la paleta; aplica al
 // objeto seleccionado si lo hay, si no al color de dibujo.
-function _syncSwatches(){ const o=selObj(); const c=(o&&o.color)||color;
+function _syncSwatches(){ let o=null; if(selIds.length) o=objects.find(x=>x.id===selIds[0]); const c=(o&&o.color)||color;
   document.querySelectorAll('.cpick').forEach(b=>b.style.background=c); }
 function setDrawColor(c){ color=c; _syncSwatches(); }
 function openColorPop(btn){
@@ -1763,7 +1862,8 @@ function openColorPop(btn){
   pop.classList.add('show');
 }
 function chooseColor(c){
-  if(selId!=null){ selSet('color',c); } else { setDrawColor(c); }
+  if(selIds.length){ saveHistory(); selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)o.color=c;}); markDirty(); render(); }
+  else setDrawColor(c);
   _syncSwatches(); document.getElementById('colorPop').classList.remove('show');
 }
 
@@ -1778,9 +1878,10 @@ document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr'
 
 // TOOLBAR
 function ST(t){
-  tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];selId=null;_selScaleBase=null;
+  tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];setSel([]);_selScaleBase=null;marquee=null;
+  if(t!=='select'&&editGroupId){ editGroupId=null; showGroupEditBar(false); }   // cambiar de herramienta sale del modo aislado
   if(t!=='block')bloqueSel=null;
-  dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;setHint('');
+  dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;movSet=null;setHint('');
   document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
   const btnH=document.getElementById('btn-herr');
@@ -1959,10 +2060,10 @@ function setBlockCM(v){ bloqueCM=+v; }
 // (la hoja comanda la impresión). No se toca desde el canvas.
 // ── BARRA INFERIOR DINÁMICA — un solo contexto a la vez (herramienta · selección · panel) ──
 let _panelMode=null;
-const _ALL_GRP=['grpTool','grpLine','grpColor','grpSize','grpFont','grpSides','grpHatch','grpDim','grpEraser','grpBlock','grpSel','grpGrid','grpExport','grpImage'];
+const _ALL_GRP=['grpTool','grpLine','grpColor','grpSize','grpFont','grpSides','grpHatch','grpDim','grpEraser','grpBlock','grpSel','grpMulti','grpGrid','grpExport','grpImage'];
 function _hideAllGrp(){ _ALL_GRP.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';}); }
 function refreshBottom(){
-  const idle = tool==='select' && selId==null && !modoAjusteFondo && !_panelMode;
+  const idle = tool==='select' && selIds.length===0 && !modoAjusteFondo && !_panelMode;
   const pb=document.getElementById('propbar'); if(pb)pb.classList.toggle('empty', idle);
 }
 // Contexto HERRAMIENTA: nombre + props de la herramienta activa (nada de selección ni panel).
@@ -1988,7 +2089,7 @@ function applyToolBar(){
 }
 function openBottomPanel(mode){
   if(_panelMode===mode){ closeBottomPanel(); return; }
-  _panelMode=mode; selId=null; _selScaleBase=null;
+  _panelMode=mode; setSel([]); _selScaleBase=null;
   _hideAllGrp();
   const map={grid:'grpGrid',export:'grpExport',image:'grpImage'};
   const e=document.getElementById(map[mode]); if(e)e.style.display='flex';
@@ -1999,7 +2100,7 @@ function openBottomPanel(mode){
 function closeBottomPanel(){
   if(_panelMode==='image'&&modoAjusteFondo){ modoAjusteFondo=false; fondoAprobado=true; savePlanta(); }
   _panelMode=null;
-  if(selId!=null) showSelBar(); else applyToolBar();
+  if(selIds.length) showSelBar(); else applyToolBar();
   render();
 }
 function openImagen(){ if(!fondoImg){ importPlano(); } else openBottomPanel('image'); }
@@ -2014,18 +2115,54 @@ function toggleEditFondo(){ modoAjusteFondo=!modoAjusteFondo; fondoAprobado=!mod
 function setGrid(m){ gridM=m; cellPx=PPM*gridM; if(planta)planta.gridM=m; markDirty(); render(); toast('Grilla '+m+' m'); }
 // ── PROPIEDADES DEL OBJETO SELECCIONADO ──
 function selObj(){ return selId!=null?objects.find(o=>o.id===selId):null; }
+// Toque: elige el objeto. En modo aislado, solo miembros del grupo (sueltos). Si el objeto
+// pertenece a un grupo, se selecciona el grupo entero.
 function selectAt(wp){ const T=28/vpZ;
-  for(let i=objects.length-1;i>=0;i--){ if(hitTest(wp,objects[i],T)){ selId=objects[i].id; showSelBar(); render(); return; } }
-  selId=null; showSelBar(); render();
+  for(let i=objects.length-1;i>=0;i--){ const o=objects[i];
+    if(editGroupId && o.group!==editGroupId) continue;
+    if(hitTest(wp,o,T)){
+      if(editGroupId) setSel([o.id]);
+      else if(o.group) setSel(groupIds(o.group));
+      else setSel([o.id]);
+      showSelBar(); render(); return;
+    }
+  }
+  if(!editGroupId) setSel([]);
+  showSelBar(); render();
 }
 function selSet(k,v){ const o=selObj(); if(!o)return; saveHistory(); o[k]=v; markDirty(); render(); }
-function selDelete(){ const o=selObj(); if(!o)return; saveHistory(); objects=objects.filter(x=>x.id!==selId); selId=null; markDirty(); showSelBar(); render(); toast('Borrado'); }
-// Contexto SELECCIÓN: SOLO las propiedades del objeto (nada de herramienta ni panel).
+function selDelete(){ if(!selIds.length)return; saveHistory(); const del=new Set(selIds); objects=objects.filter(x=>!del.has(x.id)); setSel([]); markDirty(); showSelBar(); render(); toast('Borrado'); }
+// ── GRUPOS ──
+function _selIsWholeGroup(){ if(selIds.length<2)return false;
+  const gids=[...new Set(selIds.map(id=>{const o=objects.find(x=>x.id===id);return o?o.group:null;}))];
+  return gids.length===1 && gids[0]!=null && groupIds(gids[0]).length===selIds.length; }
+function agruparSel(){ if(selIds.length<2)return; saveHistory(); const g=uid(); selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)o.group=g;}); markDirty(); showSelBar(); render(); toast('Agrupado'); }
+function desagruparSel(){ if(!selIds.length)return; saveHistory(); selIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)delete o.group;}); markDirty(); showSelBar(); render(); toast('Desagrupado'); }
+function editarGrupo(){ const o=objects.find(x=>x.id===selIds[0]); if(!o||!o.group)return; editGroupId=o.group; setSel([]); showGroupEditBar(true); _hideAllGrp(); refreshBottom(); render(); toast('Editá un elemento del grupo · Terminar para salir'); }
+function terminarGrupoEdit(){ editGroupId=null; setSel([]); showGroupEditBar(false); applyToolBar(); render(); }
+function terminarSel(){ setSel([]); applyToolBar(); render(); }
+function showGroupEditBar(on){ const b=document.getElementById('groupEditBar'); if(b)b.classList.toggle('show',!!on); }
+// Contexto SELECCIÓN / GRUPO: un solo contexto (nada de herramienta ni panel).
 function showSelBar(){
-  const o=selObj(), g=document.getElementById('grpSel');
-  if(!g)return;
-  if(!o){ _selScaleBase=null; applyToolBar(); return; }
+  const g=document.getElementById('grpSel'); if(!g)return;
+  // sin selección → herramienta (o barra vacía si estás en modo aislado)
+  if(selIds.length===0){ _selScaleBase=null; if(editGroupId){ _hideAllGrp(); refreshBottom(); } else applyToolBar(); return; }
   _hideAllGrp(); _panelMode=null;
+  // 2+ seleccionados → barra de grupo/multiselección
+  if(selIds.length>=2){
+    const whole=_selIsWholeGroup();
+    const gm=document.getElementById('grpMulti');
+    document.getElementById('gmGroup').style.display=whole?'none':'';
+    document.getElementById('gmUngroup').style.display=whole?'':'none';
+    document.getElementById('gmEdit').style.display=whole?'':'none';
+    document.getElementById('gmCount').textContent=whole?('Grupo · '+selIds.length):(selIds.length+' seleccionados');
+    gm.style.display='flex';
+    const pt=document.getElementById('pbTool'); if(pt)pt.textContent=whole?'Grupo':'Selección';
+    _syncSwatches(); refreshBottom(); return;
+  }
+  // 1 seleccionado → propiedades del objeto
+  const o=selObj();
+  if(!o){ _selScaleBase=null; applyToolBar(); return; }
   const isB=o.type==='block', hasLine=['line','rect','pline','pen','circle','poly','arc'].includes(o.type);
   document.getElementById('gsBlockCtl').style.display=isB?'inline-flex':'none';
   document.getElementById('gsLineCtl').style.display=hasLine?'inline-flex':'none';

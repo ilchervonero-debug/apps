@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v9) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v10) · app pro
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
@@ -206,7 +206,18 @@ Versión = número de caché del SW.
 - **Barra de selección = grilla estructural** (cada campo en su celda con divisores, no sueltos);
   el **Borrar (tacho) va separado a la derecha**, en su propia celda. El **selector de color es un
   rectángulo de esquinas redondeadas** (no un círculo).
-- **Pendiente:** "+" de nueva imagen (collage/varios planos).
+- **Selección por arrastre (marquee) + GRUPOS** (tipo AutoCAD): en la herramienta Selección,
+  arrastrar sobre vacío dibuja un recuadro — **izq→der = ventana** (azul, solo lo totalmente
+  encerrado), **der→izq = cruce** (verde punteado, lo que roza). Toque en vacío = deseleccionar;
+  toque en objeto = ese objeto. No choca con el paneo (2 dedos). Con 2+ seleccionados la barra
+  muestra **Agrupar · Desagrupar · Editar · Color · Borrar · Terminar**. **Grupos** por propiedad
+  `group`: tocar un miembro selecciona todo el grupo; se **mueven/copian/borran juntos** (mover y
+  copiar operan sobre el conjunto; la copia de un grupo sigue agrupada). **Editar grupo = modo
+  aislado**: chip flotante "Editando grupo · Terminar", se atenúa lo de afuera y editás un miembro
+  suelto sin desarmar. `selIds` es la fuente de verdad (con `setSel`, `selId` sigue sincronizado
+  para el camino de 1 objeto). Rotar de grupo pendiente (por ahora rotar es de a uno). Persisten
+  con el proyecto. Verificado e2e (ventana=3, agrupar, tocar→grupo, mover junto, aislado, cruce).
+- **Pendiente:** "+" de nueva imagen (collage/varios planos); rotar grupo completo.
 - **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
   barra → **Tam cm/Giro/Altura** en símbolos · **Grosor/Línea/Escala** en formas · **Color** +
   **Borrar**. **Long-press = menú SOLO ubicación:** mover/copiar/rotar/espejo/borrar (sin color ni
