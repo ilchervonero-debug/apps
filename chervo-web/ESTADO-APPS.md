@@ -274,7 +274,11 @@ Versión = número de caché del SW.
   suelto sin desarmar. `selIds` es la fuente de verdad (con `setSel`, `selId` sigue sincronizado
   para el camino de 1 objeto). Rotar de grupo pendiente (por ahora rotar es de a uno). Persisten
   con el proyecto. Verificado e2e (ventana=3, agrupar, tocar→grupo, mover junto, aislado, cruce).
-- **Pendiente:** "+" de nueva imagen (collage/varios planos); rotar grupo completo.
+- **Pendiente:** "+" de nueva imagen (collage/varios planos).
+- **Idea futura (Ángel):** símbolos se dejan como componentes cerrados (no geometría abierta).
+  Lo nuevo se crea dibujando; más adelante, una **paleta/caja de componentes del proyecto**
+  (biblioteca reutilizable, "llamable" desde cualquier hoja) — como la Caja de Referencias pero
+  con componentes propios guardados a nivel proyecto.
 - **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
   barra → **Tam cm/Giro/Altura** en símbolos · **Grosor/Línea/Escala** en formas · **Color** +
   **Borrar**. **Long-press = menú SOLO ubicación:** mover/copiar/rotar/espejo/borrar (sin color ni
