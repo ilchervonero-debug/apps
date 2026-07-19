@@ -548,7 +548,7 @@ details.mas[open] summary:before{content:'▾ ';}
     <span class="fi"><span class="fl">Giro</span>
       <select id="pbGiro" onchange="setBlockGiro(this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></span>
     <span class="fi"><span class="fl">Tam cm</span>
-      <select id="pbMM" onchange="setBlockCM(this.value)"><option value="20">20</option><option value="30" selected>30</option><option value="40">40</option><option value="50">50</option><option value="60">60</option><option value="80">80</option><option value="100">100</option></select></span>
+      <select id="pbMM" onchange="setBlockCM(this.value)"><option value="20">20</option><option value="30">30</option><option value="40" selected>40</option><option value="50">50</option><option value="60">60</option><option value="80">80</option><option value="100">100</option></select></span>
     <span class="fi"><span class="fl">Altura cm</span>
       <input type="number" id="pbAlt" value="30" min="0" step="5" style="width:56px;font-size:16px" oninput="bloqueAltura=+this.value||0"></span>
     <span class="fi"><span class="fl">Color</span>
@@ -696,7 +696,7 @@ let panning=false,panRef=null,pinching=false,pinch0=null,touches={};
 let fondoImg=null,fondoAprobado=false,modoAjusteFondo=false;
 let imgScale=1,imgScaleBase=1,imgOpacity=0.5,imgX=0,imgY=0,fondoDrag=null;
 // bloque de simbología eléctrica UNIT
-let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueCM=30;   // tamaño REAL del símbolo (cm), unificado con la grilla/cotas
+let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueCM=40;   // tamaño REAL del símbolo (cm), unificado con la grilla/cotas
 let selId=null;                 // objeto seleccionado esperando edición
 let ultimoSimbolo=null;         // último símbolo usado (para re-estampar desde el FAB)
 // Tamaño del símbolo en MEDIDA REAL (cm), unificado con el resto del dibujo.
@@ -771,7 +771,9 @@ function render(){
   drawGrid();
   drawFondo();
   objects.filter(o=>o.type==='hatch').forEach(drawObj);
-  objects.filter(o=>o.type!=='hatch').forEach(drawObj);
+  objects.filter(o=>o.type!=='hatch'&&o.type!=='block').forEach(drawObj);
+  // La SIMBOLOGÍA eléctrica va SIEMPRE por encima del plano y del dibujo (capa superior).
+  objects.filter(o=>o.type==='block').forEach(drawObj);
   drawOrigin();
   drawPreview();
 }
@@ -909,8 +911,9 @@ function renderSimbologiaUNIT(wx,wy,tipo,sizeW,deg,col,flip){
   ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1.1*vpZ;ctx.lineCap='round';ctx.lineJoin='round';
   ctx.textAlign='left';ctx.textBaseline='alphabetic';
   // Llave UNIT: círculo en la base + palanca diagonal + banderola en la punta.
+  // Círculo del interruptor más grande (legibilidad, según planos reales de Ángel).
   const llave=(marks)=>{
-    const cx=-r*0.5,cy=r*0.55,cr=r*0.17,tx=r*0.5,ty=-r*0.55;
+    const cx=-r*0.45,cy=r*0.5,cr=r*0.30,tx=r*0.55,ty=-r*0.55;
     ctx.beginPath();ctx.arc(cx,cy,cr,0,Math.PI*2);ctx.stroke();
     const ang=Math.atan2(ty-cy,tx-cx),sx=cx+Math.cos(ang)*cr,sy=cy+Math.sin(ang)*cr;
     ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(tx,ty);ctx.stroke();
@@ -2214,7 +2217,7 @@ function openPlanta(id){
   document.getElementById('scrHome').classList.remove('on');
   document.getElementById('scrProj').classList.remove('on');
   // tamaño de símbolo por defecto (cm reales)
-  bloqueCM=30; const pe=document.getElementById('pbMM'); if(pe)pe.value=30;
+  bloqueCM=40; const pe=document.getElementById('pbMM'); if(pe)pe.value=40;
   resize();
   // Edición a 1:1 (1 m = 100 px). El 0,0 arranca en la ESQUINA INFERIOR-IZQUIERDA:
   // el dibujo crece hacia arriba (Y) y a la derecha (X), como AutoCAD.

@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v7) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v8) · app pro
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
@@ -174,7 +174,12 @@ Versión = número de caché del SW.
   (`#colorPop`); aplica al objeto seleccionado si lo hay, si no al color de dibujo. Ya no hay
   dots repetidos en línea.
 - **Medidas UNIFICADAS a real (cm/m):** grilla, cotas, coordenada, altura y **tamaño de símbolo**
-  van todos en medida real. El símbolo se elige en **cm** (20…100, def 30); se acabó el "mm de papel".
+  van todos en medida real. El símbolo se elige en **cm** (20…100, def **40**); se acabó el "mm de papel".
+- **Simbología SIEMPRE por encima** del plano y del dibujo (capa superior en `render()`: los `block`
+  se pintan al final). **Círculo del interruptor agrandado** (0.17→0.30 del radio) por legibilidad,
+  según planos reales de Ángel (anteproyecto GLORIA 1/50). Default de símbolo subido a 40 cm.
+  Pendiente (analizado con sus láminas): color por función (centro luz rojo, toma azul, brazo
+  exterior verde, tablero cian) y leyenda/referencias automática.
 - **Impresión/lienzo arreglado:** la hoja arranca en el **0,0 (esquina inferior-izq)** y crece
   hacia arriba (Y↑) igual que el dibujo → **el dibujo queda DENTRO de la lámina** (antes caía
   fuera / se escalaba cualquier cosa). El **plano importado imprime** (fondo transparente, con su
