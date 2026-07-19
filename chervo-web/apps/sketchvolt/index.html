@@ -547,8 +547,8 @@ details.mas[open] summary:before{content:'▾ ';}
   <div id="grpBlock" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Giro</span>
       <select id="pbGiro" onchange="setBlockGiro(this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></span>
-    <span class="fi"><span class="fl">Tam</span>
-      <select id="pbMM" onchange="setBlockMM(this.value)"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option></select></span>
+    <span class="fi"><span class="fl">Tam cm</span>
+      <select id="pbMM" onchange="setBlockCM(this.value)"><option value="20">20</option><option value="30" selected>30</option><option value="40">40</option><option value="50">50</option><option value="60">60</option><option value="80">80</option><option value="100">100</option></select></span>
     <span class="fi"><span class="fl">Altura cm</span>
       <input type="number" id="pbAlt" value="30" min="0" step="5" style="width:56px;font-size:16px" oninput="bloqueAltura=+this.value||0"></span>
     <span class="fi"><span class="fl">Color</span>
@@ -557,8 +557,8 @@ details.mas[open] summary:before{content:'▾ ';}
   </div>
   <div id="grpSel" style="display:none;align-items:center;gap:8px">
     <span id="gsBlockCtl" style="display:none;align-items:center;gap:8px">
-      <span class="fi"><span class="fl">Tam mm</span>
-        <select id="gsMM" onchange="selSet('mm',+this.value)"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option></select></span>
+      <span class="fi"><span class="fl">Tam cm</span>
+        <select id="gsMM" onchange="selSet('cm',+this.value)"><option value="20">20</option><option value="30">30</option><option value="40">40</option><option value="50">50</option><option value="60">60</option><option value="80">80</option><option value="100">100</option></select></span>
       <span class="fi"><span class="fl">Giro</span>
         <select id="gsGiro" onchange="selSet('rotation',+this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></span>
       <span class="fi"><span class="fl">Altura cm</span>
@@ -696,13 +696,13 @@ let panning=false,panRef=null,pinching=false,pinch0=null,touches={};
 let fondoImg=null,fondoAprobado=false,modoAjusteFondo=false;
 let imgScale=1,imgScaleBase=1,imgOpacity=0.5,imgX=0,imgY=0,fondoDrag=null;
 // bloque de simbología eléctrica UNIT
-let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueMM=3;   // tamaño del símbolo: mm de papel A ESCALA 1/100
+let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueCM=30;   // tamaño REAL del símbolo (cm), unificado con la grilla/cotas
 let selId=null;                 // objeto seleccionado esperando edición
 let ultimoSimbolo=null;         // último símbolo usado (para re-estampar desde el FAB)
-// px de mundo de un símbolo: mm de papel → metros reales según la escala de la planta.
-// Tamaño real FIJO del símbolo (no cambia con la escala): mm@1/100 → 0.1 m por mm → px de mundo.
-// Al imprimir, la escala de la planta lo agranda sola (1/50 = doble). 3 mm@1/100 = 0.30 m real.
-function blkWorldPx(o){ const mm=(o&&o.mm)||bloqueMM||3; return mm*0.1*PPM; }
+// Tamaño del símbolo en MEDIDA REAL (cm), unificado con el resto del dibujo.
+// px de mundo = cm/100 * PPM. Al imprimir, la escala de la hoja lo reduce como a todo lo demás.
+// Compat: proyectos viejos guardaban `mm` (mm de papel @1/100) → cm = mm*10.
+function blkWorldPx(o){ const cm=(o&&(o.cm!=null?o.cm:(o.mm!=null?o.mm*10:null)))||bloqueCM||30; return (cm/100)*PPM; }
 
 const w2s=(wx,wy)=>({x:wx*vpZ+vpX,y:wy*vpZ+vpY});
 const s2w=(sx,sy)=>({x:(sx-vpX)/vpZ,y:(sy-vpY)/vpZ});
@@ -1454,7 +1454,7 @@ function handleDown(wp,rawW,scrn){
     if(!bloqueSel){toast('Elegí un símbolo');return;}
     saveHistory();
     const nid=nextId++;
-    objects.push({type:'block',pts:[[wp.x,wp.y]],blockType:bloqueSel,mm:bloqueMM,rotation:bloqueGiro,altura:bloqueAltura,color,id:nid});
+    objects.push({type:'block',pts:[[wp.x,wp.y]],blockType:bloqueSel,cm:bloqueCM,rotation:bloqueGiro,altura:bloqueAltura,color,id:nid});
     markDirty();
     ST('select');            // comando de estampado: vuelve al cursor (escape)
     selId=nid;               // el símbolo queda seleccionado, esperando edición
@@ -1898,7 +1898,7 @@ function fabElec(){
   toggleUnit();
 }
 function setBlockGiro(v){bloqueGiro=+v;}
-function setBlockMM(v){ bloqueMM=+v; }
+function setBlockCM(v){ bloqueCM=+v; }
 // La escala (1/100·1/50·1/75) es un asunto de la HOJA: se define en el dashboard
 // (la hoja comanda la impresión). No se toca desde el canvas.
 // ── BARRA INFERIOR DINÁMICA — un solo contexto a la vez (herramienta · selección · panel) ──
@@ -1974,7 +1974,7 @@ function showSelBar(){
   document.getElementById('gsBlockCtl').style.display=isB?'inline-flex':'none';
   document.getElementById('gsLineCtl').style.display=hasLine?'inline-flex':'none';
   document.getElementById('gsScaleCtl').style.display=isB?'none':'inline-flex';
-  if(isB){ document.getElementById('gsMM').value=o.mm||3; document.getElementById('gsGiro').value=o.rotation||0; document.getElementById('gsAlt').value=(o.altura!=null?o.altura:30); }
+  if(isB){ document.getElementById('gsMM').value=(o.cm!=null?o.cm:(o.mm!=null?o.mm*10:30)); document.getElementById('gsGiro').value=o.rotation||0; document.getElementById('gsAlt').value=(o.altura!=null?o.altura:30); }
   if(hasLine){ document.getElementById('gsSW').value=o.strokeW||2; document.getElementById('gsLT').value=o.lineType||'solid'; }
   _selScaleBase=null; const gsc=document.getElementById('gsScale'); if(gsc)gsc.value=100;
   g.style.display='flex';
@@ -2213,8 +2213,8 @@ function openPlanta(id){
   }
   document.getElementById('scrHome').classList.remove('on');
   document.getElementById('scrProj').classList.remove('on');
-  // tamaño de símbolo por defecto (mm de papel)
-  bloqueMM=3; const pe=document.getElementById('pbMM'); if(pe)pe.value=3;
+  // tamaño de símbolo por defecto (cm reales)
+  bloqueCM=30; const pe=document.getElementById('pbMM'); if(pe)pe.value=30;
   resize();
   // Edición a 1:1 (1 m = 100 px). El 0,0 arranca en la ESQUINA INFERIOR-IZQUIERDA:
   // el dibujo crece hacia arriba (Y) y a la derecha (X), como AutoCAD.

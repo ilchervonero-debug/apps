@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v6) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v7) · app pro
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
@@ -133,15 +133,16 @@ Versión = número de caché del SW.
 - **Importar plano** (imagen/foto/PDF) + **Calibrar por referencia**: tocás 2 puntos de una
   medida conocida (ej. 0.15 del muro), ingresás los metros y el plano se **escala a magnitud
   real**. Opacidad/escala/fijar/editar.
-- **Símbolos UNIT en mm de papel** (selector 5·8·10·15 mm; def 5). El tamaño mundo se calcula
-  de los mm según la escala de la planta → **imprimen siempre a los mm elegidos** a cualquier
-  escala. **Altura desde el piso** (cm) por elemento. **Edición a 1:1** (1 m = 100 px) para verlos bien.
+- **Símbolos UNIT en medida REAL (cm)** — UNIFICADO con grilla/cotas/coordenadas (pedido de Ángel:
+  un solo idioma de medidas). Selector **Tam cm** (20·30·40·50·60·80·100; def **30 cm**). El símbolo
+  es tamaño real fijo; al imprimir se reduce con la hoja como todo lo demás (30 cm → 3 mm a 1/100).
+  Compat: proyectos viejos guardaban `mm` (mm de papel @1/100) → `cm = mm×10`. **Altura desde el
+  piso** (cm) por elemento. **Edición a 1:1** (1 m = 100 px) para verlos bien.
 - **Comandos de estampado:** elegís el símbolo (FAB rayo) → estampás **uno** → queda
   **seleccionado (azul) esperando edición** y volvés al **cursor (escape)**; el FAB guarda el
   último símbolo: tocá el rayo para **re-estampar** (o de nuevo para abrir el panel y cambiar).
-- **Tamaño real fijo:** símbolo = mm@1/100 (2·3·4·5, def **3 mm** = 0.30 m real); NO cambia con
-  la escala en pantalla, pero **al imprimir la escala lo agranda sola** (1/50 = doble). Chicos,
-  no "estupidez de grande".
+- **Tamaño real del símbolo en cm** (def **30 cm** = 0.30 m); NO cambia con la escala en pantalla,
+  pero **al imprimir la hoja lo reduce como a todo** (1/50 = doble en papel respecto a 1/100).
 - **Escala técnica en la barra inferior** (línea de comando): 1/100 (def) · 1/50 · 1/75, por planta.
 - **0,0 con ejes X (→) e Y (↑)** en la **esquina inferior-izquierda**; el dibujo parte de ahí (AutoCAD).
 - **Long-press = fila de íconos**, SOLO ubicación: **Mover, Copiar, Rotar, Espejo, Borrar**
@@ -158,7 +159,7 @@ Versión = número de caché del SW.
   Se quitó el botón/paleta flotante (`#colorBtn`/`#colorPalette`/`pickColor`).
 - **Escalar = escala el OBJETO, no el plano.** En las propiedades de selección hay un deslizador
   **Escala** (`selScaleLive`) que agranda/achica el objeto seleccionado (líneas, formas, cotas…)
-  alrededor de su centro; en **símbolos** el tamaño se ajusta con **Tam (mm)**. El deslizador de la
+  alrededor de su centro; en **símbolos** el tamaño se ajusta con **Tam (cm)**. El deslizador de la
   *Imagen* ahora se llama **Tamaño** (escala el calco importado, que es su función).
 - **Rotar** arreglado (los símbolos giran por su ángulo, no solo por puntos). **Touch** con umbral
   de long-press (no se cancela por micro-movimiento) → más sensible.
@@ -172,7 +173,8 @@ Versión = número de caché del SW.
 - **Un solo selector de color = una pastilla** (`.cpick`) que abre una **paleta de 12 colores**
   (`#colorPop`); aplica al objeto seleccionado si lo hay, si no al color de dibujo. Ya no hay
   dots repetidos en línea.
-- **Tamaño de símbolo hasta 10 mm** (2·3·4·5·6·8·10; def 3) en herramienta y en selección.
+- **Medidas UNIFICADAS a real (cm/m):** grilla, cotas, coordenada, altura y **tamaño de símbolo**
+  van todos en medida real. El símbolo se elige en **cm** (20…100, def 30); se acabó el "mm de papel".
 - **Impresión/lienzo arreglado:** la hoja arranca en el **0,0 (esquina inferior-izq)** y crece
   hacia arriba (Y↑) igual que el dibujo → **el dibujo queda DENTRO de la lámina** (antes caía
   fuera / se escalaba cualquier cosa). El **plano importado imprime** (fondo transparente, con su
@@ -194,7 +196,7 @@ Versión = número de caché del SW.
   rectángulo de esquinas redondeadas** (no un círculo).
 - **Pendiente:** "+" de nueva imagen (collage/varios planos).
 - **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
-  barra → **Tamaño (mm)/Giro/Altura** en símbolos · **Grosor/Línea/Escala** en formas · **Color** +
+  barra → **Tam cm/Giro/Altura** en símbolos · **Grosor/Línea/Escala** en formas · **Color** +
   **Borrar**. **Long-press = menú SOLO ubicación:** mover/copiar/rotar/espejo/borrar (sin color ni
   escalar: eso vive en la barra de propiedades, no se duplica).
 - **Datos del rótulo al crear** el proyecto (obra, cliente, dibujante, empresa/facultad).
