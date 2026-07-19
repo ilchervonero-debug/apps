@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v18) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v19) · app pro
+- **Componente vs Grupo — semántica afinada (según Ángel):** **Grupo** → cambiar color/props
+  DESDE AFUERA afecta a todas sus piezas (color visible en la barra). **Componente** → color/
+  estructura NO se toca desde afuera (color OCULTO en la barra): solo por el **editor** (isolation),
+  que **propaga a todas las instancias**. **Escalar / espejo la INSTANCIA desde afuera = por
+  instancia** (no afecta al resto): `selScaleSetLive` escala el conjunto alrededor de su centro sin
+  propagar (incl. `cm` de símbolos); mirror por long-press opera solo sobre esa instancia.
+  (Pendiente menor: rotar la instancia completa —hoy rotar es de a un objeto.)
 - **Spec de refactor (lote D):** **Grilla** afinada — trazo DELGADO pero **notoria para trabajar**
   (metros `rgba(139,0,0,.24)` lineWidth .7, subdivisiones `rgba(139,0,0,.11)`). **2B GRUPO vs
   COMPONENTE (lógica SketchUp) IMPLEMENTADO:** `comp` = definición compartida, `cidx` = índice de
