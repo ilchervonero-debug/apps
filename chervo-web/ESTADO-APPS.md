@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v4) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v5) · app pro
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
@@ -180,6 +180,13 @@ Versión = número de caché del SW.
   hoja + marco de márgenes + **cajetín "RÓTULO"** de referencia en el canvas, para saber dónde se
   trabaja. Export a hoja verificado end-to-end (dibujo dentro, cajetín con LÁMINA/empresa/obra/
   dibujante/escala/fecha/hoja).
+- **Coordenada cartesiana = texto negro suelto arriba-izquierda del canvas** (sin fondo, sin
+  botón, sin caja) → libera la barra inferior. La grilla es **real-métrica** e independiente de
+  la escala de ploteo; se etiqueta legible: **5 cm · 15 cm · 50 cm · 1 m** (tras Calibrar el plano
+  queda a magnitud real y coincide con la grilla).
+- **Barra de selección = grilla estructural** (cada campo en su celda con divisores, no sueltos);
+  el **Borrar (tacho) va separado a la derecha**, en su propia celda. El **selector de color es un
+  rectángulo de esquinas redondeadas** (no un círculo).
 - **Pendiente:** "+" de nueva imagen (collage/varios planos).
 - **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
   barra → **Tamaño (mm)/Giro/Altura** en símbolos · **Grosor/Línea/Escala** en formas · **Color** +
