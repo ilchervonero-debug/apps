@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v22) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v23) · app pro
+- **Flujo de agrupación claro (diálogo):** con 2+ (o 1 objeto) seleccionados, **Agrupar** o
+  **Componente** abren un **diálogo que pide NOMBRE** → Crear → hecho (fin de acción). `agruparSel`/
+  `crearComponente` reciben el nombre. Es la norma unificada para TODOS los elementos (línea, arco,
+  polígono, símbolo): todo se agrupa/componentiza igual.
+- **Bug de arcos resuelto:** el arco solo se podía tocar por su **cuerda**, por eso "quedaba
+  separado". Ahora `hitTest` prueba contra la **curva** muestreada (`arcPolyPts`) → el arco se
+  selecciona y entra a grupos/componentes como cualquier elemento.
 - **Rotar conjunto/grupo/instancia:** rota TODO lo seleccionado alrededor del **centro del box
   imaginario** que lo envuelve (`_setBoundsCenter`), como el resto de transformaciones. `startRotate`
   acepta un set (`rotSet`), `applyRot` rota cada miembro alrededor del eje común; los bloques suman
