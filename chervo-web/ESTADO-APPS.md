@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v21) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v22) · app pro
+- **Rotar conjunto/grupo/instancia:** rota TODO lo seleccionado alrededor del **centro del box
+  imaginario** que lo envuelve (`_setBoundsCenter`), como el resto de transformaciones. `startRotate`
+  acepta un set (`rotSet`), `applyRot` rota cada miembro alrededor del eje común; los bloques suman
+  su `rotation`. (Arreglado bug latente: `rotDragStart==0` era falsy.) En componentes, rotar la
+  instancia desde afuera es por instancia (no propaga).
 - **Etiqueta/nombre y símbolo→bloque:** grupo y componente llevan **nombre editable** en la barra
   (etiqueta "GRUPO"/"COMPONENTE"; en componente el nombre es de la definición → compartido por las
   instancias). Un **símbolo/objeto suelto se puede convertir en Componente** (botón "Componente" en

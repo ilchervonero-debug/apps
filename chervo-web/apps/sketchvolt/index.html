@@ -1432,7 +1432,7 @@ function ctxDo(action){
   else if(action==='move'){ST('move');setSel(set);toast('Tocá y arrastrá');}       // ST limpia selección; la re-ponemos
   else if(action==='copy'){ST('copy');setSel(set);toast('Tocá y arrastrá para copiar');}
   else if(action==='mirror'){saveHistory();mirrorSet(set);markDirty();render();toast('Espejo aplicado');}
-  else if(action==='rotate'){ if(set.length>1){toast('Rotar: elegí un solo objeto');} else startRotate(obj); }
+  else if(action==='rotate'){ startRotate(set); }
   ctxObjId=null;
 }
 
@@ -1445,20 +1445,23 @@ function getCenter(obj){
 }
 function rotatePts(pts,cx,cy,ang){const cos=Math.cos(ang),sin=Math.sin(ang);return pts.map(p=>{const dx=p[0]-cx,dy=p[1]-cy;return[cx+dx*cos-dy*sin,cy+dx*sin+dy*cos];});}
 
-function startRotate(obj){
+// Eje = centro del box imaginario que envuelve TODA la selección.
+let rotSet=null;
+function _setBoundsCenter(ids){ let a=Infinity,b=Infinity,c=-Infinity,d=-Infinity;
+  ids.forEach(id=>{const bb=objBounds(objects.find(x=>x.id===id));if(bb){if(bb.minX<a)a=bb.minX;if(bb.minY<b)b=bb.minY;if(bb.maxX>c)c=bb.maxX;if(bb.maxY>d)d=bb.maxY;}});
+  return isFinite(a)?{x:(a+c)/2,y:(b+d)/2}:{x:0,y:0}; }
+function startRotate(ids){
+  ids = (ids&&ids.length)? ids.slice() : selIds.slice();
+  if(!ids.length)return;
   saveHistory();
-  // Convert rect/poly to pline so all pts rotate cleanly
-  if(obj.type==='rect'){
-    const[[ax,ay],[bx,by]]=obj.pts;
-    obj.type='pline';obj.pts=[[ax,ay],[bx,ay],[bx,by],[ax,by]];obj.closed=true;
-  } else if(obj.type==='poly'){
-    const cx=obj.pts[0][0],cy=obj.pts[0][1],r=obj.r,n=obj.sides||4;
-    const pts=[];
-    for(let i=0;i<n;i++){const a=(-Math.PI/2)+(2*Math.PI*i/n);pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}
-    obj.type='pline';obj.pts=pts;obj.closed=true;delete obj.r;delete obj.sides;
-  }
-  rotId=obj.id;rotOrig=JSON.parse(JSON.stringify(obj));
-  rotCenter=getCenter(obj);rotCurrent=0;
+  // Convertir rect/poly a pline en cada miembro para que TODOS sus puntos roten limpio.
+  ids.forEach(id=>{ const obj=objects.find(x=>x.id===id); if(!obj)return;
+    if(obj.type==='rect'){ const[[ax,ay],[bx,by]]=obj.pts; obj.type='pline';obj.pts=[[ax,ay],[bx,ay],[bx,by],[ax,by]];obj.closed=true; }
+    else if(obj.type==='poly'){ const cx=obj.pts[0][0],cy=obj.pts[0][1],r=obj.r,n=obj.sides||4;const pts=[];for(let i=0;i<n;i++){const a=(-Math.PI/2)+(2*Math.PI*i/n);pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}obj.type='pline';obj.pts=pts;obj.closed=true;delete obj.r;delete obj.sides; }
+  });
+  rotSet=ids.map(id=>({id,orig:JSON.parse(JSON.stringify(objects.find(x=>x.id===id)))}));
+  rotId=rotSet[0].id; rotOrig=rotSet[0].orig;
+  rotCenter=_setBoundsCenter(ids); rotCurrent=0;
   const overlay=document.getElementById('rotOverlay');
   overlay.classList.add('show');
   overlay.addEventListener('touchstart',rotTS,{passive:false});
@@ -1496,12 +1499,11 @@ function rotateObj(obj,orig,cx,cy,ang){
 }
 
 function applyRot(scr){
-  if(!rotId||!rotOrig||!rotDragStart)return;
+  if(!rotSet||rotDragStart==null)return;
   const curAngle=rotAngleFromScr(scr);
   let delta=curAngle-rotDragStart;
   const snap10=Math.round(delta/(Math.PI/18))*(Math.PI/18);
-  const obj=objects.find(o=>o.id===rotId);if(!obj)return;
-  rotateObj(obj,rotOrig,rotCenter.x,rotCenter.y,snap10);
+  rotSet.forEach(m=>{ const obj=objects.find(o=>o.id===m.id); if(obj)rotateObj(obj,m.orig,rotCenter.x,rotCenter.y,snap10); });
   rotCurrent=snap10;
   const deg=Math.round(snap10*180/Math.PI);
   document.getElementById('pbHint').textContent=deg+'°';
@@ -1515,7 +1517,7 @@ function commitRot(){
   overlay.classList.remove('show');
   overlay.removeEventListener('touchstart',rotTS);overlay.removeEventListener('touchmove',rotTM);overlay.removeEventListener('touchend',rotTE);
   overlay.removeEventListener('mousedown',rotMS);overlay.removeEventListener('mousemove',rotMM);overlay.removeEventListener('mouseup',rotME);
-  rotId=null;rotOrig=null;rotCenter=null;rotCurrent=0;rotDragActive=false;rotDragStart=null;
+  rotSet=null;rotId=null;rotOrig=null;rotCenter=null;rotCurrent=0;rotDragActive=false;rotDragStart=null;
   render();
 }
 
