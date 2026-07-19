@@ -483,6 +483,9 @@ details.mas[open] summary:before{content:'▾ ';}
 <div id="propbar">
   <button id="colorBtn" onclick="togglePalette(event)" style="background:#1c1c1e"></button>
   <div class="pdiv"></div>
+  <span class="pl">Escala</span>
+  <select id="pbEscala" onchange="setPlantaEscala(this.value)" title="Escala técnica del dibujo"><option value="100">1/100</option><option value="50">1/50</option><option value="75">1/75</option></select>
+  <div class="pdiv"></div>
   <span id="pbTool">Seleccionar</span>
   <div class="pdiv"></div>
   <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;opacity:.4;stroke:var(--ink);fill:none;stroke-linecap:round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="12" x2="21" y2="12" stroke-width="2.5"/><line x1="3" y1="18" x2="21" y2="18" stroke-width="5"/></svg>
@@ -536,7 +539,7 @@ details.mas[open] summary:before{content:'▾ ';}
     <span class="pl">Giro</span>
     <select id="pbGiro" onchange="setBlockGiro(this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select>
     <span class="pl">Tamaño</span>
-    <select id="pbMM" onchange="setBlockMM(this.value)"><option value="5">5 mm</option><option value="8">8 mm</option><option value="10">10 mm</option><option value="15">15 mm</option></select>
+    <select id="pbMM" onchange="setBlockMM(this.value)"><option value="2">2 mm</option><option value="3" selected>3 mm</option><option value="4">4 mm</option><option value="5">5 mm</option></select>
     <span class="pl">Altura piso</span>
     <input type="number" id="pbAlt" value="30" min="0" step="5" style="width:52px;font-size:16px" oninput="bloqueAltura=+this.value||0"><span class="pl">cm</span>
     <div class="pdiv"></div>
@@ -551,7 +554,7 @@ details.mas[open] summary:before{content:'▾ ';}
     <span class="pl" style="color:#007aff">● Sel</span>
     <span id="gsBlockCtl" style="display:none;align-items:center;gap:6px">
       <span class="pl">Tam</span>
-      <select id="gsMM" onchange="selSet('mm',+this.value)"><option value="5">5mm</option><option value="8">8mm</option><option value="10">10mm</option><option value="15">15mm</option></select>
+      <select id="gsMM" onchange="selSet('mm',+this.value)"><option value="2">2mm</option><option value="3">3mm</option><option value="4">4mm</option><option value="5">5mm</option></select>
       <span class="pl">Giro</span>
       <select id="gsGiro" onchange="selSet('rotation',+this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select>
       <span class="pl">Alt</span>
@@ -605,8 +608,8 @@ details.mas[open] summary:before{content:'▾ ';}
 <div id="ctx">
   <div class="ci" onclick="ctxDo('move')"><svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>Mover</div>
   <div class="ci" onclick="ctxDo('copy')"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copiar</div>
-  <div class="ci" onclick="ctxDo('scale')"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>Escalar</div>
   <div class="ci" onclick="ctxDo('rotate')"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg>Rotar</div>
+  <div class="ci" onclick="ctxDo('mirror')"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-4 5 4 5"/><path d="M16 7l4 5-4 5" opacity=".4"/></svg>Espejo</div>
   <div class="ci" id="ciEdit" style="display:none" onclick="ctxDo('edit')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</div>
   <div class="ci" onclick="ctxDo('color')"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 000 20 3 3 0 002.5-4.6c-.4-.6-.5-1.4 0-2 .4-.5 1-.4 1.5-.4H18a4 4 0 004-4 10 10 0 00-10-9z"/></svg>Color</div>
   <div class="ci danger" onclick="ctxDo('delete')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Eliminar</div>
@@ -700,11 +703,13 @@ let panning=false,panRef=null,pinching=false,pinch0=null,touches={};
 let fondoImg=null,fondoAprobado=false,modoAjusteFondo=false;
 let imgScale=1,imgScaleBase=1,imgOpacity=0.5,imgX=0,imgY=0,fondoDrag=null;
 // bloque de simbología eléctrica UNIT
-let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueMM=5;   // tamaño del símbolo en mm de papel
+let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueMM=3;   // tamaño del símbolo: mm de papel A ESCALA 1/100
 let selId=null;                 // objeto seleccionado esperando edición
 let ultimoSimbolo=null;         // último símbolo usado (para re-estampar desde el FAB)
 // px de mundo de un símbolo: mm de papel → metros reales según la escala de la planta.
-function blkWorldPx(o){ const mm=(o&&o.mm)||bloqueMM||5; const denom=(planta&&planta.denom)||100; return mm/1000*denom*PPM; }
+// Tamaño real FIJO del símbolo (no cambia con la escala): mm@1/100 → 0.1 m por mm → px de mundo.
+// Al imprimir, la escala de la planta lo agranda sola (1/50 = doble). 3 mm@1/100 = 0.30 m real.
+function blkWorldPx(o){ const mm=(o&&o.mm)||bloqueMM||3; return mm*0.1*PPM; }
 
 const w2s=(wx,wy)=>({x:wx*vpZ+vpX,y:wy*vpZ+vpY});
 const s2w=(sx,sy)=>({x:(sx-vpX)/vpZ,y:(sy-vpY)/vpZ});
@@ -797,14 +802,24 @@ function drawSheet(){
   ctx.strokeStyle='#c9c9cf';ctx.lineWidth=1;ctx.strokeRect(a.x,a.y,sz.w*vpZ,sz.h*vpZ);
   ctx.restore();
 }
+// 0,0 con ejes: X→derecha, Y→arriba (como AutoCAD). El dibujo parte de esta esquina.
 function drawOrigin(){
   if(_exporting)return;
-  const o=w2s(originX,originY),L=14;
-  ctx.save();
-  ctx.strokeStyle='#FE0000';ctx.lineWidth=1.4;ctx.setLineDash([]);
-  ctx.beginPath();ctx.moveTo(o.x-L,o.y);ctx.lineTo(o.x+L,o.y);ctx.moveTo(o.x,o.y-L);ctx.lineTo(o.x,o.y+L);ctx.stroke();
-  ctx.beginPath();ctx.arc(o.x,o.y,4,0,Math.PI*2);ctx.stroke();
-  ctx.fillStyle='#FE0000';ctx.font='500 12px '+fontStack('sans');ctx.fillText('0,0',o.x+7,o.y-7);
+  const o=w2s(originX,originY),L=52;
+  ctx.save();ctx.setLineDash([]);ctx.lineWidth=1.6;ctx.lineCap='round';ctx.fillStyle='#FE0000';
+  // eje X (derecha, rojo)
+  ctx.strokeStyle='#FE0000';
+  ctx.beginPath();ctx.moveTo(o.x,o.y);ctx.lineTo(o.x+L,o.y);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(o.x+L,o.y);ctx.lineTo(o.x+L-7,o.y-4);ctx.lineTo(o.x+L-7,o.y+4);ctx.closePath();ctx.fill();
+  ctx.font='600 13px '+fontStack('sans');ctx.fillText('X',o.x+L+3,o.y+5);
+  // eje Y (arriba, tinta)
+  ctx.strokeStyle='#1c1c1e';ctx.fillStyle='#1c1c1e';
+  ctx.beginPath();ctx.moveTo(o.x,o.y);ctx.lineTo(o.x,o.y-L);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(o.x,o.y-L);ctx.lineTo(o.x-4,o.y-L+7);ctx.lineTo(o.x+4,o.y-L+7);ctx.closePath();ctx.fill();
+  ctx.fillText('Y',o.x-13,o.y-L-2);
+  // marca del origen
+  ctx.strokeStyle='#FE0000';ctx.beginPath();ctx.arc(o.x,o.y,4,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='#FE0000';ctx.fillText('0,0',o.x+7,o.y+16);
   ctx.restore();
 }
 
@@ -867,18 +882,19 @@ function drawObj(obj){
     case 'dim2':{ctx.setLineDash([]);drawDim2Obj(obj);break;}
     case 'arc':{drawArcObj(obj);break;}
     case 'hatch':{ctx.setLineDash([]);drawHatchObj(obj);break;}
-    case 'block':{ctx.setLineDash([]);renderSimbologiaUNIT(obj.pts[0][0],obj.pts[0][1],obj.blockType,blkWorldPx(obj),obj.rotation||0,(sel?'#007aff':(obj.color||'#1c1c1e')));break;}
+    case 'block':{ctx.setLineDash([]);renderSimbologiaUNIT(obj.pts[0][0],obj.pts[0][1],obj.blockType,blkWorldPx(obj),obj.rotation||0,(sel?'#007aff':(obj.color||'#1c1c1e')),obj.flip);break;}
   }
   ctx.restore();
 }
 
 // SIMBOLOGÍA ELÉCTRICA UNIT (Uruguay) — trazo fino monolínea, escala/gira con el objeto.
-function renderSimbologiaUNIT(wx,wy,tipo,sizeW,deg,col){
+function renderSimbologiaUNIT(wx,wy,tipo,sizeW,deg,col,flip){
   const s=w2s(wx,wy),size=sizeW*vpZ,r=size/2;
   ctx.save();
   ctx.setLineDash([]);
   ctx.translate(s.x,s.y);
   ctx.rotate(deg*Math.PI/180);
+  if(flip)ctx.scale(-1,1);
   ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1.1*vpZ;ctx.lineCap='round';ctx.lineJoin='round';
   ctx.textAlign='left';ctx.textBaseline='alphabetic';
   // Llave UNIT: círculo en la base + palanca diagonal + banderola en la punta.
@@ -1259,6 +1275,12 @@ document.addEventListener('pointerdown',e=>{
   if(!document.getElementById('colorPalette').contains(e.target)&&e.target.id!=='colorBtn')document.getElementById('colorPalette').classList.remove('show');
 },{capture:true,passive:true});
 
+function mirrorObj(o){
+  if(o.type==='block'){ o.flip=!o.flip; if(o.rotation)o.rotation=(360-o.rotation)%360; return; }
+  if(!o.pts||!o.pts.length)return;
+  const xs=o.pts.map(p=>p[0]), cx=(Math.min(...xs)+Math.max(...xs))/2;
+  o.pts=o.pts.map(p=>[2*cx-p[0],p[1]]);
+}
 function ctxDo(action){
   document.getElementById('ctx').classList.remove('show');
   if(!ctxObjId)return;
@@ -1266,7 +1288,7 @@ function ctxDo(action){
   if(action==='delete'){saveHistory();objects=objects.filter(o=>o.id!==ctxObjId);render();}
   else if(action==='move'){ST('move');toast('Tocá y arrastrá');}
   else if(action==='copy'){ST('copy');toast('Tocá y arrastrá para copiar');}
-  else if(action==='scale'){scaleId=obj.id;scaleOrig=JSON.parse(JSON.stringify(obj));document.getElementById('scSlider').value=100;document.getElementById('scVal').textContent='100%';document.getElementById('scmod').classList.add('show');}
+  else if(action==='mirror'){saveHistory();mirrorObj(obj);markDirty();render();toast('Espejo aplicado');}
   else if(action==='rotate'){startRotate(obj);}
   else if(action==='edit'){etId=obj.id;document.getElementById('etinput').value=obj.type==='text'?obj.text:(obj.label||'');document.getElementById('etmod').classList.add('show');setTimeout(()=>document.getElementById('etinput').focus(),120);}
   else if(action==='color'){_recolorId=obj.id;const p=document.getElementById('colorPalette');p.style.left='50%';p.style.transform='translateX(-50%)';p.style.bottom='90px';p.style.top='auto';p.classList.add('show');toast('Elegí el color');}
@@ -1871,6 +1893,7 @@ function fabElec(){
 function setBlockGiro(v){bloqueGiro=+v;}
 function setBlockColor(c){color=c;document.getElementById('colorBtn').style.background=c;document.querySelectorAll('.cp').forEach(d=>d.classList.toggle('on',d.dataset.c===c));toast('Color: nuevos símbolos');}
 function setBlockMM(v){ bloqueMM=+v; }
+function setPlantaEscala(v){ if(!planta)return; planta.denom=+v; persistProy(); render(); toast('Escala 1/'+v); }
 // ── PROPIEDADES DEL OBJETO SELECCIONADO ──
 function selObj(){ return selId!=null?objects.find(o=>o.id===selId):null; }
 function selectAt(wp){ const T=28/vpZ;
@@ -2131,11 +2154,12 @@ function openPlanta(id){
   document.getElementById('scrHome').classList.remove('on');
   document.getElementById('scrProj').classList.remove('on');
   // escala de bloque por defecto = escala de la planta
-  bloqueMM=5; const pe=document.getElementById('pbMM'); if(pe)pe.value=5;
+  bloqueMM=3; const pe=document.getElementById('pbMM'); if(pe)pe.value=3;
+  const pesc=document.getElementById('pbEscala'); if(pesc)pesc.value=planta.denom||100;
   resize();
-  // Edición a 1:1 (1 m = 100 px): los símbolos se ven a tamaño real, no minúsculos.
-  // La hoja se encuadra recién al imprimir/exportar; acá se dibuja cómodo y se panea/zoomea a mano.
-  vpZ=1; vpX=70-originX; vpY=150-originY;
+  // Edición a 1:1 (1 m = 100 px). El 0,0 arranca en la ESQUINA INFERIOR-IZQUIERDA:
+  // el dibujo crece hacia arriba (Y) y a la derecha (X), como AutoCAD.
+  vpZ=1; vpX=80-originX; vpY=(cv.height-120)-originY;
   ST('select');render();
 }
 function goDash(){

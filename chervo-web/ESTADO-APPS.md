@@ -139,6 +139,13 @@ Versión = número de caché del SW.
 - **Comandos de estampado:** elegís el símbolo (FAB rayo) → estampás **uno** → queda
   **seleccionado (azul) esperando edición** y volvés al **cursor (escape)**; el FAB guarda el
   último símbolo: tocá el rayo para **re-estampar** (o de nuevo para abrir el panel y cambiar).
+- **Tamaño real fijo:** símbolo = mm@1/100 (2·3·4·5, def **3 mm** = 0.30 m real); NO cambia con
+  la escala en pantalla, pero **al imprimir la escala lo agranda sola** (1/50 = doble). Chicos,
+  no "estupidez de grande".
+- **Escala técnica en la barra inferior** (línea de comando): 1/100 (def) · 1/50 · 1/75, por planta.
+- **0,0 con ejes X (→) e Y (↑)** en la **esquina inferior-izquierda**; el dibujo parte de ahí (AutoCAD).
+- **Long-press:** mover, copiar, **rotar, espejo** (mirror), editar, color, borrar. **Escalar salió**
+  del long-press (la escala es técnica, en la barra). Propiedades (tamaño/giro/altura/color) en la barra.
 - **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
   barra de propiedades → **Tamaño (mm), Giro, Altura, Color** editables en vivo + **Borrar**
   (long-press = menú mover/copiar/escalar/rotar). Todo aplica al objeto seleccionado.
