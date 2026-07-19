@@ -611,6 +611,7 @@ details.mas[open] summary:before{content:'▾ ';}
     </span>
     <span class="fi"><span class="fl">Color</span>
       <button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
+    <button class="cmd-btn" data-tip="Hacer componente (bloque)" onclick="crearComponente()">Componente</button>
     <button class="pib danger" data-tip="Borrar" onclick="selDelete()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
   </div>
   <div id="grpMulti" style="display:none;align-items:center;gap:8px">
@@ -1789,7 +1790,9 @@ function doMovStart(wp){const T=28/vpZ;
     if(tool==='copy'){
       const newIds=[];
       set.forEach(id=>{ const o=objects.find(x=>x.id===id); if(!o)return; const cl=JSON.parse(JSON.stringify(o)); cl.id=nextId++; delete cl.ref; newIds.push(cl.id); objects.push(cl); });
-      if(set.length>1){ const g=uid(); newIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)o.group=g;}); }  // la copia de un grupo sigue agrupada
+      // Nueva INSTANCIA: si la copia es de un grupo/componente (aunque sea de 1 pieza), grupo fresco.
+      const anyGrouped=newIds.some(id=>{const o=objects.find(x=>x.id===id);return o&&o.group!=null;});
+      if(set.length>1 || anyGrouped){ const g=uid(); newIds.forEach(id=>{const o=objects.find(x=>x.id===id);if(o)o.group=g;}); }
       movSet=newIds.map(id=>({id,orig:JSON.parse(JSON.stringify(objects.find(x=>x.id===id).pts))}));
       setSel(newIds);
     } else {
@@ -2224,7 +2227,7 @@ function selDelete(){ if(!selIds.length)return; saveHistory(); const del=new Set
 // group = instancia (miembros que se mueven juntos). comp = definición compartida entre
 // instancias; cidx = índice del hijo dentro de la definición (para emparejar entre copias).
 function compSiblings(o){ if(!o||o.comp==null||o.cidx==null)return []; return objects.filter(x=>x.comp===o.comp && x.cidx===o.cidx && x.id!==o.id); }
-function _selIsWholeGroup(){ if(selIds.length<2)return false;
+function _selIsWholeGroup(){ if(!selIds.length)return false;
   const gids=[...new Set(selIds.map(id=>{const o=objects.find(x=>x.id===id);return o?o.group:null;}))];
   return gids.length===1 && gids[0]!=null && groupIds(gids[0]).length===selIds.length; }
 function _selIsComponent(){ if(!selIds.length)return false; return selIds.every(id=>{const o=objects.find(x=>x.id===id);return o&&o.comp!=null;}) && new Set(selIds.map(id=>objects.find(x=>x.id===id).comp)).size===1; }
@@ -2259,7 +2262,9 @@ function showSelBar(){
   if(selIds.length===0){ _selScaleBase=null; if(editGroupId){ _hideAllGrp(); refreshBottom(); } else applyToolBar(); return; }
   _hideAllGrp(); _panelMode=null;
   // 2+ seleccionados → barra de grupo/multiselección
-  if(selIds.length>=2){
+  // Barra de grupo/componente: para 2+ objetos, o para 1 objeto que YA es grupo/componente.
+  const _one=selIds.length===1?selObj():null;
+  if(selIds.length>=2 || (_one && (_one.group||_one.comp!=null))){
     const whole=_selIsWholeGroup();
     const isComp=_selIsComponent();
     const gm=document.getElementById('grpMulti');

@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v19) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v21) · app pro
+- **Etiqueta/nombre y símbolo→bloque:** grupo y componente llevan **nombre editable** en la barra
+  (etiqueta "GRUPO"/"COMPONENTE"; en componente el nombre es de la definición → compartido por las
+  instancias). Un **símbolo/objeto suelto se puede convertir en Componente** (botón "Componente" en
+  la barra de 1 objeto): queda como bloque repetible; sus copias se vinculan (nueva instancia con
+  grupo fresco) y **editar la definición en el editor propaga a todas las copias**. Un objeto que ya
+  es grupo/componente muestra su barra aunque sea de 1 pieza. Verificado e2e (convertir, nombrar,
+  copiar, editar-propaga).
 - **Componente vs Grupo — semántica afinada (según Ángel):** **Grupo** → cambiar color/props
   DESDE AFUERA afecta a todas sus piezas (color visible en la barra). **Componente** → color/
   estructura NO se toca desde afuera (color OCULTO en la barra): solo por el **editor** (isolation),
