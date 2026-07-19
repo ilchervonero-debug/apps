@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v5) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v6) · app pro
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
@@ -181,9 +181,14 @@ Versión = número de caché del SW.
   trabaja. Export a hoja verificado end-to-end (dibujo dentro, cajetín con LÁMINA/empresa/obra/
   dibujante/escala/fecha/hoja).
 - **Coordenada cartesiana = texto negro suelto arriba-izquierda del canvas** (sin fondo, sin
-  botón, sin caja) → libera la barra inferior. La grilla es **real-métrica** e independiente de
-  la escala de ploteo; se etiqueta legible: **5 cm · 15 cm · 50 cm · 1 m** (tras Calibrar el plano
-  queda a magnitud real y coincide con la grilla).
+  botón, sin caja) → libera la barra inferior.
+- **Modelo de escala (confirmado con Ángel):** se **dibuja SIEMPRE a 1/100** (mundo real, 1 m =
+  100 px). La **grilla es la guía de DIBUJO** (real-métrica, no toca la impresión): **5 cm · 15 cm
+  · 50 cm · 1 m**. La **escala (1/100·1/50·1/75) es asunto de la HOJA y se define SOLO en el
+  dashboard** — quita del canvas (se sacó el selector de Escala del panel de Grilla y
+  `setPlantaEscala`). Al bajar la escala, **la hoja del mundo se reduce** (1/50 → mitad, verificado
+  `sheetWorldSize` ratio 0.50; 1/75 → 0.75) y por eso el dibujo **imprime al doble/triple**; el que
+  cambia es la hoja, no el dibujo.
 - **Barra de selección = grilla estructural** (cada campo en su celda con divisores, no sueltos);
   el **Borrar (tacho) va separado a la derecha**, en su propia celda. El **selector de color es un
   rectángulo de esquinas redondeadas** (no un círculo).
