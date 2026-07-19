@@ -116,7 +116,13 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v15) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v16) · app pro
+- **Spec de refactor (lote C — hojas 4A):** formatos **+A1 (841×594)** en dashboard y por-plano;
+  **medidas de usuario** (`custom` + ancho/alto mm en el dashboard, `hojaMM()` con fallback a
+  `proy.customW/H`); **impresión de TODAS las láminas desde el dashboard** (`imprimirLaminas()`
+  carga cada planta —con su fondo— renderiza la hoja y las junta en una ventana de impresión,
+  restaurando el estado). Falta de la spec: **2B grupo vs componente** (definición compartida
+  tipo SketchUp) — es el único ítem grande pendiente; está especificado en `SKETCHVOLT-GRUPOS.md`.
 - **Spec de refactor (lote B — grupos):** **Espejo/transformación del grupo como UNIDAD** con
   **eje baricéntrico global** (`mirrorSet` usa el bounds de toda la selección, no el centro de cada
   pieza) → el grupo ya no se desarma. En **edición aislada** el cuadro de propiedades del elemento
