@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v1) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v3) · app pro
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
@@ -147,17 +147,30 @@ Versión = número de caché del SW.
 - **Long-press = fila de íconos**, SOLO ubicación: **Mover, Copiar, Rotar, Espejo, Borrar**
   (sin color/editar/escalar — eso es redundante; va todo abajo).
 - **Barra inferior = comando/propiedades dinámica y VACÍA por defecto** (minimalismo): sólo aparece
-  algo cuando hace falta. **Seleccionar** un objeto → sus propiedades (grosor, tipo de línea, color,
-  + tamaño/giro/altura en símbolos); **herramienta** activa → sus opciones; **editar imagen** → sólo
-  controles de imagen; **Grilla** (ícono arriba) → tamaños abajo; **Exportar** (ícono arriba) →
-  Hoja PDF/PNG/DXF abajo. La **flecha/escape** siempre visible. Menos íconos arriba, todo abajo.
+  algo cuando hace falta, y **UN SOLO contexto a la vez** (nunca se superponen). **Seleccionar**
+  un objeto → SOLO sus propiedades; **herramienta** activa → SOLO sus opciones; **editar imagen** →
+  SOLO controles de imagen; **Grilla** (ícono arriba) → tamaños + **escala técnica** abajo;
+  **Exportar** (ícono arriba) → Hoja PDF/PNG/DXF abajo. Antes se veían juntos (tool+sel+imagen):
+  arreglado con `applyToolBar/showSelBar/openBottomPanel` que ocultan todos los grupos y muestran
+  el que toca. La **flecha/escape** siempre visible.
+- **Un único selector de color** (se eliminó el duplicado): **dots inline por contexto** —
+  dibujo (`setDrawColor`), símbolo nuevo (mismos dots), y objeto seleccionado (`selSet('color')`).
+  Se quitó el botón/paleta flotante (`#colorBtn`/`#colorPalette`/`pickColor`).
+- **Escalar = escala el OBJETO, no el plano.** En las propiedades de selección hay un deslizador
+  **Escala** (`selScaleLive`) que agranda/achica el objeto seleccionado (líneas, formas, cotas…)
+  alrededor de su centro; en **símbolos** el tamaño se ajusta con **Tam (mm)**. El deslizador de la
+  *Imagen* ahora se llama **Tamaño** (escala el calco importado, que es su función).
 - **Rotar** arreglado (los símbolos giran por su ángulo, no solo por puntos). **Touch** con umbral
   de long-press (no se cancela por micro-movimiento) → más sensible.
-- **Pendiente:** "+" de nueva imagen (collage/varios planos) e integrar los controles de imagen
-  como un modo más de la barra inferior.
+- **Auditoría (limpieza de código fantasma):** se borraron modales/handlers huérfanos —
+  `#scmod` (escalar), `#exmod` (exportar), paleta de color flotante, `showFondoBar`, `toggleOrigin`,
+  `fijarFondo/editarFondo`, CSS de `#fondoBar`/`.fb-*`, y variables muertas
+  (`scaleId`, `_recolorId`, `settingOrigin`, `dim2Drawing`). `node --check` OK.
+- **Pendiente:** "+" de nueva imagen (collage/varios planos).
 - **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
-  barra de propiedades → **Tamaño (mm), Giro, Altura, Color** editables en vivo + **Borrar**
-  (long-press = menú mover/copiar/escalar/rotar). Todo aplica al objeto seleccionado.
+  barra → **Tamaño (mm)/Giro/Altura** en símbolos · **Grosor/Línea/Escala** en formas · **Color** +
+  **Borrar**. **Long-press = menú SOLO ubicación:** mover/copiar/rotar/espejo/borrar (sin color ni
+  escalar: eso vive en la barra de propiedades, no se duplica).
 - **Datos del rótulo al crear** el proyecto (obra, cliente, dibujante, empresa/facultad).
 - **Salida:** *Hoja a escala (PDF)* → plotea a **A4/A3/A2** a la escala de la planta con
   **cajetín estándar** (modelo UNIT/facultad): marco con márgenes (izq 25mm), rótulo **abajo-

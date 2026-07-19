@@ -129,17 +129,6 @@ body{display:flex;flex-direction:column;background:#fff;}
 #pbTool{font-size:11px;font-weight:500;color:var(--ink);white-space:nowrap;flex-shrink:0;}
 #pbHint{font-size:11px;color:var(--accent);white-space:nowrap;flex-shrink:0;font-weight:500;}
 
-/* COLOR */
-#colorBtn{width:26px;height:26px;border-radius:50%;border:2px solid #e5e5ea;cursor:pointer;flex-shrink:0;}
-#colorPalette{display:none;position:fixed;z-index:200;
-  background:#fff;
-  border:1px solid #e5e5ea;border-radius:16px;padding:12px;
-  gap:8px;flex-wrap:wrap;width:168px;
-  box-shadow:0 8px 32px rgba(0,0,0,.15);}
-#colorPalette.show{display:flex;}
-.cp{width:28px;height:28px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;}
-.cp.on{border-color:var(--accent);}
-
 /* CONTEXT MENU — liquid glass */
 #ctx{display:none;position:fixed;z-index:300;
   background:#fff;border:1px solid #e5e5ea;border-radius:14px;
@@ -263,18 +252,6 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pu-item:active{border-color:var(--accent);}
 .pu-item svg{width:30px;height:30px;fill:none;stroke:var(--ink);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 .pu-item span{font-size:14px;color:var(--ink);line-height:1.05;pointer-events:none;}
-/* BARRA DE PLANO DE FONDO (calco) */
-#fondoBar{position:fixed;left:0;right:0;bottom:var(--prop);background:#fff;border-top:1px solid #e5e5ea;
-  padding:9px 12px;z-index:80;display:none;}
-#fondoBar.show{display:block;}
-#fondoBar.editing{bottom:0;}
-.fb-row{display:flex;align-items:center;gap:9px;overflow-x:auto;scrollbar-width:none;}
-.fb-row::-webkit-scrollbar{display:none;}
-.fb-l{font-size:15px;color:var(--label);white-space:nowrap;flex-shrink:0;}
-#fondoBar input[type=range]{accent-color:var(--accent);flex-shrink:0;width:92px;}
-.fb-btn{flex-shrink:0;padding:8px 15px;border-radius:9px;border:1.5px solid var(--accent);background:#fff;
-  color:var(--accent);font-family:var(--font);font-size:16px;font-weight:500;cursor:pointer;}
-.fb-btn.ghost{border-color:#d0d0d3;color:var(--ink);}
 .cdot{width:22px;height:22px;border-radius:50%;border:1.5px solid #d0d0d3;cursor:pointer;flex-shrink:0;padding:0;}
 /* Barra inferior: cuando no hay nada seleccionado ni activo, DESAPARECE del todo */
 #propbar.empty{display:none!important;}
@@ -476,26 +453,30 @@ details.mas[open] summary:before{content:'▾ ';}
 
 <div id="wrap"><canvas id="cv"></canvas></div>
 
-<!-- PROPBAR (abajo) -->
+<!-- PROPBAR (abajo) — barra dinámica: un solo contexto a la vez -->
 <div id="propbar">
-  <button id="colorBtn" onclick="togglePalette(event)" style="background:#1c1c1e"></button>
-  <div class="pdiv"></div>
-  <span class="pl">Escala</span>
-  <select id="pbEscala" onchange="setPlantaEscala(this.value)" title="Escala técnica del dibujo"><option value="100">1/100</option><option value="50">1/50</option><option value="75">1/75</option></select>
-  <div class="pdiv"></div>
   <span id="pbTool">Seleccionar</span>
-  <div class="pdiv"></div>
-  <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;opacity:.4;stroke:var(--ink);fill:none;stroke-linecap:round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="12" x2="21" y2="12" stroke-width="2.5"/><line x1="3" y1="18" x2="21" y2="18" stroke-width="5"/></svg>
-  <input type="range" id="pbStroke" min="1" max="10" value="2" style="width:60px" oninput="strokeW=+this.value">
-  <div class="pdiv"></div>
-  <div id="grpLine" style="display:flex;align-items:center;gap:6px">
+  <span id="grpTool" style="display:none;align-items:center;gap:6px">
+    <div class="pdiv"></div>
+    <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;opacity:.4;stroke:var(--ink);fill:none;stroke-linecap:round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="12" x2="21" y2="12" stroke-width="2.5"/><line x1="3" y1="18" x2="21" y2="18" stroke-width="5"/></svg>
+    <input type="range" id="pbStroke" min="1" max="10" value="2" style="width:60px" oninput="strokeW=+this.value">
+  </span>
+  <div id="grpLine" style="display:none;align-items:center;gap:6px">
+    <div class="pdiv"></div>
     <span class="pl">Tipo</span>
     <select id="pbLinetype" onchange="lineType=this.value">
       <option value="solid">────</option>
       <option value="dashed">- - -</option>
       <option value="dotted">·····</option>
     </select>
+  </div>
+  <div id="grpColor" style="display:none;align-items:center;gap:6px">
     <div class="pdiv"></div>
+    <span class="pl">Color</span>
+    <button class="cdot" style="background:#1c1c1e" onclick="setDrawColor('#1c1c1e')"></button>
+    <button class="cdot" style="background:#FE0000" onclick="setDrawColor('#FE0000')"></button>
+    <button class="cdot" style="background:#007aff" onclick="setDrawColor('#007aff')"></button>
+    <button class="cdot" style="background:#34c759" onclick="setDrawColor('#34c759')"></button>
   </div>
   <div id="grpSize" style="display:none;align-items:center;gap:6px">
     <span class="pl">Tam</span>
@@ -541,14 +522,13 @@ details.mas[open] summary:before{content:'▾ ';}
     <input type="number" id="pbAlt" value="30" min="0" step="5" style="width:52px;font-size:16px" oninput="bloqueAltura=+this.value||0"><span class="pl">cm</span>
     <div class="pdiv"></div>
     <span class="pl">Color</span>
-    <button class="cdot" style="background:#1c1c1e" onclick="setBlockColor('#1c1c1e')"></button>
-    <button class="cdot" style="background:#FE0000" onclick="setBlockColor('#FE0000')"></button>
-    <button class="cdot" style="background:#007aff" onclick="setBlockColor('#007aff')"></button>
-    <button class="cdot" style="background:#34c759" onclick="setBlockColor('#34c759')"></button>
+    <button class="cdot" style="background:#1c1c1e" onclick="setDrawColor('#1c1c1e')"></button>
+    <button class="cdot" style="background:#FE0000" onclick="setDrawColor('#FE0000')"></button>
+    <button class="cdot" style="background:#007aff" onclick="setDrawColor('#007aff')"></button>
+    <button class="cdot" style="background:#34c759" onclick="setDrawColor('#34c759')"></button>
     <div class="pdiv"></div>
   </div>
   <div id="grpSel" style="display:none;align-items:center;gap:6px">
-    <span class="pl" style="color:#007aff">● Sel</span>
     <span id="gsBlockCtl" style="display:none;align-items:center;gap:6px">
       <span class="pl">Tam</span>
       <select id="gsMM" onchange="selSet('mm',+this.value)"><option value="2">2mm</option><option value="3">3mm</option><option value="4">4mm</option><option value="5">5mm</option></select>
@@ -562,6 +542,11 @@ details.mas[open] summary:before{content:'▾ ';}
       <input type="range" id="gsSW" min="1" max="10" value="2" style="width:56px" oninput="selSet('strokeW',+this.value)">
       <span class="pl">Línea</span>
       <select id="gsLT" onchange="selSet('lineType',this.value)"><option value="solid">────</option><option value="dashed">- - -</option><option value="dotted">·····</option></select>
+    </span>
+    <span id="gsScaleCtl" style="display:none;align-items:center;gap:6px">
+      <span class="pl">Escala</span>
+      <input type="range" id="gsScale" min="20" max="300" value="100" style="width:76px" oninput="selScaleLive(this.value)" onchange="selScaleEnd()">
+      <div class="pdiv"></div>
     </span>
     <span class="pl">Color</span>
     <button class="cdot" style="background:#1c1c1e" onclick="selSet('color','#1c1c1e')"></button>
@@ -577,6 +562,9 @@ details.mas[open] summary:before{content:'▾ ';}
     <button class="cmd-btn" onclick="setGrid(0.5)">0.50</button>
     <button class="cmd-btn" onclick="setGrid(1)">1.00</button>
     <button class="cmd-btn" onclick="setGrid(3)">3.00 m</button>
+    <div class="pdiv"></div>
+    <span class="pl">Escala</span>
+    <select id="pbEscala" onchange="setPlantaEscala(this.value)" title="Escala técnica del dibujo"><option value="100">1/100</option><option value="50">1/50</option><option value="75">1/75</option></select>
     <button class="cmd-btn" onclick="closeBottomPanel()" style="margin-left:auto">✕</button>
   </div>
   <div id="grpExport" style="display:none;align-items:center;gap:8px">
@@ -589,7 +577,7 @@ details.mas[open] summary:before{content:'▾ ';}
   <div id="grpImage" style="display:none;align-items:center;gap:8px">
     <span class="pl">Imagen</span>
     <span class="pl">Op</span><input type="range" id="fondoOpac" min="10" max="100" value="50" style="width:70px" oninput="setFondoOpacity(this.value)">
-    <span class="pl">Escala</span><input type="range" id="fondoScale" min="20" max="300" value="100" style="width:80px" oninput="setFondoScale(this.value)">
+    <span class="pl">Tamaño</span><input type="range" id="fondoScale" min="20" max="300" value="100" style="width:80px" oninput="setFondoScale(this.value)">
     <button class="cmd-btn" id="imgEditBtn" onclick="toggleEditFondo()">Fijar</button>
     <button class="cmd-btn" onclick="startCalib()">Calibrar</button>
     <button class="cmd-btn" onclick="importPlano()">+ Nueva</button>
@@ -600,20 +588,6 @@ details.mas[open] summary:before{content:'▾ ';}
   <span id="coord" style="margin-left:auto">0, 0</span>
 </div>
 
-
-<!-- COLOR PALETTE -->
-<div id="colorPalette">
-  <div class="cp on" style="background:#1c1c1e" data-c="#1c1c1e" onclick="pickColor(this)"></div>
-  <div class="cp" style="background:#007aff" data-c="#007aff" onclick="pickColor(this)"></div>
-  <div class="cp" style="background:#ff3b30" data-c="#ff3b30" onclick="pickColor(this)"></div>
-  <div class="cp" style="background:#34c759" data-c="#34c759" onclick="pickColor(this)"></div>
-  <div class="cp" style="background:#ff9f0a" data-c="#ff9f0a" onclick="pickColor(this)"></div>
-  <div class="cp" style="background:#5856d6" data-c="#5856d6" onclick="pickColor(this)"></div>
-  <div class="cp" style="background:#ff2d55" data-c="#ff2d55" onclick="pickColor(this)"></div>
-  <div class="cp" style="background:#00c7be" data-c="#00c7be" onclick="pickColor(this)"></div>
-  <div class="cp" style="background:#8e8e93" data-c="#8e8e93" onclick="pickColor(this)"></div>
-  <div class="cp" style="background:#fff;border:2px solid rgba(0,0,0,.1)" data-c="#ffffff" onclick="pickColor(this)"></div>
-</div>
 
 <!-- CONTEXT MENU (long-press): solo ubicación / rotación / espejo / borrar -->
 <div id="ctx">
@@ -627,31 +601,6 @@ details.mas[open] summary:before{content:'▾ ';}
 <!-- MODALS -->
 <div class="modal" id="tmod"><div class="mbox"><h3>Texto</h3><input type="text" id="tinput" placeholder="Ej: Dormitorio, 3.50m..."><div class="mrow"><button onclick="cancelText()">Cancelar</button><button class="ok" onclick="confirmText()">Insertar</button></div></div></div>
 <div class="modal" id="etmod"><div class="mbox"><h3>Editar</h3><input type="text" id="etinput" placeholder="Nuevo texto..."><div class="mrow"><button onclick="document.getElementById('etmod').classList.remove('show')">Cancelar</button><button class="ok" onclick="confirmEditText()">Aplicar</button></div></div></div>
-<div class="modal" id="scmod"><div class="mbox"><h3>Escalar</h3><div style="display:flex;align-items:center;gap:10px;padding:4px 0"><span style="font-size:12px;color:var(--label);flex-shrink:0">Escala</span><input type="range" id="scSlider" min="10" max="300" value="100" style="flex:1;accent-color:var(--accent)" oninput="prevScale(this.value)"><span id="scVal" style="font-size:12px;color:var(--ink);min-width:36px">100%</span></div><div class="mrow"><button onclick="cancelScale()">Cancelar</button><button class="ok" onclick="confirmScale()">Aplicar</button></div></div></div>
-
-<!-- EXPORT — selector explícito de formato -->
-<div class="modal" id="exmod">
-  <div class="mbox">
-    <h3>Exportar / imprimir</h3>
-    <button class="exrow" onclick="closeExport();exportarHoja()">
-      <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><line x1="4" y1="16" x2="20" y2="16"/><rect x="13" y="17" width="6" height="3"/></svg>
-      <span class="exn">Hoja a escala (PDF)</span><span class="exd">lámina limpia con rótulo, a la escala de la planta</span>
-    </button>
-    <button class="exrow" onclick="doExport('dxf')">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l2 3-2 3M13 13l2 3-2 3" stroke-width="1.1"/></svg>
-      <span class="exn">DXF</span><span class="exd">vectorial para CAD (AutoCAD, LibreCAD)</span>
-    </button>
-    <button class="exrow" onclick="doExport('png')">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
-      <span class="exn">PNG</span><span class="exd">imagen limpia, sin grilla</span>
-    </button>
-    <button class="exrow" onclick="doExport('pdf')">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
-      <span class="exn">PDF</span><span class="exd">para imprimir o guardar</span>
-    </button>
-    <div class="mrow"><button onclick="closeExport()">Cerrar</button></div>
-  </div>
-</div>
 
 <!-- MODAL CALIBRACIÓN -->
 <div class="modal" id="calMod"><div class="mbox">
@@ -675,7 +624,6 @@ const PPM=100;              // px de mundo por metro (a zoom 1) — el mundo se 
 let gridM=1;                // metros por celda de grilla
 let vpX=0,vpY=0,vpZ=1,cellPx=PPM*gridM,snapOn=true;
 let originX=0,originY=0;     // punto 0,0 (px de mundo)
-let settingOrigin=false;    // modo: próximo toque fija el 0,0
 // ── Shell de proyectos ──
 let proyectos=JSON.parse(localStorage.getItem('sketchvolt_proy')||'[]');
 let proy=null;              // proyecto abierto
@@ -683,7 +631,6 @@ let planta=null;            // planta abierta (con hoja/denom/orient/rotulo/obje
 let calibPts=[];            // calibración por referencia (2 puntos)
 let calibrando=false;
 let bloqueAltura=30;        // altura desde el piso (cm) del próximo bloque
-let _recolorId=null;        // recolorear un objeto puesto
 let tool='select',color='#1c1c1e',strokeW=2,lineType='solid';
 let objects=[],nextId=1,history=[],redo=[];
 let _exporting=false;
@@ -693,15 +640,15 @@ let plineActive=false,plinePts=[],plineLastTap=0;
 // hatch
 let hatchPts=[],hatchLastTap=0;
 // dim
-let dimPh=0,dimA=null,dimB=null,dimFontSize=10,dim2Drawing=false;
+let dimPh=0,dimA=null,dimB=null,dimFontSize=10;
 // arc — 3 clicks: A, B, ctrl point
 let arcPh=0,arcA=null,arcB=null,arcEditId=null,arcEditOrig=null,arcEditDragging=false;
 // move/copy
 let movId=null,movOrigPts=null,movStart=null;
 // context
 let ctxObjId=null,longTimer=null;
-// scale
-let scaleId=null,scaleOrig=null;
+// escala del objeto seleccionado (barra de propiedades)
+let _selScaleBase=null;
 // rotate — free drag with 10° snapping
 let rotId=null,rotOrig=null,rotCenter=null,rotStartAngle=0,rotCurrent=0;
 // edit text
@@ -865,7 +812,7 @@ function drawGrid(){
 
 function drawObj(obj){
   if(!obj||!obj.pts)return;
-  const sel=obj.id===movId||obj.id===scaleId||obj.id===rotId||obj.id===selId;
+  const sel=obj.id===movId||obj.id===rotId||obj.id===selId;
   ctx.save();
   if(sel){ctx.strokeStyle='#007aff';}
   ctx.strokeStyle=obj.color||'#1c1c1e';ctx.fillStyle=obj.color||'#1c1c1e';
@@ -1091,7 +1038,7 @@ function drawHatchObj(obj){
     else if(pat==='dots'){for(let x=x0;x<x1+step;x+=step)for(let y=y0;y<y1+step;y+=step){ctx.beginPath();ctx.arc(x,y,1.2,0,Math.PI*2);ctx.fill();}}
     ctx.restore();}
   ctx.globalAlpha=Math.min(opac+.1,.5);ctx.strokeStyle=obj.color;ctx.lineWidth=.5;ctx.stroke();
-  if(obj.id===movId||obj.id===scaleId){ctx.globalAlpha=1;obj.pts.forEach(p=>{const s=w2s(...p);ctx.beginPath();ctx.arc(s.x,s.y,5,0,Math.PI*2);ctx.fillStyle='#007aff';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();});}
+  if(obj.id===movId||obj.id===selId){ctx.globalAlpha=1;obj.pts.forEach(p=>{const s=w2s(...p);ctx.beginPath();ctx.arc(s.x,s.y,5,0,Math.PI*2);ctx.fillStyle='#007aff';ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();});}
   ctx.restore();
 }
 
@@ -1283,7 +1230,6 @@ function doCtxAt(wp,sp){
 }
 document.addEventListener('pointerdown',e=>{
   if(!document.getElementById('ctx').contains(e.target))document.getElementById('ctx').classList.remove('show');
-  if(!document.getElementById('colorPalette').contains(e.target)&&e.target.id!=='colorBtn')document.getElementById('colorPalette').classList.remove('show');
 },{capture:true,passive:true});
 
 function mirrorObj(o){
@@ -1301,8 +1247,6 @@ function ctxDo(action){
   else if(action==='copy'){ST('copy');toast('Tocá y arrastrá para copiar');}
   else if(action==='mirror'){saveHistory();mirrorObj(obj);markDirty();render();toast('Espejo aplicado');}
   else if(action==='rotate'){startRotate(obj);}
-  else if(action==='edit'){etId=obj.id;document.getElementById('etinput').value=obj.type==='text'?obj.text:(obj.label||'');document.getElementById('etmod').classList.add('show');setTimeout(()=>document.getElementById('etinput').focus(),120);}
-  else if(action==='color'){_recolorId=obj.id;const p=document.getElementById('colorPalette');p.style.left='50%';p.style.transform='translateX(-50%)';p.style.bottom='90px';p.style.top='auto';p.classList.add('show');toast('Elegí el color');}
   ctxObjId=null;
 }
 
@@ -1442,7 +1386,6 @@ function onTE(e){
 
 // CORE HANDLERS
 function handleDown(wp,rawW,scrn){
-  if(settingOrigin){ originX=wp.x;originY=wp.y;settingOrigin=false;document.getElementById('origBtn').classList.remove('on');markDirty();render();toast('0,0 fijado');return; }
   if(calibrando){
     calibPts.push([rawW.x,rawW.y]);
     if(calibPts.length===2){ document.getElementById('calMod').classList.add('show');setTimeout(()=>document.getElementById('calVal').focus(),120); }
@@ -1651,21 +1594,22 @@ function doTrim(wp){
   objects.splice(idx,1,...no);render();toast('Segmento eliminado');
 }
 
-// SCALE
-function prevScale(v){
-  document.getElementById('scVal').textContent=v+'%';
-  if(!scaleId||!scaleOrig)return;
-  const f=v/100,obj=objects.find(o=>o.id===scaleId);if(!obj)return;
-  const cx=scaleOrig.pts[0][0],cy=scaleOrig.pts[0][1];
-  obj.pts=scaleOrig.pts.map(p=>[cx+(p[0]-cx)*f,cy+(p[1]-cy)*f]);
-  if(scaleOrig.r!==undefined)obj.r=scaleOrig.r*f;
-  if(scaleOrig.fontSize!==undefined)obj.fontSize=scaleOrig.fontSize*f;
-  // For dim: scale the offset too, not just pts
-  if(obj.type==='dim'&&scaleOrig.offset!==undefined)obj.offset=scaleOrig.offset*f;
+// ESCALA DEL OBJETO SELECCIONADO (barra de propiedades) — escala el OBJETO, no el plano.
+function selScaleLive(v){
+  const o=selObj(); if(!o||o.type==='block')return;
+  if(!_selScaleBase){ _selScaleBase=JSON.parse(JSON.stringify(o)); saveHistory(); }
+  const f=(+v)/100, base=_selScaleBase, c=getCenter(base);
+  o.pts=base.pts.map(p=>[c.x+(p[0]-c.x)*f,c.y+(p[1]-c.y)*f]);
+  if(base.r!==undefined)o.r=base.r*f;
+  if(base.fontSize!==undefined)o.fontSize=base.fontSize*f;
+  if(base.offset!==undefined)o.offset=base.offset*f;
   render();
 }
-function cancelScale(){const obj=objects.find(o=>o.id===scaleId);if(obj&&scaleOrig){obj.pts=scaleOrig.pts;if(scaleOrig.r!==undefined)obj.r=scaleOrig.r;if(scaleOrig.fontSize!==undefined)obj.fontSize=scaleOrig.fontSize;}scaleId=null;scaleOrig=null;document.getElementById('scmod').classList.remove('show');render();}
-function confirmScale(){scaleId=null;scaleOrig=null;document.getElementById('scmod').classList.remove('show');}
+function selScaleEnd(){
+  _selScaleBase=null;
+  const s=document.getElementById('gsScale'); if(s)s.value=100;
+  markDirty();
+}
 
 // TEXT
 function cancelText(){document.getElementById('tmod').classList.remove('show');document.getElementById('tinput').value='';}
@@ -1724,12 +1668,8 @@ function threePointArc(p1,p2,p3){
   return{cx:ux,cy:uy,r,startAngle:sa,endAngle:ea,ccw};
 }
 
-// COLOR
-function togglePalette(e){e.stopPropagation();const p=document.getElementById('colorPalette');if(p.classList.contains('show')){p.classList.remove('show');return;}const btn=document.getElementById('colorBtn');const r=btn.getBoundingClientRect();p.style.left=Math.min(r.left,window.innerWidth-175)+'px';p.style.bottom=(window.innerHeight-r.top+8)+'px';p.style.top='auto';p.classList.add('show');}
-function pickColor(el){
-  const c=el.dataset.c;
-  if(_recolorId){const o=objects.find(x=>x.id===_recolorId);if(o){saveHistory();o.color=c;render();}_recolorId=null;const p=document.getElementById('colorPalette');p.classList.remove('show');p.style.transform='';toast('Color cambiado');return;}
-  color=c;document.querySelectorAll('.cp').forEach(d=>d.classList.remove('on'));el.classList.add('on');document.getElementById('colorBtn').style.background=color;document.getElementById('colorPalette').classList.remove('show');}
+// COLOR — un único selector: dots inline por contexto (dibujo / bloque / selección).
+function setDrawColor(c){ color=c; toast('Color de dibujo'); }
 
 // HINT
 function setHint(msg){const el=document.getElementById('pbHint');el.textContent=msg;el.style.display=msg?'inline':'none';}
@@ -1742,37 +1682,21 @@ document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr'
 
 // TOOLBAR
 function ST(t){
-  tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];selId=null;
+  tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];selId=null;_selScaleBase=null;
   if(t!=='block')bloqueSel=null;
-  dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;dim2Drawing=false;setHint('');
+  dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;setHint('');
   document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
   const btnH=document.getElementById('btn-herr');
   const srcSvg=phbActive?phbActive.querySelector('svg'):document.getElementById('escBtn').querySelector('svg');
   if(srcSvg&&btnH){const old=btnH.querySelector('svg');if(old)old.replaceWith(srcSvg.cloneNode(true));}
-  document.getElementById('grpLine').style.display=['line','arc','rect','pen','pline','circle','poly'].includes(t)?'flex':'none';
-  document.getElementById('grpSize').style.display=['text','circle','poly'].includes(t)?'flex':'none';
-  document.getElementById('grpFont').style.display=t==='text'?'flex':'none';
-  document.getElementById('grpSides').style.display=t==='poly'?'flex':'none';
-  document.getElementById('grpHatch').style.display=t==='hatch'?'flex':'none';
-  document.getElementById('grpEraser').style.display=t==='eraser'?'flex':'none';
-  document.getElementById('grpDim').style.display=(t==='dim'||t==='dim2')?'flex':'none';
-  document.getElementById('grpBlock').style.display=t==='block'?'flex':'none';
-  document.getElementById('grpSel').style.display='none';
-  _panelMode=null;document.getElementById('grpGrid').style.display='none';document.getElementById('grpExport').style.display='none';
-  const names={select:'Seleccionar',line:'Línea',arc:'Arco · arrastrá de A a B · seleccionar y mover grip ↕ para curvar',pline:'Polilínea · mover + doble toque cierra',rect:'Rectángulo',circle:'Círculo',poly:'Polígono',pen:'Trazo libre',text:'Texto',dim:'Cota · A → B → posición',dim2:'Cota directa · arrastrá A → B',hatch:'Relleno · toques + doble toque cierra',eraser:'Goma',trim:'Trim',erase:'Borrar objeto',move:'Mover',copy:'Copiar'};
-  document.getElementById('pbTool').textContent=t==='block'?(bloqueNom||'Símbolo'):(names[t]||t);
-  refreshBottom();render();
+  _panelMode=null;
+  applyToolBar();
+  render();
 }
 function toggleSnap(){snapOn=!snapOn;document.getElementById('snapBtn').classList.toggle('on',snapOn);toast('Snap '+(snapOn?'ON':'OFF'));}
-// ── EXPORTACIÓN (explícita: DXF / PNG / PDF · siempre limpio, sin grilla) ──
-function openExport(){
-  if(!objects.length){toast('Nada para exportar');return;}
-  document.getElementById('exmod').classList.add('show');
-}
-function closeExport(){document.getElementById('exmod').classList.remove('show');}
+// ── EXPORTACIÓN (DXF / PNG / PDF · siempre limpio, sin grilla) ──
 function doExport(fmt){
-  closeExport();
   if(fmt==='dxf')return exportDXF();
   if(fmt==='pdf')return exportPDF();
   return exportPNG();
@@ -1900,37 +1824,58 @@ function fabElec(){
   toggleUnit();
 }
 function setBlockGiro(v){bloqueGiro=+v;}
-function setBlockColor(c){color=c;document.getElementById('colorBtn').style.background=c;document.querySelectorAll('.cp').forEach(d=>d.classList.toggle('on',d.dataset.c===c));toast('Color: nuevos símbolos');}
 function setBlockMM(v){ bloqueMM=+v; }
 function setPlantaEscala(v){ if(!planta)return; planta.denom=+v; persistProy(); render(); toast('Escala 1/'+v); }
-// ── BARRA INFERIOR DINÁMICA (vacía por defecto) ──
+// ── BARRA INFERIOR DINÁMICA — un solo contexto a la vez (herramienta · selección · panel) ──
 let _panelMode=null;
+const _ALL_GRP=['grpTool','grpLine','grpColor','grpSize','grpFont','grpSides','grpHatch','grpDim','grpEraser','grpBlock','grpSel','grpGrid','grpExport','grpImage'];
+function _hideAllGrp(){ _ALL_GRP.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';}); }
 function refreshBottom(){
   const idle = tool==='select' && selId==null && !modoAjusteFondo && !_panelMode;
   const pb=document.getElementById('propbar'); if(pb)pb.classList.toggle('empty', idle);
 }
+// Contexto HERRAMIENTA: nombre + props de la herramienta activa (nada de selección ni panel).
+function applyToolBar(){
+  _hideAllGrp();
+  const t=tool;
+  const show=(id,c)=>{const e=document.getElementById(id);if(e)e.style.display=c?'flex':'none';};
+  const strokeT=['line','arc','rect','pen','pline','circle','poly'];
+  const drawT=['line','arc','rect','pen','pline','circle','poly','text','hatch','dim','dim2'];
+  show('grpTool',strokeT.includes(t));
+  show('grpLine',strokeT.includes(t));
+  show('grpColor',drawT.includes(t));
+  show('grpSize',['text','circle','poly'].includes(t));
+  show('grpFont',t==='text');
+  show('grpSides',t==='poly');
+  show('grpHatch',t==='hatch');
+  show('grpDim',t==='dim'||t==='dim2');
+  show('grpEraser',t==='eraser');
+  show('grpBlock',t==='block');
+  const names={select:'Seleccionar',line:'Línea',arc:'Arco · arrastrá A→B · grip ↕ para curvar',pline:'Polilínea · doble toque cierra',rect:'Rectángulo',circle:'Círculo',poly:'Polígono',pen:'Trazo libre',text:'Texto',dim:'Cota · A → B → posición',dim2:'Cota directa · A → B',hatch:'Relleno · doble toque cierra',eraser:'Goma',trim:'Trim',erase:'Borrar objeto',move:'Mover',copy:'Copiar'};
+  const pt=document.getElementById('pbTool'); if(pt)pt.textContent=t==='block'?(bloqueNom||'Símbolo'):(names[t]||t);
+  refreshBottom();
+}
 function openBottomPanel(mode){
   if(_panelMode===mode){ closeBottomPanel(); return; }
-  _panelMode=mode; selId=null; document.getElementById('grpSel').style.display='none';
-  document.getElementById('grpGrid').style.display = mode==='grid'?'flex':'none';
-  document.getElementById('grpExport').style.display = mode==='export'?'flex':'none';
-  document.getElementById('grpImage').style.display = mode==='image'?'flex':'none';
+  _panelMode=mode; selId=null; _selScaleBase=null;
+  _hideAllGrp();
+  const map={grid:'grpGrid',export:'grpExport',image:'grpImage'};
+  const e=document.getElementById(map[mode]); if(e)e.style.display='flex';
+  const pt=document.getElementById('pbTool'); if(pt)pt.textContent={grid:'Grilla',export:'Exportar',image:'Imagen'}[mode]||'';
   if(mode==='image'){ const be=document.getElementById('imgEditBtn'); if(be)be.textContent=modoAjusteFondo?'Fijar':'Editar'; }
   refreshBottom(); render();
 }
 function closeBottomPanel(){
   if(_panelMode==='image'&&modoAjusteFondo){ modoAjusteFondo=false; fondoAprobado=true; savePlanta(); }
   _panelMode=null;
-  document.getElementById('grpGrid').style.display='none';
-  document.getElementById('grpExport').style.display='none';
-  document.getElementById('grpImage').style.display='none';
-  refreshBottom(); render();
+  if(selId!=null) showSelBar(); else applyToolBar();
+  render();
 }
 function openImagen(){ if(!fondoImg){ importPlano(); } else openBottomPanel('image'); }
 function toggleEditFondo(){ modoAjusteFondo=!modoAjusteFondo; fondoAprobado=!modoAjusteFondo;
   const be=document.getElementById('imgEditBtn'); if(be)be.textContent=modoAjusteFondo?'Fijar':'Editar';
   savePlanta(); render(); toast(modoAjusteFondo?'Movelo o reescalalo':'Plano fijo'); }
-function setGrid(m){ gridM=m; cellPx=PPM*gridM; if(planta)planta.gridM=m; markDirty(); closeBottomPanel(); render(); toast('Grilla '+m+' m'); }
+function setGrid(m){ gridM=m; cellPx=PPM*gridM; if(planta)planta.gridM=m; markDirty(); render(); toast('Grilla '+m+' m'); }
 // ── PROPIEDADES DEL OBJETO SELECCIONADO ──
 function selObj(){ return selId!=null?objects.find(o=>o.id===selId):null; }
 function selectAt(wp){ const T=28/vpZ;
@@ -1939,17 +1884,21 @@ function selectAt(wp){ const T=28/vpZ;
 }
 function selSet(k,v){ const o=selObj(); if(!o)return; saveHistory(); o[k]=v; markDirty(); render(); }
 function selDelete(){ const o=selObj(); if(!o)return; saveHistory(); objects=objects.filter(x=>x.id!==selId); selId=null; markDirty(); showSelBar(); render(); toast('Borrado'); }
+// Contexto SELECCIÓN: SOLO las propiedades del objeto (nada de herramienta ni panel).
 function showSelBar(){
   const o=selObj(), g=document.getElementById('grpSel');
   if(!g)return;
-  if(!o){ g.style.display='none'; if(tool==='select'){const t=document.getElementById('pbTool');if(t)t.textContent='Seleccionar';} refreshBottom(); return; }
+  if(!o){ _selScaleBase=null; applyToolBar(); return; }
+  _hideAllGrp(); _panelMode=null;
   const isB=o.type==='block', hasLine=['line','rect','pline','pen','circle','poly','arc'].includes(o.type);
   document.getElementById('gsBlockCtl').style.display=isB?'inline-flex':'none';
   document.getElementById('gsLineCtl').style.display=hasLine?'inline-flex':'none';
+  document.getElementById('gsScaleCtl').style.display=isB?'none':'inline-flex';
   if(isB){ document.getElementById('gsMM').value=o.mm||3; document.getElementById('gsGiro').value=o.rotation||0; document.getElementById('gsAlt').value=(o.altura!=null?o.altura:30); }
   if(hasLine){ document.getElementById('gsSW').value=o.strokeW||2; document.getElementById('gsLT').value=o.lineType||'solid'; }
+  _selScaleBase=null; const gsc=document.getElementById('gsScale'); if(gsc)gsc.value=100;
   g.style.display='flex';
-  document.getElementById('pbTool').textContent=isB?'Símbolo':'Objeto';
+  const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isB?'Símbolo':'Objeto';
   refreshBottom();
 }
 
@@ -1990,10 +1939,7 @@ function setFondoScale(v){
   imgX=cx-fondoImg.width*imgScale/2;imgY=cy-fondoImg.height*imgScale/2;
   render();
 }
-function fijarFondo(){modoAjusteFondo=false;fondoAprobado=true;render();toast('Plano fijo ✓');}
-function editarFondo(){modoAjusteFondo=true;fondoAprobado=false;render();}
 function quitarFondo(){fondoImg=null;fondoURL=null;fondoAprobado=false;modoAjusteFondo=false;closeBottomPanel();render();savePlanta();toast('Plano quitado');}
-function showFondoBar(){}   // (obsoleto: la imagen ahora es un panel de la barra inferior)
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function fondoFromPDF(file){
   toast('Procesando PDF…');
@@ -2182,9 +2128,9 @@ function openPlanta(id){
   history=[];redo=[];
   fondoImg=null;fondoURL=planta.fondoURL||null;fondoAprobado=false;modoAjusteFondo=false;
   if(fondoURL){ const t=planta.fondoT||{}; const im=new Image();
-    im.onload=()=>{fondoImg=im;imgScale=t.scale||1;imgScaleBase=t.base||imgScale;imgOpacity=t.op!=null?t.op:0.5;imgX=t.x||0;imgY=t.y||0;fondoAprobado=true;showFondoBar();render();};
+    im.onload=()=>{fondoImg=im;imgScale=t.scale||1;imgScaleBase=t.base||imgScale;imgOpacity=t.op!=null?t.op:0.5;imgX=t.x||0;imgY=t.y||0;fondoAprobado=true;render();};
     im.src=fondoURL;
-  } else { showFondoBar(); }
+  }
   document.getElementById('scrHome').classList.remove('on');
   document.getElementById('scrProj').classList.remove('on');
   // escala de bloque por defecto = escala de la planta
@@ -2212,14 +2158,9 @@ function savePlanta(){
   persistProy();
 }
 
-// ══════════ ORIGEN 0,0 ══════════
-function toggleOrigin(){ settingOrigin=!settingOrigin; calibrando=false;
-  document.getElementById('origBtn').classList.toggle('on',settingOrigin);
-  toast(settingOrigin?'Tocá dónde va el 0,0':'Cancelado'); }
-
 // ══════════ CALIBRACIÓN POR REFERENCIA ══════════
 function startCalib(){ if(!fondoImg){toast('Primero importá un plano');return;}
-  calibrando=true;calibPts=[];settingOrigin=false;toast('Tocá el 1º punto de una medida conocida (ej. el muro)'); }
+  calibrando=true;calibPts=[];toast('Tocá el 1º punto de una medida conocida (ej. el muro)'); }
 function cancelCalib(){ calibrando=false;calibPts=[];document.getElementById('calMod').classList.remove('show');render(); }
 function applyCalib(){
   const m=parseFloat(document.getElementById('calVal').value);
