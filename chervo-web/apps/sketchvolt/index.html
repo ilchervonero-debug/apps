@@ -316,7 +316,16 @@ details.mas[open] summary:before{content:'▾ ';}
     <div id="proyList"></div>
     <button class="np-add" id="npAddBtn" onclick="toggleNp()">+ Nuevo proyecto</button>
     <div id="npForm" style="display:none;margin-top:6px">
-      <div class="fld"><label>Nombre</label><input id="npNom" placeholder="Casa Melo"></div>
+      <div class="fld"><label>Nombre del proyecto</label><input id="npNom" placeholder="Casa Melo"></div>
+      <div class="sec-t">Datos del rótulo (van al cajetín)</div>
+      <div class="fld2">
+        <div class="fld"><label>Obra / ubicación</label><input id="npObra" placeholder="Melo, Cerro Largo"></div>
+        <div class="fld"><label>Cliente</label><input id="npCli" placeholder="Ángel Nieves"></div>
+      </div>
+      <div class="fld2">
+        <div class="fld"><label>Dibujante</label><input id="npDib" placeholder="Ángel Nieves"></div>
+        <div class="fld"><label>Empresa / facultad</label><input id="npEmp" placeholder="iLStorage"></div>
+      </div>
       <div class="fld"><label>Descripción (opcional)</label><input id="npDesc" placeholder="Instalación eléctrica"></div>
       <button class="btn-r" onclick="crearProy()">Crear proyecto</button>
     </div>
@@ -340,10 +349,14 @@ details.mas[open] summary:before{content:'▾ ';}
       <div class="fld"><label>Lienzo</label><select id="pjHoja" onchange="pjEdit()"><option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="inf">Sin hoja</option></select></div>
       <div class="fld"><label>Orientación</label><select id="pjOri" onchange="pjEdit()"><option value="horiz">Apaisado</option><option value="vert">Vertical</option></select></div>
     </div>
-    <details class="mas"><summary>Datos para el rótulo (cliente, obra)</summary>
+    <details class="mas"><summary>Datos del rótulo (cajetín)</summary>
       <div class="fld2" style="margin-top:10px">
-        <div class="fld"><label>Cliente</label><input id="pjCli" oninput="pjEdit()"></div>
         <div class="fld"><label>Obra / ubicación</label><input id="pjObra" oninput="pjEdit()"></div>
+        <div class="fld"><label>Cliente</label><input id="pjCli" oninput="pjEdit()"></div>
+      </div>
+      <div class="fld2">
+        <div class="fld"><label>Dibujante</label><input id="pjDib" oninput="pjEdit()"></div>
+        <div class="fld"><label>Empresa / facultad</label><input id="pjEmp" oninput="pjEdit()"></div>
       </div>
     </details>
     <div class="sec-t">Planos / hojas</div>
@@ -532,6 +545,24 @@ details.mas[open] summary:before{content:'▾ ';}
     <button class="cdot" style="background:#FE0000" onclick="setBlockColor('#FE0000')"></button>
     <button class="cdot" style="background:#007aff" onclick="setBlockColor('#007aff')"></button>
     <button class="cdot" style="background:#34c759" onclick="setBlockColor('#34c759')"></button>
+    <div class="pdiv"></div>
+  </div>
+  <div id="grpSel" style="display:none;align-items:center;gap:6px">
+    <span class="pl" style="color:#007aff">● Sel</span>
+    <span id="gsBlockCtl" style="display:none;align-items:center;gap:6px">
+      <span class="pl">Tam</span>
+      <select id="gsMM" onchange="selSet('mm',+this.value)"><option value="5">5mm</option><option value="8">8mm</option><option value="10">10mm</option><option value="15">15mm</option></select>
+      <span class="pl">Giro</span>
+      <select id="gsGiro" onchange="selSet('rotation',+this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select>
+      <span class="pl">Alt</span>
+      <input type="number" id="gsAlt" min="0" step="5" style="width:46px;font-size:16px" onchange="selSet('altura',+this.value)"><span class="pl">cm</span>
+    </span>
+    <span class="pl">Color</span>
+    <button class="cdot" style="background:#1c1c1e" onclick="selSet('color','#1c1c1e')"></button>
+    <button class="cdot" style="background:#FE0000" onclick="selSet('color','#FE0000')"></button>
+    <button class="cdot" style="background:#007aff" onclick="selSet('color','#007aff')"></button>
+    <button class="cdot" style="background:#34c759" onclick="selSet('color','#34c759')"></button>
+    <button onclick="selDelete()" style="border:1.5px solid #d0d0d3;background:#fff;color:#c00;border-radius:8px;padding:6px 12px;font-size:15px;font-family:var(--font);cursor:pointer;">Borrar</button>
     <div class="pdiv"></div>
   </div>
   <span id="pbHint" style="display:none"></span>
@@ -1396,7 +1427,7 @@ function handleDown(wp,rawW,scrn){
     markDirty();
     ST('select');            // comando de estampado: vuelve al cursor (escape)
     selId=nid;               // el símbolo queda seleccionado, esperando edición
-    render();toast(bloqueNom+' ✓ · tocá el rayo para estampar otro');return;
+    showSelBar();render();toast(bloqueNom+' ✓ · tocá el rayo para estampar otro');return;
   }
   if(tool==='select'){
     // Check arc grip first
@@ -1411,7 +1442,7 @@ function handleDown(wp,rawW,scrn){
         }
       }
     }
-    doCtxAt(wp,scrn);return;
+    selectAt(wp);return;   // toque simple = seleccionar (propiedades); long-press = menú
   }
   if(tool==='text'){tpX=rawW.x;tpY=rawW.y;document.getElementById('tmod').classList.add('show');setTimeout(()=>document.getElementById('tinput').focus(),120);return;}
   if(tool==='trim'){doTrim(wp);return;}
@@ -1696,6 +1727,7 @@ function ST(t){
   document.getElementById('grpEraser').style.display=t==='eraser'?'flex':'none';
   document.getElementById('grpDim').style.display=(t==='dim'||t==='dim2')?'flex':'none';
   document.getElementById('grpBlock').style.display=t==='block'?'flex':'none';
+  document.getElementById('grpSel').style.display='none';
   const names={select:'Seleccionar',line:'Línea',arc:'Arco · arrastrá de A a B · seleccionar y mover grip ↕ para curvar',pline:'Polilínea · mover + doble toque cierra',rect:'Rectángulo',circle:'Círculo',poly:'Polígono',pen:'Trazo libre',text:'Texto',dim:'Cota · A → B → posición',dim2:'Cota directa · arrastrá A → B',hatch:'Relleno · toques + doble toque cierra',eraser:'Goma',trim:'Trim',erase:'Borrar objeto',move:'Mover',copy:'Copiar'};
   document.getElementById('pbTool').textContent=t==='block'?(bloqueNom||'Símbolo'):(names[t]||t);
   render();
@@ -1839,6 +1871,24 @@ function fabElec(){
 function setBlockGiro(v){bloqueGiro=+v;}
 function setBlockColor(c){color=c;document.getElementById('colorBtn').style.background=c;document.querySelectorAll('.cp').forEach(d=>d.classList.toggle('on',d.dataset.c===c));toast('Color: nuevos símbolos');}
 function setBlockMM(v){ bloqueMM=+v; }
+// ── PROPIEDADES DEL OBJETO SELECCIONADO ──
+function selObj(){ return selId!=null?objects.find(o=>o.id===selId):null; }
+function selectAt(wp){ const T=28/vpZ;
+  for(let i=objects.length-1;i>=0;i--){ if(hitTest(wp,objects[i],T)){ selId=objects[i].id; showSelBar(); render(); return; } }
+  selId=null; showSelBar(); render();
+}
+function selSet(k,v){ const o=selObj(); if(!o)return; saveHistory(); o[k]=v; markDirty(); render(); }
+function selDelete(){ const o=selObj(); if(!o)return; saveHistory(); objects=objects.filter(x=>x.id!==selId); selId=null; markDirty(); showSelBar(); render(); toast('Borrado'); }
+function showSelBar(){
+  const o=selObj(), g=document.getElementById('grpSel');
+  if(!g)return;
+  if(!o){ g.style.display='none'; if(tool==='select'){const t=document.getElementById('pbTool');if(t)t.textContent='Seleccionar';} return; }
+  const isB=o.type==='block';
+  document.getElementById('gsBlockCtl').style.display=isB?'inline-flex':'none';
+  if(isB){ document.getElementById('gsMM').value=o.mm||5; document.getElementById('gsGiro').value=o.rotation||0; document.getElementById('gsAlt').value=(o.altura!=null?o.altura:30); }
+  g.style.display='flex';
+  document.getElementById('pbTool').textContent=isB?'Símbolo seleccionado':'Seleccionado';
+}
 
 // ══════════ IMPORTAR PLANO (imagen / foto / PDF / DXF) ══════════
 function importPlano(){document.getElementById('planoInput').click();}
@@ -2006,10 +2056,12 @@ function toggleNp(){ const f=document.getElementById('npForm'),b=document.getEle
 function crearProy(){
   let nom=document.getElementById('npNom').value.trim();
   if(!nom)nom='Proyecto '+(proyectos.filter(p=>p.id!=='__libre').length+1);
-  const p={id:uid(),nombre:nom,desc:document.getElementById('npDesc').value.trim(),
-    cliente:'',obra:'',denom:100,hoja:'A3',orient:'horiz',plantas:[]};
+  const gv=id=>document.getElementById(id).value.trim();
+  const p={id:uid(),nombre:nom,desc:gv('npDesc'),
+    cliente:gv('npCli'),obra:gv('npObra'),dibujante:gv('npDib'),empresa:gv('npEmp'),
+    denom:100,hoja:'A3',orient:'horiz',plantas:[]};
   proyectos.unshift(p);persistProy();
-  document.getElementById('npNom').value='';document.getElementById('npDesc').value='';
+  ['npNom','npDesc','npCli','npObra','npDib','npEmp'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('npForm').style.display='none';document.getElementById('npAddBtn').style.display='block';
   openProy(p.id);
 }
@@ -2024,6 +2076,8 @@ function openProy(id){
   document.getElementById('pjDesc').value=proy.desc||'';
   document.getElementById('pjCli').value=proy.cliente||'';
   document.getElementById('pjObra').value=proy.obra||'';
+  document.getElementById('pjDib').value=proy.dibujante||'';
+  document.getElementById('pjEmp').value=proy.empresa||'';
   document.getElementById('pjEsc').value=proy.denom||100;
   document.getElementById('pjHoja').value=proy.hoja||'A3';
   document.getElementById('pjOri').value=proy.orient||'horiz';
@@ -2034,6 +2088,8 @@ function pjEdit(){ if(!proy)return;
   proy.desc=document.getElementById('pjDesc').value.trim();
   proy.cliente=document.getElementById('pjCli').value.trim();
   proy.obra=document.getElementById('pjObra').value.trim();
+  proy.dibujante=document.getElementById('pjDib').value.trim();
+  proy.empresa=document.getElementById('pjEmp').value.trim();
   proy.denom=+document.getElementById('pjEsc').value;
   proy.hoja=document.getElementById('pjHoja').value;
   proy.orient=document.getElementById('pjOri').value;
@@ -2161,23 +2217,46 @@ function renderSheetURL(){
   tool=pv.t;vpX=pv.x;vpY=pv.y;vpZ=pv.z;cv.width=pv.w;cv.height=pv.h;_exporting=false;render();
   return {url,pw,ph};
 }
+// CAJETÍN estándar (modelo UNIT/facultad): marco + rótulo abajo-derecha, tamaño fijo (175×50mm).
+// Se reduce a la mitad en 1/50 y a 0.25 en 1/75 (según pedido de Ángel).
 function drawRotulo(K,W,H){
-  const m=8*K;
-  ctx.save();ctx.strokeStyle='#1c1c1e';ctx.lineWidth=1.6;ctx.setLineDash([]);
-  ctx.strokeRect(m,m,W-2*m,H-2*m);
-  const tbH=24*K,tbW=W-2*m,tbX=m,tbY=H-m-tbH,c2=tbX+tbW*0.52,c3=tbX+tbW*0.78;
-  ctx.fillStyle='#fff';ctx.fillRect(tbX,tbY,tbW,tbH);ctx.strokeRect(tbX,tbY,tbW,tbH);
-  ctx.beginPath();ctx.moveTo(c2,tbY);ctx.lineTo(c2,tbY+tbH);ctx.moveTo(c3,tbY);ctx.lineTo(c3,tbY+tbH);
-  ctx.moveTo(tbX,tbY+tbH/2);ctx.lineTo(c2,tbY+tbH/2);ctx.moveTo(c2,tbY+tbH/2);ctx.lineTo(W-m,tbY+tbH/2);ctx.stroke();
+  const marL=25*K, marO=10*K;                 // márgenes: izq 25mm, resto 10mm
+  ctx.save();ctx.strokeStyle='#1c1c1e';ctx.setLineDash([]);
+  ctx.lineWidth=2;ctx.strokeRect(marL,marO,W-marL-marO,H-2*marO);
+  const f=({100:1,50:0.5,75:0.25}[planta.denom]||1);
+  let cw=175*K*f, chh=50*K*f;
+  cw=Math.min(cw,W-marL-marO); chh=Math.min(chh,(H-2*marO)*0.7);
+  const cx=W-marO-cw, cy=H-marO-chh;
+  ctx.fillStyle='#fff';ctx.fillRect(cx,cy,cw,chh);ctx.lineWidth=1.6;ctx.strokeRect(cx,cy,cw,chh);
+  const c1w=cw*(40/175), c3w=cw*(28/175), x1=cx+c1w, x2=cx+cw-c3w;
+  ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x1,cy);ctx.lineTo(x1,cy+chh);ctx.moveTo(x2,cy);ctx.lineTo(x2,cy+chh);ctx.stroke();
   const idx=(proy.plantas||[]).findIndex(p=>p.id===planta.id)+1, tot=(proy.plantas||[]).length;
   const hoy=new Date().toLocaleDateString('es-UY');
-  const cel=(x,y,k,v)=>{ctx.fillStyle='#8a8a8a';ctx.font='500 '+(2.4*K)+'px sans-serif';ctx.fillText(k,x+2.2*K,y+3.6*K);
-    ctx.fillStyle='#1c1c1e';ctx.font='500 '+(3.4*K)+'px sans-serif';ctx.fillText(String(v||'—').slice(0,42),x+2.2*K,y+8.6*K);};
-  cel(tbX,tbY,'OBRA',proy.obra); cel(tbX,tbY+tbH/2,'CLIENTE',proy.cliente);
-  cel(c2,tbY,'PLANO',planta.nombre); cel(c2,tbY+tbH/2,'FECHA',hoy);
-  cel(c3,tbY,'ESCALA','1/'+planta.denom); cel(c3,tbY+tbH/2,'LÁMINA',idx+'/'+tot);
-  ctx.fillStyle='#C0C0C0';ctx.font='800 '+(3.2*K)+'px sans-serif';ctx.fillText('Sketch',tbX+2.2*K,tbY-2.2*K);
-  const sw=ctx.measureText('Sketch').width;ctx.fillStyle='#FE0000';ctx.fillText('Volt',tbX+2.2*K+sw,tbY-2.2*K);
+  const lam=(planta.lamina||String(idx).padStart(2,'0'));
+  // col1: LÁMINA (número grande)
+  ctx.fillStyle='#8a8a8a';ctx.font='500 '+(2.4*K*f)+'px sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.fillText('LÁMINA',cx+1.5*K*f,cy+3.6*K*f);
+  ctx.fillStyle='#1c1c1e';ctx.font='700 '+(15*K*f)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(lam,cx+c1w/2,cy+chh*0.6);
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  // col2: empresa (top) · título (mid) · DIBUJANTE|ESCALA (bottom)
+  const midX=x1, midW=x2-x1, r1=cy+chh*0.34, r2=cy+chh*0.64, midSplit=midX+midW*0.62;
+  ctx.beginPath();ctx.moveTo(midX,r1);ctx.lineTo(x2,r1);ctx.moveTo(midX,r2);ctx.lineTo(x2,r2);ctx.moveTo(midSplit,r2);ctx.lineTo(midSplit,cy+chh);ctx.stroke();
+  ctx.textAlign='center';ctx.fillStyle='#1c1c1e';
+  ctx.font='700 '+(3.8*K*f)+'px sans-serif';ctx.fillText(String(proy.empresa||'SketchVolt').slice(0,40),midX+midW/2,cy+chh*0.23);
+  ctx.font='500 '+(3.1*K*f)+'px sans-serif';ctx.fillText(((proy.obra?proy.obra+' — ':'')+(planta.nombre||'')).slice(0,46),midX+midW/2,cy+chh*0.51);
+  const cell=(x,y,k,v,px)=>{ctx.textAlign='left';ctx.fillStyle='#8a8a8a';ctx.font='500 '+(2.1*K*f)+'px sans-serif';ctx.fillText(k,x+1.2*K*f,y+2.7*K*f);
+    ctx.fillStyle='#1c1c1e';ctx.font='500 '+((px||3)*K*f)+'px sans-serif';ctx.fillText(String(v||'—').slice(0,22),x+1.2*K*f,y+6.6*K*f);};
+  cell(midX,r2,'DIBUJANTE',proy.dibujante);
+  cell(midSplit,r2,'ESCALA','1/'+planta.denom);
+  // col3: FECHA (top) · HOJA (bottom)
+  ctx.beginPath();ctx.moveTo(x2,cy+chh*0.5);ctx.lineTo(cx+cw,cy+chh*0.5);ctx.stroke();
+  cell(x2,cy,'FECHA',hoy,2.6); cell(x2,cy+chh*0.5,'HOJA',idx+'/'+tot,2.6);
+  // marca
+  ctx.textAlign='left';ctx.fillStyle='#C0C0C0';ctx.font='800 '+(2.8*K*f)+'px sans-serif';
+  ctx.fillText('Sketch',cx+1.5*K*f,cy-1.6*K*f);
+  const sw=ctx.measureText('Sketch').width;ctx.fillStyle='#FE0000';ctx.fillText('Volt',cx+1.5*K*f+sw,cy-1.6*K*f);
   ctx.restore();
 }
 

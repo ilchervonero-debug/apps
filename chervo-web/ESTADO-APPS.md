@@ -139,9 +139,14 @@ Versión = número de caché del SW.
 - **Comandos de estampado:** elegís el símbolo (FAB rayo) → estampás **uno** → queda
   **seleccionado (azul) esperando edición** y volvés al **cursor (escape)**; el FAB guarda el
   último símbolo: tocá el rayo para **re-estampar** (o de nuevo para abrir el panel y cambiar).
-- **Salida:** *Hoja a escala (PDF)* → plotea a **A4/A3/A2** a la escala de la planta, con
-  **caja de rótulo** (Obra, Cliente, Plano, Fecha, Escala, Lámina) y marco limpio. Si la planta
-  no tiene hoja → espacio infinito (export normal).
+- **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
+  barra de propiedades → **Tamaño (mm), Giro, Altura, Color** editables en vivo + **Borrar**
+  (long-press = menú mover/copiar/escalar/rotar). Todo aplica al objeto seleccionado.
+- **Datos del rótulo al crear** el proyecto (obra, cliente, dibujante, empresa/facultad).
+- **Salida:** *Hoja a escala (PDF)* → plotea a **A4/A3/A2** a la escala de la planta con
+  **cajetín estándar** (modelo UNIT/facultad): marco con márgenes (izq 25mm), rótulo **abajo-
+  derecha** tamaño fijo 175×50mm con LÁMINA nº grande, empresa, obra+hoja, dibujante, escala,
+  fecha, hoja n/tot y wordmark. Se reduce ×0.5 en 1/50 y ×0.25 en 1/75. Sin hoja → infinito.
 - **Persistencia por planta** (objetos, origen, plano+transform, grilla) con autosave.
 - **Hoja de conteo de materiales:** botón en la barra → cuenta símbolos por tipo + metros de
   trazado (líneas/polilíneas/arcos), **por planta o por todo el proyecto**, imprimible en PDF
