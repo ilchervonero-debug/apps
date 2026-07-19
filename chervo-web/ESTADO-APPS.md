@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v12) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v13) · app pro
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
@@ -205,10 +205,10 @@ Versión = número de caché del SW.
   cambia es la hoja, no el dibujo.
 - **Barra de selección = orden INVISIBLE** (regla de Ángel: NO le gustan grillas/cajas/bordes
   visibles). Los campos van apenas espaciados, **sin caja ni divisores**. El **selector de color
-  es un rectángulo de esquinas redondeadas** (no un círculo). El **Borrar** NO va en la botonera:
-  es un **tacho flotante tirado en el rincón inferior-derecha** (`#selTrash`), apartado, que
-  aparece solo cuando hay algo seleccionado (su lugar real sigue siendo el long-press; el tacho es
-  un atajo suelto, "como los tachos de basura").
+  es un rectángulo de esquinas redondeadas** (no un círculo). El **Borrar (tacho)** va **en la
+  misma fila, al final, empujado a la derecha** (`margin-left:auto` → "viene de derecha a
+  izquierda"), sin seguir el ritmo de los demás campos y sin caja. (Se descartó el intento de
+  tacho flotante en el rincón: quedaba como un "monumento", Ángel lo quiere discreto y en su fila.)
 - **Selección por arrastre (marquee) + GRUPOS** (tipo AutoCAD): en la herramienta Selección,
   arrastrar sobre vacío dibuja un recuadro — **izq→der = ventana** (azul, solo lo totalmente
   encerrado), **der→izq = cruce** (verde punteado, lo que roza). Toque en vacío = deseleccionar;
