@@ -116,7 +116,17 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v24) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v25) · app pro
+- **Flujo de grupo/componente simplificado (lote F — pedido de Ángel):** el nombre **se fija al
+  crear y ya no se cambia**. Un solo **ícono de agrupar** (dos cuadros) abre el **diálogo** que:
+  (1) deja **elegir Grupo o Componente** (segmentado, borde rojo = activo) con una línea que explica
+  cada uno, (2) pide **nombre**, (3) **Crear → cierra** (fin de acción). Después, sobre el
+  grupo/componente la barra muestra el **nombre en solo lectura** (etiqueta GRUPO/COMPONENTE) y solo
+  **Editar** (lápiz) + **Descomponer** (ícono de separar). Se quitaron los botones de texto
+  *Agrupar/Desagrupar/Componente/Independizar* y el input editable de nombre (`setGroupName`,
+  `independizarComp` eliminados). `agruparSel` acepta 1+ objeto (un símbolo suelto se puede volver
+  grupo/componente desde el mismo ícono). Verificado e2e (multi→diálogo→elegir componente→nombrar→
+  crear→barra con nombre fijo + Editar/Descomponer, color oculto en componente). `node --check` OK.
 - **Auditoría estructural (lote E — para 100 estudiantes):** barrido de código muerto y
   discrepancias. **Removido el panel `#ilsx-ov` (bottom-sheet "iLStorage")**: era código fantasma
   de otra app — `ilsxOpen()` estaba definido pero **nunca se llamaba** (inalcanzable), y arrastraba
