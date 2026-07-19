@@ -144,8 +144,12 @@ Versión = número de caché del SW.
   no "estupidez de grande".
 - **Escala técnica en la barra inferior** (línea de comando): 1/100 (def) · 1/50 · 1/75, por planta.
 - **0,0 con ejes X (→) e Y (↑)** en la **esquina inferior-izquierda**; el dibujo parte de ahí (AutoCAD).
-- **Long-press:** mover, copiar, **rotar, espejo** (mirror), editar, color, borrar. **Escalar salió**
-  del long-press (la escala es técnica, en la barra). Propiedades (tamaño/giro/altura/color) en la barra.
+- **Long-press = fila de íconos**, SOLO ubicación: **Mover, Copiar, Rotar, Espejo, Borrar**
+  (sin color/editar/escalar — eso es redundante; va todo abajo).
+- **Barra inferior = propiedades dinámicas** (línea de comando): al **seleccionar** un objeto
+  aparecen sus propiedades — **grosor, tipo de línea, color** (+ tamaño/giro/altura en símbolos);
+  al tener una **herramienta** activa, sus opciones; al **editar la imagen**, sólo los controles
+  de imagen y **el resto desaparece**. Nada fijo redundante.
 - **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
   barra de propiedades → **Tamaño (mm), Giro, Altura, Color** editables en vivo + **Borrar**
   (long-press = menú mover/copiar/escalar/rotar). Todo aplica al objeto seleccionado.

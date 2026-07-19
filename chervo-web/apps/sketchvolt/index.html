@@ -142,17 +142,13 @@ body{display:flex;flex-direction:column;background:#fff;}
 
 /* CONTEXT MENU — liquid glass */
 #ctx{display:none;position:fixed;z-index:300;
-  background:rgba(255,255,255,.78);
-  border:1px solid #e5e5ea;
-  border-radius:16px;overflow:hidden;
-  box-shadow:0 4px 20px rgba(0,0,0,.12);
-  min-width:175px;}
-#ctx.show{display:block;}
-.ci{display:flex;align-items:center;gap:12px;padding:12px 16px;font-size:14px;font-weight:500;
-  color:var(--ink);cursor:pointer;border-bottom:1px solid rgba(0,0,0,.06);}
-.ci:last-child{border-bottom:none;}
-.ci:active{background:rgba(0,0,0,.05);}
-.ci svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;opacity:.6;}
+  background:#fff;border:1px solid #e5e5ea;border-radius:14px;
+  box-shadow:0 6px 24px rgba(0,0,0,.15);padding:6px;gap:2px;}
+#ctx.show{display:flex;}
+.ci{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:10px;
+  background:none;border:none;color:var(--ink);cursor:pointer;}
+.ci:active{background:rgba(0,0,0,.06);}
+.ci svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
 .ci.danger{color:var(--red);}
 
 /* MODALS */
@@ -271,6 +267,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 #fondoBar{position:fixed;left:0;right:0;bottom:var(--prop);background:#fff;border-top:1px solid #e5e5ea;
   padding:9px 12px;z-index:80;display:none;}
 #fondoBar.show{display:block;}
+#fondoBar.editing{bottom:0;}
 .fb-row{display:flex;align-items:center;gap:9px;overflow-x:auto;scrollbar-width:none;}
 .fb-row::-webkit-scrollbar{display:none;}
 .fb-l{font-size:15px;color:var(--label);white-space:nowrap;flex-shrink:0;}
@@ -560,6 +557,12 @@ details.mas[open] summary:before{content:'▾ ';}
       <span class="pl">Alt</span>
       <input type="number" id="gsAlt" min="0" step="5" style="width:46px;font-size:16px" onchange="selSet('altura',+this.value)"><span class="pl">cm</span>
     </span>
+    <span id="gsLineCtl" style="display:none;align-items:center;gap:6px">
+      <span class="pl">Grosor</span>
+      <input type="range" id="gsSW" min="1" max="10" value="2" style="width:56px" oninput="selSet('strokeW',+this.value)">
+      <span class="pl">Línea</span>
+      <select id="gsLT" onchange="selSet('lineType',this.value)"><option value="solid">────</option><option value="dashed">- - -</option><option value="dotted">·····</option></select>
+    </span>
     <span class="pl">Color</span>
     <button class="cdot" style="background:#1c1c1e" onclick="selSet('color','#1c1c1e')"></button>
     <button class="cdot" style="background:#FE0000" onclick="selSet('color','#FE0000')"></button>
@@ -604,15 +607,13 @@ details.mas[open] summary:before{content:'▾ ';}
   <div class="cp" style="background:#fff;border:2px solid rgba(0,0,0,.1)" data-c="#ffffff" onclick="pickColor(this)"></div>
 </div>
 
-<!-- CONTEXT MENU -->
+<!-- CONTEXT MENU (long-press): solo ubicación / rotación / espejo / borrar -->
 <div id="ctx">
-  <div class="ci" onclick="ctxDo('move')"><svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>Mover</div>
-  <div class="ci" onclick="ctxDo('copy')"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copiar</div>
-  <div class="ci" onclick="ctxDo('rotate')"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg>Rotar</div>
-  <div class="ci" onclick="ctxDo('mirror')"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-4 5 4 5"/><path d="M16 7l4 5-4 5" opacity=".4"/></svg>Espejo</div>
-  <div class="ci" id="ciEdit" style="display:none" onclick="ctxDo('edit')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</div>
-  <div class="ci" onclick="ctxDo('color')"><svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 000 20 3 3 0 002.5-4.6c-.4-.6-.5-1.4 0-2 .4-.5 1-.4 1.5-.4H18a4 4 0 004-4 10 10 0 00-10-9z"/></svg>Color</div>
-  <div class="ci danger" onclick="ctxDo('delete')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Eliminar</div>
+  <button class="ci" onclick="ctxDo('move')" title="Mover"><svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></button>
+  <button class="ci" onclick="ctxDo('copy')" title="Copiar"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+  <button class="ci" onclick="ctxDo('rotate')" title="Rotar"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg></button>
+  <button class="ci" onclick="ctxDo('mirror')" title="Espejo"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-4 5 4 5"/><path d="M16 7l4 5-4 5" opacity=".4"/></svg></button>
+  <button class="ci danger" onclick="ctxDo('delete')" title="Borrar"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
 </div>
 
 <!-- MODALS -->
@@ -1261,10 +1262,9 @@ function doCtxAt(wp,sp){
   const T=28/vpZ;
   for(let i=objects.length-1;i>=0;i--){
     if(hitTest(wp,objects[i],T)){
-      ctxObjId=objects[i].id; selId=objects[i].id; render();
-      document.getElementById('ciEdit').style.display=['text','dim','dim2'].includes(objects[i].type)?'flex':'none';
+      ctxObjId=objects[i].id; selId=objects[i].id; showSelBar(); render();
       const m=document.getElementById('ctx');m.classList.add('show');
-      let lx=sp.x,ty=sp.y+8;if(lx+185>window.innerWidth)lx=window.innerWidth-190;if(ty+260>window.innerHeight)ty=sp.y-270;
+      let lx=sp.x-130,ty=sp.y-70;if(lx<8)lx=8;if(lx+270>window.innerWidth)lx=window.innerWidth-270;if(ty<60)ty=sp.y+16;
       m.style.left=lx+'px';m.style.top=ty+'px';return;
     }
   }
@@ -1906,11 +1906,13 @@ function showSelBar(){
   const o=selObj(), g=document.getElementById('grpSel');
   if(!g)return;
   if(!o){ g.style.display='none'; if(tool==='select'){const t=document.getElementById('pbTool');if(t)t.textContent='Seleccionar';} return; }
-  const isB=o.type==='block';
+  const isB=o.type==='block', hasLine=['line','rect','pline','pen','circle','poly','arc'].includes(o.type);
   document.getElementById('gsBlockCtl').style.display=isB?'inline-flex':'none';
-  if(isB){ document.getElementById('gsMM').value=o.mm||5; document.getElementById('gsGiro').value=o.rotation||0; document.getElementById('gsAlt').value=(o.altura!=null?o.altura:30); }
+  document.getElementById('gsLineCtl').style.display=hasLine?'inline-flex':'none';
+  if(isB){ document.getElementById('gsMM').value=o.mm||3; document.getElementById('gsGiro').value=o.rotation||0; document.getElementById('gsAlt').value=(o.altura!=null?o.altura:30); }
+  if(hasLine){ document.getElementById('gsSW').value=o.strokeW||2; document.getElementById('gsLT').value=o.lineType||'solid'; }
   g.style.display='flex';
-  document.getElementById('pbTool').textContent=isB?'Símbolo seleccionado':'Seleccionado';
+  document.getElementById('pbTool').textContent=isB?'Símbolo':'Objeto';
 }
 
 // ══════════ IMPORTAR PLANO (imagen / foto / PDF / DXF) ══════════
@@ -1955,10 +1957,13 @@ function editarFondo(){modoAjusteFondo=true;fondoAprobado=false;showFondoBar();r
 function quitarFondo(){fondoImg=null;fondoAprobado=false;modoAjusteFondo=false;showFondoBar();render();toast('Plano quitado');}
 function showFondoBar(){
   const bar=document.getElementById('fondoBar');
-  if(!fondoImg){bar.classList.remove('show');return;}
+  if(!fondoImg){bar.classList.remove('show');bar.classList.remove('editing');document.getElementById('propbar').style.display='';return;}
   bar.classList.add('show');
   document.getElementById('fondoAdjust').style.display=modoAjusteFondo?'flex':'none';
   document.getElementById('fondoFixed').style.display=modoAjusteFondo?'none':'flex';
+  // Barra dinámica: editando la imagen → sólo controles de imagen, se oculta la propbar.
+  bar.classList.toggle('editing',modoAjusteFondo);
+  document.getElementById('propbar').style.display=modoAjusteFondo?'none':'';
 }
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 async function fondoFromPDF(file){
