@@ -116,7 +116,15 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v13) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v14) · app pro
+- **Spec de refactor (lote A):** `selSet` aplica a TODA la selección (multi/grupo). **Grilla en
+  BORDÓ BAJO**: módulos por metro `rgba(139,0,0,.22)` + subdivisiones finas `rgba(139,0,0,.07)`
+  (casi imperceptibles, ganan nitidez al zoom in). **Nombre de herramienta suelto** arriba-izq de
+  la barra (estilo `#coord`, sin caja; se oculta en vacío). **Cajetín físico FIJO 175×50 mm** (sin
+  factor de escala; `mm2w` lo escala solo). **Hojas +A1** (841×594). **Márgenes atenuados**
+  (izq 25 / resto 10 mm) + cajetín reservado → se ve el área real de trabajo. **Borrar homologado**
+  al ícono tacho (fino 1.1) también en el dashboard (se quitó la ✕ cruda). Símbolos **sin máscara**
+  (decisión de Ángel: van encima, sin tapar con blanco). Import de imagen ya unificado (`#planoInput`).
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
