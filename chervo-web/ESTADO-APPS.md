@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v23) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v24) · app pro
+- **Auditoría estructural (lote E — para 100 estudiantes):** barrido de código muerto y
+  discrepancias. **Removido el panel `#ilsx-ov` (bottom-sheet "iLStorage")**: era código fantasma
+  de otra app — `ilsxOpen()` estaba definido pero **nunca se llamaba** (inalcanzable), y arrastraba
+  su propio `<link>` de Google Fonts y `<style>`. Verificado: sin refs colgadas a `getElementById`,
+  sin handlers `on*` indefinidos, sin funciones huérfanas reales (los falsos positivos son callbacks
+  pasados por referencia). `node --check` OK; la fuente Exo del header y el `loadScript` de pdf.js
+  (fondo PDF) se conservan por ser reales. −30 líneas.
 - **Flujo de agrupación claro (diálogo):** con 2+ (o 1 objeto) seleccionados, **Agrupar** o
   **Componente** abren un **diálogo que pide NOMBRE** → Crear → hecho (fin de acción). `agruparSel`/
   `crearComponente` reciben el nombre. Es la norma unificada para TODOS los elementos (línea, arco,
