@@ -143,11 +143,11 @@ body{display:flex;flex-direction:column;background:#fff;}
 .fi{display:inline-flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;}
 .fi>.fl{font-size:10px;font-weight:600;color:var(--label);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;line-height:1;}
 .fi input[type=range]{margin:0;}
-/* Grilla estructural de propiedades: cada campo en su celda, no sueltos */
-#grpSel{border:1px solid rgba(0,0,0,.10);border-radius:10px;padding:2px 0;margin:0 2px;}
-#grpSel .fi{padding:0 12px;border-right:1px solid rgba(0,0,0,.09);}
-/* El borrar, separado del resto, a su lugar (derecha) */
-#grpSel .pib.danger{margin-left:auto;border-left:1px solid rgba(0,0,0,.10);border-radius:0 9px 9px 0;}
+/* Orden INVISIBLE: los campos apenas espaciados, sin caja ni divisores.
+   (A Ángel no le gustan las grillas/cajas visibles; el orden existe pero no se ve.) */
+#grpSel .fi{padding:0 10px;}
+/* El borrar queda suelto a la derecha (su lugar real es el long-press; acá es solo un atajo) */
+#grpSel .pib.danger{margin-left:auto;}
 /* Botón-ícono de propiedades (más íconos, menos texto) */
 .pib{width:40px;height:40px;border-radius:9px;background:transparent;border:none;color:var(--ink);
   cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}

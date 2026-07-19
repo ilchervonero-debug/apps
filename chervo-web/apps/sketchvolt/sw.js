@@ -1,4 +1,4 @@
-const CACHE = 'sketchvolt-v10';
+const CACHE = 'sketchvolt-v11';
 const ASSETS = [
   '/apps/sketchvolt/',
   '/apps/sketchvolt/index.html',
