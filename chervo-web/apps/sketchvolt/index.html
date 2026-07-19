@@ -16,7 +16,7 @@
 :root{
   --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
   --accent:#FE0000;--red:#C70000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
-  --tb:56px;--prop:44px;
+  --tb:56px;--prop:56px;
   --font:'Exo',-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -128,6 +128,31 @@ body{display:flex;flex-direction:column;background:#fff;}
 #coord{font-size:10px;color:var(--label);white-space:nowrap;margin-left:auto;flex-shrink:0;}
 #pbTool{font-size:11px;font-weight:500;color:var(--ink);white-space:nowrap;flex-shrink:0;}
 #pbHint{font-size:11px;color:var(--accent);white-space:nowrap;flex-shrink:0;font-weight:500;}
+/* Campo apilado: rótulo ARRIBA, control ABAJO (evita el slide lateral) */
+.fi{display:inline-flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;}
+.fi>.fl{font-size:10px;font-weight:600;color:var(--label);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;line-height:1;}
+.fi input[type=range]{margin:0;}
+/* Botón-ícono de propiedades (más íconos, menos texto) */
+.pib{width:40px;height:40px;border-radius:9px;background:transparent;border:none;color:var(--ink);
+  cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.pib svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+.pib:active{background:rgba(0,0,0,.06);}
+.pib.danger{color:var(--red);}
+.pib.ok{color:var(--green);}
+.pib.on{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);}
+/* Selector de color: una sola pastilla que abre la paleta */
+.cpick{width:28px;height:28px;border-radius:50%;border:2px solid #e5e5ea;cursor:pointer;flex-shrink:0;padding:0;}
+#colorPop{display:none;position:fixed;z-index:320;background:#fff;border:1px solid #e5e5ea;border-radius:16px;
+  padding:12px;gap:10px;flex-wrap:wrap;width:196px;box-shadow:0 8px 32px rgba(0,0,0,.16);}
+#colorPop.show{display:flex;}
+#colorPop .cp{width:30px;height:30px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;}
+#colorPop .cp.on{border-color:var(--accent);}
+/* Botón de salida apilado: ícono ARRIBA, nombre ABAJO */
+.exq{display:flex;flex-direction:column;align-items:center;gap:2px;background:transparent;border:none;
+  cursor:pointer;flex-shrink:0;padding:2px 8px;font-family:var(--font);color:var(--ink);}
+.exq svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
+.exq span{font-size:11px;color:var(--label);white-space:nowrap;}
+.exq:active{color:var(--accent);}
 
 /* CONTEXT MENU — liquid glass */
 #ctx{display:none;position:fixed;z-index:300;
@@ -461,131 +486,141 @@ details.mas[open] summary:before{content:'▾ ';}
     <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;opacity:.4;stroke:var(--ink);fill:none;stroke-linecap:round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="12" x2="21" y2="12" stroke-width="2.5"/><line x1="3" y1="18" x2="21" y2="18" stroke-width="5"/></svg>
     <input type="range" id="pbStroke" min="1" max="10" value="2" style="width:60px" oninput="strokeW=+this.value">
   </span>
-  <div id="grpLine" style="display:none;align-items:center;gap:6px">
+  <div id="grpLine" style="display:none;align-items:center;gap:8px">
     <div class="pdiv"></div>
-    <span class="pl">Tipo</span>
-    <select id="pbLinetype" onchange="lineType=this.value">
-      <option value="solid">────</option>
-      <option value="dashed">- - -</option>
-      <option value="dotted">·····</option>
-    </select>
+    <span class="fi"><span class="fl">Línea</span>
+      <select id="pbLinetype" onchange="lineType=this.value">
+        <option value="solid">────</option>
+        <option value="dashed">- - -</option>
+        <option value="dotted">·····</option>
+      </select></span>
   </div>
-  <div id="grpColor" style="display:none;align-items:center;gap:6px">
+  <div id="grpColor" style="display:none;align-items:center;gap:8px">
     <div class="pdiv"></div>
-    <span class="pl">Color</span>
-    <button class="cdot" style="background:#1c1c1e" onclick="setDrawColor('#1c1c1e')"></button>
-    <button class="cdot" style="background:#FE0000" onclick="setDrawColor('#FE0000')"></button>
-    <button class="cdot" style="background:#007aff" onclick="setDrawColor('#007aff')"></button>
-    <button class="cdot" style="background:#34c759" onclick="setDrawColor('#34c759')"></button>
+    <span class="fi"><span class="fl">Color</span>
+      <button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
   </div>
-  <div id="grpSize" style="display:none;align-items:center;gap:6px">
-    <span class="pl">Tam</span>
-    <input type="range" id="pbSize" min="8" max="120" value="14" style="width:65px">
+  <div id="grpSize" style="display:none;align-items:center;gap:8px">
+    <span class="fi"><span class="fl">Tam</span>
+      <input type="range" id="pbSize" min="8" max="120" value="14" style="width:70px"></span>
     <div class="pdiv"></div>
   </div>
-  <div id="grpFont" style="display:none;align-items:center;gap:6px">
-    <span class="pl">Fuente</span>
-    <select id="pbFont"><option value="sans">Sans</option><option value="mono">Mono</option><option value="serif">Serif</option></select>
+  <div id="grpFont" style="display:none;align-items:center;gap:8px">
+    <span class="fi"><span class="fl">Fuente</span>
+      <select id="pbFont"><option value="sans">Sans</option><option value="mono">Mono</option><option value="serif">Serif</option></select></span>
     <div class="pdiv"></div>
   </div>
-  <div id="grpSides" style="display:none;align-items:center;gap:6px">
-    <span class="pl">Lados</span>
-    <select id="pbSides"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select>
+  <div id="grpSides" style="display:none;align-items:center;gap:8px">
+    <span class="fi"><span class="fl">Lados</span>
+      <select id="pbSides"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></span>
     <div class="pdiv"></div>
   </div>
-  <div id="grpHatch" style="display:none;align-items:center;gap:6px">
-    <span class="pl">Patrón</span>
-    <select id="pbPat"><option value="solid">Sólido</option><option value="lines">Líneas</option><option value="cross">Cruces</option><option value="dots">Puntos</option></select>
-    <span class="pl">Op</span>
-    <input type="range" id="pbOpac" min="5" max="95" value="25" style="width:55px" oninput="document.getElementById('pbOpacV').textContent=this.value+'%'">
-    <span style="font-size:10px;color:var(--label);flex-shrink:0" id="pbOpacV">25%</span>
+  <div id="grpHatch" style="display:none;align-items:center;gap:8px">
+    <span class="fi"><span class="fl">Patrón</span>
+      <select id="pbPat"><option value="solid">Sólido</option><option value="lines">Líneas</option><option value="cross">Cruces</option><option value="dots">Puntos</option></select></span>
+    <span class="fi"><span class="fl">Opacidad</span>
+      <input type="range" id="pbOpac" min="5" max="95" value="25" style="width:60px" oninput="document.getElementById('pbOpacV').textContent=this.value+'%'"></span>
+    <span style="font-size:11px;color:var(--label);flex-shrink:0" id="pbOpacV">25%</span>
     <div class="pdiv"></div>
   </div>
-  <div id="grpDim" style="display:none;align-items:center;gap:6px">
-    <span class="pl">Texto</span>
-    <button onclick="setDimFont(8)" id="dimS" style="padding:3px 7px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;font-family:var(--font);font-size:10px;cursor:pointer;font-weight:600">S</button>
-    <button onclick="setDimFont(10)" id="dimM" style="padding:3px 7px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:var(--font);font-size:10px;cursor:pointer;font-weight:600">M</button>
-    <button onclick="setDimFont(14)" id="dimL" style="padding:3px 7px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;font-family:var(--font);font-size:10px;cursor:pointer;font-weight:600">L</button>
+  <div id="grpDim" style="display:none;align-items:center;gap:8px">
+    <span class="fi"><span class="fl">Texto cota</span>
+      <span style="display:flex;gap:4px">
+        <button onclick="setDimFont(8)" id="dimS" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;font-family:var(--font);font-size:12px;cursor:pointer">S</button>
+        <button onclick="setDimFont(10)" id="dimM" style="padding:4px 9px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:var(--font);font-size:12px;cursor:pointer">M</button>
+        <button onclick="setDimFont(14)" id="dimL" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;font-family:var(--font);font-size:12px;cursor:pointer">L</button>
+      </span></span>
     <div class="pdiv"></div>
   </div>
-  <div id="grpEraser" style="display:none;align-items:center;gap:6px">
-    <span class="pl">Tam</span>
-    <input type="range" id="pbEraserSize" min="10" max="80" value="24" style="width:60px">
+  <div id="grpEraser" style="display:none;align-items:center;gap:8px">
+    <span class="fi"><span class="fl">Goma</span>
+      <input type="range" id="pbEraserSize" min="10" max="80" value="24" style="width:64px"></span>
     <div class="pdiv"></div>
   </div>
-  <div id="grpBlock" style="display:none;align-items:center;gap:6px">
-    <span class="pl">Giro</span>
-    <select id="pbGiro" onchange="setBlockGiro(this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select>
-    <span class="pl">Tamaño</span>
-    <select id="pbMM" onchange="setBlockMM(this.value)"><option value="2">2 mm</option><option value="3" selected>3 mm</option><option value="4">4 mm</option><option value="5">5 mm</option></select>
-    <span class="pl">Altura piso</span>
-    <input type="number" id="pbAlt" value="30" min="0" step="5" style="width:52px;font-size:16px" oninput="bloqueAltura=+this.value||0"><span class="pl">cm</span>
-    <div class="pdiv"></div>
-    <span class="pl">Color</span>
-    <button class="cdot" style="background:#1c1c1e" onclick="setDrawColor('#1c1c1e')"></button>
-    <button class="cdot" style="background:#FE0000" onclick="setDrawColor('#FE0000')"></button>
-    <button class="cdot" style="background:#007aff" onclick="setDrawColor('#007aff')"></button>
-    <button class="cdot" style="background:#34c759" onclick="setDrawColor('#34c759')"></button>
+  <div id="grpBlock" style="display:none;align-items:center;gap:8px">
+    <span class="fi"><span class="fl">Giro</span>
+      <select id="pbGiro" onchange="setBlockGiro(this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></span>
+    <span class="fi"><span class="fl">Tam</span>
+      <select id="pbMM" onchange="setBlockMM(this.value)"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option></select></span>
+    <span class="fi"><span class="fl">Altura cm</span>
+      <input type="number" id="pbAlt" value="30" min="0" step="5" style="width:56px;font-size:16px" oninput="bloqueAltura=+this.value||0"></span>
+    <span class="fi"><span class="fl">Color</span>
+      <button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
     <div class="pdiv"></div>
   </div>
-  <div id="grpSel" style="display:none;align-items:center;gap:6px">
-    <span id="gsBlockCtl" style="display:none;align-items:center;gap:6px">
-      <span class="pl">Tam</span>
-      <select id="gsMM" onchange="selSet('mm',+this.value)"><option value="2">2mm</option><option value="3">3mm</option><option value="4">4mm</option><option value="5">5mm</option></select>
-      <span class="pl">Giro</span>
-      <select id="gsGiro" onchange="selSet('rotation',+this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select>
-      <span class="pl">Alt</span>
-      <input type="number" id="gsAlt" min="0" step="5" style="width:46px;font-size:16px" onchange="selSet('altura',+this.value)"><span class="pl">cm</span>
+  <div id="grpSel" style="display:none;align-items:center;gap:8px">
+    <span id="gsBlockCtl" style="display:none;align-items:center;gap:8px">
+      <span class="fi"><span class="fl">Tam mm</span>
+        <select id="gsMM" onchange="selSet('mm',+this.value)"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="10">10</option></select></span>
+      <span class="fi"><span class="fl">Giro</span>
+        <select id="gsGiro" onchange="selSet('rotation',+this.value)"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></span>
+      <span class="fi"><span class="fl">Altura cm</span>
+        <input type="number" id="gsAlt" min="0" step="5" style="width:52px;font-size:16px" onchange="selSet('altura',+this.value)"></span>
     </span>
-    <span id="gsLineCtl" style="display:none;align-items:center;gap:6px">
-      <span class="pl">Grosor</span>
-      <input type="range" id="gsSW" min="1" max="10" value="2" style="width:56px" oninput="selSet('strokeW',+this.value)">
-      <span class="pl">Línea</span>
-      <select id="gsLT" onchange="selSet('lineType',this.value)"><option value="solid">────</option><option value="dashed">- - -</option><option value="dotted">·····</option></select>
+    <span id="gsLineCtl" style="display:none;align-items:center;gap:8px">
+      <span class="fi"><span class="fl">Grosor</span>
+        <input type="range" id="gsSW" min="1" max="10" value="2" style="width:60px" oninput="selSet('strokeW',+this.value)"></span>
+      <span class="fi"><span class="fl">Línea</span>
+        <select id="gsLT" onchange="selSet('lineType',this.value)"><option value="solid">────</option><option value="dashed">- - -</option><option value="dotted">·····</option></select></span>
     </span>
     <span id="gsScaleCtl" style="display:none;align-items:center;gap:6px">
-      <span class="pl">Escala</span>
-      <input type="range" id="gsScale" min="20" max="300" value="100" style="width:76px" oninput="selScaleLive(this.value)" onchange="selScaleEnd()">
-      <div class="pdiv"></div>
+      <span class="fi">
+        <span class="fl"><svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"><polyline points="15 4 20 4 20 9"/><polyline points="9 20 4 20 4 15"/><line x1="20" y1="4" x2="13" y2="11"/><line x1="4" y1="20" x2="11" y2="13"/></svg></span>
+        <input type="range" id="gsScale" min="20" max="300" value="100" style="width:80px" oninput="selScaleLive(this.value)" onchange="selScaleEnd()"></span>
     </span>
-    <span class="pl">Color</span>
-    <button class="cdot" style="background:#1c1c1e" onclick="selSet('color','#1c1c1e')"></button>
-    <button class="cdot" style="background:#FE0000" onclick="selSet('color','#FE0000')"></button>
-    <button class="cdot" style="background:#007aff" onclick="selSet('color','#007aff')"></button>
-    <button class="cdot" style="background:#34c759" onclick="selSet('color','#34c759')"></button>
-    <button onclick="selDelete()" style="border:1.5px solid #d0d0d3;background:#fff;color:#c00;border-radius:8px;padding:6px 12px;font-size:15px;font-family:var(--font);cursor:pointer;">Borrar</button>
+    <span class="fi"><span class="fl">Color</span>
+      <button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
+    <button class="pib danger" data-tip="Borrar" onclick="selDelete()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
     <div class="pdiv"></div>
   </div>
   <div id="grpGrid" style="display:none;align-items:center;gap:8px">
-    <span class="pl">Grilla</span>
-    <button class="cmd-btn" onclick="setGrid(0.15)">0.15</button>
-    <button class="cmd-btn" onclick="setGrid(0.5)">0.50</button>
-    <button class="cmd-btn" onclick="setGrid(1)">1.00</button>
-    <button class="cmd-btn" onclick="setGrid(3)">3.00 m</button>
+    <span class="fi"><span class="fl">Grilla m</span>
+      <span style="display:flex;gap:4px">
+        <button class="cmd-btn" onclick="setGrid(0.15)">0.15</button>
+        <button class="cmd-btn" onclick="setGrid(0.5)">0.50</button>
+        <button class="cmd-btn" onclick="setGrid(1)">1.00</button>
+        <button class="cmd-btn" onclick="setGrid(3)">3.00</button>
+      </span></span>
     <div class="pdiv"></div>
-    <span class="pl">Escala</span>
-    <select id="pbEscala" onchange="setPlantaEscala(this.value)" title="Escala técnica del dibujo"><option value="100">1/100</option><option value="50">1/50</option><option value="75">1/75</option></select>
-    <button class="cmd-btn" onclick="closeBottomPanel()" style="margin-left:auto">✕</button>
+    <span class="fi"><span class="fl">Escala</span>
+      <select id="pbEscala" onchange="setPlantaEscala(this.value)"><option value="100">1/100</option><option value="50">1/50</option><option value="75">1/75</option></select></span>
+    <button class="pib ok" data-tip="Listo" onclick="closeBottomPanel()" style="margin-left:auto"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
   </div>
-  <div id="grpExport" style="display:none;align-items:center;gap:8px">
-    <span class="pl">Salida</span>
-    <button class="cmd-btn" onclick="closeBottomPanel();exportarHoja()">Hoja a escala (PDF)</button>
-    <button class="cmd-btn" onclick="closeBottomPanel();doExport('png')">PNG</button>
-    <button class="cmd-btn" onclick="closeBottomPanel();doExport('dxf')">DXF</button>
-    <button class="cmd-btn" onclick="closeBottomPanel()" style="margin-left:auto">✕</button>
+  <div id="grpExport" style="display:none;align-items:center;gap:10px">
+    <button class="exq" onclick="closeBottomPanel();exportarHoja()"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><line x1="4" y1="16" x2="20" y2="16"/><rect x="13" y="17" width="6" height="3"/></svg><span>Hoja</span></button>
+    <button class="exq" onclick="closeBottomPanel();doExport('png')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg><span>PNG</span></button>
+    <button class="exq" onclick="closeBottomPanel();doExport('dxf')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l2 3-2 3M13 13l2 3-2 3" stroke-width="1.1"/></svg><span>DXF</span></button>
+    <button class="pib" data-tip="Cerrar" onclick="closeBottomPanel()" style="margin-left:auto"><svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
   </div>
   <div id="grpImage" style="display:none;align-items:center;gap:8px">
-    <span class="pl">Imagen</span>
-    <span class="pl">Op</span><input type="range" id="fondoOpac" min="10" max="100" value="50" style="width:70px" oninput="setFondoOpacity(this.value)">
-    <span class="pl">Tamaño</span><input type="range" id="fondoScale" min="20" max="300" value="100" style="width:80px" oninput="setFondoScale(this.value)">
-    <button class="cmd-btn" id="imgEditBtn" onclick="toggleEditFondo()">Fijar</button>
-    <button class="cmd-btn" onclick="startCalib()">Calibrar</button>
-    <button class="cmd-btn" onclick="importPlano()">+ Nueva</button>
-    <button class="cmd-btn" onclick="quitarFondo()">Quitar</button>
-    <button class="cmd-btn" onclick="closeBottomPanel()" style="margin-left:auto">✕</button>
+    <span class="fi"><span class="fl">Opacidad</span>
+      <input type="range" id="fondoOpac" min="10" max="100" value="50" style="width:74px" oninput="setFondoOpacity(this.value)"></span>
+    <span class="fi"><span class="fl">Tamaño</span>
+      <input type="range" id="fondoScale" min="20" max="300" value="100" style="width:80px" oninput="setFondoScale(this.value)"></span>
+    <button class="pib" id="imgEditBtn" data-tip="Editar" onclick="toggleEditFondo()"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg></button>
+    <button class="pib" data-tip="Calibrar" onclick="startCalib()"><svg viewBox="0 0 24 24"><path d="M2 8h20v8H2z"/><path d="M6 8v3M10 8v4M14 8v3M18 8v4"/></svg></button>
+    <button class="pib" data-tip="Nueva imagen" onclick="importPlano()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    <button class="pib danger" data-tip="Quitar" onclick="quitarFondo()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+    <button class="pib ok" data-tip="Listo" onclick="closeBottomPanel()" style="margin-left:auto"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
   </div>
   <span id="pbHint" style="display:none"></span>
   <span id="coord" style="margin-left:auto">0, 0</span>
+</div>
+
+<!-- SELECTOR DE COLOR (una pastilla abre esta paleta; aplica al objeto o al dibujo) -->
+<div id="colorPop">
+  <div class="cp" style="background:#1c1c1e" data-c="#1c1c1e" onclick="chooseColor('#1c1c1e')"></div>
+  <div class="cp" style="background:#FE0000" data-c="#FE0000" onclick="chooseColor('#FE0000')"></div>
+  <div class="cp" style="background:#007aff" data-c="#007aff" onclick="chooseColor('#007aff')"></div>
+  <div class="cp" style="background:#34c759" data-c="#34c759" onclick="chooseColor('#34c759')"></div>
+  <div class="cp" style="background:#ff9f0a" data-c="#ff9f0a" onclick="chooseColor('#ff9f0a')"></div>
+  <div class="cp" style="background:#ffcc00" data-c="#ffcc00" onclick="chooseColor('#ffcc00')"></div>
+  <div class="cp" style="background:#5856d6" data-c="#5856d6" onclick="chooseColor('#5856d6')"></div>
+  <div class="cp" style="background:#ff2d55" data-c="#ff2d55" onclick="chooseColor('#ff2d55')"></div>
+  <div class="cp" style="background:#00c7be" data-c="#00c7be" onclick="chooseColor('#00c7be')"></div>
+  <div class="cp" style="background:#a0522d" data-c="#a0522d" onclick="chooseColor('#a0522d')"></div>
+  <div class="cp" style="background:#8e8e93" data-c="#8e8e93" onclick="chooseColor('#8e8e93')"></div>
+  <div class="cp" style="background:#fff;border-color:#e5e5ea" data-c="#ffffff" onclick="chooseColor('#ffffff')"></div>
 </div>
 
 
@@ -750,12 +785,28 @@ function sheetWorldSize(){
   const denom=planta.denom||100;
   return { w:(aw/1000)*denom*PPM, h:(ah/1000)*denom*PPM };   // en px de mundo
 }
+// La hoja arranca en el 0,0 (esquina INFERIOR-izquierda) y crece hacia ARRIBA (Y↑),
+// igual que el dibujo. Se muestra con su marco de márgenes y el cajetín de referencia,
+// así el usuario ve dónde está trabajando.
 function drawSheet(){
   const sz=sheetWorldSize(); if(!sz||_exporting)return;
-  const a=w2s(originX,originY);                 // esquina sup-izq de la hoja = 0,0
-  ctx.save();
-  ctx.fillStyle='#fff';ctx.fillRect(a.x,a.y,sz.w*vpZ,sz.h*vpZ);
-  ctx.strokeStyle='#c9c9cf';ctx.lineWidth=1;ctx.strokeRect(a.x,a.y,sz.w*vpZ,sz.h*vpZ);
+  const denom=planta.denom||100, mm2w=mm=>(mm/1000)*denom*PPM;
+  const x0=originX, yTop=originY-sz.h, yBot=originY;
+  const tl=w2s(x0,yTop), W=sz.w*vpZ, H=sz.h*vpZ;
+  ctx.save();ctx.setLineDash([]);
+  ctx.fillStyle='#fff';ctx.fillRect(tl.x,tl.y,W,H);
+  ctx.strokeStyle='#c9c9cf';ctx.lineWidth=1;ctx.strokeRect(tl.x,tl.y,W,H);
+  // marco de márgenes (izq 25 mm, resto 10 mm)
+  const mL=mm2w(25),mO=mm2w(10);
+  const fa=w2s(x0+mL,yTop+mO);
+  ctx.strokeStyle='#dcdce0';ctx.strokeRect(fa.x,fa.y,(sz.w-mL-mO)*vpZ,(sz.h-2*mO)*vpZ);
+  // cajetín de referencia (abajo-derecha) — tamaño real del rótulo a escala
+  const f=({100:1,50:0.5,75:0.25}[denom]||1);
+  const cw=mm2w(175*f),chh=mm2w(50*f);
+  const ca=w2s(x0+sz.w-mO-cw, yBot-mO-chh);
+  ctx.strokeStyle='#c9c9cf';ctx.strokeRect(ca.x,ca.y,cw*vpZ,chh*vpZ);
+  if(cw*vpZ>64){ ctx.fillStyle='#c2c2c7';ctx.font='500 '+Math.max(9,Math.min(chh*vpZ*0.3,15))+'px '+fontStack('sans');
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('RÓTULO',ca.x+cw*vpZ/2,ca.y+chh*vpZ/2); }
   ctx.restore();
 }
 // 0,0 con ejes: X→derecha, Y→arriba (como AutoCAD). El dibujo parte de esta esquina.
@@ -780,8 +831,10 @@ function drawOrigin(){
 }
 
 // PLANO DE FONDO (calco) — se dibuja en coordenadas mundo, así panea/zoomea con todo.
+// El plano importado va como FONDO TRANSPARENTE — se dibuja también al imprimir
+// (lo único que NO se imprime es la grilla).
 function drawFondo(){
-  if(!fondoImg||_exporting)return;
+  if(!fondoImg)return;
   const s=w2s(imgX,imgY),w=fondoImg.width*vpZ*imgScale,h=fondoImg.height*vpZ*imgScale;
   ctx.save();
   ctx.globalAlpha=imgOpacity;
@@ -1230,6 +1283,8 @@ function doCtxAt(wp,sp){
 }
 document.addEventListener('pointerdown',e=>{
   if(!document.getElementById('ctx').contains(e.target))document.getElementById('ctx').classList.remove('show');
+  const pop=document.getElementById('colorPop');
+  if(pop&&!pop.contains(e.target)&&!e.target.closest('.cpick'))pop.classList.remove('show');
 },{capture:true,passive:true});
 
 function mirrorObj(o){
@@ -1668,8 +1723,25 @@ function threePointArc(p1,p2,p3){
   return{cx:ux,cy:uy,r,startAngle:sa,endAngle:ea,ccw};
 }
 
-// COLOR — un único selector: dots inline por contexto (dibujo / bloque / selección).
-function setDrawColor(c){ color=c; toast('Color de dibujo'); }
+// COLOR — un único selector: la pastilla (.cpick) abre la paleta; aplica al
+// objeto seleccionado si lo hay, si no al color de dibujo.
+function _syncSwatches(){ const o=selObj(); const c=(o&&o.color)||color;
+  document.querySelectorAll('.cpick').forEach(b=>b.style.background=c); }
+function setDrawColor(c){ color=c; _syncSwatches(); }
+function openColorPop(btn){
+  const pop=document.getElementById('colorPop');
+  if(pop.classList.contains('show')){ pop.classList.remove('show'); return; }
+  const cur=(selObj()&&selObj().color)||color;
+  pop.querySelectorAll('.cp').forEach(d=>d.classList.toggle('on',d.dataset.c===cur));
+  const r=btn.getBoundingClientRect();
+  let left=Math.min(r.left,window.innerWidth-208); if(left<8)left=8;
+  pop.style.left=left+'px'; pop.style.bottom=(window.innerHeight-r.top+8)+'px'; pop.style.top='auto';
+  pop.classList.add('show');
+}
+function chooseColor(c){
+  if(selId!=null){ selSet('color',c); } else { setDrawColor(c); }
+  _syncSwatches(); document.getElementById('colorPop').classList.remove('show');
+}
 
 // HINT
 function setHint(msg){const el=document.getElementById('pbHint');el.textContent=msg;el.style.display=msg?'inline':'none';}
@@ -1853,7 +1925,7 @@ function applyToolBar(){
   show('grpBlock',t==='block');
   const names={select:'Seleccionar',line:'Línea',arc:'Arco · arrastrá A→B · grip ↕ para curvar',pline:'Polilínea · doble toque cierra',rect:'Rectángulo',circle:'Círculo',poly:'Polígono',pen:'Trazo libre',text:'Texto',dim:'Cota · A → B → posición',dim2:'Cota directa · A → B',hatch:'Relleno · doble toque cierra',eraser:'Goma',trim:'Trim',erase:'Borrar objeto',move:'Mover',copy:'Copiar'};
   const pt=document.getElementById('pbTool'); if(pt)pt.textContent=t==='block'?(bloqueNom||'Símbolo'):(names[t]||t);
-  refreshBottom();
+  _syncSwatches(); refreshBottom();
 }
 function openBottomPanel(mode){
   if(_panelMode===mode){ closeBottomPanel(); return; }
@@ -1862,7 +1934,7 @@ function openBottomPanel(mode){
   const map={grid:'grpGrid',export:'grpExport',image:'grpImage'};
   const e=document.getElementById(map[mode]); if(e)e.style.display='flex';
   const pt=document.getElementById('pbTool'); if(pt)pt.textContent={grid:'Grilla',export:'Exportar',image:'Imagen'}[mode]||'';
-  if(mode==='image'){ const be=document.getElementById('imgEditBtn'); if(be)be.textContent=modoAjusteFondo?'Fijar':'Editar'; }
+  if(mode==='image'){ _setImgEditIcon(); }
   refreshBottom(); render();
 }
 function closeBottomPanel(){
@@ -1872,9 +1944,14 @@ function closeBottomPanel(){
   render();
 }
 function openImagen(){ if(!fondoImg){ importPlano(); } else openBottomPanel('image'); }
+const _ICON_EDIT='<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/>';
+const _ICON_CHECK='<polyline points="20 6 9 17 4 12"/>';
+function _setImgEditIcon(){ const b=document.getElementById('imgEditBtn'); if(!b)return;
+  const svg=b.querySelector('svg'); b.classList.toggle('ok',modoAjusteFondo);
+  b.setAttribute('data-tip',modoAjusteFondo?'Fijar':'Editar');
+  if(svg)svg.innerHTML=modoAjusteFondo?_ICON_CHECK:_ICON_EDIT; }
 function toggleEditFondo(){ modoAjusteFondo=!modoAjusteFondo; fondoAprobado=!modoAjusteFondo;
-  const be=document.getElementById('imgEditBtn'); if(be)be.textContent=modoAjusteFondo?'Fijar':'Editar';
-  savePlanta(); render(); toast(modoAjusteFondo?'Movelo o reescalalo':'Plano fijo'); }
+  _setImgEditIcon(); savePlanta(); render(); toast(modoAjusteFondo?'Movelo o reescalalo':'Plano fijo'); }
 function setGrid(m){ gridM=m; cellPx=PPM*gridM; if(planta)planta.gridM=m; markDirty(); render(); toast('Grilla '+m+' m'); }
 // ── PROPIEDADES DEL OBJETO SELECCIONADO ──
 function selObj(){ return selId!=null?objects.find(o=>o.id===selId):null; }
@@ -1899,7 +1976,7 @@ function showSelBar(){
   _selScaleBase=null; const gsc=document.getElementById('gsScale'); if(gsc)gsc.value=100;
   g.style.display='flex';
   const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isB?'Símbolo':'Objeto';
-  refreshBottom();
+  _syncSwatches(); refreshBottom();
 }
 
 // ══════════ IMPORTAR PLANO (imagen / foto / PDF / DXF) ══════════
@@ -2207,7 +2284,9 @@ function renderSheetURL(){
   const K=8,W=Math.round(pw*K),H=Math.round(ph*K);
   const pv={w:cv.width,h:cv.height,x:vpX,y:vpY,z:vpZ,t:tool};
   cv.width=W;cv.height=H;
-  vpZ=W/sz.w; vpX=-originX*vpZ; vpY=-originY*vpZ;
+  // La hoja va del 0,0 (esquina inferior-izq) hacia arriba: mapear world→papel
+  // con Y invertida para que el dibujo (Y↑) caiga DENTRO de la lámina.
+  vpZ=W/sz.w; vpX=-originX*vpZ; vpY=(sz.h-originY)*vpZ;
   tool='';_exporting=true;
   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
   render();

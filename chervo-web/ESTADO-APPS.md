@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v3) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v4) · app pro
 - **Qué es:** evolución de iLDraw-Volt en **app seria e independiente** para **dibujar
   instalación eléctrica a escala y presentar planos**. Es también el canvas que enlaza iLVolt
   (Herramientas → *"SketchVolt · dibujar a escala"*). Aparece en el landing de iLStorage.
@@ -166,6 +166,20 @@ Versión = número de caché del SW.
   `#scmod` (escalar), `#exmod` (exportar), paleta de color flotante, `showFondoBar`, `toggleOrigin`,
   `fijarFondo/editarFondo`, CSS de `#fondoBar`/`.fb-*`, y variables muertas
   (`scaleId`, `_recolorId`, `settingOrigin`, `dim2Drawing`). `node --check` OK.
+- **Barra con ÍCONOS (menos texto):** Borrar/Quitar = ícono tacho, Editar = lápiz+papel,
+  Fijar/aprobar = **check verde** (igual que la **X** cierra), Calibrar = regla, Nueva imagen = +.
+  Cada control lleva su **rótulo ARRIBA y el control ABAJO** (`.fi`) para no hacer slide lateral.
+- **Un solo selector de color = una pastilla** (`.cpick`) que abre una **paleta de 12 colores**
+  (`#colorPop`); aplica al objeto seleccionado si lo hay, si no al color de dibujo. Ya no hay
+  dots repetidos en línea.
+- **Tamaño de símbolo hasta 10 mm** (2·3·4·5·6·8·10; def 3) en herramienta y en selección.
+- **Impresión/lienzo arreglado:** la hoja arranca en el **0,0 (esquina inferior-izq)** y crece
+  hacia arriba (Y↑) igual que el dibujo → **el dibujo queda DENTRO de la lámina** (antes caía
+  fuera / se escalaba cualquier cosa). El **plano importado imprime** (fondo transparente, con su
+  opacidad); **lo único que NO se imprime es la grilla**. El **espacio de trabajo viene dibujado**:
+  hoja + marco de márgenes + **cajetín "RÓTULO"** de referencia en el canvas, para saber dónde se
+  trabaja. Export a hoja verificado end-to-end (dibujo dentro, cajetín con LÁMINA/empresa/obra/
+  dibujante/escala/fecha/hoja).
 - **Pendiente:** "+" de nueva imagen (collage/varios planos).
 - **Propiedades del objeto seleccionado:** toque simple **selecciona** (queda azul); aparece la
   barra → **Tamaño (mm)/Giro/Altura** en símbolos · **Grosor/Línea/Escala** en formas · **Color** +
