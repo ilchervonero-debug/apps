@@ -116,7 +116,16 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v33) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v34) · app pro
+- **Dashboard limpio (lote O — pedido de Ángel):** **Imprimir** y **Materiales** pasaron a **íconos
+  sueltos** (sin borde/fondo, clase `.iconbtn`) **arriba-derecha del nombre del proyecto** (se quitó
+  la sección "Salida" y las tarjetas `.dact`). La **tarjeta de hoja** se limpió: **sin selects a la
+  vista** (nada "por llenar") → pie con **nombre · tamaño · escala · orientación como texto** a la
+  izquierda y **lápiz de editar** a la derecha; al tocar el lápiz abre un **modal "Editar hoja"**
+  (`hojaModal`: nombre + hoja + escala + orientación). En la esquina, **tacho + imprimir sueltos**
+  (sin fondo). **Imprimir por-hoja**: `imprimirLaminas(soloId)` + `imprimirPlanta(id)`. El tacho del
+  landing también quedó suelto (mismo lenguaje). Limpieza: se borraron `renombrarPlano/planoEsc/
+  planoHoja` y el CSS `.dact/.pcard-del`. Verificado e2e.
 - **Rediseño LANDING + DASHBOARD con tarjetas + MINIATURA del dibujo (lote N — visión de Ángel):**
   nuevo generador `plantaThumb(pl)` (reusa el motor con `_exporting`: render limpio de los objetos a
   un PNG chico) + `proyThumb`/`fFecha`. **Landing:** tarjetas visuales `.pcard` (miniatura arriba

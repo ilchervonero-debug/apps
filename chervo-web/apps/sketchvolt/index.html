@@ -289,9 +289,6 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pcard-info{padding:12px 15px;}
 .pcard-name{font-size:20px;color:var(--ink);line-height:1.15;}
 .pcard-date{font-size:14px;color:var(--label);margin-top:3px;}
-.pcard-del{position:absolute;top:9px;right:9px;background:rgba(255,255,255,.92);border:1px solid #eee;border-radius:10px;
-  width:40px;height:40px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.pcard-del svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
 .pcard-new{border:1.5px dashed #FE0000;box-shadow:none;}
 .pcard-new .pcard-plus{height:158px;display:flex;align-items:center;justify-content:center;color:#FE0000;font-size:64px;font-weight:300;line-height:1;}
 .pcard-new .pcard-name{color:#FE0000;}
@@ -309,15 +306,22 @@ body{display:flex;flex-direction:column;background:#fff;}
   font-size:18px;font-family:var(--font);font-weight:500;cursor:pointer;width:100%;}
 .btn-g{background:#fff;border:1.5px solid #dcdcd8;color:var(--ink);border-radius:11px;padding:13px;
   font-size:17px;font-family:var(--font);cursor:pointer;width:100%;}
-/* Acciones del dashboard: botón-ícono (ícono grande arriba + una palabra) — más íconos, menos texto */
-.dactions{display:flex;gap:12px;}
-.dact{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;
-  border:1.5px solid #dcdcd8;border-radius:14px;padding:15px 8px;cursor:pointer;font-family:var(--font);color:var(--ink);}
-.dact svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
-.dact span{font-size:15px;color:var(--ink);}
-.dact:active{background:#f7f7f7;}
-.dact.print{border-color:#FE0000;color:#FE0000;}
-.dact.print span{color:#FE0000;}
+/* Ícono suelto: sin borde, sin fondo (igual que el resto de la app). Negro=contexto, rojo al tocar. */
+.iconbtn{background:none;border:none;padding:5px;cursor:pointer;color:var(--ink);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.iconbtn svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
+.iconbtn:active{color:var(--accent);}
+.iconbtn.ic-del{color:var(--red);}
+/* Fila del título del proyecto: nombre a la izquierda, acciones (imprimir/materiales) sueltas a la derecha */
+.pj-titlerow{display:flex;align-items:center;gap:4px;}
+.pj-titlerow .pj-title{flex:1;min-width:0;}
+/* Tarjeta de hoja: pie con nombre+escala+tamaño a la izquierda, lápiz editar a la derecha */
+.pl-info2{display:flex;align-items:center;gap:8px;}
+.pl-info2 .pl-meta{flex:1;min-width:0;}
+/* Esquina de la tarjeta: tacho + imprimir, sueltos (sin fondo) */
+.pcard-corner{position:absolute;top:6px;right:6px;display:flex;gap:2px;}
+.pcard-corner .iconbtn svg{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff);}
+.mrow3{display:flex;gap:8px;}
+.mrow3 select{flex:1;min-width:0;background:rgba(242,242,247,.9);border:1px solid rgba(0,0,0,.1);border-radius:12px;padding:11px 8px;font-size:16px;font-family:var(--font);color:var(--ink);}
 .scr .empty2{font-size:16px;color:#9a9a9a;text-align:center;padding:26px 10px;}
 .sec-t{font-size:15px;color:#7a7a7a;text-transform:uppercase;letter-spacing:.05em;margin:18px 2px 8px;}
 .seg{display:flex;gap:0;margin-bottom:16px;border:1.5px solid #dcdcd8;border-radius:11px;overflow:hidden;}
@@ -410,7 +414,11 @@ details.mas[open] summary:before{content:'▾ ';}
     <div id="pjName" style="font-size:17px;color:#7a7a7a;margin-left:auto;"></div>
   </div>
   <div class="scr-body">
-    <input id="pjTitle" class="pj-title" oninput="pjName2()" placeholder="Proyecto">
+    <div class="pj-titlerow">
+      <input id="pjTitle" class="pj-title" oninput="pjName2()" placeholder="Proyecto">
+      <button class="iconbtn" onclick="imprimirLaminas()" title="Imprimir láminas (PDF)"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg></button>
+      <button class="iconbtn" onclick="openConteo()" title="Conteo de materiales"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg></button>
+    </div>
     <div class="fld"><label>Descripción</label><input id="pjDesc" oninput="pjEdit()" placeholder="Instalación eléctrica"></div>
     <div class="sec-t">General del dibujo</div>
     <div class="fld2">
@@ -434,13 +442,20 @@ details.mas[open] summary:before{content:'▾ ';}
     </details>
     <div class="sec-t">Planos / hojas</div>
     <div id="planoList"></div>
-    <div class="sec-t">Salida</div>
-    <div class="dactions">
-      <button class="dact print" onclick="imprimirLaminas()" title="Imprimir láminas (PDF)"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg><span>Imprimir</span></button>
-      <button class="dact" onclick="openConteo()" title="Conteo de materiales"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg><span>Materiales</span></button>
-    </div>
   </div>
 </div>
+
+<!-- Modal: editar propiedades de la hoja (no ensuciar la tarjeta con cajetines por llenar) -->
+<div class="modal" id="hojaModal"><div class="mbox">
+  <h3>Editar hoja</h3>
+  <input type="text" id="hjName" placeholder="Nombre de la hoja">
+  <div class="mrow3">
+    <select id="hjHoja"><option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="A1">A1</option><option value="custom">Person.</option><option value="inf">Sin hoja</option></select>
+    <select id="hjEsc"><option value="100">1/100</option><option value="75">1/75</option><option value="50">1/50</option></select>
+    <select id="hjOri"><option value="horiz">Apaisado</option><option value="vert">Vertical</option></select>
+  </div>
+  <div class="mrow"><button onclick="closeHoja()">Cancelar</button><button class="ok" onclick="saveHoja()">Guardar</button></div>
+</div></div>
 
 <!-- ══════════ HOJA DE CONTEO ══════════ -->
 <div class="scr" id="scrConteo">
@@ -2535,7 +2550,7 @@ function renderProyList(){
     const th=proyThumb(p), nP=(p.plantas||[]).length;
     return `<div class="pcard" onclick="openProy('${p.id}')">
       <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Sin dibujo todavía</span>`}</div>
-      <button class="pcard-del" onclick="event.stopPropagation();delProy('${p.id}')" title="Borrar"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+      <div class="pcard-corner"><button class="iconbtn ic-del" onclick="event.stopPropagation();delProy('${p.id}')" title="Borrar">${_TRASH_SVG}</button></div>
       <div class="pcard-info"><div class="pcard-name">${esc(p.nombre)}</div>
         <div class="pcard-date">${p.creado?fFecha(p.creado)+' · ':''}${nP} hoja(s)</div></div></div>`;
   }).join('');
@@ -2590,32 +2605,46 @@ function nuevoPlano(nombre){ return {id:uid(),nombre,hoja:proy.hoja||'A3',denom:
   customW:proy.customW||0,customH:proy.customH||0,
   objects:[],nextId:1,originX:0,originY:0,fondoURL:null,fondoT:null,gridM:1}; }
 const _opt=(v,cur,t)=>`<option value="${v}" ${String(cur)===String(v)?'selected':''}>${t}</option>`;
+const _TRASH_SVG='<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>';
+const _PRINT_SVG='<svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg>';
+const _EDIT_SVG='<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg>';
 function renderPlanos(){
   const l=document.getElementById('planoList');
-  const rot=pl=>pl.orient==='vert'?'Vertical':'Apaisado';
+  const meta=pl=>[pl.hoja==='inf'?'Sin hoja':(pl.hoja||'A3'),'1/'+(pl.denom||100),(pl.orient==='vert'?'Vertical':'Apaisado')].join(' · ');
   const cards=(proy.plantas||[]).map(pl=>{
     const th=plantaThumb(pl);
     return `<div class="pcard" onclick="openPlanta('${pl.id}')">
       <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Hoja vacía · tocá para dibujar</span>`}</div>
-      <button class="pcard-del" onclick="event.stopPropagation();delPlanta('${pl.id}')" title="Borrar"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
-      <div class="pcard-info" onclick="event.stopPropagation()">
-        <input class="pl-nom2" value="${esc(pl.nombre)}" oninput="renombrarPlano('${pl.id}',this.value)">
-        <div class="pl-row2">
-          <select onchange="planoHoja('${pl.id}',this.value)">${_opt('A4',pl.hoja,'A4')}${_opt('A3',pl.hoja,'A3')}${_opt('A2',pl.hoja,'A2')}${_opt('A1',pl.hoja,'A1')}${_opt('custom',pl.hoja,'Person.')}${_opt('inf',pl.hoja,'Sin hoja')}</select>
-          <select onchange="planoEsc('${pl.id}',this.value)">${_opt(100,pl.denom,'1/100')}${_opt(75,pl.denom,'1/75')}${_opt(50,pl.denom,'1/50')}</select>
-          <select onchange="planoOri('${pl.id}',this.value)">${_opt('horiz',pl.orient||'horiz','Apaisado')}${_opt('vert',pl.orient||'horiz','Vertical')}</select>
-        </div>
+      <div class="pcard-corner">
+        <button class="iconbtn ic-del" onclick="event.stopPropagation();delPlanta('${pl.id}')" title="Borrar">${_TRASH_SVG}</button>
+        <button class="iconbtn" onclick="event.stopPropagation();imprimirPlanta('${pl.id}')" title="Imprimir hoja">${_PRINT_SVG}</button>
+      </div>
+      <div class="pcard-info pl-info2">
+        <div class="pl-meta"><div class="pcard-name">${esc(pl.nombre)}</div><div class="pcard-date">${meta(pl)}</div></div>
+        <button class="iconbtn" onclick="event.stopPropagation();editHoja('${pl.id}')" title="Editar hoja">${_EDIT_SVG}</button>
       </div></div>`;
   }).join('');
   const add=`<div class="pcard pcard-new" onclick="agregarPlano()"><div class="pcard-plus">+</div>
     <div class="pcard-info"><div class="pcard-name">Nueva hoja</div><div class="pcard-date">Agregar plano · piso · etc.</div></div></div>`;
   l.innerHTML=cards+add;
 }
-function planoOri(id,v){ const pl=(proy.plantas||[]).find(p=>p.id===id); if(pl){pl.orient=v;persistProy();renderPlanos();} }
+// Editar propiedades de la hoja en un modal (la tarjeta queda limpia; nada "por llenar" a la vista).
+let _editHojaId=null;
+function editHoja(id){ const pl=(proy.plantas||[]).find(p=>p.id===id); if(!pl)return; _editHojaId=id;
+  document.getElementById('hjName').value=pl.nombre||'';
+  document.getElementById('hjHoja').value=pl.hoja||'A3';
+  document.getElementById('hjEsc').value=pl.denom||100;
+  document.getElementById('hjOri').value=pl.orient||'horiz';
+  document.getElementById('hojaModal').classList.add('show'); }
+function closeHoja(){ document.getElementById('hojaModal').classList.remove('show'); _editHojaId=null; }
+function saveHoja(){ const pl=(proy.plantas||[]).find(p=>p.id===_editHojaId); if(pl){
+  pl.nombre=document.getElementById('hjName').value.trim()||pl.nombre;
+  pl.hoja=document.getElementById('hjHoja').value;
+  pl.denom=+document.getElementById('hjEsc').value;
+  pl.orient=document.getElementById('hjOri').value;
+  persistProy(); } closeHoja(); renderPlanos(); }
+function imprimirPlanta(id){ imprimirLaminas(id); }
 function agregarPlano(){ const n=(proy.plantas||[]).length+1; proy.plantas=proy.plantas||[]; proy.plantas.push(nuevoPlano('Hoja '+n)); persistProy(); renderPlanos(); }
-function renombrarPlano(id,v){ const pl=proy.plantas.find(p=>p.id===id); if(pl){pl.nombre=v;persistProy();} }
-function planoEsc(id,v){ const pl=proy.plantas.find(p=>p.id===id); if(pl){pl.denom=+v;persistProy();} }
-function planoHoja(id,v){ const pl=proy.plantas.find(p=>p.id===id); if(pl){pl.hoja=v;persistProy();} }
 function delPlanta(id){ if(!confirm('¿Borrar este plano?'))return; proy.plantas=proy.plantas.filter(p=>p.id!==id);persistProy();renderPlanos(); }
 
 function openPlanta(id){
@@ -2687,10 +2716,11 @@ drawPreview=function(){ _origDrawPreview();
 };
 
 // ══════════ IMPRESIÓN COMPLETA DESDE EL DASHBOARD (todas las láminas del proyecto) ══════════
-async function imprimirLaminas(){
+async function imprimirLaminas(soloId){
   if(!proy){toast('Abrí un proyecto');return;}
   if(planta)savePlanta();
-  const pls=(proy.plantas||[]).filter(p=>p.hoja&&p.hoja!=='inf');
+  let pls=(proy.plantas||[]).filter(p=>p.hoja&&p.hoja!=='inf');
+  if(soloId) pls=pls.filter(p=>p.id===soloId);
   if(!pls.length){toast('No hay láminas con hoja definida');return;}
   toast('Generando láminas…');
   // preservar el estado actual del motor
