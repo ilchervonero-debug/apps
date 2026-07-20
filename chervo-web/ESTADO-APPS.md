@@ -116,7 +116,26 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v30) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v31) · app pro
+- **Barras de herramienta: ícono ARRIBA + reparto parejo a TODO el ancho (lote K — pedido de
+  Ángel):** las props de las herramientas de dibujo salían **apiladas y pegadas a la izquierda**
+  (contenedor genérico). Ahora: (1) **ícono arriba, control abajo** en TODOS (se arregló `grpTool`/
+  grosor, que tenía el ícono al costado → ahora patrón `.fi`); (2) se quitaron los **10 divisores
+  `.pdiv`** (orden invisible); (3) los controles se **distribuyen parejo a lo ancho** según cuántos
+  tenga la herramienta: `#propbar{justify-content:space-evenly}` y las cajas multi-control
+  (`#grpBlock,#grpHatch,#grpDim`) ocupan el ancho y reparten adentro. Resultado: polígono =
+  grosor·línea·color·tamaño·lados repartidos a lo ancho; símbolo = giro·tamaño·altura·color. Sin
+  scroll lateral, sin apilado forzado, mismo lenguaje en todas. Verificado e2e (line/poly/block en
+  una fila, distribuidos). **Ojo especificidad:** los overrides van como `#propbar>#grpX` para ganarle
+  a `#propbar>div` (si no, el bloque quedaba "castigado al centro" sin tomar el ancho).
+- **LÍNEA DE ACCIÓN dinámica: borrar / aprobar / finalizar (lote L — pedido de Ángel):** el **tacho
+  ya NO va fijo a la derecha** (apretaba los controles). Ahora hay una **línea propia abajo**,
+  centrada, separada por una línea fina: `#propActions`. El **tacho va GRIS** (`#8e8e93`) y centrado;
+  si hay algo que **aprobar/finalizar** aparece el **tick** y comparten el centro (el tacho se corre).
+  Así los controles de arriba **se expanden a todo el ancho** (space-evenly en grpSel/grpMulti). JS:
+  `showActions(del,ok)` — 1 objeto = tacho solo; grupo/multi = tacho + tick; herramienta/vacío = línea
+  oculta. Se ocultó también desde `_hideAllGrp`. Verificado e2e (1 objeto gris centrado, grupo
+  tacho+tick, herramienta sin línea).
 - **Borradores consolidados + dashboard más icónico (lote J):** se **quitó `erase`** (borrar-por-
   toque) por redundante — ya hay 2 firmas de borrar objeto entero (selección + long-press). Quedan
   **`eraser`** (goma a mano alzada) y **`trim`** (recorta hasta tocar línea). En el dashboard, la

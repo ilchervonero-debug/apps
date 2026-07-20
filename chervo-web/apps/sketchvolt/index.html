@@ -120,13 +120,25 @@ body{display:flex;flex-direction:column;background:#fff;}
   border-top:1px solid #e5e5ea;
   border-radius:18px 18px 0 0;
   box-shadow:0 -6px 26px rgba(0,0,0,.10);
-  display:flex;align-items:center;flex-wrap:wrap;
+  display:flex;align-items:center;flex-wrap:wrap;justify-content:space-evenly;
   padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));gap:8px 4px;
   transform:translateY(112%);transition:transform .24s cubic-bezier(.3,1,.4,1);
 }
 #propbar.up{transform:translateY(0);}
-/* La fila activa ocupa todo el ancho y ENVUELVE (nunca scroll lateral: se apila hacia arriba) */
-#propbar>div,#propbar>span{flex:1 1 100%;flex-wrap:wrap;min-width:0;}
+/* Grupos de propiedades: FLUYEN HORIZONTAL a lo ancho de la barra (ancho por contenido, y si no
+   entran envuelven hacia arriba — nunca scroll lateral). */
+#propbar>div,#propbar>span{flex:0 1 auto;flex-wrap:wrap;min-width:0;max-width:100%;align-items:center;gap:8px;}
+/* Barras de selección/panel: ocupan TODO el ancho (su acción —tacho/aceptar/cerrar— va a la derecha
+   con margin-left:auto). Mismo lenguaje de limpieza en todas. */
+/* Barras full-width que reparten sus controles parejo a lo ancho (el tacho/tick ya NO van acá:
+   viven en la línea de acción de abajo). Con #propbar>#id para ganarle en especificidad a #propbar>div. */
+#propbar>#grpSel,#propbar>#grpMulti,#propbar>#grpImage,#propbar>#grpExport,#propbar>#grpGrid,
+#propbar>#grpBlock,#propbar>#grpHatch,#propbar>#grpDim{flex:1 1 100%;justify-content:space-evenly;}
+/* LÍNEA DE ACCIÓN (abajo, centrada, separada por una línea): borrar / aprobar / finalizar.
+   El tacho va GRIS y centrado; si hay algo que aprobar aparece el tick y comparten el centro. */
+#propActions{flex:1 1 100%;order:99;display:none;justify-content:center;align-items:center;gap:34px;
+  border-top:1px solid #ececec;margin-top:4px;padding-top:6px;}
+#propActions #paDel{color:#8e8e93;}
 #propbar::-webkit-scrollbar{display:none;}
 .pl{font-size:9px;font-weight:600;color:var(--label);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
 .pdiv{width:1px;height:20px;background:rgba(0,0,0,.1);flex-shrink:0;}
@@ -543,12 +555,10 @@ details.mas[open] summary:before{content:'▾ ';}
 <!-- PROPBAR (abajo) — barra dinámica: un solo contexto a la vez -->
 <div id="propbar">
   <span id="grpTool" style="display:none;align-items:center;gap:6px">
-    <div class="pdiv"></div>
-    <svg viewBox="0 0 24 24" style="width:16px;height:16px;flex-shrink:0;opacity:.4;stroke:var(--ink);fill:none;stroke-linecap:round"><line x1="3" y1="6" x2="21" y2="6" stroke-width="1"/><line x1="3" y1="12" x2="21" y2="12" stroke-width="2.5"/><line x1="3" y1="18" x2="21" y2="18" stroke-width="5"/></svg>
-    <input type="range" id="pbStroke" min="1" max="10" value="2" style="width:60px" oninput="strokeW=+this.value">
+    <span class="fi"><span class="fl" title="Grosor"><svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6" stroke-width="1"/><line x1="4" y1="12" x2="20" y2="12" stroke-width="2.4"/><line x1="4" y1="18" x2="20" y2="18" stroke-width="4.2"/></svg></span>
+      <input type="range" id="pbStroke" min="1" max="10" value="2" style="width:72px" oninput="strokeW=+this.value"></span>
   </span>
   <div id="grpLine" style="display:none;align-items:center;gap:8px">
-    <div class="pdiv"></div>
     <span class="fi"><span class="fl" title="Tipo de línea"><svg viewBox="0 0 24 24"><path d="M3 12h3"/><path d="M10 12h4"/><path d="M18 12h3"/></svg></span>
       <select id="pbLinetype" onchange="lineType=this.value">
         <option value="solid">────</option>
@@ -557,23 +567,19 @@ details.mas[open] summary:before{content:'▾ ';}
       </select></span>
   </div>
   <div id="grpColor" style="display:none;align-items:center;gap:8px">
-    <div class="pdiv"></div>
     <span class="fi"><button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
   </div>
   <div id="grpSize" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl" title="Tamaño"><svg viewBox="0 0 24 24"><path d="M3 5h11"/><path d="M12 7l2-2l-2-2"/><path d="M5 3l-2 2l2 2"/><path d="M19 10v11"/><path d="M17 19l2 2l2-2"/><path d="M21 12l-2-2l-2 2"/><rect x="3" y="10" width="11" height="11" rx="2"/></svg></span>
       <input type="range" id="pbSize" min="8" max="120" value="14" style="width:70px"></span>
-    <div class="pdiv"></div>
   </div>
   <div id="grpFont" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Fuente</span>
       <select id="pbFont"><option value="sans">Sans</option><option value="mono">Mono</option><option value="serif">Serif</option></select></span>
-    <div class="pdiv"></div>
   </div>
   <div id="grpSides" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Lados</span>
       <select id="pbSides"><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></span>
-    <div class="pdiv"></div>
   </div>
   <div id="grpHatch" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl" title="Patrón"><svg viewBox="0 0 24 24"><path d="M6 3l-3 3"/><path d="M11 3l-8 8"/><path d="M16 3l-13 13"/><path d="M21 3l-18 18"/><path d="M21 8l-13 13"/><path d="M21 13l-8 8"/><path d="M21 18l-3 3"/></svg></span>
@@ -581,7 +587,6 @@ details.mas[open] summary:before{content:'▾ ';}
     <span class="fi"><span class="fl" title="Opacidad"><svg viewBox="0 0 24 24"><path d="M6 14.5a6 6 0 1 0 12 0c0-2.5-2-5-6-9.5c-4 4.5-6 7-6 9.5z"/><path d="M12 5v15"/></svg></span>
       <input type="range" id="pbOpac" min="5" max="95" value="25" style="width:60px" oninput="document.getElementById('pbOpacV').textContent=this.value+'%'"></span>
     <span style="font-size:11px;color:var(--label);flex-shrink:0" id="pbOpacV">25%</span>
-    <div class="pdiv"></div>
   </div>
   <div id="grpDim" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Texto cota</span>
@@ -590,12 +595,10 @@ details.mas[open] summary:before{content:'▾ ';}
         <button onclick="setDimFont(10)" id="dimM" style="padding:4px 9px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:var(--font);font-size:12px;cursor:pointer">M</button>
         <button onclick="setDimFont(14)" id="dimL" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;font-family:var(--font);font-size:12px;cursor:pointer">L</button>
       </span></span>
-    <div class="pdiv"></div>
   </div>
   <div id="grpEraser" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl" title="Goma"><svg viewBox="0 0 24 24"><path d="M19 20H8.5l-4.21-4.3a1 1 0 0 1 0-1.41l10-10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41L14 16"/><path d="M18 13.3L10.7 6"/></svg></span>
       <input type="range" id="pbEraserSize" min="10" max="80" value="24" style="width:64px"></span>
-    <div class="pdiv"></div>
   </div>
   <div id="grpBlock" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl" title="Giro"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></span>
@@ -605,7 +608,6 @@ details.mas[open] summary:before{content:'▾ ';}
     <span class="fi"><span class="fl" title="Altura (cm)"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l4-4l4 4"/><path d="M8 17l4 4l4-4"/></svg></span>
       <input type="number" id="pbAlt" value="30" min="0" step="5" style="width:56px;font-size:16px" oninput="bloqueAltura=+this.value||0"></span>
     <span class="fi"><button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
-    <div class="pdiv"></div>
   </div>
   <div id="grpSel" style="display:none;align-items:center;gap:8px">
     <span id="gsBlockCtl" style="display:none;align-items:center;gap:8px">
@@ -629,7 +631,6 @@ details.mas[open] summary:before{content:'▾ ';}
     </span>
     <span class="fi"><button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
     <button class="pib" data-tip="Agrupar / Componente" onclick="openGrpDialog()"><svg viewBox="0 0 24 24"><path d="M6 3.2h12M6 20.8h12M3.2 6v12M20.8 6v12" stroke-dasharray="1.6 2"/><rect x="1.4" y="1.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="19.4" y="1.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="1.4" y="19.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="19.4" y="19.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="6.5" y="6.5" width="7.5" height="7.5" rx="1"/><rect x="10" y="10" width="7.5" height="7.5" rx="1"/></svg></button>
-    <button class="pib danger" data-tip="Borrar" onclick="selDelete()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
   </div>
   <div id="grpMulti" style="display:none;align-items:center;gap:8px">
     <button id="gmGroupBtn" class="pib" data-tip="Agrupar / Componente" onclick="openGrpDialog()"><svg viewBox="0 0 24 24"><path d="M6 3.2h12M6 20.8h12M3.2 6v12M20.8 6v12" stroke-dasharray="1.6 2"/><rect x="1.4" y="1.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="19.4" y="1.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="1.4" y="19.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="19.4" y="19.4" width="3.2" height="3.2" rx=".5" fill="currentColor" stroke="none"/><rect x="6.5" y="6.5" width="7.5" height="7.5" rx="1"/><rect x="10" y="10" width="7.5" height="7.5" rx="1"/></svg></button>
@@ -638,8 +639,6 @@ details.mas[open] summary:before{content:'▾ ';}
     <span class="fi" id="gmScaleField"><span class="fl"><svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"><polyline points="15 4 20 4 20 9"/><polyline points="9 20 4 20 4 15"/><line x1="20" y1="4" x2="13" y2="11"/><line x1="4" y1="20" x2="11" y2="13"/></svg></span>
       <input type="range" id="gmScale" min="20" max="300" value="100" style="width:76px" oninput="selScaleSetLive(this.value)" onchange="selScaleSetEnd()"></span>
     <span class="fi" id="gmColorField"><button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
-    <button class="pib danger" data-tip="Borrar" onclick="selDelete()" style="margin-left:auto"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
-    <button class="pib ok" data-tip="Terminar" onclick="terminarSel()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
   </div>
   <div id="grpGrid" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Grilla · guía de dibujo</span>
@@ -666,6 +665,11 @@ details.mas[open] summary:before{content:'▾ ';}
     <button class="pib" data-tip="Nueva imagen" onclick="importPlano()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     <button class="pib danger" data-tip="Quitar" onclick="quitarFondo()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
     <button class="pib ok" data-tip="Listo" onclick="closeBottomPanel()" style="margin-left:auto"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
+  </div>
+  <!-- LÍNEA DE ACCIÓN (dinámica): borrar (tacho gris) · aprobar/finalizar (tick). Centrada, abajo. -->
+  <div id="propActions">
+    <button id="paDel" class="pib" data-tip="Borrar" onclick="selDelete()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+    <button id="paOk" class="pib ok" data-tip="Terminar" onclick="terminarSel()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
   </div>
   <span id="pbHint" style="display:none"></span>
 </div>
@@ -2166,7 +2170,15 @@ function setBlockCM(v){ bloqueCM=+v; }
 // ── BARRA INFERIOR DINÁMICA — un solo contexto a la vez (herramienta · selección · panel) ──
 let _panelMode=null;
 const _ALL_GRP=['grpTool','grpLine','grpColor','grpSize','grpFont','grpSides','grpHatch','grpDim','grpEraser','grpBlock','grpSel','grpMulti','grpGrid','grpExport','grpImage'];
-function _hideAllGrp(){ _ALL_GRP.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';}); }
+function _hideAllGrp(){ _ALL_GRP.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';}); showActions(false,false); }
+// Línea de acción de abajo: tacho (gris) y/o tick (aprobar/finalizar). Centrada.
+function showActions(del, ok){
+  const pa=document.getElementById('propActions'); if(!pa)return;
+  const d=document.getElementById('paDel'), o=document.getElementById('paOk');
+  if(d)d.style.display=del?'':'none';
+  if(o)o.style.display=ok?'':'none';
+  pa.style.display=(del||ok)?'flex':'none';
+}
 function refreshBottom(){
   const idle = tool==='select' && selIds.length===0 && !modoAjusteFondo && !_panelMode;
   const pb=document.getElementById('propbar'); if(pb)pb.classList.toggle('up', !idle);   // panel sube (contexto) o baja (vacío)
@@ -2312,6 +2324,7 @@ function showSelBar(){
     _setScaleBase=null; const gms=document.getElementById('gmScale'); if(gms)gms.value=100;
     // Nombre/kind NO van en la barra (cero texto): el rótulo flotante #pbTool ya dice "Grupo · X".
     gm.style.display='flex';
+    showActions(true, true);   // línea de acción: tacho (gris) + tick (terminar)
     const nm=_selName();
     const pt=document.getElementById('pbTool'); if(pt)pt.textContent=(isComp?'Componente':(whole?'Grupo':'Selección'))+(nm?' · '+nm:'');
     _syncSwatches(); refreshBottom(); return;
@@ -2327,6 +2340,7 @@ function showSelBar(){
   if(hasLine){ document.getElementById('gsSW').value=o.strokeW||2; document.getElementById('gsLT').value=o.lineType||'solid'; }
   _selScaleBase=null; const gsc=document.getElementById('gsScale'); if(gsc)gsc.value=100;
   g.style.display='flex';
+  showActions(true, false);   // 1 objeto: solo tacho (gris) en la línea de acción
   const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isB?'Símbolo':'Objeto';
   _syncSwatches(); refreshBottom();
 }
