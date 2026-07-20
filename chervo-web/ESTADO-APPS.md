@@ -116,7 +116,15 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v27) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v28) · app pro
+- **Más íconos, menos letras + sin halos (lote H — pedido de Ángel):** se quitó el **anillo/halo
+  verde** del tick de Aceptar/Terminar (`.pib.ok` ahora pelado, grande 50px con check 34px → se nota
+  por TAMAÑO, no por caja). Los **rótulos de texto** de las barras de propiedades se pasaron a
+  **íconos finos** (línea, gris de contexto): regla=Tamaño(cm), rotar=Giro, flechas↕=Altura(cm),
+  pesos=Grosor, guiones=Línea, gota=Opacidad, diagonales=Patrón, goma=Goma. El rótulo **"Color" se
+  eliminó** (la pastilla de color ya ES el color). Se dejaron como texto los ambiguos (Fuente, Lados,
+  Texto cota, Grilla). CSS `.fi>.fl svg` (18px). Verificado e2e (símbolo: regla·giro·altura·color·
+  agrupar·tacho; línea: grosor·línea·escala·color·agrupar·tacho; sin halos, sin h-scroll). node OK.
 - **Propbar = PANEL que sube/baja desde abajo (lote G — pedido de Ángel):** la barra de
   propiedades dejó de ser una franja fija en el flujo (que dejaba un hueco blanco y tenía **scroll
   lateral**). Ahora es un **panel overlay** (`position:fixed;bottom:0`, esquinas redondeadas +
