@@ -68,6 +68,57 @@ herramienta, se ponen **rojos**; al salir, vuelven a negro. Nunca rojo fijo "de 
 
 ---
 
+## 3 — Rediseño DASHBOARD + HOME con tarjetas visuales (visión de Ángel)
+
+> Bloque grande (pantallas). Menos texto, más íconos, y **miniatura/avatar del dibujo** en cada
+> tarjeta. La tarjeta ES el acceso directo al canvas.
+
+**HOME (lista de proyectos):**
+- Tarjeta de proyecto **más grande**, que muestra una **foto/avatar del canvas** que se está
+  trabajando (miniatura del dibujo).
+- Una **tarjeta vacía con "+"** para crear proyecto → **eliminar el formulario/modal "Nuevo
+  proyecto"**. Al tocar "+", solo **pide el nombre** → se crea con **fecha y hora** → entra directo
+  al dashboard.
+- Layout de tarjeta: **avatar del dibujo arriba (~75%)** + franja de **datos abajo (~25%)**: nombre,
+  fecha y hora de creación. **Tacho en la esquina derecha** para borrar. **Tocar la tarjeta = abrir
+  el canvas** (acceso directo). La **edición de datos va arriba** (íconos sobre el dibujo).
+
+**DASHBOARD (dentro del proyecto):**
+- Mismo lenguaje: tarjeta con **datos del proyecto** + **seteo de hoja de trabajo**.
+- **Arriba-derecha de la tarjeta: íconos de impresora y exportación** (sobre el avatar).
+- Debajo de los datos: **cliente, hoja, rotación (ícono retrato/apaisado), escala** → todo eso
+  **llena el rótulo (cajetín)**.
+- **Cuadro grande con avatar del dibujo**; si está vacío, muestra un **"+"**. Debajo, otro vacío con
+  **"+"** para **crear otra hoja** (piso, etc.) — mismo patrón.
+- Al crear la hoja: **íconos arriba-derecha** para editar **nombre de hoja, tamaño de papel,
+  rotación**; esos datos + el nombre de la hoja llenan lo principal del rótulo.
+- Idea rectora: ver **un pedazo de la hoja de trabajo** con los **íconos arriba sobre el dibujo**;
+  firma notoria. Abajo (25%) los datos (nombre, fecha, hora), tacho en esquina.
+
+**Notas técnicas para arrancar:**
+- **Miniatura/avatar:** generar un PNG chico de la planta (reusar `renderCleanURL`/`renderSheetURL`
+  con canvas reducido) y guardarlo como dataURL en `proy`/`planta` (o regenerar al vuelo al entrar al
+  home/dash). Placeholder "+" cuando no hay dibujo.
+- **Crear proyecto sin formulario:** reemplazar el modal actual por un pedido mínimo de nombre (o
+  inline en la tarjeta "+") → `crearProyecto(nombre)` con `creado:Date.now()` → abrir dashboard.
+- **Fecha/hora:** mostrar `creado` formateado (es-UY) en la franja de datos.
+- Archivos: todo en `index.html` (home = `#scrHome`/`renderProyList`; dashboard = `#scrDash`/
+  `renderPlanos`). Respetar iLStyle (texto grande, sin rosado, íconos finos, negro=contexto/
+  rojo=activo).
+
+**Ya hecho (parcial, lote J):** en el dashboard, "Salida" pasó a **botones-ícono** (Imprimir /
+Materiales) y el "Dibujar" de cada hoja quedó **solo lápiz**. Falta el rediseño de tarjetas con
+avatar de arriba.
+
+---
+
+## RESUELTO (no va más acá)
+- **Goma / borradores:** Ángel definió → se **quitó `erase`** (borrar-por-toque, redundante con
+  selección + long-press). Quedan **`eraser`** (goma a mano alzada, borra como toda goma de canvas)
+  y **`trim`** (recorta segmentos hasta tocar una línea).
+
+---
+
 ## Verificación (cuando se implemente)
 - Playwright + Chromium (`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, `/tmp/node_modules/
   playwright-core`), portrait 430×900. `node --check` sobre el `<script>`.

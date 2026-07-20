@@ -116,7 +116,15 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v29) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v30) · app pro
+- **Borradores consolidados + dashboard más icónico (lote J):** se **quitó `erase`** (borrar-por-
+  toque) por redundante — ya hay 2 firmas de borrar objeto entero (selección + long-press). Quedan
+  **`eraser`** (goma a mano alzada) y **`trim`** (recorta hasta tocar línea). En el dashboard, la
+  sección "Salida" pasó a **botones-ícono** (Imprimir = impresora / Materiales = lista) y el
+  **"Dibujar"** de cada hoja quedó **solo lápiz** (sin texto). Falta el rediseño grande de tarjetas
+  con **avatar del dibujo** (home + dashboard) → documentado en `SKETCHVOLT-PROXIMO.md` §3 con la
+  visión completa de Ángel (tarjeta con miniatura arriba, datos abajo 25%, "+" sin formulario, íconos
+  de impresora/exportar/rotación sobre el dibujo).
 - **Barra de comandos: íconos grandes + CERO texto (lote I — pedido de Ángel):** `.pib` 40→**48px**
   (svg 24→**30**), íconos-rótulo `.fl` 18→**23px**. Se quitó **todo el texto** de la barra de grupo/
   multiselección (`gmCount` "N seleccionados" y `gmNameField` GRUPO/nombre) → el nombre ya NO se
