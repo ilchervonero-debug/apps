@@ -117,6 +117,11 @@ Versión = número de caché del SW.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
 ### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v28) · app pro
+- **PRÓXIMO CAMBIO (dejado por Ángel, ver `SKETCHVOLT-PROXIMO.md`):** (1) FABs de herramienta
+  **negro en espera / rojo activo** (hoy `#btn-elec` y `#btn-herr` están rojo fijo — cambiar a
+  color-por-estado, sin borde rojo de adorno); (2) el **tacho del long-press** (`#ctx`, ~línea 692)
+  debe usar el **mismo svg** que el tacho del panel (`.pib.danger`, con barritas + asa). No
+  implementado aún; el md tiene las referencias de código para arrancar directo.
 - **Más íconos, menos letras + sin halos (lote H — pedido de Ángel):** se quitó el **anillo/halo
   verde** del tick de Aceptar/Terminar (`.pib.ok` ahora pelado, grande 50px con check 34px → se nota
   por TAMAÑO, no por caja). Los **rótulos de texto** de las barras de propiedades se pasaron a
