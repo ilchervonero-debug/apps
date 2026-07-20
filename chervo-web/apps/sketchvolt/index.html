@@ -279,6 +279,26 @@ body{display:flex;flex-direction:column;background:#fff;}
 .card2 .del svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;}
 .card2 .go{color:#FE0000;flex-shrink:0;}
 .card2 .go svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;}
+/* TARJETA visual de proyecto/hoja: miniatura del dibujo arriba (~75%) + datos abajo (~25%). */
+.pcard{position:relative;background:#fff;border:1px solid #e5e5ea;border-radius:16px;overflow:hidden;
+  cursor:pointer;margin-bottom:14px;box-shadow:0 1px 5px rgba(0,0,0,.05);}
+.pcard:active{background:#fcfcfc;}
+.pcard-thumb{height:158px;background:#f6f6f7;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.pcard-thumb img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
+.pcard-empty{font-size:15px;color:#b0b0b3;}
+.pcard-info{padding:12px 15px;}
+.pcard-name{font-size:20px;color:var(--ink);line-height:1.15;}
+.pcard-date{font-size:14px;color:var(--label);margin-top:3px;}
+.pcard-del{position:absolute;top:9px;right:9px;background:rgba(255,255,255,.92);border:1px solid #eee;border-radius:10px;
+  width:40px;height:40px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.pcard-del svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
+.pcard-new{border:1.5px dashed #FE0000;box-shadow:none;}
+.pcard-new .pcard-plus{height:158px;display:flex;align-items:center;justify-content:center;color:#FE0000;font-size:64px;font-weight:300;line-height:1;}
+.pcard-new .pcard-name{color:#FE0000;}
+.pcard .pl-nom2{font-size:20px;color:var(--ink);border:none;background:none;width:100%;padding:0;font-family:var(--font);}
+.pcard .pl-nom2:focus{outline:none;}
+.pcard .pl-row2{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.pcard .pl-row2 select{font-size:14px;font-family:var(--font);border:1.5px solid #e5e5ea;border-radius:8px;padding:6px 8px;color:var(--ink);background:#fff;}
 .fld{display:flex;flex-direction:column;gap:5px;margin-bottom:13px;}
 .fld label{font-size:15px;color:#7a7a7a;}
 .fld input,.fld select{font-size:18px;font-family:var(--font);color:var(--ink);background:#fff;
@@ -371,24 +391,16 @@ details.mas[open] summary:before{content:'▾ ';}
   <div class="scr-body">
     <h2>Proyectos</h2>
     <div id="proyList"></div>
-    <button class="np-add" id="npAddBtn" onclick="toggleNp()">+ Nuevo proyecto</button>
-    <div id="npForm" style="display:none;margin-top:6px">
-      <div class="fld"><label>Nombre del proyecto</label><input id="npNom" placeholder="Casa Melo"></div>
-      <div class="sec-t">Datos del rótulo (van al cajetín)</div>
-      <div class="fld2">
-        <div class="fld"><label>Obra / ubicación</label><input id="npObra" placeholder="Melo, Cerro Largo"></div>
-        <div class="fld"><label>Cliente</label><input id="npCli" placeholder="Ángel Nieves"></div>
-      </div>
-      <div class="fld2">
-        <div class="fld"><label>Dibujante</label><input id="npDib" placeholder="Ángel Nieves"></div>
-        <div class="fld"><label>Empresa / facultad</label><input id="npEmp" placeholder="iLStorage"></div>
-      </div>
-      <div class="fld"><label>Descripción (opcional)</label><input id="npDesc" placeholder="Instalación eléctrica"></div>
-      <button class="btn-r" onclick="crearProy()">Crear proyecto</button>
-    </div>
-    <button class="btn-g" style="margin-top:20px" onclick="abrirLienzoLibre()">Dibujar sin proyecto · lienzo libre</button>
+    <button class="btn-g" style="margin-top:16px" onclick="abrirLienzoLibre()">Dibujar sin proyecto · lienzo libre</button>
   </div>
 </div>
+
+<!-- Modal: nuevo proyecto (solo nombre; el resto del rótulo se completa en el dashboard) -->
+<div class="modal" id="npModal"><div class="mbox">
+  <h3>Nuevo proyecto</h3>
+  <input type="text" id="npModalName" placeholder="Nombre del proyecto (ej: Casa Melo)">
+  <div class="mrow"><button onclick="closeNp()">Cancelar</button><button class="ok" onclick="confirmNp()">Crear</button></div>
+</div></div>
 
 <!-- ══════════ SHELL: DASHBOARD DEL PROYECTO ══════════ -->
 <div class="scr" id="scrProj">
@@ -422,7 +434,6 @@ details.mas[open] summary:before{content:'▾ ';}
     </details>
     <div class="sec-t">Planos / hojas</div>
     <div id="planoList"></div>
-    <button class="np-add" onclick="agregarPlano()">+ Agregar plano</button>
     <div class="sec-t">Salida</div>
     <div class="dactions">
       <button class="dact print" onclick="imprimirLaminas()" title="Imprimir láminas (PDF)"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg><span>Imprimir</span></button>
@@ -1897,6 +1908,7 @@ function cancelText(){document.getElementById('tmod').classList.remove('show');d
 function confirmText(){const val=document.getElementById('tinput').value.trim();const fs=+document.getElementById('pbSize').value||14;const ff=document.getElementById('pbFont').value||'sans';if(val){saveHistory();objects.push({type:'text',pts:[[tpX,tpY]],text:val,fontSize:fs,fontFamily:ff,color,strokeW,id:nextId++});}cancelText();ST('select');render();}
 document.getElementById('tinput').addEventListener('keydown',e=>{if(e.key==='Enter')confirmText();if(e.key==='Escape')cancelText();});
 document.getElementById('grpModalName').addEventListener('keydown',e=>{if(e.key==='Enter')confirmGrpModal();if(e.key==='Escape')cancelGrpModal();});
+document.getElementById('npModalName').addEventListener('keydown',e=>{if(e.key==='Enter')confirmNp();if(e.key==='Escape')closeNp();});
 function confirmEditText(){const val=document.getElementById('etinput').value.trim();const obj=objects.find(o=>o.id===etId);if(obj&&val){saveHistory();if(obj.type==='text')obj.text=val;else if(obj.type==='dim'||obj.type==='dim2')obj.label=val||null;}document.getElementById('etmod').classList.remove('show');etId=null;render();}
 document.getElementById('etinput').addEventListener('keydown',e=>{if(e.key==='Enter')confirmEditText();if(e.key==='Escape')document.getElementById('etmod').classList.remove('show');});
 
@@ -2034,6 +2046,31 @@ function renderCleanURL(){
   cv.width=prevW;cv.height=prevH;render();
   return url;
 }
+
+// Miniatura (avatar) del dibujo de una planta → dataURL PNG chico. Reusa el motor (globals objects).
+function plantaThumb(pl, maxDim){
+  if(!pl) return null;
+  const objs=pl.objects||[]; if(!objs.length) return null;
+  const sO=objects, sW=cv.width, sH=cv.height, sX=vpX, sY=vpY, sZ=vpZ, sT=tool, sE=_exporting;
+  objects=objs;
+  const bb=contentBounds();
+  if(!bb){ objects=sO; return null; }
+  const pad=Math.max(bb.w,bb.h)*0.08 + 0.15;
+  const wW=bb.w+pad*2, wH=bb.h+pad*2;
+  const M=maxDim||520, scale=M/Math.max(wW,wH,0.001);
+  cv.width=Math.max(1,Math.round(wW*scale)); cv.height=Math.max(1,Math.round(wH*scale));
+  vpZ=scale; vpX=-(bb.minX-pad)*scale; vpY=-(bb.minY-pad)*scale;
+  tool=''; _exporting=true;
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+  render();
+  let url=null; try{ url=cv.toDataURL('image/png'); }catch(e){}
+  objects=sO; cv.width=sW; cv.height=sH; vpX=sX; vpY=sY; vpZ=sZ; tool=sT; _exporting=sE; render();
+  return url;
+}
+// Miniatura del proyecto = la 1ª planta que tenga dibujo.
+function proyThumb(p){ if(!p||!p.plantas)return null;
+  for(const pl of p.plantas){ const u=plantaThumb(pl); if(u)return u; } return null; }
+function fFecha(ts){ if(!ts)return ''; try{ return new Date(ts).toLocaleString('es-UY',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
 
 async function exportPNG(){
   const url=renderCleanURL();if(!url){toast('Nada para exportar');return;}
@@ -2491,26 +2528,27 @@ function abrirLienzoLibre(){
 }
 function renderProyList(){
   const l=document.getElementById('proyList');
-  l.innerHTML=proyectos.filter(p=>p.id!=='__libre').map(p=>`<div class="card2" onclick="openProy('${p.id}')">
-    <div><div class="t">${esc(p.nombre)}</div><div class="d">${p.desc?esc(p.desc)+' · ':''}${(p.plantas||[]).length} plano(s)</div></div>
-    <div style="display:flex;align-items:center;gap:4px"><button class="del" onclick="event.stopPropagation();delProy('${p.id}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
-    <span class="go"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></span></div></div>`).join('')
-    || '<div class="empty2">Todavía no hay proyectos. Tocá <b>+ Nuevo proyecto</b>.</div>';
+  const nueva=`<div class="pcard pcard-new" onclick="nuevoProyPrompt()">
+    <div class="pcard-plus">+</div>
+    <div class="pcard-info"><div class="pcard-name">Nuevo proyecto</div><div class="pcard-date">Crear un proyecto</div></div></div>`;
+  const cards=proyectos.filter(p=>p.id!=='__libre').map(p=>{
+    const th=proyThumb(p), nP=(p.plantas||[]).length;
+    return `<div class="pcard" onclick="openProy('${p.id}')">
+      <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Sin dibujo todavía</span>`}</div>
+      <button class="pcard-del" onclick="event.stopPropagation();delProy('${p.id}')" title="Borrar"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+      <div class="pcard-info"><div class="pcard-name">${esc(p.nombre)}</div>
+        <div class="pcard-date">${p.creado?fFecha(p.creado)+' · ':''}${nP} hoja(s)</div></div></div>`;
+  }).join('');
+  l.innerHTML=nueva+cards;
 }
-function toggleNp(){ const f=document.getElementById('npForm'),b=document.getElementById('npAddBtn');
-  const on=f.style.display==='none'; f.style.display=on?'block':'none'; b.style.display=on?'none':'block';
-  if(on)setTimeout(()=>document.getElementById('npNom').focus(),80); }
-function crearProy(){
-  let nom=document.getElementById('npNom').value.trim();
+function nuevoProyPrompt(){ const i=document.getElementById('npModalName'); i.value=''; document.getElementById('npModal').classList.add('show'); setTimeout(()=>i.focus(),120); }
+function closeNp(){ document.getElementById('npModal').classList.remove('show'); }
+function confirmNp(){ const nom=document.getElementById('npModalName').value.trim(); closeNp(); crearProyRapido(nom); }
+function crearProyRapido(nom){
   if(!nom)nom='Proyecto '+(proyectos.filter(p=>p.id!=='__libre').length+1);
-  const gv=id=>document.getElementById(id).value.trim();
-  const p={id:uid(),nombre:nom,desc:gv('npDesc'),
-    cliente:gv('npCli'),obra:gv('npObra'),dibujante:gv('npDib'),empresa:gv('npEmp'),
-    denom:100,hoja:'A3',orient:'horiz',plantas:[]};
-  proyectos.unshift(p);persistProy();
-  ['npNom','npDesc','npCli','npObra','npDib','npEmp'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('npForm').style.display='none';document.getElementById('npAddBtn').style.display='block';
-  openProy(p.id);
+  const p={id:uid(),nombre:nom,desc:'',cliente:'',obra:'',dibujante:'',empresa:'',
+    denom:100,hoja:'A3',orient:'horiz',plantas:[],creado:Date.now()};
+  proyectos.unshift(p);persistProy();openProy(p.id);
 }
 function delProy(id){ if(!confirm('¿Borrar el proyecto y sus planos?'))return; proyectos=proyectos.filter(p=>p.id!==id);persistProy();renderProyList(); }
 
@@ -2554,15 +2592,26 @@ function nuevoPlano(nombre){ return {id:uid(),nombre,hoja:proy.hoja||'A3',denom:
 const _opt=(v,cur,t)=>`<option value="${v}" ${String(cur)===String(v)?'selected':''}>${t}</option>`;
 function renderPlanos(){
   const l=document.getElementById('planoList');
-  l.innerHTML=(proy.plantas||[]).map(pl=>`<div class="plano">
-    <input class="pl-nom" value="${esc(pl.nombre)}" oninput="renombrarPlano('${pl.id}',this.value)">
-    <div class="pl-row">
-      <select onchange="planoEsc('${pl.id}',this.value)">${_opt(100,pl.denom,'1/100')}${_opt(75,pl.denom,'1/75')}${_opt(50,pl.denom,'1/50')}</select>
-      <select onchange="planoHoja('${pl.id}',this.value)">${_opt('A4',pl.hoja,'A4')}${_opt('A3',pl.hoja,'A3')}${_opt('A2',pl.hoja,'A2')}${_opt('A1',pl.hoja,'A1')}${_opt('custom',pl.hoja,'Person.')}${_opt('inf',pl.hoja,'Sin hoja')}</select>
-      <button class="pl-del" onclick="delPlanta('${pl.id}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
-      <button class="pl-draw" onclick="openPlanta('${pl.id}')" title="Dibujar / editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
-    </div></div>`).join('');
+  const rot=pl=>pl.orient==='vert'?'Vertical':'Apaisado';
+  const cards=(proy.plantas||[]).map(pl=>{
+    const th=plantaThumb(pl);
+    return `<div class="pcard" onclick="openPlanta('${pl.id}')">
+      <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Hoja vacía · tocá para dibujar</span>`}</div>
+      <button class="pcard-del" onclick="event.stopPropagation();delPlanta('${pl.id}')" title="Borrar"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+      <div class="pcard-info" onclick="event.stopPropagation()">
+        <input class="pl-nom2" value="${esc(pl.nombre)}" oninput="renombrarPlano('${pl.id}',this.value)">
+        <div class="pl-row2">
+          <select onchange="planoHoja('${pl.id}',this.value)">${_opt('A4',pl.hoja,'A4')}${_opt('A3',pl.hoja,'A3')}${_opt('A2',pl.hoja,'A2')}${_opt('A1',pl.hoja,'A1')}${_opt('custom',pl.hoja,'Person.')}${_opt('inf',pl.hoja,'Sin hoja')}</select>
+          <select onchange="planoEsc('${pl.id}',this.value)">${_opt(100,pl.denom,'1/100')}${_opt(75,pl.denom,'1/75')}${_opt(50,pl.denom,'1/50')}</select>
+          <select onchange="planoOri('${pl.id}',this.value)">${_opt('horiz',pl.orient||'horiz','Apaisado')}${_opt('vert',pl.orient||'horiz','Vertical')}</select>
+        </div>
+      </div></div>`;
+  }).join('');
+  const add=`<div class="pcard pcard-new" onclick="agregarPlano()"><div class="pcard-plus">+</div>
+    <div class="pcard-info"><div class="pcard-name">Nueva hoja</div><div class="pcard-date">Agregar plano · piso · etc.</div></div></div>`;
+  l.innerHTML=cards+add;
 }
+function planoOri(id,v){ const pl=(proy.plantas||[]).find(p=>p.id===id); if(pl){pl.orient=v;persistProy();renderPlanos();} }
 function agregarPlano(){ const n=(proy.plantas||[]).length+1; proy.plantas=proy.plantas||[]; proy.plantas.push(nuevoPlano('Hoja '+n)); persistProy(); renderPlanos(); }
 function renombrarPlano(id,v){ const pl=proy.plantas.find(p=>p.id===id); if(pl){pl.nombre=v;persistProy();} }
 function planoEsc(id,v){ const pl=proy.plantas.find(p=>p.id===id); if(pl){pl.denom=+v;persistProy();} }

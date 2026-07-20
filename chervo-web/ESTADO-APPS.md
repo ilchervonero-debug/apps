@@ -116,7 +116,18 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v32) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v33) · app pro
+- **Rediseño LANDING + DASHBOARD con tarjetas + MINIATURA del dibujo (lote N — visión de Ángel):**
+  nuevo generador `plantaThumb(pl)` (reusa el motor con `_exporting`: render limpio de los objetos a
+  un PNG chico) + `proyThumb`/`fFecha`. **Landing:** tarjetas visuales `.pcard` (miniatura arriba
+  ~75%, nombre + fecha/hora abajo ~25%, **tacho en la esquina**, tocar = abrir). Tarjeta **"+"**
+  crea proyecto **sin formulario**: modal que pide **solo el nombre** → `crearProyRapido` con
+  `creado:Date.now()` → abre el dashboard (se sacó el `npForm` con todos los campos del rótulo; esos
+  se completan en el dashboard). **Dashboard:** las hojas pasaron de filas a **tarjetas** con
+  miniatura, nombre editable, hoja/escala/orientación y tacho; tarjeta **"+"** agrega hoja
+  (`planoOri` nuevo para rotación). Verificado e2e (crear sin form, dibujar, miniatura en landing y
+  en dashboard, agregar 2ª hoja). Pendiente fino (`SKETCHVOLT-PROXIMO.md` §3): íconos de impresora/
+  exportar sobre el avatar y el layout exacto 75/25 con acciones arriba.
 - **Línea de acción en TODAS las herramientas + flecha volver + sin exportar en toolbar (lote M):**
   `showActions` se generalizó (recibe funciones `delFn/okFn`) y ahora **Imagen** (tacho=quitar fondo,
   tick=listo), **Grilla** (tick=listo) y selección usan la **misma línea de acción** centrada (tacho
