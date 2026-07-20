@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v31) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v32) · app pro
+- **Línea de acción en TODAS las herramientas + flecha volver + sin exportar en toolbar (lote M):**
+  `showActions` se generalizó (recibe funciones `delFn/okFn`) y ahora **Imagen** (tacho=quitar fondo,
+  tick=listo), **Grilla** (tick=listo) y selección usan la **misma línea de acción** centrada (tacho
+  gris + tick) — antes Imagen/Grilla tenían tacho/cerrar inline (lo que veía Ángel). Se agregó una
+  **flecha roja de "Volver al dashboard"** ANTES del wordmark (antes solo se volvía tocando el nombre,
+  no era obvio). Se **quitó el botón Exportar (↓) del toolbar** del canvas (exportar/imprimir van al
+  dashboard). Verificado e2e (toolbar con flecha y sin exportar; grid=tick; image=tacho gris+tick).
 - **Barras de herramienta: ícono ARRIBA + reparto parejo a TODO el ancho (lote K — pedido de
   Ángel):** las props de las herramientas de dibujo salían **apiladas y pegadas a la izquierda**
   (contenedor genérico). Ahora: (1) **ícono arriba, control abajo** en TODOS (se arregló `grpTool`/
