@@ -116,7 +116,20 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v26) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v27) · app pro
+- **Propbar = PANEL que sube/baja desde abajo (lote G — pedido de Ángel):** la barra de
+  propiedades dejó de ser una franja fija en el flujo (que dejaba un hueco blanco y tenía **scroll
+  lateral**). Ahora es un **panel overlay** (`position:fixed;bottom:0`, esquinas redondeadas +
+  sombra) que **se desliza fuera** cuando no hay contexto (`translateY`, sin clase `.up`) y **sube**
+  al seleccionar/usar herramienta (`refreshBottom` alterna `.up`). Así el **canvas/grilla llena todo
+  el pie** (el `#wrap` es `flex:1` y la propbar ya no ocupa flujo). **Sin scroll lateral nunca:** la
+  fila activa es `flex:1 1 100%;flex-wrap:wrap` → si no entra, **se apila hacia arriba** (el panel se
+  hace más alto), jamás desborda al costado. **Rótulo de nombre/acción** (`#pbTool`) más grande
+  (18px, antes 14) y flota **justo encima del panel** (alto real vía JS, aunque envuelva). **Tick de
+  Aceptar/Terminar más grande y notorio:** `.pib.ok` 50×50 con **anillo verde** y check 32px
+  (énfasis por tamaño, iLStyle). Modales subidos a `z-index:400` (el diálogo de agrupar queda sobre
+  el panel). Verificado e2e (idle→panel abajo y grilla al pie; selección→panel sube 2 filas sin
+  h-scroll; diálogo clickable por encima). `node --check` OK.
 - **Ícono de agrupar = el de referencia de Ángel** (dos cuadros dentro de un **marco punteado con
   4 esquinas/tiradores**, estilo "selección"), no dos cuadros pelados. Y **fuera el ejemplo inventado
   "Toma doble"** del placeholder → ahora dice *"Ponle un nombre (opcional)"*.

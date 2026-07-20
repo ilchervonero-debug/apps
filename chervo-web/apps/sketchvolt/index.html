@@ -114,12 +114,19 @@ body{display:flex;flex-direction:column;background:#fff;}
 
 /* PROP BAR */
 #propbar{
-  height:var(--prop);
+  position:fixed;left:0;right:0;bottom:0;z-index:180;
+  min-height:var(--prop);
   background:#fff;
   border-top:1px solid #e5e5ea;
-  display:flex;align-items:center;padding:0 10px;gap:8px;
-  overflow-x:auto;scrollbar-width:none;flex-shrink:0;
+  border-radius:18px 18px 0 0;
+  box-shadow:0 -6px 26px rgba(0,0,0,.10);
+  display:flex;align-items:center;flex-wrap:wrap;
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));gap:8px 4px;
+  transform:translateY(112%);transition:transform .24s cubic-bezier(.3,1,.4,1);
 }
+#propbar.up{transform:translateY(0);}
+/* La fila activa ocupa todo el ancho y ENVUELVE (nunca scroll lateral: se apila hacia arriba) */
+#propbar>div,#propbar>span{flex:1 1 100%;flex-wrap:wrap;min-width:0;}
 #propbar::-webkit-scrollbar{display:none;}
 .pl{font-size:9px;font-weight:600;color:var(--label);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
 .pdiv{width:1px;height:20px;background:rgba(0,0,0,.1);flex-shrink:0;}
@@ -138,9 +145,9 @@ body{display:flex;flex-direction:column;background:#fff;}
   font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;}
 #groupEditBar button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 /* Nombre de herramienta: suelto arriba de la barra, izquierda, sin caja (estilo #coord) */
-#pbTool{position:fixed;left:12px;bottom:calc(var(--prop) + 8px);z-index:20;
-  font-size:14px;font-weight:500;color:#1c1c1e;white-space:nowrap;pointer-events:none;
-  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;}
+#pbTool{position:fixed;left:12px;bottom:calc(var(--prop) + 12px);z-index:181;
+  font-size:18px;font-weight:500;color:#1c1c1e;white-space:nowrap;pointer-events:none;
+  text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff,0 0 6px #fff;}
 #pbTool.hide{display:none;}
 #pbHint{font-size:11px;color:var(--accent);white-space:nowrap;flex-shrink:0;font-weight:500;}
 /* Campo apilado: rótulo ARRIBA, control ABAJO (evita el slide lateral) */
@@ -158,7 +165,9 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pib svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 .pib:active{background:rgba(0,0,0,.06);}
 .pib.danger{color:var(--red);}
-.pib.ok{color:var(--green);}
+/* Aceptar/Terminar: más grande y con anillo verde para que el tick se note (énfasis por tamaño) */
+.pib.ok{color:var(--green);width:50px;height:50px;border-radius:13px;box-shadow:inset 0 0 0 1.5px var(--green);}
+.pib.ok svg{width:32px;height:32px;stroke-width:1.7;}
 .pib.on{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);}
 /* Selector de color: un rectángulo de esquinas redondeadas (no un círculo) que abre la paleta */
 .cpick{width:38px;height:26px;border-radius:8px;border:1.5px solid #e5e5ea;cursor:pointer;flex-shrink:0;padding:0;}
@@ -186,7 +195,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 .ci.danger{color:var(--red);}
 
 /* MODALS */
-.modal{display:none;position:fixed;inset:0;background:transparent;z-index:100;align-items:flex-end;justify-content:center;}
+.modal{display:none;position:fixed;inset:0;background:transparent;z-index:400;align-items:flex-end;justify-content:center;}
 .modal.show{display:flex;}
 .mbox{
   background:#fff;
@@ -299,9 +308,8 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pu-item svg{width:30px;height:30px;fill:none;stroke:var(--ink);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 .pu-item span{font-size:14px;color:var(--ink);line-height:1.05;pointer-events:none;}
 .cdot{width:22px;height:22px;border-radius:50%;border:1.5px solid #d0d0d3;cursor:pointer;flex-shrink:0;padding:0;}
-/* Barra inferior: cuando no hay nada seleccionado ni activo, DESAPARECE del todo */
-#propbar.empty{display:none!important;}
-#propbar{flex-wrap:wrap;min-height:var(--prop);height:auto;}
+/* Barra inferior: es un PANEL que sube/baja desde abajo. Sin nada activo, se desliza fuera
+   (translateY) y el canvas/grilla llena todo el pie; al haber contexto, sube (.up). */
 .cmd-btn{flex-shrink:0;padding:8px 14px;border-radius:9px;border:1.5px solid #dcdcd8;background:#fff;color:var(--ink);font-size:16px;font-family:var(--font);cursor:pointer;}
 .cmd-btn.on{border-color:var(--accent);color:var(--accent);}
 .np-add{width:100%;background:#fff;border:1.5px dashed #FE0000;color:#FE0000;border-radius:11px;padding:13px;font-size:17px;font-family:var(--font);cursor:pointer;}
@@ -2161,8 +2169,11 @@ const _ALL_GRP=['grpTool','grpLine','grpColor','grpSize','grpFont','grpSides','g
 function _hideAllGrp(){ _ALL_GRP.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';}); }
 function refreshBottom(){
   const idle = tool==='select' && selIds.length===0 && !modoAjusteFondo && !_panelMode;
-  const pb=document.getElementById('propbar'); if(pb)pb.classList.toggle('empty', idle);
-  const pt=document.getElementById('pbTool'); if(pt)pt.classList.toggle('hide', idle);  // nombre de herramienta también se oculta en vacío
+  const pb=document.getElementById('propbar'); if(pb)pb.classList.toggle('up', !idle);   // panel sube (contexto) o baja (vacío)
+  const pt=document.getElementById('pbTool');
+  if(pt){ pt.classList.toggle('hide', idle);                                             // rótulo suelto se oculta en vacío
+    if(!idle && pb){ pt.style.bottom=(pb.offsetHeight + 10)+'px'; }                       // …y flota justo encima del panel (alto real, aunque envuelva)
+  }
 }
 // Contexto HERRAMIENTA: nombre + props de la herramienta activa (nada de selección ni panel).
 function applyToolBar(){
