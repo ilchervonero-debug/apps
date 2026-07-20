@@ -116,7 +116,22 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v28) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v29) · app pro
+- **Barra de comandos: íconos grandes + CERO texto (lote I — pedido de Ángel):** `.pib` 40→**48px**
+  (svg 24→**30**), íconos-rótulo `.fl` 18→**23px**. Se quitó **todo el texto** de la barra de grupo/
+  multiselección (`gmCount` "N seleccionados" y `gmNameField` GRUPO/nombre) → el nombre ya NO se
+  repite: queda **solo en el rótulo flotante** `#pbTool` ("Grupo · X"), afuera de la barra (era la
+  redundancia que marcó Ángel). Verificado: barra sin texto, rótulo flotante con el nombre, sin
+  h-scroll.
+- **Imprimir SOLO desde el dashboard:** se quitó el botón **"Hoja"** (imprimir la lámina) del panel
+  de exportar del canvas y su función `exportarHoja` (el canvas ya no manda a imprimir; queda PNG/DXF
+  como exportación de archivo). La impresión de láminas se hace desde el dashboard (`imprimirLaminas`,
+  que sigue usando `renderSheetURL`). Bug de borrado: **no reproducible** (select+tacho y `erase` por
+  toque borran bien, incluso 6px desviado) → era la versión vieja cacheada. Pendiente decidir: la
+  **goma a mano alzada `eraser`** (fragmenta líneas, deja pedacitos — la "de iLDraw que siempre tiene
+  algo") vs. `erase` (toca y borra el objeto entero). **Dashboard con más íconos/menos texto:**
+  pendiente (ejemplo que pasó Ángel: tarjetas con acciones-ícono abrir/compartir/duplicar/editar/
+  imprimir/borrar).
 - **PRÓXIMO CAMBIO (dejado por Ángel, ver `SKETCHVOLT-PROXIMO.md`):** (1) FABs de herramienta
   **negro en espera / rojo activo** (hoy `#btn-elec` y `#btn-herr` están rojo fijo — cambiar a
   color-por-estado, sin borde rojo de adorno); (2) el **tacho del long-press** (`#ctx`, ~línea 692)
