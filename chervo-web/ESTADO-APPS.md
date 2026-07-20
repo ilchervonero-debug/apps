@@ -116,7 +116,19 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v34) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v35) · app pro
+- **Dashboard: datos del proyecto VISIBLES como texto, cajas de llenado OCULTAS (lote P):** el
+  dashboard ya no muestra inputs/selectores del proyecto. El **nombre + datos** (escala · hoja ·
+  orientación · cliente · obra · dibujante · empresa) se ven como **texto** (`renderProyHeader` →
+  `#pjTitleTxt` + `#pjMeta`); un **lápiz** junto al nombre abre el modal `proyModal` donde se llenan
+  (mismos IDs `pjTitle/pjDesc/pjEsc/pjHoja/pjOri/pjObra/pjCli/pjDib/pjEmp`, ahora dentro del modal).
+  **Solo las hojas tienen caja** (tarjetas). Imprimir/Materiales + lápiz = íconos sueltos junto al
+  nombre. **Logo del rótulo:** subir imagen (`onLogoFile` → `proy.logo` dataURL), preview en el
+  modal, se dibuja en el cajetín (`_logoImg` en `drawRotulo`, col1). El **título de plano del rótulo
+  es el nombre de la hoja** (ya lo tomaba). Se quitaron `pjName2/pjEdit` (live) → `saveProy`.
+  Verificado e2e (0 inputs visibles, texto correcto, modal edita, rótulo refleja). **Pendiente**
+  (`SKETCHVOLT-PROXIMO.md`): re-dibujar el cajetín al estilo de la referencia de Ángel (LOGO grande
+  izq · PROYECTO/TÍTULO/ESCALA/SUP/FECHA/CLAVE/PLANO Nº · flecha norte; plano arriba / proyecto abajo).
 - **Dashboard limpio (lote O — pedido de Ángel):** **Imprimir** y **Materiales** pasaron a **íconos
   sueltos** (sin borde/fondo, clase `.iconbtn`) **arriba-derecha del nombre del proyecto** (se quitó
   la sección "Salida" y las tarjetas `.dact`). La **tarjeta de hoja** se limpió: **sin selects a la
