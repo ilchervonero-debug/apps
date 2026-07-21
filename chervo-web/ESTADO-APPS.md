@@ -116,7 +116,15 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v35) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v36) · app pro
+- **Dashboard afinado (lote Q — pedido de Ángel):** **imprimir del PROYECTO (todas las láminas) +
+  materiales → al HEAD** (barra superior); junto al nombre queda **solo el lápiz** de editar.
+  **Imprimir por-HOJA** en la **esquina superior derecha** de la miniatura; **tacho en la esquina
+  inferior derecha, en GRIS** (`.pc-trash` #9a9a9e, no resalta). El **editar del proyecto se DESPLIEGA
+  INLINE** en el dashboard (`#pjEditPanel`, `toggleProyEdit`), ya no es modal (`proyModal`/`editProy`/
+  `closeProy` eliminados). La tarjeta **"+" (Nueva hoja / Nuevo proyecto) pasó a GRIS** (borde, cruz y
+  texto). Verificado e2e (2 íconos en head, 1 en título, print arriba/tacho abajo gris, panel inline,
+  "+" gris).
 - **Dashboard: datos del proyecto VISIBLES como texto, cajas de llenado OCULTAS (lote P):** el
   dashboard ya no muestra inputs/selectores del proyecto. El **nombre + datos** (escala · hoja ·
   orientación · cliente · obra · dibujante · empresa) se ven como **texto** (`renderProyHeader` →

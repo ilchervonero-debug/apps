@@ -283,15 +283,15 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pcard{position:relative;background:#fff;border:1px solid #e5e5ea;border-radius:16px;overflow:hidden;
   cursor:pointer;margin-bottom:14px;box-shadow:0 1px 5px rgba(0,0,0,.05);}
 .pcard:active{background:#fcfcfc;}
-.pcard-thumb{height:158px;background:#f6f6f7;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.pcard-thumb{position:relative;height:158px;background:#f6f6f7;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .pcard-thumb img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
 .pcard-empty{font-size:15px;color:#b0b0b3;}
 .pcard-info{padding:12px 15px;}
 .pcard-name{font-size:20px;color:var(--ink);line-height:1.15;}
 .pcard-date{font-size:14px;color:var(--label);margin-top:3px;}
-.pcard-new{border:1.5px dashed #FE0000;box-shadow:none;}
-.pcard-new .pcard-plus{height:158px;display:flex;align-items:center;justify-content:center;color:#FE0000;font-size:64px;font-weight:300;line-height:1;}
-.pcard-new .pcard-name{color:#FE0000;}
+.pcard-new{border:1.5px dashed #c4c4c7;box-shadow:none;}
+.pcard-new .pcard-plus{height:158px;display:flex;align-items:center;justify-content:center;color:#b0b0b3;font-size:64px;font-weight:300;line-height:1;}
+.pcard-new .pcard-name{color:#8e8e93;}
 .pcard .pl-nom2{font-size:20px;color:var(--ink);border:none;background:none;width:100%;padding:0;font-family:var(--font);}
 .pcard .pl-nom2:focus{outline:none;}
 .pcard .pl-row2{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
@@ -326,8 +326,15 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pl-info2{display:flex;align-items:center;gap:8px;}
 .pl-info2 .pl-meta{flex:1;min-width:0;}
 /* Esquina de la tarjeta: tacho + imprimir, sueltos (sin fondo) */
-.pcard-corner{position:absolute;top:6px;right:6px;display:flex;gap:2px;}
-.pcard-corner .iconbtn svg{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff);}
+/* Íconos sobre la miniatura: imprimir hoja arriba-derecha; tacho abajo-derecha (gris, sin resaltar) */
+.pc-print{position:absolute;top:5px;right:7px;}
+.pc-trash{position:absolute;bottom:5px;right:7px;color:#9a9a9e;}
+.pc-print svg,.pc-trash svg{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff);}
+/* Panel de edición del proyecto que se despliega inline en el dashboard */
+.pj-edit{display:flex;flex-direction:column;gap:11px;background:#fff;border:1px solid #e5e5ea;border-radius:14px;padding:16px;margin:2px 0 14px;}
+.pj-edit input[type=text],.pj-edit input[type=number]{background:rgba(242,242,247,.9);border:1px solid rgba(0,0,0,.1);border-radius:12px;padding:12px 14px;font-size:16px;font-family:var(--font);color:var(--ink);width:100%;}
+.pj-edit input:focus,.pj-edit select:focus{outline:none;border-color:var(--accent);}
+.pj-edit .mlbl{margin:7px 0 -3px;}
 .mrow3{display:flex;gap:8px;}
 .mrow3 select{flex:1;min-width:0;background:rgba(242,242,247,.9);border:1px solid rgba(0,0,0,.1);border-radius:12px;padding:11px 8px;font-size:16px;font-family:var(--font);color:var(--ink);}
 .scr .empty2{font-size:16px;color:#9a9a9a;text-align:center;padding:26px 10px;}
@@ -419,50 +426,47 @@ details.mas[open] summary:before{content:'▾ ';}
   <div class="scr-head">
     <button class="bk" onclick="goHome()"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
     <div class="wm">Sketch<b>Volt</b></div>
-    <div id="pjName" style="font-size:17px;color:#7a7a7a;margin-left:auto;"></div>
+    <button class="iconbtn" onclick="imprimirLaminas()" style="margin-left:auto" title="Imprimir proyecto (todas las láminas)"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg></button>
+    <button class="iconbtn" onclick="openConteo()" title="Conteo de materiales del proyecto"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg></button>
   </div>
   <div class="scr-body">
     <div class="pj-titlerow">
       <div id="pjTitleTxt" class="pj-title-txt">Proyecto</div>
-      <button class="iconbtn" onclick="editProy()" title="Editar datos del proyecto"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg></button>
-      <button class="iconbtn" onclick="imprimirLaminas()" title="Imprimir láminas (PDF)"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg></button>
-      <button class="iconbtn" onclick="openConteo()" title="Conteo de materiales"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg></button>
+      <button class="iconbtn" onclick="toggleProyEdit()" title="Editar datos del proyecto"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg></button>
     </div>
     <div id="pjMeta" class="pj-meta"></div>
+    <!-- Editar datos del proyecto: se DESPLIEGA inline acá (no modal, no pantalla aparte) -->
+    <div id="pjEditPanel" class="pj-edit" style="display:none">
+      <input type="text" id="pjTitle" placeholder="Nombre del proyecto">
+      <input type="text" id="pjDesc" placeholder="Descripción / instalación">
+      <div class="mlbl">Hoja por defecto</div>
+      <div class="mrow3">
+        <select id="pjHoja" onchange="pjCustToggle()"><option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="A1">A1</option><option value="custom">Person.</option><option value="inf">Sin hoja</option></select>
+        <select id="pjEsc"><option value="100">1/100</option><option value="75">1/75</option><option value="50">1/50</option></select>
+        <select id="pjOri"><option value="horiz">Apaisado</option><option value="vert">Vertical</option></select>
+      </div>
+      <div class="mrow3" id="pjCustomWrap" style="display:none">
+        <input id="pjCustW" type="number" min="50" step="1" placeholder="Ancho mm">
+        <input id="pjCustH" type="number" min="50" step="1" placeholder="Alto mm">
+      </div>
+      <div class="mlbl">Rótulo (cajetín)</div>
+      <input type="text" id="pjObra" placeholder="Obra / ubicación">
+      <input type="text" id="pjCli" placeholder="Cliente">
+      <input type="text" id="pjDib" placeholder="Dibujante">
+      <input type="text" id="pjEmp" placeholder="Empresa / facultad">
+      <div class="mlbl">Logo del rótulo</div>
+      <div class="logo-row">
+        <div class="logo-prev" id="pjLogoPrev"></div>
+        <button class="cmd-btn" onclick="document.getElementById('pjLogoInput').click()">Subir imagen</button>
+        <button class="cmd-btn" id="pjLogoDel" onclick="quitarLogo()" style="display:none">Quitar</button>
+        <input type="file" id="pjLogoInput" accept="image/*" style="display:none" onchange="onLogoFile(event)">
+      </div>
+      <div class="mrow"><button onclick="toggleProyEdit()">Cerrar</button><button class="ok" onclick="saveProy()">Guardar</button></div>
+    </div>
     <div class="sec-t">Planos / hojas · datos de plano</div>
     <div id="planoList"></div>
   </div>
 </div>
-
-<!-- Modal: DATOS DEL PROYECTO (van al rótulo). Inputs/selectores ocultos hasta tocar el lápiz. -->
-<div class="modal" id="proyModal"><div class="mbox mbox-scroll">
-  <h3>Datos del proyecto (rótulo)</h3>
-  <input type="text" id="pjTitle" placeholder="Nombre del proyecto">
-  <input type="text" id="pjDesc" placeholder="Descripción / instalación">
-  <div class="mlbl">Hoja por defecto</div>
-  <div class="mrow3">
-    <select id="pjHoja" onchange="pjCustToggle()"><option value="A4">A4</option><option value="A3">A3</option><option value="A2">A2</option><option value="A1">A1</option><option value="custom">Person.</option><option value="inf">Sin hoja</option></select>
-    <select id="pjEsc"><option value="100">1/100</option><option value="75">1/75</option><option value="50">1/50</option></select>
-    <select id="pjOri"><option value="horiz">Apaisado</option><option value="vert">Vertical</option></select>
-  </div>
-  <div class="mrow3" id="pjCustomWrap" style="display:none">
-    <input id="pjCustW" type="number" min="50" step="1" placeholder="Ancho mm">
-    <input id="pjCustH" type="number" min="50" step="1" placeholder="Alto mm">
-  </div>
-  <div class="mlbl">Rótulo (cajetín)</div>
-  <input type="text" id="pjObra" placeholder="Obra / ubicación">
-  <input type="text" id="pjCli" placeholder="Cliente">
-  <input type="text" id="pjDib" placeholder="Dibujante">
-  <input type="text" id="pjEmp" placeholder="Empresa / facultad">
-  <div class="mlbl">Logo del rótulo</div>
-  <div class="logo-row">
-    <div class="logo-prev" id="pjLogoPrev"></div>
-    <button class="cmd-btn" onclick="document.getElementById('pjLogoInput').click()">Subir imagen</button>
-    <button class="cmd-btn" id="pjLogoDel" onclick="quitarLogo()" style="display:none">Quitar</button>
-    <input type="file" id="pjLogoInput" accept="image/*" style="display:none" onchange="onLogoFile(event)">
-  </div>
-  <div class="mrow"><button onclick="closeProy()">Cerrar</button><button class="ok" onclick="saveProy()">Guardar</button></div>
-</div></div>
 
 <!-- Modal: editar propiedades de la hoja (no ensuciar la tarjeta con cajetines por llenar) -->
 <div class="modal" id="hojaModal"><div class="mbox">
@@ -2568,8 +2572,9 @@ function renderProyList(){
   const cards=proyectos.filter(p=>p.id!=='__libre').map(p=>{
     const th=proyThumb(p), nP=(p.plantas||[]).length;
     return `<div class="pcard" onclick="openProy('${p.id}')">
-      <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Sin dibujo todavía</span>`}</div>
-      <div class="pcard-corner"><button class="iconbtn ic-del" onclick="event.stopPropagation();delProy('${p.id}')" title="Borrar">${_TRASH_SVG}</button></div>
+      <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Sin dibujo todavía</span>`}
+        <button class="iconbtn pc-trash" onclick="event.stopPropagation();delProy('${p.id}')" title="Borrar">${_TRASH_SVG}</button>
+      </div>
       <div class="pcard-info"><div class="pcard-name">${esc(p.nombre)}</div>
         <div class="pcard-date">${p.creado?fFecha(p.creado)+' · ':''}${nP} hoja(s)</div></div></div>`;
   }).join('');
@@ -2608,26 +2613,27 @@ function renderProyHeader(){
   if(proy.dibujante)rot.push('Dib: '+esc(proy.dibujante)); if(proy.empresa)rot.push(esc(proy.empresa));
   document.getElementById('pjMeta').innerHTML=`<div class="pj-meta-l">${gen.join(' · ')}</div>`+(rot.length?`<div class="pj-meta-l">${rot.join(' · ')}</div>`:'');
 }
-// Lápiz → modal con los inputs/selectores (ocultos hasta acá).
-function editProy(){ if(!proy)return;
+// Lápiz → DESPLIEGA el panel de edición inline en el dashboard (no modal).
+function toggleProyEdit(){ if(!proy)return;
+  const p=document.getElementById('pjEditPanel');
+  if(p.style.display!=='none'){ p.style.display='none'; return; }
   const sv=(id,v)=>document.getElementById(id).value=v;
   sv('pjTitle',proy.nombre||''); sv('pjDesc',proy.desc||''); sv('pjEsc',proy.denom||100);
   sv('pjHoja',proy.hoja||'A3'); sv('pjOri',proy.orient||'horiz');
   sv('pjCustW',proy.customW||''); sv('pjCustH',proy.customH||'');
   sv('pjObra',proy.obra||''); sv('pjCli',proy.cliente||''); sv('pjDib',proy.dibujante||''); sv('pjEmp',proy.empresa||'');
   pjCustToggle(); _renderLogoPrev();
-  document.getElementById('proyModal').classList.add('show');
+  p.style.display='block';
 }
 function pjCustToggle(){ document.getElementById('pjCustomWrap').style.display=(document.getElementById('pjHoja').value==='custom')?'flex':'none'; }
-function closeProy(){ document.getElementById('proyModal').classList.remove('show'); }
-function saveProy(){ if(!proy){closeProy();return;}
+function saveProy(){ const p=document.getElementById('pjEditPanel'); if(!proy){p.style.display='none';return;}
   const gv=id=>document.getElementById(id).value.trim();
   proy.nombre=gv('pjTitle')||proy.nombre; proy.desc=gv('pjDesc');
   proy.denom=+document.getElementById('pjEsc').value; proy.hoja=document.getElementById('pjHoja').value;
   proy.orient=document.getElementById('pjOri').value;
   proy.customW=+document.getElementById('pjCustW').value||0; proy.customH=+document.getElementById('pjCustH').value||0;
   proy.obra=gv('pjObra'); proy.cliente=gv('pjCli'); proy.dibujante=gv('pjDib'); proy.empresa=gv('pjEmp');
-  persistProy(); closeProy(); renderProyHeader();
+  persistProy(); p.style.display='none'; renderProyHeader();
 }
 function _renderLogoPrev(){ const p=document.getElementById('pjLogoPrev'), d=document.getElementById('pjLogoDel');
   if(proy&&proy.logo){ p.innerHTML='<img src="'+proy.logo+'">'; d.style.display=''; } else { p.innerHTML='<span>Sin logo</span>'; d.style.display='none'; } }
@@ -2647,10 +2653,9 @@ function renderPlanos(){
   const cards=(proy.plantas||[]).map(pl=>{
     const th=plantaThumb(pl);
     return `<div class="pcard" onclick="openPlanta('${pl.id}')">
-      <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Hoja vacía · tocá para dibujar</span>`}</div>
-      <div class="pcard-corner">
-        <button class="iconbtn ic-del" onclick="event.stopPropagation();delPlanta('${pl.id}')" title="Borrar">${_TRASH_SVG}</button>
-        <button class="iconbtn" onclick="event.stopPropagation();imprimirPlanta('${pl.id}')" title="Imprimir hoja">${_PRINT_SVG}</button>
+      <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Hoja vacía · tocá para dibujar</span>`}
+        <button class="iconbtn pc-print" onclick="event.stopPropagation();imprimirPlanta('${pl.id}')" title="Imprimir hoja">${_PRINT_SVG}</button>
+        <button class="iconbtn pc-trash" onclick="event.stopPropagation();delPlanta('${pl.id}')" title="Borrar">${_TRASH_SVG}</button>
       </div>
       <div class="pcard-info pl-info2">
         <div class="pl-meta"><div class="pcard-name">${esc(pl.nombre)}</div><div class="pcard-date">${meta(pl)}</div></div>
