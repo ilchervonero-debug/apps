@@ -25,7 +25,9 @@ reporta un problema puntual.
    correr análisis pesado.
 
 **Atajos (una palabra):** `resumen`=/compact · `limpio`=vaciar contexto ·
-`fijar`=bloquear archivo actual en memoria (no releer directorio).
+`fijar`=bloquear archivo actual en memoria (no releer directorio) ·
+`apagar mcp`=listar servidores MCP activos, detectar los no usados en las
+últimas 3 interacciones y removerlos/apagarlos ya para liberar tokens.
 
 ## Sobre el usuario
 
