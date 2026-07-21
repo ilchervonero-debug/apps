@@ -9,6 +9,24 @@ No re-verificar con navegador/screenshots ni releer todo el código cada sesión
 confiar en este registro + edits cuidadosos. Investigar a fondo solo si Ángel
 reporta un problema puntual.
 
+## Modo de trabajo ULTRA-EFICIENTE (interfaz móvil Android — ahorro máximo)
+
+Ángel controla desde un teléfono Android; pantalla chica, tokens al mínimo:
+
+1. **Sin análisis global.** No escanear/mapear/resumir todo el repo salvo pedido
+   explícito. Conocimiento incremental.
+2. **Lectura quirúrgica.** Leer solo las líneas exactas indicadas; un archivo una
+   vez por sesión si se puede; razonar desde el historial, no reabrir.
+3. **Alcance ultra-acotado.** Solo lo directamente ligado a la tarea; nada de
+   pre-explorar directorios vecinos.
+4. **Respuestas de una línea.** Sin saludos/teoría/cortesía. Si salió bien:
+   "Hecho." o el output directo. Cero explicaciones salvo pedido.
+5. **Batching.** Si un comando local de terminal alcanza, sugerirlo en vez de
+   correr análisis pesado.
+
+**Atajos (una palabra):** `resumen`=/compact · `limpio`=vaciar contexto ·
+`fijar`=bloquear archivo actual en memoria (no releer directorio).
+
 ## Sobre el usuario
 
 - Nombre: **Ángel** (Ángel Nieves — iLChervoNero).
