@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v36) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v37) · app pro
+- **Hoja: editar INLINE + íconos grises + sin path (lote R — pedido de Ángel):** el editar de la
+  hoja ahora **se despliega inline en su propia tarjeta** (`.pl-edit` con nombre/hoja/escala/
+  orientación, `togglePlEdit`/`savePl`), mismo lenguaje que el proyecto — **nunca en el canvas**
+  (se quitó `hojaModal`/`editHoja`/`saveHoja`). **Todos los íconos de la tarjeta de hoja en GRIS**
+  (`.pcard .iconbtn` #9a9a9e: imprimir, tacho y lápiz). Se **quitó el texto "PLANOS / HOJAS · DATOS
+  DE PLANO"** (el path/guía). El thumb y el meta abren el dibujo; el resto de la tarjeta no. Verificado
+  e2e (editar inline cambia escala y guarda, íconos grises, sin path).
 - **Dashboard afinado (lote Q — pedido de Ángel):** **imprimir del PROYECTO (todas las láminas) +
   materiales → al HEAD** (barra superior); junto al nombre queda **solo el lápiz** de editar.
   **Imprimir por-HOJA** en la **esquina superior derecha** de la miniatura; **tacho en la esquina
