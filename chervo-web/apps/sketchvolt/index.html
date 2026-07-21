@@ -37,9 +37,9 @@ body{display:flex;flex-direction:column;background:#fff;}
   height:100%;display:flex;align-items:center;
   padding:0 10px 0 12px;flex-shrink:0;
   border-right:1px solid rgba(0,0,0,.06);
-  font-size:15px;font-weight:800;letter-spacing:-0.5px;color:#C0C0C0;
+  font-size:15px;font-weight:800;letter-spacing:-0.5px;color:#FE0000;
 }
-.bar-logo span{color:#FE0000;}
+.bar-logo span{color:#C0C0C0;}
 .tg{display:flex;align-items:center;gap:2px;padding:0 6px;height:100%;flex-shrink:0;border-right:1px solid rgba(0,0,0,.06);}
 .tg:last-child{border-right:none;}
 
@@ -264,8 +264,12 @@ body{display:flex;flex-direction:column;background:#fff;}
 .scr.on{display:flex;}
 .scr-head{position:sticky;top:0;background:#fff;border-bottom:1px solid #e5e5ea;
   display:flex;align-items:center;gap:10px;padding:14px 16px;}
-.scr-head .wm{font-size:22px;font-weight:800;color:#C0C0C0;letter-spacing:-.5px;}
-.scr-head .wm b{color:#FE0000;font-weight:800;}
+.scr-head .wm{font-size:22px;font-weight:800;color:#FE0000;letter-spacing:-.5px;}
+.scr-head .wm b{color:#C0C0C0;font-weight:800;}
+/* Head del proyecto: imprimir y cómputo en ROJO */
+#scrProj .scr-head .iconbtn{color:var(--accent);}
+/* Lápiz de editar del proyecto: gris (no resalta) */
+.pj-titlerow .iconbtn{color:#9a9a9e;}
 .scr-head .bk{background:none;border:none;color:#FE0000;cursor:pointer;display:flex;align-items:center;padding:4px;}
 .scr-head .bk svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;}
 .scr-body{padding:16px;max-width:640px;width:100%;margin:0 auto;}
@@ -323,8 +327,11 @@ body{display:flex;flex-direction:column;background:#fff;}
 .logo-prev img{max-width:100%;max-height:100%;object-fit:contain;}
 .logo-prev span{font-size:12px;color:#b0b0b3;}
 /* Tarjeta de hoja: pie con nombre+escala+tamaño a la izquierda, lápiz editar a la derecha */
-.pl-info2{display:flex;align-items:center;gap:8px;}
+.pl-info2{display:flex;align-items:center;gap:6px;}
 .pl-info2 .pl-meta{flex:1;min-width:0;}
+/* Nombre largo: se corta con elipsis; los 3 íconos quedan SIEMPRE en su lugar a la derecha */
+.pl-info2 .pcard-name,.pl-info2 .pcard-date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pl-acts{display:flex;align-items:center;gap:0;flex-shrink:0;}
 /* Esquina de la tarjeta: tacho + imprimir, sueltos (sin fondo) */
 /* Íconos sobre la miniatura: imprimir hoja arriba-derecha; tacho abajo-derecha (gris, sin resaltar) */
 /* Todos los íconos de la tarjeta de hoja en GRIS (tacho, impresora, lápiz) */
@@ -2650,13 +2657,14 @@ function renderPlanos(){
   const cards=(proy.plantas||[]).map(pl=>{
     const th=plantaThumb(pl);
     return `<div class="pcard">
-      <div class="pcard-thumb" onclick="openPlanta('${pl.id}')">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Hoja vacía · tocá para dibujar</span>`}
-        <button class="iconbtn pc-print" onclick="event.stopPropagation();imprimirPlanta('${pl.id}')" title="Imprimir hoja">${_PRINT_SVG}</button>
-        <button class="iconbtn pc-trash" onclick="event.stopPropagation();delPlanta('${pl.id}')" title="Borrar">${_TRASH_SVG}</button>
-      </div>
+      <div class="pcard-thumb" onclick="openPlanta('${pl.id}')">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Hoja vacía · tocá para dibujar</span>`}</div>
       <div class="pcard-info pl-info2">
         <div class="pl-meta" onclick="openPlanta('${pl.id}')"><div class="pcard-name">${esc(pl.nombre)}</div><div class="pcard-date">${meta(pl)}</div></div>
-        <button class="iconbtn" onclick="togglePlEdit('${pl.id}')" title="Editar hoja">${_EDIT_SVG}</button>
+        <div class="pl-acts">
+          <button class="iconbtn" onclick="togglePlEdit('${pl.id}')" title="Editar hoja">${_EDIT_SVG}</button>
+          <button class="iconbtn" onclick="imprimirPlanta('${pl.id}')" title="Imprimir hoja">${_PRINT_SVG}</button>
+          <button class="iconbtn" onclick="delPlanta('${pl.id}')" title="Borrar hoja">${_TRASH_SVG}</button>
+        </div>
       </div>
       <div class="pl-edit" id="pledit-${pl.id}" style="display:none">
         <input type="text" id="hjn-${pl.id}" value="${esc(pl.nombre)}" placeholder="Nombre de la hoja (título de plano)">

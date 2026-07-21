@@ -116,7 +116,15 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v37) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v38) · app pro
+- **Hoja: 3 íconos en línea + colores (lote S — pedido de Ángel):** los íconos de la tarjeta de hoja
+  (imprimir/borrar) se movieron del thumbnail al **pie, en línea con editar** → orden **editar ·
+  imprimir · borrar**, todos **grises** (`.pl-acts`, `flex-shrink:0`). **Nombres largos** resueltos:
+  `.pcard-name/.pcard-date` con elipsis (`min-width:0` en `.pl-meta`) → los 3 íconos quedan SIEMPRE en
+  su lugar a la derecha. El **lápiz del proyecto** (encabezado) también **gris**. En el **head del
+  proyecto**, imprimir + cómputo pasaron a **ROJO** (`#scrProj .scr-head .iconbtn`). **Wordmark
+  invertido**: **"Sketch" en ROJO, "Volt" en GRIS** (`.wm`/`.wm b` y `.bar-logo`/`span`). Verificado
+  e2e (colores, 3 íconos, nombre largo no desplaza).
 - **Hoja: editar INLINE + íconos grises + sin path (lote R — pedido de Ángel):** el editar de la
   hoja ahora **se despliega inline en su propia tarjeta** (`.pl-edit` con nombre/hoja/escala/
   orientación, `togglePlEdit`/`savePl`), mismo lenguaje que el proyecto — **nunca en el canvas**
