@@ -795,6 +795,8 @@ let tool='select',color='#1c1c1e',strokeW=2,lineType='solid';
 let objects=[],nextId=1,history=[],redo=[];
 let _exporting=false;
 let drawing=false,dragStartW=null,dragCurW=null,penPts=[];
+// Cursor visual con offset (problema del dedo gordo) + snap magnético con glifos
+let cursorS=null,snapHit=null,touchActive=false;const CURSOR_OFFY=44;
 // pline — continuous drag, double-click closes
 let plineActive=false,plinePts=[],plineLastTap=0;
 // hatch
@@ -846,7 +848,7 @@ const w2s=(wx,wy)=>({x:wx*vpZ+vpX,y:wy*vpZ+vpY});
 const s2w=(sx,sy)=>({x:(sx-vpX)/vpZ,y:(sy-vpY)/vpZ});
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const hyp=(a,b)=>Math.sqrt(a*a+b*b);
-function getS(e){const r=cv.getBoundingClientRect();const t=(e.touches&&e.touches.length)?e.touches[0]:(e.changedTouches&&e.changedTouches.length)?e.changedTouches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+function getS(e){const r=cv.getBoundingClientRect();const t=(e.touches&&e.touches.length)?e.touches[0]:(e.changedTouches&&e.changedTouches.length)?e.changedTouches[0]:e;const oy=(e.touches||e.changedTouches)?CURSOR_OFFY:0;return{x:t.clientX-r.left,y:t.clientY-r.top-oy};}
 function getRW(e){const s=getS(e);return s2w(s.x,s.y);}
 function snpGrid(wx,wy){return{x:Math.round(wx/cellPx)*cellPx,y:Math.round(wy/cellPx)*cellPx};}
 
@@ -881,21 +883,54 @@ function snapToObject(wp){
 }
 function getW(e){
   const raw=getRW(e);
-  if(!snapOn)return raw;
+  if(!snapOn){snapHit=null;return raw;}
   const THRESH=22/vpZ;
-  let best=null,bestD=THRESH;
+  let best=null,bestD=THRESH,kind=null;
+  const take=(x,y,k)=>{const d=hyp(raw.x-x,raw.y-y);if(d<bestD){bestD=d;best={x,y};kind=k;}};
+  // 1) Puntos precisos: extremos, medios, centro, cuadrantes (prioridad sobre "cercano")
   for(const obj of objects){
     if(!obj||!obj.pts)continue;
-    // Circle/poly center — invisible snap
-    if((obj.type==='circle'||obj.type==='poly')&&obj.pts[0]){
-      const d=hyp(raw.x-obj.pts[0][0],raw.y-obj.pts[0][1]);
-      if(d<bestD){bestD=d;best={x:obj.pts[0][0],y:obj.pts[0][1]};}
-    }
-    for(const p of obj.pts){if(!p||p.length<2)continue;const d=hyp(raw.x-p[0],raw.y-p[1]);if(d<bestD){bestD=d;best={x:p[0],y:p[1]};}}
-    for(const seg of getSegs(obj)){const mx=(seg[0][0]+seg[1][0])/2,my=(seg[0][1]+seg[1][1])/2;const d=hyp(raw.x-mx,raw.y-my);if(d<bestD){bestD=d;best={x:mx,y:my};}}
+    if(obj.type==='circle'&&obj.pts[0]){
+      const cx=obj.pts[0][0],cy=obj.pts[0][1],r=obj.r||0;
+      take(cx,cy,'center');
+      if(r>0){take(cx+r,cy,'quad');take(cx-r,cy,'quad');take(cx,cy+r,'quad');take(cx,cy-r,'quad');}
+    } else if(obj.type==='poly'&&obj.pts[0]){ take(obj.pts[0][0],obj.pts[0][1],'center'); }
+    for(const p of obj.pts){if(!p||p.length<2)continue;take(p[0],p[1],'end');}
+    for(const seg of getSegs(obj)){take((seg[0][0]+seg[1][0])/2,(seg[0][1]+seg[1][1])/2,'mid');}
   }
-  if(best)return best;
-  return snpGrid(raw.x,raw.y);
+  // 2) Cercano sobre segmento (solo si no hubo punto preciso)
+  if(!best){
+    for(const obj of objects){
+      if(!obj||!obj.pts)continue;
+      for(const seg of getSegs(obj)){
+        const ax=seg[0][0],ay=seg[0][1],bx=seg[1][0],by=seg[1][1];
+        const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;if(l2<1e-9)continue;
+        let t=((raw.x-ax)*dx+(raw.y-ay)*dy)/l2;t=clamp(t,0,1);
+        take(ax+t*dx,ay+t*dy,'near');
+      }
+    }
+  }
+  if(best){snapHit={x:best.x,y:best.y,kind};return best;}
+  snapHit=null;return snpGrid(raw.x,raw.y);
+}
+// Glifos de snap (naranja neón) + cursor rojo con offset (dedo gordo)
+function drawCursorSnap(){
+  if(snapOn&&snapHit){
+    const p=w2s(snapHit.x,snapHit.y),N='#FF5F1F',s=7,k=snapHit.kind;
+    ctx.save();ctx.strokeStyle=N;ctx.fillStyle=N;ctx.lineWidth=1.6;ctx.setLineDash([]);ctx.beginPath();
+    if(k==='end'){ctx.fillRect(p.x-s/2,p.y-s/2,s,s);}
+    else if(k==='mid'){ctx.moveTo(p.x,p.y-s);ctx.lineTo(p.x+s,p.y+s*0.7);ctx.lineTo(p.x-s,p.y+s*0.7);ctx.closePath();ctx.fill();}
+    else if(k==='center'){ctx.arc(p.x,p.y,s,0,7);ctx.stroke();ctx.beginPath();ctx.arc(p.x,p.y,1.7,0,7);ctx.fill();}
+    else if(k==='quad'){ctx.moveTo(p.x,p.y-s);ctx.lineTo(p.x+s,p.y);ctx.lineTo(p.x,p.y+s);ctx.lineTo(p.x-s,p.y);ctx.closePath();ctx.stroke();}
+    else{ctx.moveTo(p.x-s,p.y-s);ctx.lineTo(p.x+s,p.y+s);ctx.moveTo(p.x+s,p.y-s);ctx.lineTo(p.x-s,p.y+s);ctx.stroke();}
+    ctx.restore();
+  }
+  if(touchActive&&cursorS){
+    ctx.save();ctx.translate(cursorS.x,cursorS.y);
+    ctx.fillStyle='#FE0000';ctx.strokeStyle='#fff';ctx.lineWidth=1.2;ctx.lineJoin='round';
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,18);ctx.lineTo(4.5,13.5);ctx.lineTo(8,20);ctx.lineTo(11,18.5);ctx.lineTo(7.5,12);ctx.lineTo(13,12);ctx.closePath();
+    ctx.fill();ctx.stroke();ctx.restore();
+  }
 }
 function fontStack(f){return f==='mono'?"'Courier New',monospace":f==='serif'?"Georgia,serif":"-apple-system,sans-serif";}
 function resize(){cv.width=wrap.clientWidth;cv.height=wrap.clientHeight;render();}
@@ -914,6 +949,7 @@ function render(){
   objects.filter(o=>o.type==='block').forEach(drawObj);
   drawOrigin();
   drawPreview();
+  if(!_exporting)drawCursorSnap();
 }
 
 // HOJA (papel A4/A3/A2) en coordenadas mundo — el dibujo vive dentro de la hoja a escala.
@@ -1618,6 +1654,7 @@ function onTS(e){
   if(now-hatchLastTap<350&&tool==='hatch'){commitHatch();hatchLastTap=0;return;}
   plineLastTap=(tool==='pline')?now:plineLastTap;
   hatchLastTap=(tool==='hatch')?now:hatchLastTap;
+  touchActive=true;cursorS=getS(e);
   startLP(e);handleDown(getW(e),getRW(e),getS(e));
 }
 function onTM(e){
@@ -1631,6 +1668,7 @@ function onTM(e){
       vpX=pinch0.mx-(pinch0.mx-pinch0.vx)*(nz/pinch0.z)+(mx-pinch0.mx);vpY=pinch0.my-(pinch0.my-pinch0.vy)*(nz/pinch0.z)+(my-pinch0.my);vpZ=nz;render();}return;
   }
   cancelLPmove(e);const s=getS(e),raw=getRW(e),wp=getW(e);
+  touchActive=true;cursorS={x:s.x,y:s.y};
   dragCurW={...wp};document.getElementById('coord').textContent=`x ${((raw.x-originX)/PPM).toFixed(2)}  y ${(-(raw.y-originY)/PPM).toFixed(2)} m`;
   handleMove(wp,raw,s);
 }
@@ -1640,6 +1678,7 @@ function onTE(e){
   if(Object.keys(touches).length<2){pinching=false;pinch0=null;panning=false;}
   if(pinching)return;
   const wp=getW(e);dragCurW={...wp};handleUp(wp,getS(e));
+  touchActive=false;cursorS=null;snapHit=null;render();
 }
 
 // CORE HANDLERS

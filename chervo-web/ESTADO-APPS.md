@@ -116,7 +116,17 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v38) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v39) · app pro
+- **Cursor offset + snap magnético con glifos (lote T · spec canvas liviano):** el touch ahora
+  dibuja con un **cursor flecha rojo** desplazado `CURSOR_OFFY=44px` hacia arriba (resuelve el
+  "dedo gordo"): toda la lógica (dibujo/selección/snap) usa el punto del cursor, no el crudo del
+  dedo (offset aplicado en `getS` solo para touch). `getW` reescrito para **clasificar** el snap y
+  guardarlo en `snapHit={x,y,kind}`; `drawCursorSnap()` (llamado en `render` salvo `_exporting`)
+  pinta glifos **naranja neón `#FF5F1F`**: extremo=cuadrado, medio=triángulo, centro=círculo con
+  punto, cuadrante=rombo, cercano=X. `touchActive/cursorS` seteados en `onTS/onTM`, limpiados en
+  `onTE`. Verificado Playwright: snap `end` en (300,0), cursor y touchActive OK, sin errores.
+  **Pendiente del mismo spec (próximas tandas):** SmartPen (reconocer trazo→línea/rect/círculo en
+  pointer_up), tarjeta contextual de texto, y auditar redundancia de UI (1 entrada por acción).
 - **Hoja: 3 íconos en línea + colores (lote S — pedido de Ángel):** los íconos de la tarjeta de hoja
   (imprimir/borrar) se movieron del thumbnail al **pie, en línea con editar** → orden **editar ·
   imprimir · borrar**, todos **grises** (`.pl-acts`, `flex-shrink:0`). **Nombres largos** resueltos:
