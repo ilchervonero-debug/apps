@@ -524,6 +524,7 @@ details.mas[open] summary:before{content:'▾ ';}
     <span class="ph-lbl">Dibujo</span>
     <div class="ph-g3">
       <button class="phb" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg></button>
+      <button class="phb" data-t="sline" data-tip="SmartLine · cañería eléctrica" onclick="ST('sline');closeTools()"><svg viewBox="0 0 24 24"><line x1="6" y1="18" x2="18" y2="6"/><circle cx="6" cy="18" r="2.3" style="fill:currentColor"/><circle cx="18" cy="6" r="2.3" style="fill:currentColor"/></svg></button>
       <button class="phb" data-t="arc" onclick="ST('arc');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 19 Q 8 5 20 8" fill="none"/></svg></button>
       <button class="phb" data-t="pline" onclick="ST('pline');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 18 7 6 12 14 17 8 21 14"/></svg></button>
       <button class="phb" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
@@ -1124,7 +1125,7 @@ function drawObj(obj){
   if(sel && obj.type!=='block'){ ctx.strokeStyle='#007aff'; ctx.fillStyle='#007aff'; ctx.lineWidth=Math.max(obj.strokeW||2,2)*vpZ+0.5; }
   setDash(obj.lineType||'solid',vpZ);
   switch(obj.type){
-    case 'line':{const a=w2s(...obj.pts[0]),b=w2s(...obj.pts[1]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();break;}
+    case 'line':{const a=w2s(...obj.pts[0]),b=w2s(...obj.pts[1]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();if(obj.elec){ctx.save();ctx.fillStyle=ctx.strokeStyle;for(const p of[a,b]){ctx.beginPath();ctx.arc(p.x,p.y,2.6,0,7);ctx.fill();}ctx.restore();}break;}
     case 'rect':{
       // Draw as 4-point polygon so rotation works
       const[[ax,ay],[bx,by]]=obj.pts;
@@ -1499,7 +1500,7 @@ function drawPreview(){
   if(!drawing||!dragStartW||!dragCurW)return;
   ctx.save();ctx.strokeStyle=color;ctx.lineWidth=strokeW*vpZ;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=.55;setDash(lineType,vpZ);
   const a=w2s(dragStartW.x,dragStartW.y),b=w2s(dragCurW.x,dragCurW.y);
-  if(tool==='line'){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+  if(tool==='line'||tool==='sline'){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
   else if(tool==='rect'){ctx.strokeRect(a.x,a.y,b.x-a.x,b.y-a.y);}
   else if(tool==='circle'){const r=hyp(b.x-a.x,b.y-a.y);ctx.beginPath();ctx.arc(a.x,a.y,r,0,Math.PI*2);ctx.stroke();}
   else if(tool==='poly'){const r=hyp(b.x-a.x,b.y-a.y),n=+document.getElementById('pbSides').value||4;ctx.beginPath();for(let i=0;i<n;i++){const ang=(-Math.PI/2)+(2*Math.PI*i/n);i===0?ctx.moveTo(a.x+r*Math.cos(ang),a.y+r*Math.sin(ang)):ctx.lineTo(a.x+r*Math.cos(ang),a.y+r*Math.sin(ang));}ctx.closePath();ctx.stroke();}
@@ -1888,6 +1889,15 @@ function handleUp(wp,scrn){
     } else history.pop();
     drawing=false;dragStartW=null;dragCurW=null;render();
     return;
+  }
+  if(tool==='sline'){
+    if(drawing&&dragStartW&&dragCurW&&hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ){
+      const th=22/vpZ;
+      const a=nearNode(dragStartW.x,dragStartW.y,th)||[dragStartW.x,dragStartW.y];
+      const b=nearNode(dragCurW.x,dragCurW.y,th)||[dragCurW.x,dragCurW.y];
+      objects.push({type:'line',elec:true,pts:[a,b],color,strokeW,lineType,id:nextId++});
+    } else history.pop();
+    drawing=false;dragStartW=null;dragCurW=null;render();return;
   }
   if(tool==='dim')return;
   if(tool==='move'||tool==='copy'){doMovEnd();return;}
@@ -2979,19 +2989,20 @@ function blkNom(k){return NOM_BLOQUE[k]||k;}
 function cnf(n){return (Math.round(n*100)/100).toLocaleString('es-UY');}
 function segLen(o){return getSegs(o).reduce((s,seg)=>s+hyp(seg[1][0]-seg[0][0],seg[1][1]-seg[0][1]),0);}
 function contarObjs(objs){
-  const cnt={};let lineM=0;
+  const cnt={};let lineM=0,conduitM=0;
   for(const o of objs||[]){
     if(o.type==='block'){ if(o.ref)continue; cnt[o.blockType]=(cnt[o.blockType]||0)+1; }   // la caja de referencias no cuenta
+    else if(o.type==='line'&&o.elec)conduitM+=segLen(o)/PPM;   // SmartLine = cañería eléctrica
     else if(o.type==='line'||o.type==='pline'||o.type==='pen'||o.type==='arc')lineM+=segLen(o)/PPM;
   }
-  return {cnt,lineM};
+  return {cnt,lineM,conduitM};
 }
 let _ctScope='planta';
 function conteoData(){
-  if(_ctScope==='proy'&&proy){ const cnt={};let lineM=0;
+  if(_ctScope==='proy'&&proy){ const cnt={};let lineM=0,conduitM=0;
     for(const pl of (proy.plantas||[])){ const r=contarObjs(pl.id===(planta&&planta.id)?objects:pl.objects);
-      for(const k in r.cnt)cnt[k]=(cnt[k]||0)+r.cnt[k]; lineM+=r.lineM; }
-    return {cnt,lineM}; }
+      for(const k in r.cnt)cnt[k]=(cnt[k]||0)+r.cnt[k]; lineM+=r.lineM; conduitM+=r.conduitM; }
+    return {cnt,lineM,conduitM}; }
   return contarObjs(objects);
 }
 function openConteo(){ if(planta)savePlanta(); _ctScope=planta?'planta':'proy';
@@ -3002,18 +3013,19 @@ function setConteo(s){ _ctScope=s;
   document.getElementById('segPl').classList.toggle('on',s==='planta');
   document.getElementById('segPr').classList.toggle('on',s==='proy'); renderConteo(); }
 function renderConteo(){
-  const {cnt,lineM}=conteoData();
+  const {cnt,lineM,conduitM}=conteoData();
   document.getElementById('ctScope').textContent=_ctScope==='proy'?'Proyecto':'Planta';
   const keys=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]);
   const totalBocas=keys.reduce((a,k)=>a+cnt[k],0);
-  if(!totalBocas&&!lineM){ document.getElementById('ctBody').innerHTML='<div class="empty2">Todavía no hay símbolos ni líneas en el dibujo.</div>'; return; }
+  if(!totalBocas&&!lineM&&!conduitM){ document.getElementById('ctBody').innerHTML='<div class="empty2">Todavía no hay símbolos ni líneas en el dibujo.</div>'; return; }
   const rows=keys.map(k=>`<tr><td>${esc(blkNom(k))}</td><td class="q">${cnt[k]}</td></tr>`).join('');
   document.getElementById('ctBody').innerHTML=`<table class="ctab"><thead><tr><th>Material / símbolo</th><th class="q">Cant.</th></tr></thead><tbody>${rows}
     <tr class="tot"><td>Total de bocas/símbolos</td><td class="q">${totalBocas}</td></tr>
+    <tr class="tot"><td>Cañería eléctrica</td><td class="q">${cnf(conduitM)} m</td></tr>
     <tr class="tot"><td>Trazado dibujado</td><td class="q">${cnf(lineM)} m</td></tr></tbody></table>`;
 }
 function imprimirConteo(){
-  const {cnt,lineM}=conteoData();
+  const {cnt,lineM,conduitM}=conteoData();
   const keys=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]);
   const totalBocas=keys.reduce((a,k)=>a+cnt[k],0);
   const rows=keys.map(k=>`<tr><td>${esc(blkNom(k))}</td><td style="text-align:right">${cnt[k]}</td></tr>`).join('');
@@ -3028,6 +3040,7 @@ function imprimirConteo(){
     '<div class="sub">'+esc(proy?proy.nombre:'')+(proy&&proy.obra?' · '+esc(proy.obra):'')+' · '+scope+' · '+new Date().toLocaleDateString('es-UY')+'</div>'+
     '<table><thead><tr><th>Material / símbolo</th><th style="text-align:right">Cantidad</th></tr></thead><tbody>'+rows+
     '<tr class="tot"><td>Total de bocas/símbolos</td><td style="text-align:right">'+totalBocas+'</td></tr>'+
+    '<tr class="tot"><td>Cañería eléctrica</td><td style="text-align:right">'+cnf(conduitM)+' m</td></tr>'+
     '<tr class="tot"><td>Trazado dibujado</td><td style="text-align:right">'+cnf(lineM)+' m</td></tr>'+
     '</tbody></table><div class="wm">Sketch<b>Volt</b></div>'+
     '<scr'+'ipt>setTimeout(function(){window.print()},250)</scr'+'ipt></body></html>');

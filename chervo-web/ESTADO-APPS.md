@@ -116,7 +116,13 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v46) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v47) · app pro
+- **SmartLine — modo propio (cañería eléctrica, pedido Ángel):** herramienta `sline` (botón en
+  panel-herr, icono línea con 2 nodos) para **conexiones eléctricas**. Arrastre = línea recta con
+  **auto-conexión** de extremos al nodo más cercano (`nearNode`, incluye símbolos), se guarda como
+  `type:'line', elec:true`; se dibuja con **puntos de conexión** en los extremos. El **cómputo**
+  separa **Cañería eléctrica** (suma de líneas `elec`) del **Trazado dibujado** (líneas comunes) en
+  pantalla y en la impresión. Verificado Playwright: auto-conexión a símbolo + 3 m de cañería.
 - **Icono snap + flecha unificada (pedido Ángel):** icono de `#snapBtn` cambiado a **cuadro
   punteado + nodo rojo en esquina** (ref. de Ángel; sin rosado, nodo con borde rojo). La **flecha**
   se unificó al **cursor puntero**: mismo path en `#escBtn` (seleccionar), FAB (clona escBtn) y el
