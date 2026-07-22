@@ -945,6 +945,36 @@ function drawCursorSnap(){
     ctx.fill();ctx.stroke();ctx.restore();
   }
 }
+// SmartPen: reconoce el trazo a mano alzada y lo limpia a vector (línea/rect/círculo).
+// Devuelve {type,...} o null (dejar freehand si no reconoce).
+function recognizeStroke(pts){
+  if(!pts||pts.length<2)return null;
+  const n=pts.length,first=pts[0],last=pts[n-1];
+  let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
+  for(const p of pts){minx=Math.min(minx,p[0]);miny=Math.min(miny,p[1]);maxx=Math.max(maxx,p[0]);maxy=Math.max(maxy,p[1]);}
+  const bw=maxx-minx,bh=maxy-miny,diag=hyp(bw,bh);
+  if(diag<3/vpZ)return null;
+  const closeGap=hyp(last[0]-first[0],last[1]-first[1]);
+  const closed=n>=8 && closeGap < 0.28*Math.max(bw,bh);
+  if(!closed){
+    const dx=last[0]-first[0],dy=last[1]-first[1],ll=hyp(dx,dy)||1;
+    let maxDev=0;for(const p of pts){const dev=Math.abs((p[0]-first[0])*dy-(p[1]-first[1])*dx)/ll;if(dev>maxDev)maxDev=dev;}
+    if(maxDev < Math.max(diag*0.12, 6/vpZ)) return {type:'line',pts:[[first[0],first[1]],[last[0],last[1]]]};
+    return null; // curva abierta → freehand
+  }
+  // cerrado: círculo vs rectángulo por razón de área (shoelace / bbox)
+  // círculo llena ~π/4≈0.785 del bbox; rectángulo ~1.0
+  const cx=(minx+maxx)/2,cy=(miny+maxy)/2,aspect=bw/(bh||1);
+  let area2=0;for(let i=0;i<n;i++){const p=pts[i],q=pts[(i+1)%n];area2+=p[0]*q[1]-q[0]*p[1];}
+  const areaRatio=Math.abs(area2/2)/((bw*bh)||1);
+  if(areaRatio<=0.85 && aspect>0.75 && aspect<1.33) return {type:'circle',pts:[[cx,cy]],r:(bw+bh)/4};
+  return {type:'rect',pts:[[minx,miny],[maxx,maxy]]};
+}
+// Auto-conexión: nodo de objeto más cercano (solo dibujos, sin grilla), o null.
+function nearNode(x,y,th){let best=null,bd=th;for(const o of objects){if(!o||!o.pts)continue;
+  for(const p of o.pts){if(!p||p.length<2)continue;const d=hyp(x-p[0],y-p[1]);if(d<bd){bd=d;best=[p[0],p[1]];}}
+  for(const s of getSegs(o))for(const e of s){const d=hyp(x-e[0],y-e[1]);if(d<bd){bd=d;best=[e[0],e[1]];}}}
+  return best;}
 function fontStack(f){return f==='mono'?"'Courier New',monospace":f==='serif'?"Georgia,serif":"-apple-system,sans-serif";}
 function resize(){cv.width=wrap.clientWidth;cv.height=wrap.clientHeight;render();}
 window.addEventListener('resize',resize);
@@ -1864,7 +1894,16 @@ function handleUp(wp,scrn){
   if(!drawing)return;
   if(tool==='line'){if(hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ)objects.push({type:'line',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW,lineType,id:nextId++});else history.pop();}
   else if(tool==='rect'){if(Math.abs(dragCurW.x-dragStartW.x)>2/vpZ&&Math.abs(dragCurW.y-dragStartW.y)>2/vpZ)objects.push({type:'rect',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW,lineType,id:nextId++});else history.pop();}
-  else if(tool==='pen'){if(penPts.length>1)objects.push({type:'pen',pts:penPts,color,strokeW,lineType,id:nextId++});else history.pop();penPts=[];}
+  else if(tool==='pen'){
+    if(penPts.length>1){
+      const rec=recognizeStroke(penPts);
+      if(rec){
+        if(rec.type==='line'){const th=22/vpZ;rec.pts=[nearNode(rec.pts[0][0],rec.pts[0][1],th)||rec.pts[0],nearNode(rec.pts[1][0],rec.pts[1][1],th)||rec.pts[1]];}
+        Object.assign(rec,{color,strokeW,lineType,id:nextId++});objects.push(rec);
+      } else objects.push({type:'pen',pts:penPts,color,strokeW,lineType,id:nextId++});
+    } else history.pop();
+    penPts=[];
+  }
   drawing=false;dragStartW=null;dragCurW=null;render();
 }
 

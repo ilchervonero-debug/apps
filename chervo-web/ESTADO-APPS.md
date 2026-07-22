@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v41) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v42) · app pro
+- **SmartPen (spec §3):** la herramienta lápiz (`pen`) ahora, al soltar, **reconoce el trazo** y lo
+  limpia a vector: recta→`line`, lazo cerrado→`rect` o `circle` (círculo vs rect por **razón de área
+  shoelace/bbox**: ≤0.85 y aspecto ~1 → círculo; si no → rect), curva abierta → queda freehand
+  (`pen`). **Auto-conexión**: los extremos de la línea reconocida se enganchan al nodo de objeto
+  más cercano (`nearNode`, sin grilla). Funciones `recognizeStroke`/`nearNode` nuevas. Verificado
+  Playwright: recta→line, cuadrado→rect, círculo→circle(r80), curva→pen, sin errores de código.
+  Pendiente spec: tarjeta contextual de texto (§4) y auditar redundancia UI (§5).
 - **Snap doble e independiente (pedido Ángel):** dos flags `snapObjOn` (dibujos) y `snapGridOn`
   (grilla) con **dos botones** en la barra (`#snapObjBtn` nodo · `#snapGridBtn` cuadrícula) →
   apagar la grilla **no** apaga el snap a objetos. `getW` prueba objetos si `snapObjOn`, cae a
