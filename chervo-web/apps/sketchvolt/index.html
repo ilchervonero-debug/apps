@@ -796,7 +796,7 @@ let objects=[],nextId=1,history=[],redo=[];
 let _exporting=false;
 let drawing=false,dragStartW=null,dragCurW=null,penPts=[];
 // Cursor visual con offset (problema del dedo gordo) + snap magnético con glifos
-let cursorS=null,snapHit=null,touchActive=false;const CURSOR_OFFY=44;
+let cursorS=null,snapHit=null,touchActive=false;const CURSOR_OFFY=58;
 // pline — continuous drag, double-click closes
 let plineActive=false,plinePts=[],plineLastTap=0;
 // hatch
@@ -911,12 +911,19 @@ function getW(e){
     }
   }
   if(best){snapHit={x:best.x,y:best.y,kind};return best;}
-  snapHit=null;return snpGrid(raw.x,raw.y);
+  const g=snpGrid(raw.x,raw.y);snapHit={x:g.x,y:g.y,kind:'grid'};return g;
 }
 // Glifos de snap (naranja neón) + cursor rojo con offset (dedo gordo)
 function drawCursorSnap(){
   if(snapOn&&snapHit){
     const p=w2s(snapHit.x,snapHit.y),N='#FF5F1F',s=7,k=snapHit.kind;
+    // Snap a GRILLA = gris, ícono de cuadrícula (se diferencia del snap a dibujos, naranja)
+    if(k==='grid'){
+      const g=5;ctx.save();ctx.strokeStyle='#9a9a9e';ctx.lineWidth=1.3;ctx.setLineDash([]);
+      ctx.strokeRect(p.x-g,p.y-g,g*2,g*2);
+      ctx.beginPath();ctx.moveTo(p.x,p.y-g);ctx.lineTo(p.x,p.y+g);ctx.moveTo(p.x-g,p.y);ctx.lineTo(p.x+g,p.y);ctx.stroke();
+      ctx.restore();
+    } else {
     ctx.save();ctx.strokeStyle=N;ctx.fillStyle=N;ctx.lineWidth=1.6;ctx.setLineDash([]);ctx.beginPath();
     if(k==='end'){ctx.fillRect(p.x-s/2,p.y-s/2,s,s);}
     else if(k==='mid'){ctx.moveTo(p.x,p.y-s);ctx.lineTo(p.x+s,p.y+s*0.7);ctx.lineTo(p.x-s,p.y+s*0.7);ctx.closePath();ctx.fill();}
@@ -924,6 +931,7 @@ function drawCursorSnap(){
     else if(k==='quad'){ctx.moveTo(p.x,p.y-s);ctx.lineTo(p.x+s,p.y);ctx.lineTo(p.x,p.y+s);ctx.lineTo(p.x-s,p.y);ctx.closePath();ctx.stroke();}
     else{ctx.moveTo(p.x-s,p.y-s);ctx.lineTo(p.x+s,p.y+s);ctx.moveTo(p.x+s,p.y-s);ctx.lineTo(p.x-s,p.y+s);ctx.stroke();}
     ctx.restore();
+    }
   }
   if(touchActive&&cursorS){
     ctx.save();ctx.translate(cursorS.x,cursorS.y);

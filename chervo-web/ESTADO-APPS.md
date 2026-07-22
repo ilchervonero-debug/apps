@@ -116,7 +116,10 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v39) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v40) · app pro
+- **Ajuste lote T (pedido Ángel):** más offset de cursor (`CURSOR_OFFY` 44→58) y **snap de grilla
+  diferenciado**: cuando cae en la grilla, `snapHit.kind='grid'` y `drawCursorSnap` pinta un ícono
+  **gris de cuadrícula** (cuadrado + cruz), distinto del naranja del snap a dibujos.
 - **Cursor offset + snap magnético con glifos (lote T · spec canvas liviano):** el touch ahora
   dibuja con un **cursor flecha rojo** desplazado `CURSOR_OFFY=44px` hacia arriba (resuelve el
   "dedo gordo"): toda la lógica (dibujo/selección/snap) usa el punto del cursor, no el crudo del
