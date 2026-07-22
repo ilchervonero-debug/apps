@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v45) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v46) · app pro
+- **Icono snap + flecha unificada (pedido Ángel):** icono de `#snapBtn` cambiado a **cuadro
+  punteado + nodo rojo en esquina** (ref. de Ángel; sin rosado, nodo con borde rojo). La **flecha**
+  se unificó al **cursor puntero**: mismo path en `#escBtn` (seleccionar), FAB (clona escBtn) y el
+  **cursor del canvas** (`drawCursorSnap`); se agrandó el glifo para igualar el tamaño visual del
+  resto de íconos del head (todos 28px).
 - **Botones snap/grilla + SmartPen + tarjeta de texto (lote spec completo):**
   · **Botón snap** (`#snapBtn`/`toggleSnapCursor`, icono flecha+cuadro+nodo rojo de Ángel) prende/
   apaga el snap del cursor a dibujos (`snapObjOn`). · **Botón grilla** unificado (`#gridBtn`/
