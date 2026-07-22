@@ -506,8 +506,8 @@ details.mas[open] summary:before{content:'▾ ';}
   <button class="ti ti-t" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
   <button class="ti ti-t" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <button class="ti ti-t" data-tip="Imagen" onclick="openImagen()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
-  <button class="ti ti-t" data-tip="Grilla" onclick="openBottomPanel('grid')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></button>
-  <button class="ti ti-t on" id="gridBtn" data-tip="Grilla" onclick="toggleGrid()"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M12 4v16M4 12h16"/></svg></button>
+  <button class="ti ti-t on" id="snapBtn" data-tip="Snap del cursor" onclick="toggleSnapCursor()"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="13" height="13" rx="1"/><path d="M15.5 6L8 9.5l3 1.5 1.5 4z" style="fill:currentColor;stroke:none"/><rect x="14.5" y="3" width="6.5" height="6.5" rx="0.8" style="fill:#FE0000;stroke:none"/></svg></button>
+  <button class="ti ti-t on" id="gridBtn" data-tip="Grilla y medidas" onclick="toggleGrid()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></button>
   <input type="file" id="planoInput" accept="image/*,application/pdf,.dxf" style="display:none" onchange="onImportFile(event)">
   <div style="flex:1"></div>
   <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')" style="margin-right:8px;margin-left:14px;border-left:2px solid rgba(0,0,0,.12);padding-left:10px;border-radius:0 8px 8px 0"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
@@ -746,6 +746,20 @@ details.mas[open] summary:before{content:'▾ ';}
   <button class="ci danger" onclick="ctxDo('delete')" title="Borrar"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
 </div>
 
+<!-- TARJETA CONTEXTUAL DE TEXTO (§4) -->
+<div id="txtCard" style="display:none;position:fixed;z-index:60;background:#fff;border:1.5px solid #e5e5ea;border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.16);padding:12px 12px 10px;width:250px;font-family:Exo,-apple-system,sans-serif">
+  <input id="tcText" placeholder="Texto" oninput="tcUpdate()" style="width:100%;font-size:18px;padding:8px 10px;border:1.5px solid #e5e5ea;border-radius:8px;outline:none;box-sizing:border-box">
+  <div style="display:flex;align-items:center;gap:8px;margin-top:9px">
+    <span style="font-size:15px;color:#8e8e93;white-space:nowrap">Tamaño</span>
+    <input id="tcSize" type="number" min="6" max="200" oninput="tcUpdate()" style="width:70px;font-size:16px;padding:6px 8px;border:1.5px solid #e5e5ea;border-radius:8px;outline:none">
+    <input id="tcRange" type="range" min="8" max="80" oninput="document.getElementById('tcSize').value=this.value;tcUpdate()" style="flex:1">
+  </div>
+  <input id="tcAttr" placeholder="Variable / precio (opcional)" oninput="tcUpdate()" style="width:100%;font-size:16px;padding:7px 10px;border:1.5px solid #e5e5ea;border-radius:8px;outline:none;box-sizing:border-box;margin-top:9px">
+  <div style="display:flex;justify-content:flex-end;margin-top:10px">
+    <button onclick="closeTextCard()" style="font-size:16px;color:var(--accent);background:none;border:none;padding:6px 10px;cursor:pointer">Cerrar</button>
+  </div>
+</div>
+
 <!-- MODALS -->
 <div class="modal" id="tmod"><div class="mbox"><h3>Texto</h3><input type="text" id="tinput" placeholder="Ej: Dormitorio, 3.50m..."><div class="mrow"><button onclick="cancelText()">Cancelar</button><button class="ok" onclick="confirmText()">Insertar</button></div></div></div>
 <div class="modal" id="etmod"><div class="mbox"><h3>Editar</h3><input type="text" id="etinput" placeholder="Nuevo texto..."><div class="mrow"><button onclick="document.getElementById('etmod').classList.remove('show')">Cancelar</button><button class="ok" onclick="confirmEditText()">Aplicar</button></div></div></div>
@@ -782,7 +796,7 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),wrap=document.get
 // STATE
 const PPM=100;              // px de mundo por metro (a zoom 1) — el mundo se mide en metros
 let gridM=1;                // metros por celda de grilla
-let vpX=0,vpY=0,vpZ=1,cellPx=PPM*gridM,gridOn=true;
+let vpX=0,vpY=0,vpZ=1,cellPx=PPM*gridM,gridOn=true,snapObjOn=true;
 let originX=0,originY=0;     // punto 0,0 (px de mundo)
 // ── Shell de proyectos ──
 let proyectos=JSON.parse(localStorage.getItem('sketchvolt_proy')||'[]');
@@ -814,7 +828,7 @@ let _selScaleBase=null;
 // rotate — free drag with 10° snapping
 let rotId=null,rotOrig=null,rotCenter=null,rotStartAngle=0,rotCurrent=0;
 // edit text
-let etId=null,tpX=0,tpY=0;
+let etId=null,tpX=0,tpY=0,tcId=null,_tcHist=false;
 // pan/pinch
 let panning=false,panRef=null,pinching=false,pinch0=null,touches={};
 // fondo (plano de calco importado: imagen/foto/pdf/dxf)
@@ -886,25 +900,27 @@ function getW(e){
   const THRESH=22/vpZ;
   let best=null,bestD=THRESH,kind=null;
   const take=(x,y,k)=>{const d=hyp(raw.x-x,raw.y-y);if(d<bestD){bestD=d;best={x,y};kind=k;}};
-  // Snap a DIBUJOS: SIEMPRE activo (no tiene botón). Prioriza puntos precisos sobre "cercano".
-  for(const obj of objects){
-    if(!obj||!obj.pts)continue;
-    if(obj.type==='circle'&&obj.pts[0]){
-      const cx=obj.pts[0][0],cy=obj.pts[0][1],r=obj.r||0;
-      take(cx,cy,'center');
-      if(r>0){take(cx+r,cy,'quad');take(cx-r,cy,'quad');take(cx,cy+r,'quad');take(cx,cy-r,'quad');}
-    } else if(obj.type==='poly'&&obj.pts[0]){ take(obj.pts[0][0],obj.pts[0][1],'center'); }
-    for(const p of obj.pts){if(!p||p.length<2)continue;take(p[0],p[1],'end');}
-    for(const seg of getSegs(obj)){take((seg[0][0]+seg[1][0])/2,(seg[0][1]+seg[1][1])/2,'mid');}
-  }
-  if(!best){
+  // Snap a DIBUJOS (botón #snapBtn). Prioriza puntos precisos sobre "cercano".
+  if(snapObjOn){
     for(const obj of objects){
       if(!obj||!obj.pts)continue;
-      for(const seg of getSegs(obj)){
-        const ax=seg[0][0],ay=seg[0][1],bx=seg[1][0],by=seg[1][1];
-        const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;if(l2<1e-9)continue;
-        let t=((raw.x-ax)*dx+(raw.y-ay)*dy)/l2;t=clamp(t,0,1);
-        take(ax+t*dx,ay+t*dy,'near');
+      if(obj.type==='circle'&&obj.pts[0]){
+        const cx=obj.pts[0][0],cy=obj.pts[0][1],r=obj.r||0;
+        take(cx,cy,'center');
+        if(r>0){take(cx+r,cy,'quad');take(cx-r,cy,'quad');take(cx,cy+r,'quad');take(cx,cy-r,'quad');}
+      } else if(obj.type==='poly'&&obj.pts[0]){ take(obj.pts[0][0],obj.pts[0][1],'center'); }
+      for(const p of obj.pts){if(!p||p.length<2)continue;take(p[0],p[1],'end');}
+      for(const seg of getSegs(obj)){take((seg[0][0]+seg[1][0])/2,(seg[0][1]+seg[1][1])/2,'mid');}
+    }
+    if(!best){
+      for(const obj of objects){
+        if(!obj||!obj.pts)continue;
+        for(const seg of getSegs(obj)){
+          const ax=seg[0][0],ay=seg[0][1],bx=seg[1][0],by=seg[1][1];
+          const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;if(l2<1e-9)continue;
+          let t=((raw.x-ax)*dx+(raw.y-ay)*dy)/l2;t=clamp(t,0,1);
+          take(ax+t*dx,ay+t*dy,'near');
+        }
       }
     }
   }
@@ -1729,7 +1745,8 @@ function handleDown(wp,rawW,scrn){
     // ¿tocó un objeto? → seleccionar (grupo-aware). Si no → arranca el RECUADRO de arrastre.
     const T=28/vpZ; let hit=false;
     for(let i=objects.length-1;i>=0;i--){ const o=objects[i]; if(editGroupId&&o.group!==editGroupId)continue; if(hitTest(wp,o,T)){hit=true;break;} }
-    if(hit){ selectAt(wp); }
+    if(tcId)closeTextCard();
+    if(hit){ selectAt(wp); const so=(selId!=null)?objects.find(x=>x.id===selId):null; if(so&&so.type==='text')openTextCard(so,scrn); }
     else { marquee={x0:rawW.x,y0:rawW.y,x1:rawW.x,y1:rawW.y}; drawing=true; }   // recuadro en coords crudas (sin snap)
     return;
   }
@@ -2011,6 +2028,31 @@ document.getElementById('grpModalName').addEventListener('keydown',e=>{if(e.key=
 document.getElementById('npModalName').addEventListener('keydown',e=>{if(e.key==='Enter')confirmNp();if(e.key==='Escape')closeNp();});
 function confirmEditText(){const val=document.getElementById('etinput').value.trim();const obj=objects.find(o=>o.id===etId);if(obj&&val){saveHistory();if(obj.type==='text')obj.text=val;else if(obj.type==='dim'||obj.type==='dim2')obj.label=val||null;}document.getElementById('etmod').classList.remove('show');etId=null;render();}
 document.getElementById('etinput').addEventListener('keydown',e=>{if(e.key==='Enter')confirmEditText();if(e.key==='Escape')document.getElementById('etmod').classList.remove('show');});
+// TARJETA CONTEXTUAL DE TEXTO (§4): tocar un texto abre esta tarjeta flotante mínima.
+function openTextCard(o,sp){
+  if(!o||o.type!=='text')return;
+  tcId=o.id;_tcHist=false;
+  document.getElementById('tcText').value=o.text||'';
+  document.getElementById('tcSize').value=o.fontSize||14;
+  document.getElementById('tcRange').value=Math.max(8,Math.min(80,o.fontSize||14));
+  document.getElementById('tcAttr').value=o.attr||'';
+  const c=document.getElementById('txtCard');c.style.display='block';
+  const cw=250,ch=c.offsetHeight||150;
+  let lx=(sp?sp.x-cw/2:120),ty=(sp?sp.y+22:120);
+  if(lx<8)lx=8;if(lx+cw>window.innerWidth-8)lx=window.innerWidth-cw-8;
+  if(ty+ch>window.innerHeight-8)ty=(sp?sp.y-ch-22:8);if(ty<8)ty=8;
+  c.style.left=lx+'px';c.style.top=ty+'px';
+  setTimeout(()=>document.getElementById('tcText').focus(),80);
+}
+function tcUpdate(){
+  const o=objects.find(x=>x.id===tcId);if(!o)return;
+  if(!_tcHist){saveHistory();_tcHist=true;}
+  o.text=document.getElementById('tcText').value;
+  const fs=+document.getElementById('tcSize').value;if(fs>0)o.fontSize=fs;
+  o.attr=document.getElementById('tcAttr').value.trim()||null;
+  markDirty();render();
+}
+function closeTextCard(){document.getElementById('txtCard').style.display='none';tcId=null;_tcHist=false;savePlanta();}
 
 // HIT TEST
 function hitTest(wp,obj,T){
@@ -2095,6 +2137,7 @@ document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr'
 
 // TOOLBAR
 function ST(t){
+  if(tcId)closeTextCard();
   tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];setSel([]);_selScaleBase=null;marquee=null;
   if(t!=='select'&&editGroupId){ editGroupId=null; showGroupEditBar(false); }   // cambiar de herramienta sale del modo aislado
   if(t!=='block')bloqueSel=null;
@@ -2108,7 +2151,8 @@ function ST(t){
   applyToolBar();
   render();
 }
-function toggleGrid(){gridOn=!gridOn;document.getElementById('gridBtn').classList.toggle('on',gridOn);render();toast('Grilla '+(gridOn?'ON':'OFF'));}
+function toggleGrid(){gridOn=!gridOn;document.getElementById('gridBtn').classList.toggle('on',gridOn);if(_panelMode!=='grid')openBottomPanel('grid');else{refreshBottom();render();}toast('Grilla '+(gridOn?'ON':'OFF'));}
+function toggleSnapCursor(){snapObjOn=!snapObjOn;document.getElementById('snapBtn').classList.toggle('on',snapObjOn);render();toast('Snap '+(snapObjOn?'ON':'OFF'));}
 // ── EXPORTACIÓN (DXF / PNG / PDF · siempre limpio, sin grilla) ──
 function doExport(fmt){
   if(fmt==='dxf')return exportDXF();

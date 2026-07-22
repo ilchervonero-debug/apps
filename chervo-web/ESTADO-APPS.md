@@ -116,7 +116,18 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v44) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v45) · app pro
+- **Botones snap/grilla + SmartPen + tarjeta de texto (lote spec completo):**
+  · **Botón snap** (`#snapBtn`/`toggleSnapCursor`, icono flecha+cuadro+nodo rojo de Ángel) prende/
+  apaga el snap del cursor a dibujos (`snapObjOn`). · **Botón grilla** unificado (`#gridBtn`/
+  `toggleGrid`, un solo botón, no dos): prende/apaga la grilla (visible+snap) **y abre el panel de
+  medidas** `#grpGrid` (5/15/50cm/1m). · **SmartPen** (ya estaba: `recognizeStroke`+`nearNode`):
+  trazo abierto recto→línea, cerrado→círculo o rectángulo por razón de área/aspecto, auto-conexión
+  de extremos a nodos. · **Tarjeta contextual de texto §4** (`#txtCard`, `openTextCard`/`tcUpdate`/
+  `closeTextCard`): tocar un texto abre tarjeta flotante mínima con **contenido, tamaño (num+slider)
+  y variable/precio** (`o.attr`) en vivo; se cierra al tocar otro lado o cambiar de herramienta.
+  Verificado Playwright: rect/line/circle OK, toggles OK, tarjeta actualiza texto/tamaño/attr, sin
+  errores. **Redundancia §5:** se fusionaron los 2 botones de grilla en 1.
 - **Indicador de snap = cuadradito rojo (ref. de Ángel):** el snap a dibujos se marca con un
   **cuadrado rojo `#FE0000` con borde blanco** (nodo/grip, como su icono flecha+cuadro+nodo rojo),
   en vez de la cruz. Grilla sigue con glifo gris.
