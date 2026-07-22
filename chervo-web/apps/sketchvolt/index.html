@@ -924,12 +924,11 @@ function drawCursorSnap(){
       ctx.beginPath();ctx.moveTo(p.x,p.y-g);ctx.lineTo(p.x,p.y+g);ctx.moveTo(p.x-g,p.y);ctx.lineTo(p.x+g,p.y);ctx.stroke();
       ctx.restore();
     } else {
-      // Snap a DIBUJO = CRUZ roja (activo/enfocado), bien visible (marca el punto exacto)
-      const a=10,gp=2.5;ctx.save();ctx.strokeStyle='#FE0000';ctx.lineWidth=2;ctx.lineCap='round';ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(p.x-a,p.y);ctx.lineTo(p.x-gp,p.y);ctx.moveTo(p.x+gp,p.y);ctx.lineTo(p.x+a,p.y);
-      ctx.moveTo(p.x,p.y-a);ctx.lineTo(p.x,p.y-gp);ctx.moveTo(p.x,p.y+gp);ctx.lineTo(p.x,p.y+a);
-      ctx.stroke();ctx.restore();
+      // Snap a DIBUJO = CUADRADITO ROJO (nodo/grip), como el icono de Ángel. Borde blanco = contraste.
+      const s=9;ctx.save();ctx.setLineDash([]);
+      ctx.fillStyle='#FE0000';ctx.strokeStyle='#fff';ctx.lineWidth=1.4;
+      ctx.fillRect(p.x-s/2,p.y-s/2,s,s);ctx.strokeRect(p.x-s/2,p.y-s/2,s,s);
+      ctx.restore();
     }
   }
   if(touchActive&&cursorS){

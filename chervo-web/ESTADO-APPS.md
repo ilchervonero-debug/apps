@@ -116,7 +116,10 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v43) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v44) · app pro
+- **Indicador de snap = cuadradito rojo (ref. de Ángel):** el snap a dibujos se marca con un
+  **cuadrado rojo `#FE0000` con borde blanco** (nodo/grip, como su icono flecha+cuadro+nodo rojo),
+  en vez de la cruz. Grilla sigue con glifo gris.
 - **Snap simplificado (pedido Ángel):** un solo botón **Grilla** (`#gridBtn`/`toggleGrid`) que
   prende/apaga la grilla (visible + snap); la **medida** se cambia desde el panel `#grpGrid`
   (5/15/50cm/1m). Se **quitó el botón de cruz** (snap a dibujos): el snap a dibujos es **siempre
