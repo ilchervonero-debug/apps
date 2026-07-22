@@ -116,7 +116,11 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v47) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v48) · app pro
+- **Snap más tolerante en SmartLine (dedo inexacto, pedido Ángel):** el radio de snap sube a
+  **42px** para `sline` tanto en vivo (`getW` con umbral por herramienta) como al cerrar
+  (`nearNode` en `handleUp`), asegurando el enganche del **1er y último punto** a nodos/símbolos.
+  Verificado: engancha a 35px (antes 22px fallaba).
 - **SmartLine — modo propio (cañería eléctrica, pedido Ángel):** herramienta `sline` (botón en
   panel-herr, icono línea con 2 nodos) para **conexiones eléctricas**. Arrastre = línea recta con
   **auto-conexión** de extremos al nodo más cercano (`nearNode`, incluye símbolos), se guarda como

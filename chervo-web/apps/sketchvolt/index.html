@@ -898,7 +898,7 @@ function snapToObject(wp){
 }
 function getW(e){
   const raw=getRW(e);
-  const THRESH=22/vpZ;
+  const THRESH=(tool==='sline'?42:22)/vpZ;   // SmartLine: radio de snap mayor (dedo inexacto)
   let best=null,bestD=THRESH,kind=null;
   const take=(x,y,k)=>{const d=hyp(raw.x-x,raw.y-y);if(d<bestD){bestD=d;best={x,y};kind=k;}};
   // Snap a DIBUJOS (botón #snapBtn). Prioriza puntos precisos sobre "cercano".
@@ -1892,7 +1892,7 @@ function handleUp(wp,scrn){
   }
   if(tool==='sline'){
     if(drawing&&dragStartW&&dragCurW&&hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ){
-      const th=22/vpZ;
+      const th=42/vpZ;   // radio amplio: asegura enganche del 1er y último punto al nodo/símbolo
       const a=nearNode(dragStartW.x,dragStartW.y,th)||[dragStartW.x,dragStartW.y];
       const b=nearNode(dragCurW.x,dragCurW.y,th)||[dragCurW.x,dragCurW.y];
       objects.push({type:'line',elec:true,pts:[a,b],color,strokeW,lineType,id:nextId++});
