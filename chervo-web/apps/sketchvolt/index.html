@@ -507,7 +507,8 @@ details.mas[open] summary:before{content:'▾ ';}
   <button class="ti ti-t" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <button class="ti ti-t" data-tip="Imagen" onclick="openImagen()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
   <button class="ti ti-t" data-tip="Grilla" onclick="openBottomPanel('grid')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></button>
-  <button class="ti ti-t on" id="snapBtn" data-tip="Snap" onclick="toggleSnap()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+  <button class="ti ti-t on" id="snapObjBtn" data-tip="Snap dibujos" onclick="toggleSnapObj()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+  <button class="ti ti-t on" id="snapGridBtn" data-tip="Snap grilla" onclick="toggleSnapGrid()"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M12 4v16M4 12h16"/></svg></button>
   <input type="file" id="planoInput" accept="image/*,application/pdf,.dxf" style="display:none" onchange="onImportFile(event)">
   <div style="flex:1"></div>
   <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')" style="margin-right:8px;margin-left:14px;border-left:2px solid rgba(0,0,0,.12);padding-left:10px;border-radius:0 8px 8px 0"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
@@ -782,7 +783,7 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),wrap=document.get
 // STATE
 const PPM=100;              // px de mundo por metro (a zoom 1) — el mundo se mide en metros
 let gridM=1;                // metros por celda de grilla
-let vpX=0,vpY=0,vpZ=1,cellPx=PPM*gridM,snapOn=true;
+let vpX=0,vpY=0,vpZ=1,cellPx=PPM*gridM,snapObjOn=true,snapGridOn=true;
 let originX=0,originY=0;     // punto 0,0 (px de mundo)
 // ── Shell de proyectos ──
 let proyectos=JSON.parse(localStorage.getItem('sketchvolt_proy')||'[]');
@@ -883,39 +884,43 @@ function snapToObject(wp){
 }
 function getW(e){
   const raw=getRW(e);
-  if(!snapOn){snapHit=null;return raw;}
+  if(!snapObjOn&&!snapGridOn){snapHit=null;return raw;}
   const THRESH=22/vpZ;
   let best=null,bestD=THRESH,kind=null;
   const take=(x,y,k)=>{const d=hyp(raw.x-x,raw.y-y);if(d<bestD){bestD=d;best={x,y};kind=k;}};
-  // 1) Puntos precisos: extremos, medios, centro, cuadrantes (prioridad sobre "cercano")
-  for(const obj of objects){
-    if(!obj||!obj.pts)continue;
-    if(obj.type==='circle'&&obj.pts[0]){
-      const cx=obj.pts[0][0],cy=obj.pts[0][1],r=obj.r||0;
-      take(cx,cy,'center');
-      if(r>0){take(cx+r,cy,'quad');take(cx-r,cy,'quad');take(cx,cy+r,'quad');take(cx,cy-r,'quad');}
-    } else if(obj.type==='poly'&&obj.pts[0]){ take(obj.pts[0][0],obj.pts[0][1],'center'); }
-    for(const p of obj.pts){if(!p||p.length<2)continue;take(p[0],p[1],'end');}
-    for(const seg of getSegs(obj)){take((seg[0][0]+seg[1][0])/2,(seg[0][1]+seg[1][1])/2,'mid');}
-  }
-  // 2) Cercano sobre segmento (solo si no hubo punto preciso)
-  if(!best){
+  // Snap a DIBUJOS (independiente del snap a grilla)
+  if(snapObjOn){
+    // 1) Puntos precisos: extremos, medios, centro, cuadrantes (prioridad sobre "cercano")
     for(const obj of objects){
       if(!obj||!obj.pts)continue;
-      for(const seg of getSegs(obj)){
-        const ax=seg[0][0],ay=seg[0][1],bx=seg[1][0],by=seg[1][1];
-        const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;if(l2<1e-9)continue;
-        let t=((raw.x-ax)*dx+(raw.y-ay)*dy)/l2;t=clamp(t,0,1);
-        take(ax+t*dx,ay+t*dy,'near');
+      if(obj.type==='circle'&&obj.pts[0]){
+        const cx=obj.pts[0][0],cy=obj.pts[0][1],r=obj.r||0;
+        take(cx,cy,'center');
+        if(r>0){take(cx+r,cy,'quad');take(cx-r,cy,'quad');take(cx,cy+r,'quad');take(cx,cy-r,'quad');}
+      } else if(obj.type==='poly'&&obj.pts[0]){ take(obj.pts[0][0],obj.pts[0][1],'center'); }
+      for(const p of obj.pts){if(!p||p.length<2)continue;take(p[0],p[1],'end');}
+      for(const seg of getSegs(obj)){take((seg[0][0]+seg[1][0])/2,(seg[0][1]+seg[1][1])/2,'mid');}
+    }
+    // 2) Cercano sobre segmento (solo si no hubo punto preciso)
+    if(!best){
+      for(const obj of objects){
+        if(!obj||!obj.pts)continue;
+        for(const seg of getSegs(obj)){
+          const ax=seg[0][0],ay=seg[0][1],bx=seg[1][0],by=seg[1][1];
+          const dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;if(l2<1e-9)continue;
+          let t=((raw.x-ax)*dx+(raw.y-ay)*dy)/l2;t=clamp(t,0,1);
+          take(ax+t*dx,ay+t*dy,'near');
+        }
       }
     }
   }
   if(best){snapHit={x:best.x,y:best.y,kind};return best;}
-  const g=snpGrid(raw.x,raw.y);snapHit={x:g.x,y:g.y,kind:'grid'};return g;
+  if(snapGridOn){const g=snpGrid(raw.x,raw.y);snapHit={x:g.x,y:g.y,kind:'grid'};return g;}
+  snapHit=null;return raw;
 }
 // Glifos de snap (naranja neón) + cursor rojo con offset (dedo gordo)
 function drawCursorSnap(){
-  if(snapOn&&snapHit){
+  if(snapHit){
     const p=w2s(snapHit.x,snapHit.y),N='#FF5F1F',s=7,k=snapHit.kind;
     // Snap a GRILLA = gris, ícono de cuadrícula (se diferencia del snap a dibujos, naranja)
     if(k==='grid'){
@@ -1450,30 +1455,7 @@ function drawPreview(){
     const p=w2s(dragCurW.x,dragCurW.y),sz=(+document.getElementById('pbEraserSize').value)*vpZ/2;
     ctx.save();ctx.strokeStyle='#007aff';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(p.x,p.y,sz,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
-  // Snap indicator
-  if(snapOn&&dragCurW&&!['eraser','select','rotate'].includes(tool)){
-    const THRESH=22/vpZ;let best=null,bestD=THRESH;
-    for(const obj of objects){if(!obj||!obj.pts)continue;
-      // Center snap for circle/poly
-      if((obj.type==='circle'||obj.type==='poly')&&obj.pts[0]){
-        const d=hyp(dragCurW.x-obj.pts[0][0],dragCurW.y-obj.pts[0][1]);
-        if(d<bestD){bestD=d;best={x:obj.pts[0][0],y:obj.pts[0][1],t:'ctr'};}
-      }
-      for(const p of obj.pts){if(!p||p.length<2)continue;const d=hyp(dragCurW.x-p[0],dragCurW.y-p[1]);if(d<bestD){bestD=d;best={x:p[0],y:p[1],t:'ep'};}}
-      for(const seg of getSegs(obj)){const mx=(seg[0][0]+seg[1][0])/2,my=(seg[0][1]+seg[1][1])/2;const d=hyp(dragCurW.x-mx,dragCurW.y-my);if(d<bestD){bestD=d;best={x:mx,y:my,t:'mid'};}}
-    }
-    if(best){const ss=w2s(best.x,best.y);ctx.save();ctx.lineWidth=1.5;ctx.setLineDash([]);
-      if(best.t==='ep'){ctx.strokeStyle='#007aff';ctx.strokeRect(ss.x-5,ss.y-5,10,10);}
-      else if(best.t==='mid'){ctx.strokeStyle='#34c759';ctx.beginPath();ctx.moveTo(ss.x,ss.y-6);ctx.lineTo(ss.x+5,ss.y+4);ctx.lineTo(ss.x-5,ss.y+4);ctx.closePath();ctx.stroke();}
-      else if(best.t==='ctr'){
-        // Cross for center snap
-        ctx.strokeStyle='#ff9f0a';
-        ctx.beginPath();ctx.moveTo(ss.x-6,ss.y);ctx.lineTo(ss.x+6,ss.y);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(ss.x,ss.y-6);ctx.lineTo(ss.x,ss.y+6);ctx.stroke();
-      }
-      ctx.restore();
-    }
-  }
+  // (indicador de snap unificado: lo pinta drawCursorSnap con glifos naranja/gris)
   if(!drawing||!dragStartW||!dragCurW)return;
   ctx.save();ctx.strokeStyle=color;ctx.lineWidth=strokeW*vpZ;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=.55;setDash(lineType,vpZ);
   const a=w2s(dragStartW.x,dragStartW.y),b=w2s(dragCurW.x,dragCurW.y);
@@ -2094,7 +2076,8 @@ function ST(t){
   applyToolBar();
   render();
 }
-function toggleSnap(){snapOn=!snapOn;document.getElementById('snapBtn').classList.toggle('on',snapOn);toast('Snap '+(snapOn?'ON':'OFF'));}
+function toggleSnapObj(){snapObjOn=!snapObjOn;document.getElementById('snapObjBtn').classList.toggle('on',snapObjOn);toast('Snap dibujos '+(snapObjOn?'ON':'OFF'));}
+function toggleSnapGrid(){snapGridOn=!snapGridOn;document.getElementById('snapGridBtn').classList.toggle('on',snapGridOn);toast('Snap grilla '+(snapGridOn?'ON':'OFF'));}
 // ── EXPORTACIÓN (DXF / PNG / PDF · siempre limpio, sin grilla) ──
 function doExport(fmt){
   if(fmt==='dxf')return exportDXF();

@@ -116,10 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v40) · app pro
-- **Ajuste lote T (pedido Ángel):** más offset de cursor (`CURSOR_OFFY` 44→58) y **snap de grilla
-  diferenciado**: cuando cae en la grilla, `snapHit.kind='grid'` y `drawCursorSnap` pinta un ícono
-  **gris de cuadrícula** (cuadrado + cruz), distinto del naranja del snap a dibujos.
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v41) · app pro
+- **Snap doble e independiente (pedido Ángel):** dos flags `snapObjOn` (dibujos) y `snapGridOn`
+  (grilla) con **dos botones** en la barra (`#snapObjBtn` nodo · `#snapGridBtn` cuadrícula) →
+  apagar la grilla **no** apaga el snap a objetos. `getW` prueba objetos si `snapObjOn`, cae a
+  grilla si `snapGridOn`, si no crudo. Se quitó el **indicador de snap viejo** (azul/verde en
+  `drawPreview`, redundante); ahora todo lo pinta `drawCursorSnap` (naranja=dibujos, gris=grilla).
+- **Ajuste lote T (pedido Ángel):** más offset de cursor (`CURSOR_OFFY` 44→58) y snap de grilla
+  diferenciado (ícono gris de cuadrícula vs naranja de dibujos).
 - **Cursor offset + snap magnético con glifos (lote T · spec canvas liviano):** el touch ahora
   dibuja con un **cursor flecha rojo** desplazado `CURSOR_OFFY=44px` hacia arriba (resuelve el
   "dedo gordo"): toda la lógica (dibujo/selección/snap) usa el punto del cursor, no el crudo del
