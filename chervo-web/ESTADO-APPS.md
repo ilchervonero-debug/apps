@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v42) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v43) · app pro
+- **Snap simplificado (pedido Ángel):** un solo botón **Grilla** (`#gridBtn`/`toggleGrid`) que
+  prende/apaga la grilla (visible + snap); la **medida** se cambia desde el panel `#grpGrid`
+  (5/15/50cm/1m). Se **quitó el botón de cruz** (snap a dibujos): el snap a dibujos es **siempre
+  ON**. Su indicador pasó a **cruz ROJA** (`#FE0000`, activo/enfocado — nada de naranja, respeta
+  paleta blanco/gris/rojo); el snap a grilla sigue con glifo **gris**. `drawGrid` respeta `gridOn`.
 - **SmartPen (spec §3):** la herramienta lápiz (`pen`) ahora, al soltar, **reconoce el trazo** y lo
   limpia a vector: recta→`line`, lazo cerrado→`rect` o `circle` (círculo vs rect por **razón de área
   shoelace/bbox**: ≤0.85 y aspecto ~1 → círculo; si no → rect), curva abierta → queda freehand
