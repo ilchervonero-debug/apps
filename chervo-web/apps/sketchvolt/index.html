@@ -559,16 +559,22 @@ details.mas[open] summary:before{content:'▾ ';}
       <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
       Traer caja de referencias
     </button>
-    <div class="pu-title">Residenciales / Control</div>
+    <div class="pu-title">Tomas monofásicas</div>
     <div class="pu-grid">
-      <div class="pu-item" data-block="toma_linea" onclick="pickUnit(this,'Toma en línea')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Toma línea</span></div>
+      <div class="pu-item" data-block="toma_linea" onclick="pickUnit(this,'Toma monofásica')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Monofásico</span></div>
       <div class="pu-item" data-block="toma_schuko" onclick="pickUnit(this,'Toma Schuko')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20 Z" fill="#1c1c1e"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Schuko</span></div>
       <div class="pu-item" data-block="toma_bip_caja" onclick="pickUnit(this,'Toma en piso')"><svg viewBox="0 0 32 32"><rect x="6" y="6" width="20" height="20"/><path d="M10 22 A 6 6 0 0 1 22 22"/></svg><span>Toma piso</span></div>
-      <div class="pu-item" data-block="int_unipolar" onclick="pickUnit(this,'Interruptor simple')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/></svg><span>Int. simple</span></div>
-      <div class="pu-item" data-block="int_bipolar" onclick="pickUnit(this,'Interruptor bipolar')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/><line x1="14.5" y1="19.5" x2="19.5" y2="13"/></svg><span>Int. bip.</span></div>
-      <div class="pu-item" data-block="int_combinacion" onclick="pickUnit(this,'Conmutador')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/></svg><span>Combinac.</span></div>
-      <div class="pu-item" data-block="int_intermedio" onclick="pickUnit(this,'Conmutador intermedio')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/><circle cx="16.8" cy="16.2" r="2.8"/><line x1="15" y1="14.4" x2="18.6" y2="18"/><line x1="18.6" y1="14.4" x2="15" y2="18"/></svg><span>Intermedio</span></div>
+    </div>
+    <div class="pu-title">Interruptores</div>
+    <div class="pu-grid">
+      <div class="pu-item" data-block="int_unipolar" onclick="pickUnit(this,'Interruptor simple')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/></svg><span>Simple</span></div>
+      <div class="pu-item" data-block="int_bipolar" onclick="pickUnit(this,'Interruptor bipolar')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/><line x1="14.5" y1="19.5" x2="19.5" y2="13"/></svg><span>Bipolar</span></div>
+      <div class="pu-item" data-block="int_combinacion" onclick="pickUnit(this,'Conmutador')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/><line x1="10.8" y1="22.2" x2="4" y2="15"/></svg><span>Combinac.</span></div>
+      <div class="pu-item" data-block="int_intermedio" onclick="pickUnit(this,'Conmutador intermedio')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/><circle cx="16.8" cy="16.2" r="2.8"/></svg><span>Intermedio</span></div>
       <div class="pu-item" data-block="int_dimmer" onclick="pickUnit(this,'Atenuador')"><svg viewBox="0 0 32 32"><circle cx="9" cy="24" r="2.4"/><line x1="10.8" y1="22.2" x2="24" y2="9"/><line x1="24" y1="9" x2="19.5" y2="6.5"/><path d="M13 20 L18 14 L20 17"/></svg><span>Dimmer</span></div>
+    </div>
+    <div class="pu-title">Puntos de luz / control</div>
+    <div class="pu-grid">
       <div class="pu-item" data-block="caja_techo" onclick="pickUnit(this,'Centro de techo')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><line x1="10" y1="10" x2="22" y2="22"/><line x1="22" y1="10" x2="10" y2="22"/></svg><span>Centro Xe</span></div>
       <div class="pu-item" data-block="caja_pared" onclick="pickUnit(this,'Aplique de pared')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><line x1="10" y1="10" x2="22" y2="22"/><line x1="22" y1="10" x2="10" y2="22"/><line x1="4" y1="16" x2="8" y2="16"/></svg><span>Aplique Xa</span></div>
       <div class="pu-item" data-block="pulsador" onclick="pickUnit(this,'Pulsador')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/><circle cx="16" cy="16" r="2" fill="#1c1c1e"/></svg><span>Pulsador</span></div>
@@ -576,7 +582,7 @@ details.mas[open] summary:before{content:'▾ ';}
     </div>
     <div class="pu-title">Potencia / Tablero</div>
     <div class="pu-grid">
-      <div class="pu-item" data-block="tablero_dist" onclick="pickUnit(this,'Tablero')"><svg viewBox="0 0 32 32"><path d="M4 9 L16 16 L4 23 Z" fill="#1c1c1e" stroke="none"/><path d="M28 9 L16 16 L28 23 Z" fill="#1c1c1e" stroke="none"/></svg><span>Tablero</span></div>
+      <div class="pu-item" data-block="tablero_dist" onclick="pickUnit(this,'Tablero')"><svg viewBox="0 0 32 32"><rect x="3" y="10" width="26" height="12"/><path d="M6 12 L14 16 L6 20 Z" fill="#1c1c1e" stroke="none"/><path d="M22 12 L14 16 L22 20 Z" fill="#1c1c1e" stroke="none"/></svg><span>Tablero</span></div>
       <div class="pu-item" data-block="int_seccionador" onclick="pickUnit(this,'Seccionador')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><line x1="16" y1="12" x2="22" y2="24"/><line x1="16" y1="24" x2="16" y2="28"/></svg><span>Seccionador</span></div>
       <div class="pu-item" data-block="int_termomagnetico" onclick="pickUnit(this,'Térmica')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12 M13 10 L19 14"/><line x1="16" y1="12" x2="22" y2="24"/><line x1="16" y1="24" x2="16" y2="28"/></svg><span>Térmica</span></div>
       <div class="pu-item" data-block="int_diferencial" onclick="pickUnit(this,'Diferencial')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><line x1="16" y1="12" x2="22" y2="22"/><circle cx="18" cy="23" r="3"/><line x1="16" y1="26" x2="16" y2="28"/></svg><span>Diferencial</span></div>
@@ -586,6 +592,27 @@ details.mas[open] summary:before{content:'▾ ';}
       <div class="pu-item" data-block="fusible_secc" onclick="pickUnit(this,'Fusible')"><svg viewBox="0 0 32 32"><rect x="10" y="12" width="12" height="6"/><line x1="6" y1="15" x2="26" y2="15"/><line x1="12" y1="9" x2="16" y2="5"/></svg><span>Fusible</span></div>
       <div class="pu-item" data-block="medidor_kwh" onclick="pickUnit(this,'Medidor')"><svg viewBox="0 0 32 32"><rect x="5" y="8" width="22" height="16"/><text x="16" y="19" text-anchor="middle" font-size="8" font-weight="bold">kWh</text></svg><span>Medidor</span></div>
       <div class="pu-item" data-block="toma_tierra" onclick="pickUnit(this,'Puesta a tierra')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="18"/><line x1="6" y1="18" x2="26" y2="18"/><line x1="10" y1="22" x2="22" y2="22"/><line x1="14" y1="26" x2="18" y2="26"/></svg><span>Tierra</span></div>
+    </div>
+    <div class="pu-title">Corrientes débiles</div>
+    <div class="pu-grid">
+      <div class="pu-item" data-block="timbre" onclick="pickUnit(this,'Timbre / Zumbador')"><svg viewBox="0 0 32 32"><path d="M8 22 Q16 6 24 22 Z"/><line x1="6" y1="22" x2="26" y2="22"/></svg><span>Timbre</span></div>
+      <div class="pu-item" data-block="toma_tv" onclick="pickUnit(this,'Toma TV')"><svg viewBox="0 0 32 32"><rect x="6" y="8" width="20" height="16"/><text x="16" y="19" text-anchor="middle" font-size="9" font-weight="bold">TV</text></svg><span>Toma TV</span></div>
+      <div class="pu-item" data-block="toma_datos" onclick="pickUnit(this,'Toma Datos (RJ45)')"><svg viewBox="0 0 32 32"><rect x="6" y="8" width="20" height="16"/><text x="16" y="19" text-anchor="middle" font-size="7" font-weight="bold">RJ45</text></svg><span>Datos</span></div>
+      <div class="pu-item" data-block="toma_tel" onclick="pickUnit(this,'Toma Teléfono')"><svg viewBox="0 0 32 32"><rect x="6" y="8" width="20" height="16"/><path d="M11 22 L16 10 L21 22"/></svg><span>Teléfono</span></div>
+    </div>
+    <div class="pu-title">Iluminación especial</div>
+    <div class="pu-grid">
+      <div class="pu-item" data-block="lum_tubo" onclick="pickUnit(this,'Luminaria Tubo/Panel')"><svg viewBox="0 0 32 32"><rect x="4" y="13" width="24" height="6"/><line x1="16" y1="13" x2="16" y2="19"/></svg><span>Tubo/Panel</span></div>
+      <div class="pu-item" data-block="luz_emergencia" onclick="pickUnit(this,'Luz de Emergencia')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="9"/><path d="M16 7 A9 9 0 0 1 16 25 Z" fill="#1c1c1e"/></svg><span>Emergencia</span></div>
+      <div class="pu-item" data-block="caja_derivacion" onclick="pickUnit(this,'Caja de Pase/Derivación')"><svg viewBox="0 0 32 32"><rect x="8" y="8" width="16" height="16"/><line x1="8" y1="8" x2="24" y2="24"/><line x1="24" y1="8" x2="8" y2="24"/></svg><span>Caja pase</span></div>
+    </div>
+    <div class="pu-title">Media tensión / Industria</div>
+    <div class="pu-grid">
+      <div class="pu-item" data-block="transformador" onclick="pickUnit(this,'Transformador MT/BT')"><svg viewBox="0 0 32 32"><circle cx="13" cy="16" r="7"/><circle cx="19" cy="16" r="7"/></svg><span>Transform.</span></div>
+      <div class="pu-item" data-block="generador" onclick="pickUnit(this,'Grupo Generador')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/><text x="16" y="20" text-anchor="middle" font-size="12" font-weight="bold">G</text></svg><span>Generador</span></div>
+      <div class="pu-item" data-block="motor_gen" onclick="pickUnit(this,'Motor (Industrial)')"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/><text x="16" y="20" text-anchor="middle" font-size="12" font-weight="bold">M</text></svg><span>Motor Ind.</span></div>
+      <div class="pu-item" data-block="bateria" onclick="pickUnit(this,'Banco de Baterías')"><svg viewBox="0 0 32 32"><line x1="16" y1="5" x2="16" y2="11"/><line x1="7" y1="11" x2="25" y2="11"/><line x1="11" y1="17" x2="21" y2="17" stroke-width="3"/><line x1="16" y1="17" x2="16" y2="27"/></svg><span>Baterías</span></div>
+      <div class="pu-item" data-block="descargador" onclick="pickUnit(this,'Descargador de Sobretensión')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="10"/><path d="M16 10 L11 16 L21 16 Z"/><line x1="16" y1="16" x2="16" y2="20"/><line x1="10" y1="20" x2="22" y2="20"/><line x1="13" y1="24" x2="19" y2="24"/></svg><span>Descargad.</span></div>
     </div>
     <div class="pu-title">Aire acondicionado</div>
     <div class="pu-grid">
@@ -1150,127 +1177,220 @@ function drawObj(obj){
 }
 
 // SIMBOLOGÍA ELÉCTRICA UNIT (Uruguay) — trazo fino monolínea, escala/gira con el objeto.
-function renderSimbologiaUNIT(wx,wy,tipo,sizeW,deg,col,flip){
-  const s=w2s(wx,wy),size=sizeW*vpZ,r=size/2;
+function renderSimbologiaUNIT(wx, wy, tipo, sizeW, deg, col, flip) {
+  const s = w2s(wx, wy), size = sizeW * vpZ, r = size / 2;
   ctx.save();
   ctx.setLineDash([]);
-  ctx.translate(s.x,s.y);
-  ctx.rotate(deg*Math.PI/180);
-  if(flip)ctx.scale(-1,1);
-  ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1.1*vpZ;ctx.lineCap='round';ctx.lineJoin='round';
-  ctx.textAlign='left';ctx.textBaseline='alphabetic';
-  // Llave UNIT: círculo en la base + palanca diagonal + banderola en la punta.
-  // Círculo del interruptor más grande (legibilidad, según planos reales de Ángel).
-  const llave=(marks)=>{
-    const cx=-r*0.45,cy=r*0.5,cr=r*0.30,tx=r*0.55,ty=-r*0.55;
-    ctx.beginPath();ctx.arc(cx,cy,cr,0,Math.PI*2);ctx.stroke();
-    const ang=Math.atan2(ty-cy,tx-cx),sx=cx+Math.cos(ang)*cr,sy=cy+Math.sin(ang)*cr;
-    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(tx,ty);ctx.stroke();
-    const px=-Math.sin(ang),py=Math.cos(ang);
-    ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx+px*r*0.34,ty+py*r*0.34);ctx.stroke();     // banderola
-    const mx=(sx+tx)/2,my=(sy+ty)/2;
-    if(marks==='bip'){ ctx.beginPath();ctx.moveTo(mx+px*r*0.17,my+py*r*0.17);ctx.lineTo(mx-px*r*0.17,my-py*r*0.17);ctx.stroke(); }
-    else if(marks==='inter'){ const rr=r*0.17;
-      ctx.beginPath();ctx.arc(mx,my,rr,0,Math.PI*2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(mx-rr*0.7,my-rr*0.7);ctx.lineTo(mx+rr*0.7,my+rr*0.7);ctx.moveTo(mx+rr*0.7,my-rr*0.7);ctx.lineTo(mx-rr*0.7,my+rr*0.7);ctx.stroke(); }
-    else if(marks==='dim'){ const ax=tx-Math.cos(ang)*r*0.34,ay=ty-Math.sin(ang)*r*0.34;
-      ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax-px*r*0.3,ay-py*r*0.3);ctx.lineTo(ax-px*r*0.3+Math.cos(ang)*r*0.28,ay-py*r*0.3+Math.sin(ang)*r*0.28);ctx.stroke(); }
+  ctx.translate(s.x, s.y);
+  ctx.rotate(deg * Math.PI / 180);
+  if (flip) ctx.scale(-1, 1);
+  ctx.strokeStyle = col;
+  ctx.fillStyle = col;
+  ctx.lineWidth = 1.2 * vpZ;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const drawLine = (x1, y1, x2, y2) => {
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
   };
-  switch(tipo){
+
+  switch (tipo) {
     case 'toma_linea':
-      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI,true);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke();break;
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, Math.PI, true); ctx.stroke();
+      drawLine(-r, 0, r, 0);
+      break;
     case 'toma_schuko':
-      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI,true);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke();
-      ctx.beginPath();ctx.arc(0,0,r*0.4,0,Math.PI,true);ctx.fill();break;
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, Math.PI, true); ctx.fill();
+      drawLine(-r, 0, r, 0);
+      break;
     case 'toma_bip_caja':
-      ctx.beginPath();ctx.rect(-r,-r,size,size);ctx.stroke();
-      ctx.beginPath();ctx.arc(0,r*0.2,r*0.5,0,Math.PI,true);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.7,r*0.2);ctx.lineTo(r*0.7,r*0.2);ctx.stroke();break;
-    case 'int_unipolar': llave(); break;
-    case 'int_combinacion': llave(); break;
-    case 'int_bipolar': llave('bip'); break;
-    case 'int_intermedio': llave('inter'); break;
-    case 'int_dimmer': llave('dim'); break;
+      ctx.strokeRect(-r * 0.8, -r * 0.8, r * 1.6, r * 1.6);
+      ctx.beginPath(); ctx.arc(0, r * 0.2, r * 0.5, 0, Math.PI, true); ctx.stroke();
+      drawLine(-r * 0.8, r * 0.2, r * 0.8, r * 0.2);
+      break;
+    case 'int_unipolar':
+    case 'int_bipolar':
+    case 'int_combinacion':
+    case 'int_intermedio':
+    case 'int_dimmer':
+      ctx.beginPath(); ctx.arc(-r * 0.3, r * 0.3, r * 0.25, 0, Math.PI * 2); ctx.stroke();
+      drawLine(-r * 0.12, r * 0.12, r * 0.6, -r * 0.6);
+      if (tipo === 'int_unipolar') {
+        drawLine(r * 0.6, -r * 0.6, r * 0.2, -r * 1.0);
+      } else if (tipo === 'int_bipolar') {
+        drawLine(r * 0.6, -r * 0.6, r * 0.2, -r * 1.0);
+        drawLine(r * 0.2, -r * 0.2, -r * 0.2, -r * 0.6);
+      } else if (tipo === 'int_combinacion') {
+        drawLine(r * 0.6, -r * 0.6, r * 0.2, -r * 1.0);
+        drawLine(-r * 0.12, r * 0.12, -r * 0.52, r * 0.52);
+      } else if (tipo === 'int_intermedio') {
+        drawLine(r * 0.6, -r * 0.6, r * 0.2, -r * 1.0);
+        drawLine(-r * 0.12, r * 0.12, -r * 0.52, r * 0.52);
+        drawLine(0, -r * 0.2, r * 0.4, r * 0.2);
+      } else if (tipo === 'int_dimmer') {
+        ctx.beginPath(); ctx.moveTo(r * 0.6, -r * 0.6); ctx.lineTo(r * 0.2, -r * 1.0); ctx.lineTo(0, -r * 0.6); ctx.closePath(); ctx.fill();
+      }
+      break;
     case 'caja_techo':
-      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI*2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.5,-r*0.5);ctx.lineTo(r*0.5,r*0.5);
-      ctx.moveTo(r*0.5,-r*0.5);ctx.lineTo(-r*0.5,r*0.5);ctx.stroke();
-      ctx.font=`bold ${9*vpZ}px sans-serif`;ctx.fillText('E',r*0.6,-r*0.2);break;
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, Math.PI * 2); ctx.stroke();
+      drawLine(-r * 0.5, -r * 0.5, r * 0.5, r * 0.5);
+      drawLine(r * 0.5, -r * 0.5, -r * 0.5, r * 0.5);
+      break;
     case 'caja_pared':
-      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI*2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.5,-r*0.5);ctx.lineTo(r*0.5,r*0.5);
-      ctx.moveTo(r*0.5,-r*0.5);ctx.lineTo(-r*0.5,r*0.5);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.7,0);ctx.lineTo(-r,0);ctx.stroke();
-      ctx.font=`bold ${9*vpZ}px sans-serif`;ctx.fillText('A',r*0.6,-r*0.2);break;
+      ctx.beginPath(); ctx.arc(r * 0.2, 0, r * 0.6, 0, Math.PI * 2); ctx.stroke();
+      drawLine(-r * 0.2, -r * 0.4, r * 0.6, r * 0.4);
+      drawLine(r * 0.6, -r * 0.4, -r * 0.2, r * 0.4);
+      drawLine(-r * 0.4, 0, -r, 0);
+      break;
     case 'pulsador':
-      ctx.beginPath();ctx.arc(0,0,r*0.7,0,Math.PI*2);ctx.stroke();
-      ctx.beginPath();ctx.arc(0,0,r*0.15,0,Math.PI*2);ctx.fill();break;
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.2, 0, Math.PI * 2); ctx.fill();
+      break;
     case 'sensor_mov':
-      ctx.beginPath();ctx.arc(0,0,r*0.8,0,Math.PI*2);ctx.stroke();
-      ctx.font=`bold ${8*vpZ}px sans-serif`;ctx.textAlign='center';ctx.fillText('SM',0,r*0.3);break;
+      ctx.strokeRect(-r * 0.8, -r * 0.5, r * 1.6, r);
+      ctx.font = `bold ${8 * vpZ}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('SM', 0, 0);
+      break;
+
+    // CORRIENTES DÉBILES
+    case 'timbre':
+      ctx.beginPath(); ctx.moveTo(-r*0.6, r*0.4); ctx.quadraticCurveTo(0, -r*0.6, r*0.6, r*0.4); ctx.closePath(); ctx.stroke();
+      drawLine(-r*0.8, r*0.4, r*0.8, r*0.4);
+      break;
+    case 'toma_tv':
+      ctx.strokeRect(-r*0.8, -r*0.6, r*1.6, r*1.2);
+      ctx.font = `bold ${8 * vpZ}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('TV', 0, 0);
+      break;
+    case 'toma_datos':
+      ctx.strokeRect(-r*0.8, -r*0.6, r*1.6, r*1.2);
+      ctx.font = `bold ${7 * vpZ}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('RJ45', 0, 0);
+      break;
+    case 'toma_tel':
+      ctx.strokeRect(-r*0.8, -r*0.6, r*1.6, r*1.2);
+      ctx.beginPath(); ctx.moveTo(-r*0.4, r*0.4); ctx.lineTo(0, -r*0.4); ctx.lineTo(r*0.4, r*0.4); ctx.closePath(); ctx.stroke();
+      break;
+
+    // ILUMINACIÓN ESPECIAL Y OTROS
+    case 'lum_tubo':
+      ctx.strokeRect(-size/2, -r*0.2, size, r*0.4);
+      drawLine(0, -r*0.2, 0, r*0.2);
+      break;
+    case 'luz_emergencia':
+      ctx.beginPath(); ctx.arc(0, 0, r*0.8, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, r*0.8, -Math.PI/2, Math.PI/2); ctx.fill();
+      break;
+    case 'caja_derivacion':
+      ctx.strokeRect(-r*0.6, -r*0.6, r*1.2, r*1.2);
+      drawLine(-r*0.6, -r*0.6, r*0.6, r*0.6);
+      drawLine(r*0.6, -r*0.6, -r*0.6, r*0.6);
+      break;
+
+    // POTENCIA / TABLEROS
     case 'tablero_dist':
-      ctx.beginPath();ctx.moveTo(-r,-r*0.55);ctx.lineTo(0,0);ctx.lineTo(-r,r*0.55);ctx.closePath();ctx.fill();
-      ctx.beginPath();ctx.moveTo(r,-r*0.55);ctx.lineTo(0,0);ctx.lineTo(r,r*0.55);ctx.closePath();ctx.fill();break;
-    case 'int_seccionador':
-      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,r*0.6);ctx.lineTo(0,r);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.3,-r*0.7);ctx.lineTo(r*0.3,-r*0.4);
-      ctx.moveTo(-r*0.3,-r*0.5);ctx.lineTo(r*0.3,-r*0.2);ctx.stroke();break;
+      // Tablero general (UNIT): rectángulo APAISADO con MOÑO relleno a la izquierda
+      // (dos triángulos que se tocan en un punto); el resto del rectángulo queda vacío.
+      ctx.strokeRect(-r, -r * 0.5, size, r);
+      ctx.beginPath(); ctx.moveTo(-r * 0.85, -r * 0.34); ctx.lineTo(-r * 0.15, 0); ctx.lineTo(-r * 0.85, r * 0.34); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(r * 0.55, -r * 0.34); ctx.lineTo(-r * 0.15, 0); ctx.lineTo(r * 0.55, r * 0.34); ctx.closePath(); ctx.fill();
+      break;
     case 'int_termomagnetico':
-      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,r*0.6);ctx.lineTo(0,r);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.3,-r*0.7);ctx.lineTo(r*0.3,-r*0.4);
-      ctx.moveTo(-r*0.3,-r*0.5);ctx.lineTo(r*0.3,-r*0.2);
-      ctx.moveTo(-r*0.3,-r*0.3);ctx.lineTo(r*0.3,0);ctx.stroke();break;
+      drawLine(0, -r, 0, -r * 0.2);
+      ctx.beginPath(); ctx.moveTo(0, -r * 0.2); ctx.lineTo(r * 0.4, r * 0.2); ctx.lineTo(0, r * 0.2); ctx.stroke();
+      drawLine(0, r * 0.2, 0, r);
+      break;
     case 'int_diferencial':
-      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
-      ctx.beginPath();ctx.arc(0,r*0.6,r*0.2,0,Math.PI*2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,r*0.8);ctx.lineTo(0,r);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.3,-r*0.7);ctx.lineTo(r*0.3,-r*0.4);
-      ctx.moveTo(-r*0.3,-r*0.5);ctx.lineTo(r*0.3,-r*0.2);ctx.stroke();break;
+      drawLine(0, -r, 0, -r * 0.2);
+      drawLine(0, -r * 0.2, r * 0.4, r * 0.2);
+      drawLine(r * 0.4, r * 0.2, 0, r * 0.2);
+      ctx.beginPath(); ctx.ellipse(0, r * 0.45, r * 0.25, r * 0.15, 0, 0, Math.PI * 2); ctx.stroke();
+      drawLine(0, r * 0.6, 0, r);
+      break;
+    case 'int_seccionador':
+      drawLine(0, -r, 0, -r * 0.2);
+      drawLine(0, -r * 0.2, r * 0.5, r * 0.5);
+      drawLine(0, r * 0.5, 0, r);
+      drawLine(-r * 0.2, r * 0.5, r * 0.2, r * 0.5);
+      break;
     case 'contactor':
-      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,r*0.6);ctx.lineTo(0,r);ctx.stroke();
-      ctx.beginPath();ctx.rect(-r*0.4,-r*0.8,r*0.4,r*0.4);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.3,-r*0.3);ctx.lineTo(r*0.3,0);
-      ctx.moveTo(-r*0.3,-r*0.5);ctx.lineTo(r*0.3,-r*0.2);ctx.stroke();break;
+      drawLine(0, -r, 0, -r * 0.2);
+      drawLine(0, -r * 0.2, r * 0.5, r * 0.5);
+      drawLine(0, r * 0.5, 0, r);
+      ctx.beginPath(); ctx.arc(0, -r * 0.2, r * 0.08, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(0, r * 0.5, r * 0.08, 0, Math.PI * 2); ctx.fill();
+      break;
     case 'guardamotor':
-      ctx.beginPath();ctx.rect(-r*0.6,-r,size*0.6,size);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,r);ctx.stroke();
-      ctx.font=`500 ${8*vpZ}px sans-serif`;ctx.textAlign='center';ctx.fillText('I>',0,r*0.4);break;
+      ctx.strokeRect(-r * 0.5, -r * 0.6, r, r * 1.2);
+      drawLine(0, -r, 0, -r * 0.6);
+      drawLine(0, r * 0.6, 0, r);
+      ctx.font = `500 ${8 * vpZ}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('I>', 0, 0);
+      break;
     case 'rele_termico':
-      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,-r*0.2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,-r*0.2);ctx.lineTo(r*0.5,r*0.6);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,r*0.6);ctx.lineTo(0,r);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(0,r*0.1);ctx.quadraticCurveTo(r*0.4,r*0.3,0,r*0.5);ctx.stroke();break;
+      drawLine(0, -r, 0, -r * 0.2);
+      ctx.beginPath(); ctx.moveTo(0, -r * 0.2); ctx.quadraticCurveTo(r * 0.8, r * 0.2, 0, r * 0.6); ctx.stroke();
+      drawLine(0, r * 0.6, 0, r);
+      break;
     case 'fusible_secc':
-      ctx.beginPath();ctx.rect(-r*0.8,-r*0.3,size*0.8,size*0.6);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r,0);ctx.lineTo(r,0);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.4,-r*0.3);ctx.lineTo(0,-r*0.8);ctx.stroke();break;
+      ctx.strokeRect(-r * 0.4, -r * 0.6, r * 0.8, r * 1.2);
+      drawLine(0, -r, 0, r);
+      drawLine(-r * 0.6, -r * 0.6, r * 0.6, -r * 0.6);
+      drawLine(-r * 0.6, r * 0.6, r * 0.6, r * 0.6);
+      break;
     case 'medidor_kwh':
-      ctx.beginPath();ctx.rect(-r,-r*0.6,size,size*1.2);ctx.stroke();
-      ctx.font=`bold ${8*vpZ}px sans-serif`;ctx.textAlign='center';ctx.fillText('kWh',0,r*0.15);break;
+      ctx.strokeRect(-r * 0.8, -r * 0.6, r * 1.6, r * 1.2);
+      ctx.font = `bold ${8 * vpZ}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('kWh', 0, 0);
+      break;
     case 'toma_tierra':
-      ctx.beginPath();ctx.moveTo(0,-r);ctx.lineTo(0,r*0.2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.7,r*0.2);ctx.lineTo(r*0.7,r*0.2);
-      ctx.moveTo(-r*0.4,r*0.5);ctx.lineTo(r*0.4,r*0.5);
-      ctx.moveTo(-r*0.15,r*0.8);ctx.lineTo(r*0.15,r*0.8);ctx.stroke();break;
-    // "Aberraciones" (fuera de UNIT, pero necesarias para la vivienda)
-    case 'aire_ac':   // equipo de aire (split de pared)
-      ctx.beginPath();
-      if(ctx.roundRect)ctx.roundRect(-r,-r*0.4,size,size*0.8,r*0.18); else ctx.rect(-r,-r*0.4,size,size*0.8);
-      ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-r*0.75,r*0.05);ctx.lineTo(r*0.75,r*0.05);ctx.stroke();break;
-    case 'motor_ac':  // motor / condensadora exterior
-      ctx.beginPath();ctx.arc(0,0,r*0.82,0,Math.PI*2);ctx.stroke();
-      ctx.font=`600 ${Math.round(size*0.42)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText('M',0,0);break;
+      drawLine(0, -r, 0, 0);
+      drawLine(-r * 0.6, 0, r * 0.6, 0);
+      drawLine(-r * 0.4, r * 0.3, r * 0.4, r * 0.3);
+      drawLine(-r * 0.2, r * 0.6, r * 0.2, r * 0.6);
+      break;
+
+    // MEDIA TENSIÓN E INDUSTRIA
+    case 'transformador':
+      ctx.beginPath(); ctx.arc(-r*0.25, 0, r*0.45, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(r*0.25, 0, r*0.45, 0, Math.PI * 2); ctx.stroke();
+      break;
+    case 'generador':
+      ctx.beginPath(); ctx.arc(0, 0, r*0.8, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = `bold ${10 * vpZ}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('G', 0, 0);
+      break;
+    case 'motor_gen':
+      ctx.beginPath(); ctx.arc(0, 0, r*0.8, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = `bold ${10 * vpZ}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('M', 0, 0);
+      break;
+    case 'bateria':
+      drawLine(0, -r, 0, -r*0.3);
+      drawLine(-r*0.6, -r*0.3, r*0.6, -r*0.3);
+      ctx.lineWidth = 3 * vpZ;
+      drawLine(-r*0.3, r*0.1, r*0.3, r*0.1);
+      ctx.lineWidth = 1.2 * vpZ;
+      drawLine(0, r*0.1, 0, r);
+      break;
+    case 'descargador':
+      drawLine(0, -r, 0, -r*0.2);
+      ctx.beginPath(); ctx.moveTo(0, -r*0.2); ctx.lineTo(-r*0.3, r*0.2); ctx.lineTo(r*0.3, r*0.2); ctx.closePath(); ctx.stroke();
+      drawLine(0, r*0.2, 0, r*0.5);
+      drawLine(-r*0.4, r*0.5, r*0.4, r*0.5);
+      drawLine(-r*0.2, r*0.7, r*0.2, r*0.7);
+      break;
+
+    // AIRE ACONDICIONADO
+    case 'aire_ac':
+      ctx.strokeRect(-r, -r * 0.4, size, r * 0.8);
+      drawLine(-r, 0, r, 0);
+      break;
+    case 'motor_ac':
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.85, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = `bold ${Math.round(size * 0.45)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('M', 0, 0);
+      break;
   }
   ctx.restore();
 }
@@ -2313,16 +2433,21 @@ function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;ultimoSimbolo
 // Cada símbolo es un bloque marcado `ref:true`: SE IMPRIME y sirve de paleta, pero NO
 // se cuenta en el conteo (y al copiarlo, la copia sí cuenta). Cada uno con su color.
 const REF_VIVIENDA=[
-  ['caja_techo','Centro de luz','#FE0000'],
-  ['caja_pared','Brazo de luz exterior','#34c759'],
+  ['caja_techo','Centro de techo','#FE0000'],
+  ['caja_pared','Aplique de pared','#FE0000'],
+  ['lum_tubo','Luminaria Tubo/Panel','#FE0000'],
+  ['luz_emergencia','Luz de emergencia','#FE0000'],
   ['toma_linea','Toma corriente','#007aff'],
-  ['toma_bip_caja','Toma con corte','#FE0000'],
-  ['int_unipolar','Interruptor común','#FE0000'],
-  ['int_combinacion','Interruptor combinado','#FE0000'],
-  ['int_intermedio','Conmutador intermedio','#FE0000'],
-  ['tablero_dist','Tablero llaves térmicas','#00c7be'],
-  ['aire_ac','Equipo aire acondicionado','#1c1c1e'],
-  ['motor_ac','Motor aire acondicionado','#1c1c1e']
+  ['toma_schuko','Toma Schuko','#007aff'],
+  ['int_unipolar','Interruptor simple','#FE0000'],
+  ['int_combinacion','Llave combinada','#FE0000'],
+  ['tablero_dist','Tablero General','#00c7be'],
+  ['toma_tierra','Puesta a tierra','#34c759'],
+  ['toma_tv','Toma Televisión','#ff9f0a'],
+  ['toma_datos','Toma Datos (RJ45)','#ff9f0a'],
+  ['toma_tel','Toma Teléfono','#ff9f0a'],
+  ['timbre','Timbre / Zumbador','#ff9f0a'],
+  ['aire_ac','Aire Acondicionado (Split)','#1c1c1e']
 ];
 function traerReferencias(){
   closeUnit(); closeTools();
@@ -2330,7 +2455,7 @@ function traerReferencias(){
   const tl=s2w(28,96);                 // esquina sup-izq de la caja, en un punto visible
   const sym=40, rowH=70, pad=26, titleH=54;
   const x0=tl.x+pad, y0=tl.y+pad+titleH;
-  const boxW=560, boxH=pad*2+titleH+REF_VIVIENDA.length*rowH;
+  const boxW=620, boxH=pad*2+titleH+REF_VIVIENDA.length*rowH;
   // marco de la caja
   objects.push({type:'rect',pts:[[tl.x,tl.y],[tl.x+boxW,tl.y+boxH]],color:'#1c1c1e',strokeW:1,lineType:'solid',id:nextId++});
   // título
@@ -2978,13 +3103,19 @@ function drawRotulo(K,W,H){
 }
 
 // ══════════ HOJA DE CONTEO DE MATERIALES ══════════
-const NOM_BLOQUE={toma_linea:'Toma en línea',toma_schuko:'Toma Schuko',toma_bip_caja:'Toma en piso',
+const NOM_BLOQUE={
+  toma_linea:'Toma en línea',toma_schuko:'Toma Schuko',toma_bip_caja:'Toma en piso',
   int_unipolar:'Interruptor simple',int_bipolar:'Interruptor bipolar',int_combinacion:'Conmutador',
   int_intermedio:'Conmutador intermedio',int_dimmer:'Atenuador (dimmer)',caja_techo:'Centro de techo',
   caja_pared:'Aplique de pared',pulsador:'Pulsador',sensor_mov:'Sensor de movimiento',tablero_dist:'Tablero',
   int_seccionador:'Seccionador',int_termomagnetico:'Térmica',int_diferencial:'Diferencial',contactor:'Contactor',
   guardamotor:'Guardamotor',rele_termico:'Relé térmico',fusible_secc:'Fusible',medidor_kwh:'Medidor',toma_tierra:'Puesta a tierra',
-  aire_ac:'Equipo aire acondicionado',motor_ac:'Motor aire acondicionado'};
+  aire_ac:'Equipo aire acondicionado',motor_ac:'Motor aire acondicionado',
+  timbre:'Timbre / Zumbador',toma_tv:'Toma TV',toma_datos:'Toma Datos (RJ45)',toma_tel:'Toma Teléfono',
+  lum_tubo:'Luminaria Tubo/Panel',luz_emergencia:'Luz de Emergencia',caja_derivacion:'Caja de Pase/Derivación',
+  transformador:'Transformador MT/BT',generador:'Grupo Generador',motor_gen:'Motor (Industrial)',
+  bateria:'Banco de Baterías',descargador:'Descargador de Sobretensión'
+};
 function blkNom(k){return NOM_BLOQUE[k]||k;}
 function cnf(n){return (Math.round(n*100)/100).toLocaleString('es-UY');}
 function segLen(o){return getSegs(o).reduce((s,seg)=>s+hyp(seg[1][0]-seg[0][0],seg[1][1]-seg[0][1]),0);}

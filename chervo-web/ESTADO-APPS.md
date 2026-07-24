@@ -116,7 +116,17 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v48) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v49) · app pro
+- **Simbología UNIT ampliada + tablero corregido + FAB reagrupado (pedido Ángel, con su leyenda
+  oficial):** se reemplazó `renderSimbologiaUNIT` por la versión detallada y se sumaron símbolos
+  (corrientes débiles: timbre/TV/datos/tel; iluminación: tubo, emergencia, caja derivación; MT/
+  industria: transformador, generador, motor, baterías, descargador). **Tablero** = rectángulo
+  apaisado con **moño relleno a la izquierda** (dos triángulos que se tocan), resto vacío — según su
+  leyenda (antes estaba mal). `NOM_BLOQUE` y `REF_VIVIENDA` ampliados. **Panel FAB reagrupado**:
+  *Tomas monofásicas* (monofásico/schuko/piso) primero, luego *Interruptores*, *Puntos de luz*,
+  *Potencia/Tablero*, *Corrientes débiles*, *Iluminación especial*, *MT/Industria*, *Aire*.
+  Nota: recuperado de una base vieja (el contenedor se reclonó en la rama `claude/…`@v38); rehecho
+  sobre `master`@v48 sin perder cursor/snap/SmartLine/texto.
 - **Snap más tolerante en SmartLine (dedo inexacto, pedido Ángel):** el radio de snap sube a
   **42px** para `sline` tanto en vivo (`getW` con umbral por herramienta) como al cerrar
   (`nearNode` en `handleUp`), asegurando el enganche del **1er y último punto** a nodos/símbolos.
