@@ -116,8 +116,13 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v59) · app pro
-- **Ortho/Polar flotantes + head = panel guía (pedido Ángel, v59):** los toggles Ortho/Polar salieron
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v60) · app pro
+- **Guía discreta + línea guía infinita de Polar (v60):** el panel guía se hizo **discreto** (texto gris
+  fino peso 300, **sin negritas**, comandos apenas más oscuros por tono — no rojo; solo el nombre de la
+  herramienta en rojo chico), para que no sea protagonista. **Polar/Ortho dibujan una línea guía
+  "infinita"** (`drawTrackLine`): cruza el lienzo desde el ancla en la dirección del ángulo fijado
+  (roja punteada, alpha .45), en `line`/`sline`/`dim2`/`pline`.
+- **Ortho/Polar flotantes + head = panel guía (v59):** los toggles Ortho/Polar salieron
   del head y ahora **flotan junto a la coordenada** (`#opFloat`, íconos negros con rótulo, **rojos al
   activarse**). El **head se cubre por un panel de instrucciones** (`#guide`) cuando hay una herramienta
   activa: muestra en texto el nombre de la herramienta y los **pasos** (fondo blanco, texto negro,

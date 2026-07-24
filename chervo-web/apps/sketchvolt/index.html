@@ -158,9 +158,9 @@ body{display:flex;flex-direction:column;background:#fff;}
 #guide{position:fixed;top:0;left:0;right:0;height:auto;min-height:var(--tb);z-index:60;background:#fff;
   border-bottom:1px solid #e5e5ea;display:none;align-items:center;gap:10px;padding:6px 6px 6px 14px;}
 #guide.show{display:flex;}
-#guide .gtool{font-size:14px;color:#FE0000;font-weight:600;white-space:nowrap;flex-shrink:0;padding-right:10px;border-right:1px solid rgba(0,0,0,.12);align-self:stretch;display:flex;align-items:center;}
-#guide .gtxt{flex:1;min-width:0;font-size:14px;color:#1c1c1e;line-height:1.2;}
-#guide .gtxt b{color:#FE0000;font-weight:600;}
+#guide .gtool{font-size:13px;color:#FE0000;font-weight:400;white-space:nowrap;flex-shrink:0;padding-right:10px;border-right:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center;}
+#guide .gtxt{flex:1;min-width:0;font-size:15px;color:#7a7a7a;font-weight:300;line-height:1.25;}
+#guide .gtxt b{color:#1c1c1e;font-weight:400;}
 #guide .gx{flex-shrink:0;background:none;border:none;color:#1c1c1e;cursor:pointer;padding:7px;}
 #guide .gx svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 /* Chip flotante del modo aislado (editar grupo) */
@@ -1690,6 +1690,7 @@ function drawPreview(){
   }
   // PLINE build
   if(tool==='pline'&&plinePts.length>0){
+    if(plineActive)drawTrackLine({x:plinePts[plinePts.length-1][0],y:plinePts[plinePts.length-1][1]});
     ctx.save();ctx.strokeStyle=color;ctx.lineWidth=strokeW*vpZ;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=.85;setDash(lineType,vpZ);
     ctx.beginPath();const p0=w2s(...plinePts[0]);ctx.moveTo(p0.x,p0.y);
     for(let i=1;i<plinePts.length;i++){const p=w2s(...plinePts[i]);ctx.lineTo(p.x,p.y);}
@@ -1705,6 +1706,7 @@ function drawPreview(){
   }
   // (indicador de snap unificado: lo pinta drawCursorSnap con glifos naranja/gris)
   if(!drawing||!dragStartW||!dragCurW)return;
+  if(tool==='line'||tool==='sline'||tool==='dim2')drawTrackLine(dragStartW);
   ctx.save();ctx.strokeStyle=color;ctx.lineWidth=strokeW*vpZ;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=.55;setDash(lineType,vpZ);
   const a=w2s(dragStartW.x,dragStartW.y),b=w2s(dragCurW.x,dragCurW.y);
   if(tool==='line'||tool==='sline'){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
@@ -2389,6 +2391,15 @@ const GUIA={
   move:['Mover','<b>Arrastrá</b> el elemento a su nueva posición.'],
   copy:['Copiar','<b>Tocá</b> un elemento y <b>arrastrá</b> la copia.']
 };
+// Línea guía "infinita" de Ortho/Polar: cruza el lienzo en la dirección del ángulo fijado, desde el ancla.
+function drawTrackLine(A){
+  if(!(orthoOn||polarOn)||!A||!dragCurW)return;
+  const dx=dragCurW.x-A.x, dy=dragCurW.y-A.y, d=Math.hypot(dx,dy); if(d<1e-6)return;
+  const ux=dx/d, uy=dy/d, L=(cv.width+cv.height)/vpZ;
+  const p1=w2s(A.x-ux*L, A.y-uy*L), p2=w2s(A.x+ux*L, A.y+uy*L);
+  ctx.save();ctx.strokeStyle='#FE0000';ctx.globalAlpha=.45;ctx.lineWidth=1;ctx.setLineDash([7,6]);
+  ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();ctx.restore();
+}
 function updateGuide(){
   const g=document.getElementById('guide'), gd=GUIA[tool];
   if(gd && tool!=='select'){ document.getElementById('guideTool').textContent=gd[0]; document.getElementById('guideTxt').innerHTML=gd[1]; g.classList.add('show'); }
