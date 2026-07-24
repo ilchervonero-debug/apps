@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v55) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v56) · app pro
+- **Panel = símbolo real + banderola a 90° (pedido Ángel, norma UNIT):** los íconos del panel FAB y
+  el ícono del FAB ahora se **dibujan con la misma función del canvas** (`renderSimbologiaUNIT` vía
+  `drawSymbolInto`/`mkSymCanvas`/`renderPanelIcons`), así el ícono ES la representación (antes eran SVG
+  a mano que diferían). La **banderola de la llave sale a 90°** de la palanca (perpendicular), igual que
+  el tick de bipolar. `ctx` pasó a `let` para poder redirigir el dibujo a un canvas temporal.
 - **Simbología ajustada a la NORMA UNIT 24:2019 (PDF oficial que dio Ángel), Tabla 2 planos de planta:**
   *Llave de corte* (139) = círculo abajo-izq + palanca que sube a la derecha a un vértice + **banderola
   corta que baja a la derecha (∧)**; *bipolar* (141) = + tick en la palanca; *conmutador extremo* (143)

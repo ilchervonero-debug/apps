@@ -819,7 +819,7 @@ details.mas[open] summary:before{content:'▾ ';}
 
 <div id="toast"></div>
 <script>
-const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),wrap=document.getElementById('wrap');
+const cv=document.getElementById('cv');let ctx=cv.getContext('2d');const wrap=document.getElementById('wrap');
 
 // STATE
 const PPM=100;              // px de mundo por metro (a zoom 1) — el mundo se mide en metros
@@ -1222,26 +1222,29 @@ function renderSimbologiaUNIT(wx, wy, tipo, sizeW, deg, col, flip) {
     case 'int_combinacion':
     case 'int_intermedio':
     case 'int_dimmer': {
-      // Llave de corte UNIT 24:2019: círculo abajo-izq + palanca que sube a la derecha hasta un
-      // vértice + banderola corta que baja a la derecha (forma ∧).
+      // Llave de corte UNIT 24:2019: círculo abajo-izq + palanca (ramal) que sube a la derecha hasta
+      // un vértice + banderola PERPENDICULAR (90°) a la palanca.
       const ccx = -r * 0.42, ccy = r * 0.45, cr = r * 0.3;
       const ex = -r * 0.2, ey = r * 0.24;        // arranque de palanca (borde sup-der del círculo)
       const apx = r * 0.3, apy = -r * 0.55;      // vértice (apex)
-      const bnx = r * 0.56, bny = -r * 0.28;     // fin de la banderola (baja a la derecha)
       ctx.beginPath(); ctx.arc(ccx, ccy, cr, 0, Math.PI * 2); ctx.stroke();
-      drawLine(ex, ey, apx, apy);                // palanca
-      if (tipo === 'int_dimmer') {
-        ctx.beginPath(); ctx.moveTo(apx, apy); ctx.lineTo(bnx, bny); ctx.lineTo(apx + r * 0.02, apy + r * 0.36); ctx.closePath(); ctx.fill();  // flecha rellena
-      } else {
-        drawLine(apx, apy, bnx, bny);            // banderola (∧)
+      drawLine(ex, ey, apx, apy);                // palanca (ramal)
+      if (tipo === 'int_dimmer') {               // dimmer: flecha rellena en la punta (sobre la palanca)
+        ctx.beginPath();
+        ctx.moveTo(apx + r * 0.182, apy - r * 0.287);
+        ctx.lineTo(apx + r * 0.144, apy + r * 0.091);
+        ctx.lineTo(apx - r * 0.144, apy - r * 0.091);
+        ctx.closePath(); ctx.fill();
+      } else {                                   // banderola a 90° de la palanca
+        drawLine(apx, apy, apx + r * 0.304, apy + r * 0.193);
       }
-      if (tipo === 'int_bipolar') {
-        const mx = (ex + apx) / 2, my = (ey + apy) / 2;                        // tick perpendicular (2 polos)
-        drawLine(mx - r * 0.16, my - r * 0.05, mx + r * 0.16, my + r * 0.05);
-      } else if (tipo === 'int_combinacion') {
-        drawLine(ccx - r * 0.26, ccy + r * 0.26, ccx + r * 0.04, ccy - r * 0.04);   // conmutador extremo: tick en la base
-      } else if (tipo === 'int_intermedio') {
-        const dd = cr * 0.72;                                                  // conmutador intermedio: X dentro del círculo
+      if (tipo === 'int_bipolar') {              // 2 polos: tick perpendicular sobre la palanca
+        const mx = (ex + apx) / 2, my = (ey + apy) / 2;
+        drawLine(mx - r * 0.135, my - r * 0.086, mx + r * 0.135, my + r * 0.086);
+      } else if (tipo === 'int_combinacion') {   // conmutador extremo: tick en la base del círculo
+        drawLine(ccx - r * 0.26, ccy + r * 0.26, ccx + r * 0.04, ccy - r * 0.04);
+      } else if (tipo === 'int_intermedio') {    // conmutador intermedio: X dentro del círculo
+        const dd = cr * 0.72;
         drawLine(ccx - dd, ccy - dd, ccx + dd, ccy + dd);
         drawLine(ccx + dd, ccy - dd, ccx - dd, ccy + dd);
       }
@@ -1411,6 +1414,37 @@ function renderSimbologiaUNIT(wx, wy, tipo, sizeW, deg, col, flip) {
   ctx.restore();
 }
 
+// Dibuja un símbolo en un ctx cualquiera reutilizando renderSimbologiaUNIT (mismo dibujo que el canvas).
+function drawSymbolInto(tctx, cssW, cssH, tipo, sizeW, col){
+  const _c=ctx,_z=vpZ,_x=vpX,_y=vpY;
+  ctx=tctx; vpZ=1; vpX=cssW/2; vpY=cssH/2;
+  renderSimbologiaUNIT(0,0,tipo,sizeW,0,col,false);
+  ctx=_c; vpZ=_z; vpX=_x; vpY=_y;
+}
+function mkSymCanvas(tipo, cssPx, sizeW){
+  const dpr=window.devicePixelRatio||1;
+  const c=document.createElement('canvas');
+  c.width=Math.round(cssPx*dpr); c.height=Math.round(cssPx*dpr);
+  c.style.width=cssPx+'px'; c.style.height=cssPx+'px'; c.style.pointerEvents='none';
+  const g=c.getContext('2d'); g.scale(dpr,dpr);
+  drawSymbolInto(g, cssPx, cssPx, tipo, sizeW, '#1c1c1e');
+  return c;
+}
+// Reemplaza los SVG a mano del panel por el dibujo real del símbolo (panel === representación).
+function renderPanelIcons(){
+  document.querySelectorAll('#panel-unit .pu-item[data-block]').forEach(it=>{
+    const cnv=mkSymCanvas(it.dataset.block, 30, 22);
+    const old=it.querySelector('svg,canvas');
+    if(old) old.replaceWith(cnv); else it.insertBefore(cnv, it.firstChild);
+  });
+}
+// Ícono del FAB = mismo dibujo del símbolo elegido.
+function fabElecSym(tipo){
+  const f=document.getElementById('btn-elec'), old=f.querySelector('svg,canvas');
+  const cnv=mkSymCanvas(tipo, 28, 22);
+  if(old) old.replaceWith(cnv); else f.insertBefore(cnv, f.firstChild);
+  f.dataset.sym='1';
+}
 function drawArcObj(obj){
   if(!obj.pts||obj.pts.length<3)return;
   const arc=threePointArc(obj.pts[0],obj.pts[1],obj.pts[2]);
@@ -2444,7 +2478,7 @@ let _unitOpen=false;
 function toggleUnit(){_unitOpen=!_unitOpen;document.getElementById('panel-unit').classList.toggle('open',_unitOpen);if(_unitOpen)closeTools();}
 function closeUnit(){_unitOpen=false;document.getElementById('panel-unit').classList.remove('open');}
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-unit')&&!e.target.closest('#btn-elec'))closeUnit();},{passive:true});
-function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;ultimoSimbolo={sel:bloqueSel,nom,svg:el.querySelector('svg')};closeUnit();fabElecIcon(ultimoSimbolo.svg);ST('block');toast('Tocá para estampar · '+nom);}
+function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;ultimoSimbolo={sel:bloqueSel,nom};closeUnit();fabElecSym(bloqueSel);ST('block');toast('Tocá para estampar · '+nom);}
 // ── CAJA DE REFERENCIAS (leyenda de vivienda) — se trae al plano; copiás desde acá ──
 // Cada símbolo es un bloque marcado `ref:true`: SE IMPRIME y sirve de paleta, pero NO
 // se cuenta en el conteo (y al copiarlo, la copia sí cuenta). Cada uno con su color.
@@ -2484,7 +2518,7 @@ function traerReferencias(){
   markDirty(); ST('select'); render();
   toast('Caja de referencias · copiá desde acá (herramienta Copiar)');
 }
-function fabElecIcon(svg){ if(!svg)return; const f=document.getElementById('btn-elec'),old=f.querySelector('svg'); if(old){const c=svg.cloneNode(true);old.replaceWith(c);} f.dataset.sym='1'; }
+function fabElecIcon(svg){ if(!svg)return; const f=document.getElementById('btn-elec'),old=f.querySelector('svg,canvas'); if(old){const c=svg.cloneNode(true);old.replaceWith(c);} f.dataset.sym='1'; }
 // FAB electricidad: si hay un símbolo en cursor lo re-arma (estampar otro); si está armado abre el panel para cambiar.
 function fabElec(){
   if(_unitOpen){ closeUnit(); return; }
@@ -3198,6 +3232,7 @@ function imprimirConteo(){
 window.addEventListener('beforeunload',()=>{ if(planta)savePlanta(); });
 
 resize();
+renderPanelIcons();
 renderProyList();
 document.getElementById('scrHome').classList.add('on');
 if(screen.orientation && screen.orientation.lock){
