@@ -1256,25 +1256,29 @@ function renderSimbologiaUNIT(wx, wy, tipo, sizeW, deg, col, flip) {
       drawLine(r * 0.5, -r * 0.5, -r * 0.5, r * 0.5);
       break;
     case 'caja_pared':
-      ctx.beginPath(); ctx.arc(r * 0.2, 0, r * 0.6, 0, Math.PI * 2); ctx.stroke();
-      drawLine(-r * 0.2, -r * 0.4, r * 0.6, r * 0.4);
-      drawLine(r * 0.6, -r * 0.4, -r * 0.2, r * 0.4);
-      drawLine(-r * 0.4, 0, -r, 0);
+      // Aplique/brazo de pared (UNIT 72): ⊗ con soporte (⊢) a la izquierda.
+      ctx.beginPath(); ctx.arc(r * 0.18, 0, r * 0.55, 0, Math.PI * 2); ctx.stroke();
+      drawLine(r * 0.18 - r * 0.39, -r * 0.39, r * 0.18 + r * 0.39, r * 0.39);
+      drawLine(r * 0.18 + r * 0.39, -r * 0.39, r * 0.18 - r * 0.39, r * 0.39);
+      drawLine(-r * 0.37, 0, -r * 0.85, 0);
+      drawLine(-r * 0.85, -r * 0.28, -r * 0.85, r * 0.28);
       break;
     case 'pulsador':
       ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, Math.PI * 2); ctx.stroke();
       ctx.beginPath(); ctx.arc(0, 0, r * 0.2, 0, Math.PI * 2); ctx.fill();
       break;
     case 'sensor_mov':
-      ctx.strokeRect(-r * 0.8, -r * 0.5, r * 1.6, r);
-      ctx.font = `bold ${8 * vpZ}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      // Sensor de movimiento en losa/cielorraso (UNIT 79): círculo con "SM".
+      ctx.beginPath(); ctx.arc(0, 0, r * 0.72, 0, Math.PI * 2); ctx.stroke();
+      ctx.font = `${r * 0.5}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText('SM', 0, 0);
       break;
 
     // CORRIENTES DÉBILES
     case 'timbre':
-      ctx.beginPath(); ctx.moveTo(-r*0.6, r*0.4); ctx.quadraticCurveTo(0, -r*0.6, r*0.6, r*0.4); ctx.closePath(); ctx.stroke();
-      drawLine(-r*0.8, r*0.4, r*0.8, r*0.4);
+      // Campanilla (UNIT 63): círculo apoyado sobre un cuadrado.
+      ctx.strokeRect(-r * 0.36, -r * 0.04, r * 0.72, r * 0.68);
+      ctx.beginPath(); ctx.arc(0, -r * 0.34, r * 0.3, 0, Math.PI * 2); ctx.stroke();
       break;
     case 'toma_tv':
       ctx.strokeRect(-r*0.8, -r*0.6, r*1.6, r*1.2);
@@ -1293,12 +1297,16 @@ function renderSimbologiaUNIT(wx, wy, tipo, sizeW, deg, col, flip) {
 
     // ILUMINACIÓN ESPECIAL Y OTROS
     case 'lum_tubo':
-      ctx.strokeRect(-size/2, -r*0.2, size, r*0.4);
-      drawLine(0, -r*0.2, 0, r*0.2);
+      // Luminaria de montaje en techo (UNIT 73): rectángulo con X.
+      ctx.strokeRect(-r * 0.7, -r * 0.32, r * 1.4, r * 0.64);
+      drawLine(-r * 0.7, -r * 0.32, r * 0.7, r * 0.32);
+      drawLine(r * 0.7, -r * 0.32, -r * 0.7, r * 0.32);
       break;
     case 'luz_emergencia':
-      ctx.beginPath(); ctx.arc(0, 0, r*0.8, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.arc(0, 0, r*0.8, -Math.PI/2, Math.PI/2); ctx.fill();
+      // Luminaria autónoma de seguridad / salida (UNIT 77): rectángulo con flecha.
+      ctx.strokeRect(-r * 0.82, -r * 0.4, r * 1.64, r * 0.8);
+      drawLine(-r * 0.55, 0, r * 0.35, 0);
+      ctx.beginPath(); ctx.moveTo(r * 0.58, 0); ctx.lineTo(r * 0.2, -r * 0.26); ctx.lineTo(r * 0.2, r * 0.26); ctx.closePath(); ctx.fill();
       break;
     case 'caja_derivacion':
       ctx.strokeRect(-r*0.6, -r*0.6, r*1.2, r*1.2);
@@ -2482,22 +2490,29 @@ function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;ultimoSimbolo
 // ── CAJA DE REFERENCIAS (leyenda de vivienda) — se trae al plano; copiás desde acá ──
 // Cada símbolo es un bloque marcado `ref:true`: SE IMPRIME y sirve de paleta, pero NO
 // se cuenta en el conteo (y al copiarlo, la copia sí cuenta). Cada uno con su color.
+// Leyenda / bloque de referencias — símbolos y nombres según UNIT 24:2019 (tinta, como la norma).
 const REF_VIVIENDA=[
-  ['caja_techo','Centro de techo','#FE0000'],
-  ['caja_pared','Aplique de pared','#FE0000'],
-  ['lum_tubo','Luminaria Tubo/Panel','#FE0000'],
-  ['luz_emergencia','Luz de emergencia','#FE0000'],
-  ['toma_linea','Toma corriente','#007aff'],
-  ['toma_schuko','Toma Schuko','#007aff'],
-  ['int_unipolar','Interruptor simple','#FE0000'],
-  ['int_combinacion','Llave combinada','#FE0000'],
-  ['tablero_dist','Tablero General','#00c7be'],
-  ['toma_tierra','Puesta a tierra','#34c759'],
-  ['toma_tv','Toma Televisión','#ff9f0a'],
-  ['toma_datos','Toma Datos (RJ45)','#ff9f0a'],
-  ['toma_tel','Toma Teléfono','#ff9f0a'],
-  ['timbre','Timbre / Zumbador','#ff9f0a'],
-  ['aire_ac','Aire Acondicionado (Split)','#1c1c1e']
+  ['caja_techo','Centro de luz en techo','#1c1c1e'],
+  ['caja_pared','Brazo / aplique de pared','#1c1c1e'],
+  ['lum_tubo','Luminaria de techo','#1c1c1e'],
+  ['luz_emergencia','Luz de emergencia / salida','#1c1c1e'],
+  ['toma_linea','Tomacorriente monofásico','#1c1c1e'],
+  ['toma_schuko','Tomacorriente Schuko','#1c1c1e'],
+  ['toma_bip_caja','Tomacorriente en caja de piso','#1c1c1e'],
+  ['int_unipolar','Llave de corte unipolar','#1c1c1e'],
+  ['int_bipolar','Llave de corte bipolar','#1c1c1e'],
+  ['int_combinacion','Conmutador (extremo)','#1c1c1e'],
+  ['int_intermedio','Conmutador intermedio','#1c1c1e'],
+  ['int_dimmer','Llave con atenuador (dimmer)','#1c1c1e'],
+  ['pulsador','Pulsador','#1c1c1e'],
+  ['sensor_mov','Sensor de movimiento','#1c1c1e'],
+  ['timbre','Campanilla','#1c1c1e'],
+  ['toma_tv','Toma TV','#1c1c1e'],
+  ['toma_datos','Toma datos (RJ45)','#1c1c1e'],
+  ['toma_tel','Toma teléfono','#1c1c1e'],
+  ['tablero_dist','Tablero de distribución','#1c1c1e'],
+  ['toma_tierra','Puesta a tierra','#1c1c1e'],
+  ['aire_ac','Equipo split (aire acond.)','#1c1c1e']
 ];
 function traerReferencias(){
   closeUnit(); closeTools();

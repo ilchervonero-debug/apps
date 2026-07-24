@@ -116,7 +116,15 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v56) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v57) · app pro
+- **Más símbolos residenciales ajustados a UNIT 24:2019 + leyenda/bloque de referencias rehecho (v57):**
+  campanilla (63)=círculo sobre cuadrado; sensor de movimiento (79)=círculo con "SM"; aplique/brazo
+  (72)=⊗ con soporte ⊢ a la izquierda; luminaria de techo (73)=rectángulo con X; luz de emergencia
+  (77)=rectángulo con flecha. **Bloque de referencias** (`REF_VIVIENDA`/`traerReferencias`) rehecho:
+  21 símbolos con **nombres UNIT** y en tinta (la caja usa `renderSimbologiaUNIT`, así refleja los
+  símbolos corregidos). Nota: el **DWG** que pasó Ángel no abre en el entorno (sin conversor DWG); se
+  usa el **PDF de la norma** como fuente (mismos símbolos). Pendiente: símbolos unifilares de potencia
+  (seccionador, termomagnético, diferencial, contactor, guardamotor, relé, fusible) y MT.
 - **Panel = símbolo real + banderola a 90° (pedido Ángel, norma UNIT):** los íconos del panel FAB y
   el ícono del FAB ahora se **dibujan con la misma función del canvas** (`renderSimbologiaUNIT` vía
   `drawSymbolInto`/`mkSymCanvas`/`renderPanelIcons`), así el ícono ES la representación (antes eran SVG
