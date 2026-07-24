@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v54) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v55) · app pro
+- **Simbología ajustada a la NORMA UNIT 24:2019 (PDF oficial que dio Ángel), Tabla 2 planos de planta:**
+  *Llave de corte* (139) = círculo abajo-izq + palanca que sube a la derecha a un vértice + **banderola
+  corta que baja a la derecha (∧)**; *bipolar* (141) = + tick en la palanca; *conmutador extremo* (143)
+  = tick en la base del círculo; *conmutador intermedio* (144) = **X dentro del círculo**; *dimmer* (145)
+  = **flecha rellena** en la punta. *Toma monofásica "tres en línea"* (164) = domo + vástago corto +
+  base; *Schuko* (169) = **domo con la mitad derecha rellena**; *en caja de piso* (166) = domo dentro de
+  cuadro. *Tablero* (130) = rectángulo con moño lleno (todo el ancho). Canvas + íconos del panel a juego.
 - **Tomas e interruptores redibujados según la leyenda de Ángel (v50):** toma = **medio círculo
   perfecto + vástago corto arriba (parte del símbolo, no un error) + línea base**; schuko igual pero
   relleno; toma de piso con vástago hasta el borde del cuadro y su línea base. Interruptores con
