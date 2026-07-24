@@ -561,9 +561,9 @@ details.mas[open] summary:before{content:'▾ ';}
     </button>
     <div class="pu-title">Tomas monofásicas</div>
     <div class="pu-grid">
-      <div class="pu-item" data-block="toma_linea" onclick="pickUnit(this,'Toma monofásica')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Monofásico</span></div>
-      <div class="pu-item" data-block="toma_schuko" onclick="pickUnit(this,'Toma Schuko')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20 Z" fill="#1c1c1e"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Schuko</span></div>
-      <div class="pu-item" data-block="toma_bip_caja" onclick="pickUnit(this,'Toma en piso')"><svg viewBox="0 0 32 32"><rect x="6" y="6" width="20" height="20"/><path d="M10 22 A 6 6 0 0 1 22 22"/></svg><span>Toma piso</span></div>
+      <div class="pu-item" data-block="toma_linea" onclick="pickUnit(this,'Toma monofásica')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20"/><line x1="16" y1="10" x2="16" y2="4"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Monofásico</span></div>
+      <div class="pu-item" data-block="toma_schuko" onclick="pickUnit(this,'Toma Schuko')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20 Z" fill="#1c1c1e"/><line x1="16" y1="10" x2="16" y2="4"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Schuko</span></div>
+      <div class="pu-item" data-block="toma_bip_caja" onclick="pickUnit(this,'Toma en piso')"><svg viewBox="0 0 32 32"><rect x="6" y="6" width="20" height="20"/><path d="M11 21 A 5 5 0 0 1 21 21"/><line x1="16" y1="16" x2="16" y2="6"/><line x1="9" y1="21" x2="23" y2="21"/></svg><span>Toma piso</span></div>
     </div>
     <div class="pu-title">Interruptores</div>
     <div class="pu-grid">
@@ -1196,41 +1196,48 @@ function renderSimbologiaUNIT(wx, wy, tipo, sizeW, deg, col, flip) {
 
   switch (tipo) {
     case 'toma_linea':
-      ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, Math.PI, true); ctx.stroke();
-      drawLine(-r, 0, r, 0);
+      // TC monofásico: medio círculo PERFECTO + vástago corto arriba (parte del símbolo) + línea base.
+      ctx.beginPath(); ctx.arc(0, r * 0.2, r * 0.58, Math.PI, 2 * Math.PI); ctx.stroke();
+      drawLine(0, r * 0.2 - r * 0.58, 0, r * 0.2 - r * 0.58 - r * 0.36);
+      drawLine(-r * 0.9, r * 0.2, r * 0.9, r * 0.2);
       break;
     case 'toma_schuko':
-      ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, Math.PI, true); ctx.fill();
-      drawLine(-r, 0, r, 0);
+      // Schuko: medio círculo RELLENO + vástago + línea base.
+      ctx.beginPath(); ctx.arc(0, r * 0.2, r * 0.58, Math.PI, 2 * Math.PI); ctx.closePath(); ctx.fill();
+      drawLine(0, r * 0.2 - r * 0.58, 0, r * 0.2 - r * 0.58 - r * 0.36);
+      drawLine(-r * 0.9, r * 0.2, r * 0.9, r * 0.2);
       break;
     case 'toma_bip_caja':
-      ctx.strokeRect(-r * 0.8, -r * 0.8, r * 1.6, r * 1.6);
-      ctx.beginPath(); ctx.arc(0, r * 0.2, r * 0.5, 0, Math.PI, true); ctx.stroke();
-      drawLine(-r * 0.8, r * 0.2, r * 0.8, r * 0.2);
+      // TC de piso: domo + vástago hasta el borde superior + línea base, dentro de un cuadro.
+      ctx.strokeRect(-r * 0.85, -r * 0.85, r * 1.7, r * 1.7);
+      ctx.beginPath(); ctx.arc(0, r * 0.32, r * 0.46, Math.PI, 2 * Math.PI); ctx.stroke();
+      drawLine(0, r * 0.32 - r * 0.46, 0, -r * 0.85);
+      drawLine(-r * 0.62, r * 0.32, r * 0.62, r * 0.32);
       break;
     case 'int_unipolar':
     case 'int_bipolar':
     case 'int_combinacion':
     case 'int_intermedio':
-    case 'int_dimmer':
-      ctx.beginPath(); ctx.arc(-r * 0.3, r * 0.3, r * 0.25, 0, Math.PI * 2); ctx.stroke();
-      drawLine(-r * 0.12, r * 0.12, r * 0.6, -r * 0.6);
-      if (tipo === 'int_unipolar') {
-        drawLine(r * 0.6, -r * 0.6, r * 0.2, -r * 1.0);
-      } else if (tipo === 'int_bipolar') {
-        drawLine(r * 0.6, -r * 0.6, r * 0.2, -r * 1.0);
-        drawLine(r * 0.2, -r * 0.2, -r * 0.2, -r * 0.6);
+    case 'int_dimmer': {
+      // Interruptor UNIT: círculo (terminal, grande) + palanca diagonal + banderola.
+      const ccx = -r * 0.42, ccy = r * 0.42, cr = r * 0.34;
+      ctx.beginPath(); ctx.arc(ccx, ccy, cr, 0, Math.PI * 2); ctx.stroke();
+      const ex = -r * 0.18, ey = r * 0.18, tx = r * 0.55, ty = -r * 0.55;   // palanca
+      drawLine(ex, ey, tx, ty);
+      drawLine(tx, ty, tx - r * 0.42, ty - r * 0.1);                        // banderola
+      const mx = (ex + tx) / 2, my = (ey + ty) / 2;
+      if (tipo === 'int_bipolar') {
+        drawLine(mx - r * 0.13, my - r * 0.13, mx + r * 0.13, my + r * 0.13);   // 2 polos
       } else if (tipo === 'int_combinacion') {
-        drawLine(r * 0.6, -r * 0.6, r * 0.2, -r * 1.0);
-        drawLine(-r * 0.12, r * 0.12, -r * 0.52, r * 0.52);
+        drawLine(tx, ty, tx - r * 0.1, ty - r * 0.44);                          // horquilla (conmutador)
       } else if (tipo === 'int_intermedio') {
-        drawLine(r * 0.6, -r * 0.6, r * 0.2, -r * 1.0);
-        drawLine(-r * 0.12, r * 0.12, -r * 0.52, r * 0.52);
-        drawLine(0, -r * 0.2, r * 0.4, r * 0.2);
+        drawLine(mx - r * 0.15, my - r * 0.15, mx + r * 0.15, my + r * 0.15);   // cruz intermedio
+        drawLine(mx + r * 0.15, my - r * 0.15, mx - r * 0.15, my + r * 0.15);
       } else if (tipo === 'int_dimmer') {
-        ctx.beginPath(); ctx.moveTo(r * 0.6, -r * 0.6); ctx.lineTo(r * 0.2, -r * 1.0); ctx.lineTo(0, -r * 0.6); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(tx - r * 0.1, ty - r * 0.44); ctx.lineTo(tx - r * 0.44, ty - r * 0.1); ctx.closePath(); ctx.fill();
       }
       break;
+    }
     case 'caja_techo':
       ctx.beginPath(); ctx.arc(0, 0, r * 0.7, 0, Math.PI * 2); ctx.stroke();
       drawLine(-r * 0.5, -r * 0.5, r * 0.5, r * 0.5);
