@@ -116,8 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v58) · app pro
-- **Ortho y Polar (pedido Ángel, v58):** dos toggles en la barra superior (junto a Snap/Grilla),
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v59) · app pro
+- **Ortho/Polar flotantes + head = panel guía (pedido Ángel, v59):** los toggles Ortho/Polar salieron
+  del head y ahora **flotan junto a la coordenada** (`#opFloat`, íconos negros con rótulo, **rojos al
+  activarse**). El **head se cubre por un panel de instrucciones** (`#guide`) cuando hay una herramienta
+  activa: muestra en texto el nombre de la herramienta y los **pasos** (fondo blanco, texto negro,
+  **comandos en rojo** `<b>`), con botones Deshacer y Salir. Mapa `GUIA` por herramienta + `updateGuide()`
+  llamado en `ST()`. En `select` el panel se oculta y vuelve el head normal.
+- **Ortho y Polar (v58):** dos toggles en la barra superior (junto a Snap/Grilla),
   excluyentes. **Ortho** fuerza el punto vivo a horizontal/vertical respecto al ancla; **Polar** lo
   snappea a múltiplos de `polarStep` (15°). Función `constrainOP(wp)` aplicada tras el snap en los
   handlers de mouse y touch (down/move/up) para `line`, `sline`, `dim2` y `pline` (ancla = último

@@ -147,6 +147,22 @@ body{display:flex;flex-direction:column;background:#fff;}
 /* Coordenada cartesiana: texto negro suelto arriba-izquierda del canvas (sin fondo ni caja) */
 #coord{position:absolute;top:8px;left:12px;z-index:20;font-size:14px;color:#1c1c1e;
   white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;}
+/* Ortho / Polar: flotando junto a las coordenadas (negros; rojos al activarse) */
+#opFloat{position:absolute;top:30px;left:12px;z-index:21;display:flex;gap:14px;}
+#opFloat button{background:none;border:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:1px;}
+#opFloat button svg{width:30px;height:30px;fill:none;stroke:#1c1c1e;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff);}
+#opFloat button .lbl{font-size:11px;color:#1c1c1e;line-height:1;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;}
+#opFloat button.on svg{stroke:#FE0000;}
+#opFloat button.on .lbl{color:#FE0000;}
+/* Panel guía / instructivo: reemplaza el head cuando hay una herramienta activa */
+#guide{position:fixed;top:0;left:0;right:0;height:auto;min-height:var(--tb);z-index:60;background:#fff;
+  border-bottom:1px solid #e5e5ea;display:none;align-items:center;gap:10px;padding:6px 6px 6px 14px;}
+#guide.show{display:flex;}
+#guide .gtool{font-size:14px;color:#FE0000;font-weight:600;white-space:nowrap;flex-shrink:0;padding-right:10px;border-right:1px solid rgba(0,0,0,.12);align-self:stretch;display:flex;align-items:center;}
+#guide .gtxt{flex:1;min-width:0;font-size:14px;color:#1c1c1e;line-height:1.2;}
+#guide .gtxt b{color:#FE0000;font-weight:600;}
+#guide .gx{flex-shrink:0;background:none;border:none;color:#1c1c1e;cursor:pointer;padding:7px;}
+#guide .gx svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 /* Chip flotante del modo aislado (editar grupo) */
 #groupEditBar{display:none;position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:210;
   background:#fff;border:1.5px solid var(--accent);border-radius:20px;padding:5px 6px 5px 14px;
@@ -508,8 +524,6 @@ details.mas[open] summary:before{content:'▾ ';}
   <button class="ti ti-t" data-tip="Imagen" onclick="openImagen()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
   <button class="ti ti-t on" id="snapBtn" data-tip="Snap del cursor" onclick="toggleSnapCursor()"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="13" rx="1" style="stroke-dasharray:2.2 2.2"/><rect x="13.5" y="3.5" width="7" height="7" rx="1" style="stroke:#FE0000"/></svg></button>
   <button class="ti ti-t on" id="gridBtn" data-tip="Grilla y medidas" onclick="toggleGrid()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></button>
-  <button class="ti ti-t" id="orthoBtn" data-tip="Ortho (H/V)" onclick="toggleOrtho()"><svg viewBox="0 0 24 24"><path d="M5 4 V19 H20"/><path d="M5 12 H12 V19" style="stroke:#FE0000"/></svg></button>
-  <button class="ti ti-t" id="polarBtn" data-tip="Polar (ángulos)" onclick="togglePolar()"><svg viewBox="0 0 24 24"><path d="M4 20 H20"/><path d="M4 20 A16 16 0 0 1 9 8" style="stroke-dasharray:2.4 2.4"/><path d="M4 20 L17 11" style="stroke:#FE0000"/></svg></button>
   <input type="file" id="planoInput" accept="image/*,application/pdf,.dxf" style="display:none" onchange="onImportFile(event)">
   <div style="flex:1"></div>
   <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')" style="margin-right:8px;margin-left:14px;border-left:2px solid rgba(0,0,0,.12);padding-left:10px;border-radius:0 8px 8px 0"><svg viewBox="0 0 24 24"><path d="M4 3l16 10-7.5 .7-3.8 7.3z"/></svg></button>
@@ -624,7 +638,19 @@ details.mas[open] summary:before{content:'▾ ';}
   </div>
 </div>
 
-<div id="wrap"><canvas id="cv"></canvas><span id="coord">0, 0</span></div>
+<div id="wrap"><canvas id="cv"></canvas><span id="coord">0, 0</span>
+  <div id="opFloat">
+    <button id="orthoBtn" data-tip="Ortho (H/V)" onclick="toggleOrtho()"><svg viewBox="0 0 24 24"><path d="M5 4 V19 H20"/><path d="M5 12 H12 V19"/></svg><span class="lbl">Ortho</span></button>
+    <button id="polarBtn" data-tip="Polar" onclick="togglePolar()"><svg viewBox="0 0 24 24"><path d="M4 20 H20"/><path d="M4 20 A16 16 0 0 1 9 8"/><path d="M4 20 L17 11"/></svg><span class="lbl">Polar</span></button>
+  </div>
+</div>
+<!-- Panel guía: cuando hay herramienta activa, el head muestra los pasos en texto (comandos en rojo) -->
+<div id="guide">
+  <span class="gtool" id="guideTool">Herramienta</span>
+  <div class="gtxt" id="guideTxt"></div>
+  <button class="gx" onclick="undo()" data-tip="Deshacer"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
+  <button class="gx" onclick="ST('select')" data-tip="Salir"><svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+</div>
 
 <!-- Chip del modo aislado (editar grupo) -->
 <div id="groupEditBar"><span class="get">Editando grupo</span><button onclick="terminarGrupoEdit()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Terminar</button></div>
@@ -2341,7 +2367,32 @@ function ST(t){
   if(srcSvg&&btnH){const old=btnH.querySelector('svg');if(old)old.replaceWith(srcSvg.cloneNode(true));}
   _panelMode=null;
   applyToolBar();
+  updateGuide();
   render();
+}
+// Panel guía: pasos en texto por herramienta (comandos en rojo <b>). El head se cubre al usar una.
+const GUIA={
+  line:['Línea','<b>Tocá</b> el inicio y <b>arrastrá</b> al fin. <b>Ortho/Polar</b> fijan el ángulo.'],
+  sline:['SmartLine','<b>Arrastrá</b> de un nodo a otro: los extremos se <b>enganchan</b> solos.'],
+  pline:['Polilínea','<b>Tocá</b> cada vértice; <b>doble toque</b> para terminar.'],
+  rect:['Rectángulo','<b>Arrastrá</b> de una esquina a la opuesta.'],
+  circle:['Círculo','<b>Arrastrá</b> del centro hacia el radio.'],
+  poly:['Polígono','<b>Arrastrá</b> del centro a un vértice.'],
+  arc:['Arco','<b>Tocá</b> inicio y fin, luego <b>tocá</b> el punto de curvatura.'],
+  dim2:['Cota','<b>Tocá</b> punto inicial y final, luego el lado de la cota.'],
+  text:['Texto','<b>Tocá</b> dónde va y escribí.'],
+  hatch:['Sombreado','<b>Tocá</b> dentro de un contorno cerrado.'],
+  trim:['Recortar','<b>Tocá</b> el tramo que querés eliminar.'],
+  eraser:['Goma','<b>Arrastrá</b> sobre lo que querés borrar.'],
+  pen:['Lápiz','<b>Arrastrá</b> libremente para dibujar a mano alzada.'],
+  block:['Símbolo','<b>Tocá</b> para estampar. Ajustá <b>giro</b> y <b>tamaño</b> abajo.'],
+  move:['Mover','<b>Arrastrá</b> el elemento a su nueva posición.'],
+  copy:['Copiar','<b>Tocá</b> un elemento y <b>arrastrá</b> la copia.']
+};
+function updateGuide(){
+  const g=document.getElementById('guide'), gd=GUIA[tool];
+  if(gd && tool!=='select'){ document.getElementById('guideTool').textContent=gd[0]; document.getElementById('guideTxt').innerHTML=gd[1]; g.classList.add('show'); }
+  else g.classList.remove('show');
 }
 function toggleGrid(){gridOn=!gridOn;document.getElementById('gridBtn').classList.toggle('on',gridOn);if(_panelMode!=='grid')openBottomPanel('grid');else{refreshBottom();render();}toast('Grilla '+(gridOn?'ON':'OFF'));}
 function toggleSnapCursor(){snapObjOn=!snapObjOn;document.getElementById('snapBtn').classList.toggle('on',snapObjOn);render();toast('Snap '+(snapObjOn?'ON':'OFF'));}
