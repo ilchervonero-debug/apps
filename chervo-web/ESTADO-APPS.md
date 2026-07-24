@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v51) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v52) · app pro
 - **Tomas e interruptores redibujados según la leyenda de Ángel (v50):** toma = **medio círculo
   perfecto + vástago corto arriba (parte del símbolo, no un error) + línea base**; schuko igual pero
   relleno; toma de piso con vástago hasta el borde del cuadro y su línea base. Interruptores con

@@ -582,7 +582,7 @@ details.mas[open] summary:before{content:'▾ ';}
     </div>
     <div class="pu-title">Potencia / Tablero</div>
     <div class="pu-grid">
-      <div class="pu-item" data-block="tablero_dist" onclick="pickUnit(this,'Tablero')"><svg viewBox="0 0 32 32"><rect x="3" y="10" width="26" height="12"/><path d="M6 12 L14 16 L6 20 Z" fill="#1c1c1e" stroke="none"/><path d="M22 12 L14 16 L22 20 Z" fill="#1c1c1e" stroke="none"/></svg><span>Tablero</span></div>
+      <div class="pu-item" data-block="tablero_dist" onclick="pickUnit(this,'Tablero')"><svg viewBox="0 0 32 32"><rect x="3" y="10" width="26" height="12"/><path d="M3 10 L16 16 L3 22 Z" fill="#1c1c1e" stroke="none"/><path d="M29 10 L16 16 L29 22 Z" fill="#1c1c1e" stroke="none"/></svg><span>Tablero</span></div>
       <div class="pu-item" data-block="int_seccionador" onclick="pickUnit(this,'Seccionador')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><line x1="16" y1="12" x2="22" y2="24"/><line x1="16" y1="24" x2="16" y2="28"/></svg><span>Seccionador</span></div>
       <div class="pu-item" data-block="int_termomagnetico" onclick="pickUnit(this,'Térmica')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12 M13 10 L19 14"/><line x1="16" y1="12" x2="22" y2="24"/><line x1="16" y1="24" x2="16" y2="28"/></svg><span>Térmica</span></div>
       <div class="pu-item" data-block="int_diferencial" onclick="pickUnit(this,'Diferencial')"><svg viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="12"/><path d="M13 6 L19 10 M13 8 L19 12"/><line x1="16" y1="12" x2="22" y2="22"/><circle cx="18" cy="23" r="3"/><line x1="16" y1="26" x2="16" y2="28"/></svg><span>Diferencial</span></div>
@@ -1199,13 +1199,13 @@ function renderSimbologiaUNIT(wx, wy, tipo, sizeW, deg, col, flip) {
       // TC monofásico: medio círculo PERFECTO + vástago corto arriba (parte del símbolo) + línea base.
       ctx.beginPath(); ctx.arc(0, r * 0.2, r * 0.58, Math.PI, 2 * Math.PI); ctx.stroke();
       drawLine(0, r * 0.2 - r * 0.58, 0, r * 0.2 - r * 0.58 - r * 0.18);
-      drawLine(-r * 0.9, r * 0.2, r * 0.9, r * 0.2);
+      drawLine(-r * 0.68, r * 0.2, r * 0.68, r * 0.2);
       break;
     case 'toma_schuko':
       // Schuko: medio círculo RELLENO + vástago + línea base.
       ctx.beginPath(); ctx.arc(0, r * 0.2, r * 0.58, Math.PI, 2 * Math.PI); ctx.closePath(); ctx.fill();
       drawLine(0, r * 0.2 - r * 0.58, 0, r * 0.2 - r * 0.58 - r * 0.18);
-      drawLine(-r * 0.9, r * 0.2, r * 0.9, r * 0.2);
+      drawLine(-r * 0.68, r * 0.2, r * 0.68, r * 0.2);
       break;
     case 'toma_bip_caja':
       // TC de piso: domo + vástago hasta el borde superior + línea base, dentro de un cuadro.
@@ -1296,11 +1296,11 @@ function renderSimbologiaUNIT(wx, wy, tipo, sizeW, deg, col, flip) {
 
     // POTENCIA / TABLEROS
     case 'tablero_dist':
-      // Tablero general (UNIT): rectángulo APAISADO con MOÑO relleno a la izquierda
-      // (dos triángulos que se tocan en un punto); el resto del rectángulo queda vacío.
+      // Tablero general (UNIT): rectángulo apaisado con MOÑO LLENO que ocupa TODO el ancho
+      // (dos triángulos con base en los bordes izq/der, que se tocan en el centro).
       ctx.strokeRect(-r, -r * 0.5, size, r);
-      ctx.beginPath(); ctx.moveTo(-r * 0.85, -r * 0.34); ctx.lineTo(-r * 0.15, 0); ctx.lineTo(-r * 0.85, r * 0.34); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(r * 0.55, -r * 0.34); ctx.lineTo(-r * 0.15, 0); ctx.lineTo(r * 0.55, r * 0.34); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-r, -r * 0.5); ctx.lineTo(0, 0); ctx.lineTo(-r, r * 0.5); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(r, -r * 0.5); ctx.lineTo(0, 0); ctx.lineTo(r, r * 0.5); ctx.closePath(); ctx.fill();
       break;
     case 'int_termomagnetico':
       drawLine(0, -r, 0, -r * 0.2);
