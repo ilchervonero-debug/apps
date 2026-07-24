@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v57) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v58) · app pro
+- **Ortho y Polar (pedido Ángel, v58):** dos toggles en la barra superior (junto a Snap/Grilla),
+  excluyentes. **Ortho** fuerza el punto vivo a horizontal/vertical respecto al ancla; **Polar** lo
+  snappea a múltiplos de `polarStep` (15°). Función `constrainOP(wp)` aplicada tras el snap en los
+  handlers de mouse y touch (down/move/up) para `line`, `sline`, `dim2` y `pline` (ancla = último
+  punto). Botones `#orthoBtn`/`#polarBtn` con estado activo en rojo (`.on`).
 - **Más símbolos residenciales ajustados a UNIT 24:2019 + leyenda/bloque de referencias rehecho (v57):**
   campanilla (63)=círculo sobre cuadrado; sensor de movimiento (79)=círculo con "SM"; aplique/brazo
   (72)=⊗ con soporte ⊢ a la izquierda; luminaria de techo (73)=rectángulo con X; luz de emergencia
