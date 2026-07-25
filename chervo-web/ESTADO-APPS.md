@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v88) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v89) · app pro
+- **Delay del toque para zoom/pan a 2 dedos (v89, pedido Ángel):** en `onTS` el `handleDown` se DIFIERE
+  `TAP_DELAY=70ms` (el snap se ve al instante con un `render()`). Si entra un 2º dedo en ese lapso → `_clearTap`
+  cancela el trazo y pasa a pinch/pan (ya no dibuja por toque casi-simultáneo). `onTM` dispara el trazo
+  antes si se mueve >10px (arrastre); `onTE` coloca el punto si fue tap limpio. El encadenado de muro/línea
+  ya NO se descarta al hacer pinch. Verificado: 2 dedos casi-simultáneos → 0 puntos, pinching.
+  · PENDIENTE: §2 lógica de la barra de propiedades por FAMILIA (Dibujo/Símbolos/Arquitectura), misma zona
+    de aceptar/borrar para todo el grupo.
 - **Uniformidad visual de los 3 FABs (v88, pedido Ángel):** `.phb` (Dibujo) y `.pu-item` (Símbolos/
   Arquitectura) ahora idénticos: ícono 30px stroke 1.2, nombre 14px gris `#8e8e93` fino, gap 6px, padding
   8px, grillas gap 8px, títulos de sección (`.ph-lbl`/`.pu-title`) gris 14px 500 (no negrita). Nada grande

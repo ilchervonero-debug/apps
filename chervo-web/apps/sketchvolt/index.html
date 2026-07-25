@@ -2323,11 +2323,16 @@ cv.addEventListener('mouseup',e=>{cancelLP();const wp=constrainOP(getW(e));dragC
 cv.addEventListener('dblclick',e=>{handleDbl(getW(e));});
 cv.addEventListener('wheel',e=>{e.preventDefault();const s=getS(e),f=e.deltaY<0?1.12:.88;const nz=clamp(vpZ*f,.05,30);vpX=s.x-(s.x-vpX)*(nz/vpZ);vpY=s.y-(s.y-vpY)*(nz/vpZ);vpZ=nz;render();},{passive:false});
 
+// DELAY del toque (§3): el 1er dedo NO dibuja al instante; espera ~70ms. Si entra un 2º dedo → pinch/pan
+// (no dibuja). Así un toque a 2 dedos casi-simultáneo hace zoom, no una línea. El snap SÍ se ve al instante.
+let _tapT=null,_tapPend=null; const TAP_DELAY=70, TAP_MOVE=10/1;   // 70ms · umbral 10px pantalla
+function _clearTap(){ clearTimeout(_tapT); _tapT=null; _tapPend=null; }
 function onTS(e){
   e.preventDefault();
   for(const t of e.changedTouches)touches[t.identifier]={x:t.clientX,y:t.clientY};
   if(Object.keys(touches).length===2){
-    pinching=true;drawing=false;penPts=[];cancelLP();plineActive=false;
+    _clearTap();                                    // cancela el toque pendiente → era pinch a 2 dedos
+    pinching=true;drawing=false;penPts=[];cancelLP();   // (el encadenado de muro/línea NO se descarta al hacer pinch)
     const ids=Object.keys(touches);const t0=touches[ids[0]],t1=touches[ids[1]];const r=cv.getBoundingClientRect();
     const mx=(t0.x+t1.x)/2-r.left,my=(t0.y+t1.y)/2-r.top;
     pinch0={dist:hyp(t1.x-t0.x,t1.y-t0.y),z:vpZ,mx,my,vx:vpX,vy:vpY};panning=true;panRef={sx:mx,sy:my,vx:vpX,vy:vpY};return;
@@ -2356,7 +2361,11 @@ function onTS(e){
   plineLastTap=_multi?now:plineLastTap;
   hatchLastTap=(tool==='hatch')?now:hatchLastTap;
   touchActive=true;cursorS=getS(e);
-  startLP(e);handleDown(constrainOP(getW(e)),getRW(e),getS(e));
+  startLP(e);
+  // Diferimos el handleDown: mostramos snap ya (render), pero el trazo/punto espera TAP_DELAY.
+  const wp=constrainOP(getW(e)), raw=getRW(e), s=getS(e); render();
+  _tapPend={wp,raw,s};
+  clearTimeout(_tapT); _tapT=setTimeout(()=>{ _tapT=null; if(_tapPend){ const p=_tapPend; _tapPend=null; handleDown(p.wp,p.raw,p.s); } }, TAP_DELAY);
 }
 function onTM(e){
   e.preventDefault();
@@ -2370,6 +2379,8 @@ function onTM(e){
   }
   cancelLPmove(e);const s=getS(e),raw=getRW(e),wp=constrainOP(getW(e));
   touchActive=true;cursorS={x:s.x,y:s.y};
+  // Toque pendiente (dentro del delay): si se movió > umbral → arranca el trazo YA (era arrastre, no toque).
+  if(_tapPend){ if(hyp(s.x-_tapPend.s.x,s.y-_tapPend.s.y)>TAP_MOVE){ clearTimeout(_tapT);_tapT=null; const p=_tapPend;_tapPend=null; handleDown(p.wp,p.raw,p.s); } else { render(); return; } }
   dragCurW={...wp};document.getElementById('coord').textContent=`x ${((raw.x-originX)/PPM).toFixed(2)}  y ${(-(raw.y-originY)/PPM).toFixed(2)} m`;
   handleMove(wp,raw,s);
 }
@@ -2384,6 +2395,8 @@ function onTE(e){
     const s=getS(e); cursorS={...s}; anchorS={...s}; anchorPt=constrainOP(getW(e)); anchorArmed=true;   // ANCLA (queda la cruz fija)
     render(); return;
   }
+  // Toque pendiente que no llegó a moverse ni a dispararse por tiempo → fue un TAP limpio: colocá ahora.
+  if(_tapPend){ clearTimeout(_tapT);_tapT=null; const p=_tapPend;_tapPend=null; handleDown(p.wp,p.raw,p.s); handleUp(p.wp,p.s); touchActive=false;cursorS=null;snapHit=null;render(); return; }
   const wp=constrainOP(getW(e));dragCurW={...wp};handleUp(wp,getS(e));
   touchActive=false;cursorS=null;snapHit=null;render();
 }
