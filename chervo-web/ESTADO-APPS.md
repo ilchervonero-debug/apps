@@ -116,7 +116,11 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v69) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v70) · app pro
+- **Íconos sueltos "naked" (v70, pedido Ángel):** CERO botones clásicos. El activo resalta SOLO con
+  color de trazo rojo, sin marco. Se quitó el `box-shadow: inset` (marco rojo) de `.pib.on`, `.tb.on`,
+  `.phb.on` y del anclaje (`#btnAnchor`). El botón Escape (`.gesc`) ahora es flecha roja suelta
+  (`background:none;border:none`), sin caja. Únicos con contenedor: FAB y selector de color.
 - **Refinamiento UI Sección 1 (v69, pedido Ángel):**
   · **Barra de propiedades a lo ancho**: grupos `flex:1 1 auto` + `justify-content:space-evenly`
     reparten los controles en TODO el ancho (no amontonados al centro). Muro y abertura verificados.

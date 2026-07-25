@@ -50,7 +50,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 .tb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.1;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 /* activo = BORDE rojo + icono rojo (iLStyle), nunca relleno */
-.tb.on{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);}
+.tb.on{background:transparent;color:var(--accent);}
 .tb:active{background:rgba(0,0,0,.06);}
 .tb[data-tip]:hover::after{content:attr(data-tip);position:absolute;top:calc(100% + 4px);left:50%;
   transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:3px 8px;
@@ -84,7 +84,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 }
 .phb svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.1;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-.phb.on{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);}
+.phb.on{color:var(--accent);}
 .phb:active{transform:scale(.92);}
 /* FAB herramientas — cuadrado esquinas redondeadas; icono rojo fino, borde rojo */
 #btn-herr{
@@ -167,9 +167,9 @@ body{display:flex;flex-direction:column;background:#fff;}
 #guide .gtool{font-size:13px;color:#3a3a3c;font-weight:500;white-space:nowrap;flex-shrink:0;padding-right:10px;border-right:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center;}
 #guide .gtxt{flex:1;min-width:0;font-size:12.5px;color:#8e8e93;font-weight:400;line-height:1.25;}
 #guide .gtxt b{color:#1c1c1e;font-weight:500;}
-#guide .gesc{flex-shrink:0;background:#fff;border:1.5px solid var(--accent);border-radius:9px;width:40px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--accent);}
-#guide .gesc svg{width:22px;height:22px;fill:currentColor;stroke:none;pointer-events:none;}
-#guide .gesc:active{background:#f2f2f7;}
+#guide .gesc{flex-shrink:0;background:none;border:none;width:40px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--accent);}
+#guide .gesc svg{width:24px;height:24px;fill:currentColor;stroke:none;pointer-events:none;}
+#guide .gesc:active{opacity:.6;}
 #guide .gx{flex-shrink:0;background:none;border:none;color:#1c1c1e;cursor:pointer;padding:7px;}
 #guide .gx svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 /* Chip flotante del modo aislado (editar grupo) */
@@ -205,7 +205,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 /* Aceptar/Terminar: grande y PELADO (sin halo/anillo) — el tick se nota por TAMAÑO, no por caja */
 .pib.ok{color:var(--green);}
 .pib.ok svg{width:26px;height:26px;stroke-width:1.7;}
-.pib.on{color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent);}
+.pib.on{color:var(--accent);}
 /* Rótulo por ÍCONO (más íconos, menos letras): el .fl puede llevar un svg fino en gris */
 .fi>.fl svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;display:block;}
 /* Selector de color: un rectángulo de esquinas redondeadas (no un círculo) que abre la paleta */
@@ -3268,7 +3268,7 @@ function showSelBar(){
         const bp=document.getElementById('btnPlegable'); bp.style.display=isP?'':'none'; bp.style.color=(variant==='plegable')?'var(--accent)':'var(--ink)';
       }
       const btnA=document.getElementById('btnAnchor');
-      if(btnA){ btnA.style.display=isCarp?'':'none'; btnA.style.color=o.anchored?'var(--accent)':'var(--ink)'; btnA.style.boxShadow=o.anchored?'inset 0 0 0 1.5px var(--accent)':'none'; }
+      if(btnA){ btnA.style.display=isCarp?'':'none'; btnA.style.color=o.anchored?'var(--accent)':'var(--ink)'; }
       const txw=document.getElementById('archTxtWrap');
       if(txw){ const isCorte=o.kind==='corte'; txw.style.display=isCorte?'inline-flex':'none'; if(isCorte&&document.activeElement!==document.getElementById('archTxt'))document.getElementById('archTxt').value=o.txt||'A'; }
     }
