@@ -2888,7 +2888,7 @@ function setMlJust(j){ mlJust=j;
 // Restringe el punto vivo a horizontal/vertical (Ortho) o a ángulos de polarStep (Polar), respecto al ancla.
 function constrainOP(wp){
   if(!wp||(!orthoOn&&!polarOn))return wp;
-  if(snapHit)return wp;   // Object Snap SIEMPRE domina sobre Ortho/Polar (garantiza cierres/cruces)
+  if(snapHit&&snapHit.kind!=='grid')return wp;   // el snap a OBJETOS domina Ortho/Polar; la grilla NO (así Ortho sigue a 90°)
   let ax,ay;
   if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length){ ax=plinePts[plinePts.length-1][0]; ay=plinePts[plinePts.length-1][1]; }
   else if(drawing&&dragStartW&&(tool==='sline'||tool==='dim2')){ ax=dragStartW.x; ay=dragStartW.y; }

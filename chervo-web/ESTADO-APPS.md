@@ -116,7 +116,10 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v75) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v76) · app pro
+- **Fix Ortho (v76):** el snap a GRILLA seteaba `snapHit` en cada movimiento y (por la regla "snap domina
+  Ortho/Polar") anulaba Ortho → el cursor iba libre (parecía Polar). Ahora solo el snap a OBJETOS domina
+  (`snapHit.kind!=='grid'`); Ortho vuelve a bloquear estricto a 90° (H/V).
 - **Modos de puntero + cursor anclado (v75, PENDIENTE-MOTOR-CAD §1):** botón en el head (`#ptrBtn`,
   `cyclePtrMode`) que cicla 3 modos:
   · **0 Directo**: sin offset, toca = punto (getS oy=0). Ideal paneo/selección.
