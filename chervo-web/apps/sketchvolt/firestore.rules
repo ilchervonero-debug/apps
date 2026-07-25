@@ -1,0 +1,25 @@
+rules_version = '2';
+// SketchVolt — reglas de seguridad Firestore.
+// Implementan la "validación estricta" del spec: cada registro pertenece a un user_id,
+// y SOLO su dueño puede leerlo/modificarlo/borrarlo. Cualquier otro acceso = permission-denied
+// (equivalente al 403 Forbidden). El user_id se toma del token (request.auth.uid), no del cliente.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Proyectos/planos de SketchVolt. Colección aislada (no se mezcla con la bitácora).
+    match /sketchvolt_proyectos/{proyId} {
+      // Debe estar autenticado y el registro debe ser suyo.
+      allow read, update, delete: if request.auth != null
+                                  && resource.data.user_id == request.auth.uid;
+      // Al crear, el user_id del documento DEBE coincidir con el del token (no se puede falsificar).
+      allow create: if request.auth != null
+                    && request.resource.data.user_id == request.auth.uid
+                    && request.resource.data.user_id is string;
+    }
+
+    // Todo lo demás: denegado por defecto.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
