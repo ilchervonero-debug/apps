@@ -1,23 +1,17 @@
 rules_version = '2';
-// SketchVolt — reglas de seguridad Firestore.
-// Implementan la "validación estricta" del spec: cada registro pertenece a un user_id,
-// y SOLO su dueño puede leerlo/modificarlo/borrarlo. Cualquier otro acceso = permission-denied
-// (equivalente al 403 Forbidden). El user_id se toma del token (request.auth.uid), no del cliente.
+// Reglas de seguridad Firestore — compartidas por Bitácora y SketchVolt (mismo proyecto bitacorapp-3df06).
+// Aislamiento por usuario vía la RUTA: todo cuelga de usuarios/{uid}/... y solo el dueño del token entra.
+// Es la "validación estricta" del spec: el uid sale de request.auth (token), no del cliente; lo ajeno =
+// permission-denied (equivalente al 403 Forbidden).
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Proyectos/planos de SketchVolt. Colección aislada (no se mezcla con la bitácora).
-    match /sketchvolt_proyectos/{proyId} {
-      // Debe estar autenticado y el registro debe ser suyo.
-      allow read, update, delete: if request.auth != null
-                                  && resource.data.user_id == request.auth.uid;
-      // Al crear, el user_id del documento DEBE coincidir con el del token (no se puede falsificar).
-      allow create: if request.auth != null
-                    && request.resource.data.user_id == request.auth.uid
-                    && request.resource.data.user_id is string;
+    // Todo lo del usuario (bitácora en .../proyectos y sketchvolt en .../sketchvolt) queda protegido acá.
+    match /usuarios/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // Todo lo demás: denegado por defecto.
+    // Resto: denegado por defecto.
     match /{document=**} {
       allow read, write: if false;
     }

@@ -116,7 +116,17 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v78) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v79) · app pro
+- **Auth + Nube (v79, Firebase — reusa proyecto de Bitácora `bitacorapp-3df06`):**
+  · SDK 9.23 compat en el head (si no cargan, la app sigue 100% local). `firebaseConfig` embebido.
+  · **Login**: Google (popup) + **Magic Link** (enlace por correo, sin contraseña). Botón de cuenta en el
+    home (arriba der.). `menuCuenta`: Aceptar=Google, Cancelar=Magic Link.
+  · **Datos**: `usuarios/{uid}/sketchvolt/{id}` con campo `user_id`. Aislado de la bitácora.
+  · **Local-first**: localStorage = fuente; al entrar `cloudPull` hace `mergeProy` (unión por id, gana `mod`
+    más nuevo, **nunca borra** trabajo) y `cloudPushNow` sube lo faltante (debounce 2.5s). Offline OK.
+  · **Reglas** `firestore.rules`: `usuarios/{uid}/**` solo el dueño (request.auth.uid==uid) → el "403" del spec.
+    Falta en consola: activar Magic Link + publicar reglas (ver `FIREBASE-SETUP.md`).
+  · Testeado headless: merge no pierde proyectos (local-only conservado, cloud-only bajado, mod mayor gana).
 - **Estabilidad para 299 usuarios (v78):** todo cliente, sin backend.
   · **Auto-guardado**: `_safeSave` en `beforeunload` + `pagehide` + `visibilitychange`(hidden) + intervalo
     de 60s. En móvil `beforeunload` no siempre dispara → por eso los tres eventos. Recuperación tras crash =

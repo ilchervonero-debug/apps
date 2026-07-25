@@ -12,6 +12,10 @@
 <link rel="apple-touch-icon" href="icon-192.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase (mismo proyecto que Bitácora). Si no cargan (offline) la app sigue 100% local. -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
@@ -464,7 +468,7 @@ details.mas[open] summary:before{content:'▾ ';}
 
 <!-- ══════════ SHELL: PROYECTOS ══════════ -->
 <div class="scr" id="scrHome">
-  <div class="scr-head"><div class="wm">Sketch<b>Volt</b></div></div>
+  <div class="scr-head"><div class="wm">Sketch<b>Volt</b></div><button id="btnCuenta" onclick="menuCuenta()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--ink);display:flex;align-items:center"></button></div>
   <div class="scr-body">
     <h2>Proyectos</h2>
     <div id="proyList"></div>
@@ -3565,7 +3569,7 @@ window.addEventListener('keydown',e=>{
 // ══════════ SHELL DE PROYECTOS / PLANTAS ══════════
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-function persistProy(){localStorage.setItem('sketchvolt_proy',JSON.stringify(proyectos));}
+function persistProy(){ if(proy)proy.mod=Date.now(); localStorage.setItem('sketchvolt_proy',JSON.stringify(proyectos)); if(typeof cloudPushSoon==='function')cloudPushSoon(); }
 let _dirtyT=null;
 function markDirty(){ if(!planta)return; clearTimeout(_dirtyT); _dirtyT=setTimeout(savePlanta,700); }
 
@@ -3956,6 +3960,83 @@ function imprimirConteo(){
 }
 
 // autosave al salir
+// ═══════════════ NUBE (Firebase · proyecto bitacorapp-3df06) ═══════════════
+// Local-first: localStorage es la fuente; la nube sincroniza ENCIMA. Si Firebase no está
+// disponible (offline / bloqueado), la app funciona igual 100% local. Nunca se borra trabajo.
+let cloudUser=null, _cloudReady=false, _cloudPushT=null;
+(function initCloud(){
+  if(typeof firebase==='undefined'||!firebase.initializeApp){ return; }   // SDK no cargó → seguimos local
+  try{
+    firebase.initializeApp({
+      apiKey:"AIzaSyC91PdszG3hL0rxiyE5oewyMW_8FpDJm8M",
+      authDomain:"bitacorapp-3df06.firebaseapp.com",
+      projectId:"bitacorapp-3df06",
+      storageBucket:"bitacorapp-3df06.firebasestorage.app",
+      messagingSenderId:"366160320663",
+      appId:"1:366160320663:web:c52865fba74f49f78d71d2"
+    });
+    firebase.firestore().enablePersistence().catch(()=>{});   // caché offline del SDK
+    _cloudReady=true;
+    // Completar Magic Link (si el usuario abrió el enlace del correo).
+    const auth=firebase.auth();
+    if(auth.isSignInWithEmailLink && auth.isSignInWithEmailLink(location.href)){
+      let email=localStorage.getItem('sv_maillink')||prompt('Confirmá tu correo para entrar:');
+      if(email){ auth.signInWithEmailLink(email,location.href).then(()=>{localStorage.removeItem('sv_maillink');history.replaceState(null,'',location.pathname);}).catch(()=>toast('El enlace expiró, pedí otro')); }
+    }
+    auth.onAuthStateChanged(u=>{ cloudUser=u||null; if(typeof updateCuentaBtn==='function')updateCuentaBtn(); if(u){ cloudPull(); } });
+  }catch(e){ _cloudReady=false; }
+})();
+function cloudCol(){ return firebase.firestore().collection('usuarios').doc(cloudUser.uid).collection('sketchvolt'); }
+// MERGE seguro: unión por id; ante conflicto gana el de mayor 'mod'. NUNCA borra un proyecto local.
+function mergeProy(local,cloud){
+  const by={}; (local||[]).forEach(p=>{if(p&&p.id)by[p.id]=p;});
+  (cloud||[]).forEach(c=>{ if(!c||!c.id)return; const l=by[c.id];
+    if(!l) by[c.id]=c;                                   // proyecto que solo está en la nube → bajarlo
+    else if((c.mod||0)>(l.mod||0)) by[c.id]=c; });       // el más nuevo gana
+  return Object.values(by).sort((a,b)=>(b.mod||b.creado||0)-(a.mod||a.creado||0));
+}
+async function cloudPull(){
+  if(!_cloudReady||!cloudUser)return;
+  try{
+    const snap=await cloudCol().get();
+    const cloud=snap.docs.filter(d=>d.id!=='__none').map(d=>d.data().p).filter(Boolean);
+    proyectos=mergeProy(proyectos.filter(p=>p.id!=='__libre'), cloud);
+    persistProyLocalOnly(); if(typeof renderProyList==='function')renderProyList();
+    cloudPushSoon();   // subir lo que estaba solo local
+  }catch(e){}
+}
+function persistProyLocalOnly(){ localStorage.setItem('sketchvolt_proy',JSON.stringify(proyectos)); }
+function cloudPushSoon(){ if(!_cloudReady||!cloudUser)return; clearTimeout(_cloudPushT); _cloudPushT=setTimeout(cloudPushNow,2500); }
+async function cloudPushNow(){
+  if(!_cloudReady||!cloudUser)return;
+  try{ const col=cloudCol();
+    for(const p of proyectos){ if(!p||p.id==='__libre')continue;
+      await col.doc(p.id).set({ user_id:cloudUser.uid, mod:p.mod||Date.now(), p }, {merge:true}); }
+  }catch(e){}
+}
+function loginGoogle(){ if(!_cloudReady)return toast('Sin conexión a la nube'); firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(()=>toast('Sesión iniciada ✓')).catch(e=>{ if(e.code!=='auth/popup-closed-by-user')toast('No se pudo entrar'); }); }
+function loginMagicLink(){ if(!_cloudReady)return toast('Sin conexión a la nube');
+  const email=(prompt('Tu correo (te mando un enlace para entrar):')||'').trim(); if(!email)return;
+  firebase.auth().sendSignInLinkToEmail(email,{url:location.href,handleCodeInApp:true})
+    .then(()=>{ localStorage.setItem('sv_maillink',email); toast('Te mandé un enlace al correo ✓'); })
+    .catch(()=>toast('No se pudo enviar el enlace')); }
+function logoutCloud(){ if(_cloudReady)firebase.auth().signOut().then(()=>toast('Sesión cerrada')); }
+const _ICON_USER='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+function updateCuentaBtn(){
+  const b=document.getElementById('btnCuenta'); if(!b)return;
+  if(cloudUser){
+    if(cloudUser.photoURL){ b.innerHTML='<img src="'+cloudUser.photoURL+'" alt="" style="width:30px;height:30px;border-radius:50%">'; }
+    else { const ini=((cloudUser.displayName||cloudUser.email||'?')[0]||'?').toUpperCase();
+      b.innerHTML='<span style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px">'+esc(ini)+'</span>'; }
+  } else { b.innerHTML=_ICON_USER; }
+}
+function menuCuenta(){
+  if(!_cloudReady){ toast('Nube no disponible (offline). La app guarda local igual.'); return; }
+  if(cloudUser){ if(confirm((cloudUser.email||'Sesión activa')+'\n\n¿Cerrar sesión?'))logoutCloud(); return; }
+  // Sin sesión: Aceptar = Google · Cancelar = enlace por correo (Magic Link)
+  if(confirm('Iniciar sesión para respaldar tus planos en la nube.\n\nAceptar = con Google\nCancelar = enlace por correo')) loginGoogle(); else loginMagicLink();
+}
+
 // ── Persistencia robusta / recuperación ante cierre o crash ──
 function _safeSave(){ try{ if(planta)savePlanta(); }catch(e){} }
 window.addEventListener('beforeunload',_safeSave);
@@ -3967,6 +4048,7 @@ setInterval(_safeSave,60000);
 
 resize();
 {const b=document.getElementById('ptrBtn');if(b)b.innerHTML=_PTR_ICONS[ptrMode][1];}   // ícono inicial del modo de puntero
+if(typeof updateCuentaBtn==='function')updateCuentaBtn();   // botón de cuenta (login/nube)
 renderPanelIcons();
 renderArchIcons();
 renderProyList();

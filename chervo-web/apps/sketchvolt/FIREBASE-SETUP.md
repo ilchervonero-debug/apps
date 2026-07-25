@@ -1,7 +1,29 @@
 # SketchVolt · Auth + Nube (Firebase) — instructivo
 
-Reutilizamos el proyecto de Firebase existente (el de bitácora). Los datos de SketchVolt van a una
-colección aparte (`sketchvolt_proyectos`) y quedan aislados por chico vía Security Rules.
+**YA WIREADO** (v79): reutiliza el proyecto de Bitácora `bitacorapp-3df06`. El `firebaseConfig` está
+embebido en `index.html`; login Google + Magic Link y sync local-first ya están en código.
+Los datos van a `usuarios/{uid}/sketchvolt/{id}` (aislados por chico, aparte de la bitácora).
+
+## Falta SOLO tocar la consola (una vez)
+1. **Authentication → Sign-in method**: activar **Correo → Vínculo de correo (Magic Link)**.
+   (Google ya está activo por la bitácora.)
+2. **Firestore → Reglas**: pegar `firestore.rules` y **Publicar** (cubre bitácora + sketchvolt sin romper nada).
+3. **Authentication → Settings → Authorized domains**: confirmar que esté **ilchervo.com**
+   (ya debería, porque la bitácora corre en el mismo dominio).
+
+## Cómo funciona
+- Botón de cuenta en el home (arriba a la derecha). Sin sesión = ícono de persona.
+- Aceptar = Google · Cancelar = enlace por correo.
+- **Local-first**: localStorage sigue siendo la fuente; al entrar, la nube hace *merge* (unión por id,
+  gana el `mod` más nuevo, **nunca borra** trabajo) y sube lo que faltaba. Offline funciona igual.
+- Las Reglas rechazan lo ajeno (permission-denied = el "403" del spec).
+
+## Límite a vigilar
+Firestore = 1 MB por documento. Hoy cada PROYECTO es un doc. Si un proyecto con muchos planos pesa
+más de 1 MB, hay que partir por planta (queda como mejora futura).
+
+---
+## (Histórico) instructivo original
 
 ## Qué tenés que hacer en la consola de Firebase (una vez)
 
