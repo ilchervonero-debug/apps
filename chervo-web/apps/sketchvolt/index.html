@@ -163,6 +163,11 @@ body{display:flex;flex-direction:column;background:#fff;}
 #guide .gtxt b{color:#1c1c1e;font-weight:400;}
 #guide .gx{flex-shrink:0;background:none;border:none;color:#1c1c1e;cursor:pointer;padding:7px;}
 #guide .gx svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+/* Cota dinámica por teclado (estilo AutoCAD): caja flotante cerca del cursor */
+#dimTip{position:fixed;display:none;z-index:200;width:82px;padding:5px 8px;border:1.5px solid var(--accent);
+  border-radius:9px;background:#fff;color:#1c1c1e;font-family:var(--font);font-size:16px;text-align:center;
+  box-shadow:0 3px 12px rgba(0,0,0,.16);outline:none;}
+#dimTip.show{display:block;}
 /* Chip flotante del modo aislado (editar grupo) */
 #groupEditBar{display:none;position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:210;
   background:#fff;border:1.5px solid var(--accent);border-radius:20px;padding:5px 6px 5px 14px;
@@ -689,6 +694,8 @@ details.mas[open] summary:before{content:'▾ ';}
     <button id="polarBtn" data-tip="Polar" onclick="togglePolar()"><svg viewBox="0 0 24 24"><path d="M4 20 H20"/><path d="M4 20 A16 16 0 0 1 9 8"/><path d="M4 20 L17 11"/></svg><span class="lbl">Polar</span></button>
   </div>
 </div>
+<!-- Cota dinámica: escribí la distancia (m) y Enter para fijar el próximo punto en el ángulo actual -->
+<input id="dimTip" type="text" inputmode="decimal" placeholder="m" autocomplete="off" onkeydown="dimTipKey(event)">
 <!-- Panel guía: cuando hay herramienta activa, el head muestra los pasos en texto (comandos en rojo) -->
 <div id="guide">
   <span class="gtool" id="guideTool">Herramienta</span>
@@ -1119,6 +1126,7 @@ function render(){
   drawOrigin();
   drawPreview();
   if(!_exporting)drawCursorSnap();
+  if(!_exporting)showDimTip();
 }
 
 // HOJA (papel A4/A3/A2) en coordenadas mundo — el dibujo vive dentro de la hoja a escala.
@@ -2550,7 +2558,7 @@ const GUIA={
   line:['Línea','<b>Tocá</b> el inicio y <b>arrastrá</b> al fin. <b>Ortho/Polar</b> fijan el ángulo.'],
   sline:['SmartLine','<b>Arrastrá</b> de un nodo a otro: los extremos se <b>enganchan</b> solos.'],
   pline:['Polilínea','<b>Tocá</b> cada vértice; <b>doble toque</b> para terminar.'],
-  mline:['Muro','<b>Tocá</b> cada esquina del muro; <b>doble toque</b> para cerrar. Ancho y eje abajo.'],
+  mline:['Muro','<b>Tocá</b> las esquinas, o escribí la <b>medida</b> (m) + <b>Enter</b>. <b>Doble toque</b> cierra.'],
   arch:['Bloque','<b>Tocá</b> para colocar. Puertas/ventanas se <b>anclan</b> al muro y lo cortan.'],
   rect:['Rectángulo','<b>Arrastrá</b> de una esquina a la opuesta.'],
   circle:['Círculo','<b>Arrastrá</b> del centro hacia el radio.'],
@@ -2575,6 +2583,35 @@ function drawTrackLine(A){
   ctx.save();ctx.strokeStyle='#FE0000';ctx.globalAlpha=.45;ctx.lineWidth=1;ctx.setLineDash([7,6]);
   ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();ctx.restore();
 }
+// ── Cota dinámica por teclado (iLDraft): escribir distancia (m) + Enter fija el próximo punto ──
+function _dimCtx(){ return (tool==='mline'||tool==='pline')&&plineActive&&plinePts.length>0; }
+function showDimTip(){
+  const el=document.getElementById('dimTip'); if(!el)return;
+  if(_dimCtx()&&dragCurW){
+    const s=w2s(dragCurW.x,dragCurW.y);
+    el.style.left=Math.min(window.innerWidth-92,Math.max(4,s.x+16))+'px';
+    el.style.top=Math.max(4,s.y-44)+'px';
+    el.classList.add('show');
+  } else { el.classList.remove('show'); el.value=''; if(document.activeElement===el)el.blur(); }
+}
+function commitDimInput(){
+  if(!_dimCtx()||!dragCurW)return;
+  const el=document.getElementById('dimTip'), val=parseFloat((el.value||'').replace(',','.'));
+  if(!(val>0))return;
+  const a=plinePts[plinePts.length-1]; let dx=dragCurW.x-a[0], dy=dragCurW.y-a[1]; const d=Math.hypot(dx,dy);
+  if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
+  const np=[a[0]+dx*val*PPM, a[1]+dy*val*PPM];
+  plinePts.push(np); dragCurW={x:np[0],y:np[1]}; el.value=''; render();
+}
+function dimTipKey(e){
+  if(e.key==='Enter'){ e.preventDefault(); commitDimInput(); }
+  else if(e.key==='Escape'){ e.preventDefault(); e.target.value=''; e.target.blur(); }
+}
+document.addEventListener('keydown',e=>{
+  if(!_dimCtx())return; const el=document.getElementById('dimTip'); if(!el||document.activeElement===el)return;
+  if(/^[0-9.,]$/.test(e.key)){ el.value+=(e.key===','?'.':e.key); el.focus(); }
+  else if(e.key==='Enter'){ commitDimInput(); }
+});
 function updateGuide(){
   const g=document.getElementById('guide'), gd=GUIA[tool];
   if(gd && tool!=='select'){ document.getElementById('guideTool').textContent=gd[0]; document.getElementById('guideTxt').innerHTML=gd[1]; g.classList.add('show'); }

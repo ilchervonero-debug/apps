@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v62) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v63) · app pro
 - **iLDraft en SketchVolt — Módulo 1: Muro/multilínea (v61):** herramienta `mline` (botón en panel de
   dibujo). Doble línea paralela al eje con **ancho en metros** (10/15/20/30 cm, `mlSepM`) y
   **justificación** Centro/Int/Ext (`mlJust`); tapas en los extremos. Multipunto como pline (toca
@@ -129,8 +129,13 @@ Versión = número de caché del SW.
   Objeto `type:'arch'` (kind, w,l en m, rotation, flip, variant, anchored). **Anclaje magnético**
   (`snapArchToMl`): puerta/ventana rota al ángulo del muro más cercano, se pega al eje y **hereda su
   ancho** (l = sepM). **Enmascarado**: parche blanco que oculta las líneas del muro + **mochetas**
-  oscuras a los lados (corte real). Capa de render arch sobre el muro. Pendiente iLDraft: **Módulo 3**
-  cotas por teclado.
+  oscuras a los lados (corte real). Capa de render arch sobre el muro.
+- **iLDraft en SketchVolt — Módulo 3: Cota dinámica por teclado (v63):** con `mline`/`pline` activos y
+  ≥1 punto, escribir la distancia (m) + **Enter** fija el próximo punto a esa distancia en el ángulo
+  actual del cursor. Input flotante `#dimTip` junto al cursor (se posiciona en `showDimTip()`, llamado
+  en `render()`); `commitDimInput()` proyecta `último_punto + dir(cursor)·(val·PPM)`; `dimTipKey` (Enter/
+  Esc) + listener global de teclado (dígitos enfocan el input). 1 unidad = 1 m (PPM=100). **iLDraft
+  integrado: 3/3 módulos** (muro, librería+anclaje+enmascarado, cota por teclado).
 - **Guía discreta + línea guía infinita de Polar (v60):** el panel guía se hizo **discreto** (texto gris
   fino peso 300, **sin negritas**, comandos apenas más oscuros por tono — no rojo; solo el nombre de la
   herramienta en rojo chico), para que no sea protagonista. **Polar/Ortho dibujan una línea guía
