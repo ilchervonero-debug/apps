@@ -116,7 +116,16 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v90) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v91) · app pro
+- **Barra de propiedades: nombres de texto debajo + centrado parejo (v91, pedido Ángel):**
+  · Las etiquetas de propiedad pasan de **ícono a TEXTO** y van **DEBAJO** del control (`.fi>.fl{order:2}`).
+    Conversión ícono→texto 100% por CSS (sin tocar HTML): `.fi>.fl[title] svg{display:none}` +
+    `.fi>.fl[title]::after{content:attr(title)}` (Giro, Tamaño (cm), Altura (cm), Grosor, Tipo de línea,
+    Patrón, Opacidad, Escala…). Texto gris uniforme 12px, no negrita, no mayúsculas.
+  · **Centrado parejo**: la regla de reparto ahora incluye spans (`#propbar>[id^="grp"]`, antes solo `div`),
+    así `grpTool` (grosor) deja de irse al borde izquierdo y los controles se reparten `space-evenly`.
+  · ⚠ Nota: un `perl` con regex destruyó el archivo (264KB→23KB); se restauró de git y se rehízo todo con
+    CSS/Edits seguros. No volver a usar perl slurp sobre este index.
 - **Lógica de barra por familia + fix multi-selección (v90, pedido Ángel):**
   · **Fix crítico**: en multi-selección (2+ objetos) NO aparecían Borrar ni Agrupar → `syncMeasureUI`
     ocultaba la fila con `else if(!selO)` (selO solo existe para 1 objeto medible). Corregido a
