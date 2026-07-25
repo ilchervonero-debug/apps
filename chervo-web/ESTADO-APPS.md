@@ -116,7 +116,19 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v68) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v69) · app pro
+- **Refinamiento UI Sección 1 (v69, pedido Ángel):**
+  · **Barra de propiedades a lo ancho**: grupos `flex:1 1 auto` + `justify-content:space-evenly`
+    reparten los controles en TODO el ancho (no amontonados al centro). Muro y abertura verificados.
+  · **Abertura sin barra alta**: al seleccionar una abertura se muestra SOLO `grpArch` (medidas, girar,
+    espejar, anclar, tipo) — ya no co-aparece `grpSel` (color/componente) → barra de 174px (antes 228).
+    `#propbar` con `align-content:center` para filas compactas.
+  · **Texto flotante de herramienta** despegado de la barra (`bottom = alto barra + 18px`), sin superponer.
+  · **Guía blanca**: fondo blanco puro, texto gris, palabras clave en negro, **cero rojo**; botón Escape
+    (`.gesc`) en **rojo acento** (borde+ícono) para que sea obvio.
+  · **Íconos Ortho/Polar rediseñados**: Ortho = "L" a 90° con cuadradito delineado en la esquina interior;
+    Polar = círculo con dos líneas desde el centro (0° horizontal + 45° diagonal). Rojo cuando activo.
+  · Íconos estandarizados (`.pib` 44px botón / 24px svg, `.ok` 26px).
 - **Paquete UI/geometría/librería (v66-v67, pedido Ángel):**
   · **Escape siempre visible**: botón Salir (`.gesc`) en la barra de tips `#guide`, ahora **gris**
     (bg `#f2f2f7`, textos grises, comandos en negro, **sin rojo**). FABs planos grises, rojos solo `.on`.
