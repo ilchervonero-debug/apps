@@ -159,12 +159,15 @@ body{display:flex;flex-direction:column;background:#fff;}
 #opFloat button.on svg{stroke:#FE0000;}
 #opFloat button.on .lbl{color:#FE0000;}
 /* Panel guía / instructivo: reemplaza el head cuando hay una herramienta activa */
-#guide{position:fixed;top:0;left:0;right:0;height:auto;min-height:var(--tb);z-index:60;background:#fcfcfc;
-  border-bottom:1px solid #e5e5ea;display:none;align-items:center;gap:10px;padding:6px 6px 6px 14px;}
+#guide{position:fixed;top:0;left:0;right:0;height:auto;min-height:var(--tb);z-index:60;background:#f2f2f7;
+  border-bottom:1px solid #e5e5ea;display:none;align-items:center;gap:10px;padding:6px 8px 6px 14px;}
 #guide.show{display:flex;}
-#guide .gtool{font-size:13px;color:#1c1c1e;font-weight:500;white-space:nowrap;flex-shrink:0;padding-right:10px;border-right:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center;}
+#guide .gtool{font-size:13px;color:#3a3a3c;font-weight:500;white-space:nowrap;flex-shrink:0;padding-right:10px;border-right:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center;}
 #guide .gtxt{flex:1;min-width:0;font-size:12.5px;color:#8e8e93;font-weight:400;line-height:1.25;}
 #guide .gtxt b{color:#1c1c1e;font-weight:500;}
+#guide .gesc{flex-shrink:0;background:#fff;border:1px solid #dcdcdc;border-radius:9px;width:40px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1c1c1e;}
+#guide .gesc svg{width:20px;height:20px;fill:currentColor;stroke:none;pointer-events:none;}
+#guide .gesc:active{background:#e9e9ee;}
 #guide .gx{flex-shrink:0;background:none;border:none;color:#1c1c1e;cursor:pointer;padding:7px;}
 #guide .gx svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 /* Chip flotante del modo aislado (editar grupo) */
@@ -704,6 +707,7 @@ details.mas[open] summary:before{content:'▾ ';}
 <div id="guide">
   <span class="gtool" id="guideTool">Herramienta</span>
   <div class="gtxt" id="guideTxt"></div>
+  <button class="gesc" onclick="ST('select')" data-tip="Salir de la herramienta"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
 </div>
 
 <!-- Chip del modo aislado (editar grupo) -->
@@ -1035,7 +1039,15 @@ function snapToObject(wp){
 }
 function getW(e){
   const raw=getRW(e);
-  const THRESH=(tool==='sline'?42:22)/vpZ;   // SmartLine: radio de snap mayor (dedo inexacto)
+  // IMÁN FUERTE a los puntos de la acción en curso: cerrar figura (1er punto) o continuar (último). Prioridad absoluta.
+  if(snapObjOn){
+    const STRONG=46/vpZ; let sb=null,sd=STRONG;
+    const st=(x,y)=>{const d=hyp(raw.x-x,raw.y-y);if(d<sd){sd=d;sb={x,y};}};
+    if((tool==='pline'||tool==='mline')&&plineActive)for(const p of plinePts)st(p[0],p[1]);
+    if(drawing&&dragStartW)st(dragStartW.x,dragStartW.y);
+    if(sb){snapHit={x:sb.x,y:sb.y,kind:'end'};return sb;}
+  }
+  const THRESH=(tool==='sline'?42:(_DRAG_TOOLS.includes(tool)||tool==='pline'||tool==='mline'?30:22))/vpZ;   // snap más fuerte al dibujar
   let best=null,bestD=THRESH,kind=null;
   const take=(x,y,k)=>{const d=hyp(raw.x-x,raw.y-y);if(d<bestD){bestD=d;best={x,y};kind=k;}};
   // Snap a DIBUJOS (botón #snapBtn). Prioriza puntos precisos sobre "cercano".
@@ -1273,17 +1285,23 @@ function mlineOffsetPts(pts,off){
   }
   return res;
 }
-function _mlStroke(pts,sepM,just){
+function _mlStroke(pts,sepM,just,closed){
   const [o1,o2]=mlOffsets(sepM,just);
   const p1=mlineOffsetPts(pts,o1), p2=mlineOffsetPts(pts,o2);
   if(p1.length<2)return;
   const s1=p1.map(p=>w2s(p[0],p[1])), s2=p2.map(p=>w2s(p[0],p[1])), n=s1.length-1;
+  // RELLENO BLANCO del cuerpo del muro: oculta lo que cruza por debajo (superposición correcta).
+  ctx.save(); ctx.fillStyle='#fff';
+  ctx.beginPath(); s1.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  for(let i=n;i>=0;i--)ctx.lineTo(s2[i].x,s2[i].y); ctx.closePath(); ctx.fill(); ctx.restore();
+  // BORDES de cada cara
   ctx.beginPath(); s1.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke();
   ctx.beginPath(); s2.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(s1[0].x,s1[0].y); ctx.lineTo(s2[0].x,s2[0].y);
-  ctx.moveTo(s1[n].x,s1[n].y); ctx.lineTo(s2[n].x,s2[n].y); ctx.stroke();   // tapas en extremos
+  // TAPAS en los extremos (solo si NO es cerrado)
+  if(!closed){ ctx.beginPath(); ctx.moveTo(s1[0].x,s1[0].y); ctx.lineTo(s2[0].x,s2[0].y);
+    ctx.moveTo(s1[n].x,s1[n].y); ctx.lineTo(s2[n].x,s2[n].y); ctx.stroke(); }
 }
-function drawMlineObj(obj){ _mlStroke(obj.pts,obj.sepM,obj.just); }
+function drawMlineObj(obj){ _mlStroke(obj.pts,obj.sepM,obj.just,obj.closed); }
 
 // ── BLOQUES ARQUITECTÓNICOS (iLDraft) — vista en planta, tamaño en metros (w×l) ──
 const ARCH_DEF={
@@ -2225,7 +2243,14 @@ function handleDbl(wp){
     plineActive=false;plinePts=[];setHint('');render();toast('Polilínea creada ✓');
   }
   if(tool==='mline'&&plineActive&&plinePts.length>1){
-    saveHistory();objects.push({type:'mline',pts:plinePts.slice(),sepM:mlSepM,just:mlJust,color:'#1c1c1e',strokeW:1.6,id:nextId++});
+    let closed=false;
+    if(plinePts.length>=3){                                   // cerrar la figura: unir al primer punto (sin tramos sueltos)
+      const f=plinePts[0], l=plinePts[plinePts.length-1];
+      if(hyp(l[0]-f[0],l[1]-f[1])<46/vpZ) plinePts[plinePts.length-1]=[f[0],f[1]];
+      else plinePts.push([f[0],f[1]]);
+      closed=true;
+    }
+    saveHistory();objects.push({type:'mline',pts:plinePts.slice(),sepM:mlSepM,just:mlJust,closed,color:'#1c1c1e',strokeW:1.6,id:nextId++});
     plineActive=false;plinePts=[];setHint('');render();toast('Muro creado ✓');
   }
   if(tool==='hatch')commitHatch();
