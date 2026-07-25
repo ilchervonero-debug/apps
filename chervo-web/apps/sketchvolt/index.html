@@ -1487,8 +1487,11 @@ function drawArchObj(obj){
   // Enmascarado NO destructivo: relleno blanco detrás del mobiliario (tapa piso/muro sin cortarlos).
   if(k!=='puerta'&&k!=='ventana'&&k!=='corte'){ ctx.save();ctx.fillStyle='#fff';ctx.fillRect(-W/2,-H/2,W,H);ctx.restore(); ctx.fillStyle=ink; }
   if(k==='puerta'||k==='ventana'){
-    // Enmascarado del muro: parche blanco + mochetas.
-    ctx.fillStyle='#fff'; ctx.fillRect(-W/2,-H/2,W,H);
+    // Enmascarado del muro. En PUERTA el parche es más alto para INTERRUMPIR el muro por completo
+    // (si no, las dos caras del muro —con su grosor de línea— asoman como 2 líneas finas).
+    // En VENTANA el parche es al ras: la ventana redibuja el rectángulo del muro (las 2 líneas siguen).
+    const mH = (k==='puerta') ? H + Math.max(4*vpZ, H*0.5) : H;
+    ctx.fillStyle='#fff'; ctx.fillRect(-W/2,-mH/2,W,mH);
     ctx.fillStyle=ink; ctx.fillRect(-W/2,-H/2,mch,H); ctx.fillRect(W/2-mch,-H/2,mch,H);
   }
   if(k==='puerta'){

@@ -116,7 +116,11 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v84) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v85) · app pro
+- **Puerta interrumpe el muro (v85, pedido Ángel):** el parche blanco de la PUERTA ahora es más alto
+  (`mH = H + max(4px, H*0.5)`) para tapar también el grosor de línea de las dos caras del muro → hueco
+  limpio, sin las 2 líneas finas asomando. La VENTANA queda al ras (redibuja el rectángulo del muro = 2
+  líneas siguen). `snapArchToMl` ya iguala `l` al `sepM` del muro.
 - **Z-order + masking + SmartPen al eléctrico (v84, doc maestro §3/§5):**
   · **`zLevelOf(o)`**: default por categoría — 0 base, 10 mline, 20 arch/mobiliario, 30 block/eléctrica/pen;
     `obj.zLevel` lo pisa a mano. `render()` dibuja por zLevel (estable por id); los muros van en batch al
