@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v87) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v88) · app pro
+- **Uniformidad visual de los 3 FABs (v88, pedido Ángel):** `.phb` (Dibujo) y `.pu-item` (Símbolos/
+  Arquitectura) ahora idénticos: ícono 30px stroke 1.2, nombre 14px gris `#8e8e93` fino, gap 6px, padding
+  8px, grillas gap 8px, títulos de sección (`.ph-lbl`/`.pu-title`) gris 14px 500 (no negrita). Nada grande
+  ni muy separado; misma gráfica en todo.
+  · PENDIENTE (pedido explícito): §2 lógica de la barra de propiedades por FAMILIA (Dibujo/Símbolos/
+    Arquitectura) con misma zona de aceptar/borrar para todo el grupo; §3 delay en el tap para permitir
+    zoom/pan a 2 dedos sin dibujar por toque casi-simultáneo.
 - **Legibilidad + nombres de herramientas (v87, pedido Ángel, doc §1):** paneles FAB **naked** (sin cajas):
   `.pu-item` transparente, `.pu-title` gris `#8e8e93` fino 14px (no rojo/negrita), nombres de ítem 16px
   que envuelven a 2 líneas (no truncan). **Nombres bajo cada herramienta** (`.phb span`, gris) para que los

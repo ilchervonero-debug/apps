@@ -77,18 +77,19 @@ body{display:flex;flex-direction:column;background:#fff;}
 #panel-herr.open{display:flex;animation:phDown .18s ease;}
 @keyframes phDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 .ph-col{display:flex;flex-direction:column;gap:6px;}
-.ph-lbl{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;}
-.ph-g3{display:grid;grid-template-columns:repeat(3,62px);gap:6px;}
+.ph-lbl{font-size:14px;font-weight:500;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em;}
+.ph-g3{display:grid;grid-template-columns:repeat(3,72px);gap:8px;}
 .ph-hsep{height:1px;background:#e5e5ea;margin:2px 0;}
 /* botones herramienta — icono NEGRO fino, sin fondo; activo = icono rojo + borde rojo */
+/* Botón de herramienta = MISMA geometría que los ítems de los otros FABs (símbolos/arquitectura). */
 .phb{
-  width:70px;min-height:66px;border-radius:10px;padding:6px 2px;
+  width:72px;min-height:64px;border-radius:10px;padding:8px 2px;
   background:transparent;border:none;color:var(--ink);cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;transition:transform .08s;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;transition:transform .08s;
 }
-.phb svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.2;
+.phb svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.2;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-.phb span{font-size:13px;color:#8e8e93;font-weight:400;line-height:1.05;pointer-events:none;text-align:center;overflow-wrap:anywhere;}
+.phb span{font-size:14px;color:#8e8e93;font-weight:400;line-height:1.1;pointer-events:none;text-align:center;overflow-wrap:anywhere;}
 .phb.on{color:var(--accent);}
 .phb.on span{color:var(--accent);}
 .phb:active{transform:scale(.92);}
@@ -428,15 +429,14 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pu-title{font-size:14px;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em;
   margin:14px 0 8px;font-weight:500;}
 .pu-title:first-child{margin-top:0;}
-.pu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-/* Ítem naked: sin caja ni borde; resalta el trazo del ícono al presionar. */
-.pu-item{background:transparent;border:none;border-radius:10px;padding:10px 2px;
-  display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;text-align:center;}
+.pu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-items:start;}
+/* Ítem naked: sin caja; MISMA geometría/tamaños que .phb (todos los FABs iguales). */
+.pu-item{background:transparent;border:none;border-radius:10px;padding:8px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;text-align:center;}
 .pu-item:active svg{stroke:var(--accent);}
-.pu-item svg{width:32px;height:32px;fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-/* Nombre del ítem: legible (16px), fino, tinta. Envuelve a 2 líneas si hace falta (no trunca, no se solapa). */
-.pu-item span{font-size:16px;color:var(--ink);font-weight:400;line-height:1.15;pointer-events:none;max-width:100%;overflow-wrap:anywhere;}
-.pu-grid{align-items:start;}
+.pu-item svg{width:30px;height:30px;fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+/* Nombre del ítem: gris sutil, 14px, fino. Envuelve a 2 líneas (no trunca, no se solapa). Igual que .phb. */
+.pu-item span{font-size:14px;color:#8e8e93;font-weight:400;line-height:1.1;pointer-events:none;max-width:100%;overflow-wrap:anywhere;}
 .cdot{width:22px;height:22px;border-radius:50%;border:1.5px solid #d0d0d3;cursor:pointer;flex-shrink:0;padding:0;}
 /* Barra inferior: es un PANEL que sube/baja desde abajo. Sin nada activo, se desliza fuera
    (translateY) y el canvas/grilla llena todo el pie; al haber contexto, sube (.up). */
