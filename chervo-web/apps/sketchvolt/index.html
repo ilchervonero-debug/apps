@@ -982,9 +982,9 @@ let mlSepM=0.15, mlJust='center';   // Muro (multilínea): ancho en metros y jus
 // hatch
 let hatchPts=[],hatchLastTap=0;
 // dim
-let dimPh=0,dimA=null,dimB=null,dimFontSize=10;
+let dimPh=0,dimA=null,dimB=null,dimAdjust=false,dimFontSize=10;
 // arc — 3 clicks: A, B, ctrl point
-let arcPh=0,arcA=null,arcB=null,arcEditId=null,arcEditOrig=null,arcEditDragging=false;
+let arcPh=0,arcA=null,arcB=null,arcBulge=false,arcEditId=null,arcEditOrig=null,arcEditDragging=false;
 // move/copy
 let movId=null,movStart=null;
 // context
@@ -1956,10 +1956,17 @@ function drawPreview(){
     ctx.restore();return;
   }
   // ARC preview while dragging (like line)
-  if(tool==='arc'&&drawing&&dragStartW&&dragCurW){
-    ctx.save();ctx.strokeStyle=color;ctx.lineWidth=strokeW*vpZ;ctx.lineCap='round';ctx.globalAlpha=.55;setDash(lineType,vpZ);
-    const a=w2s(dragStartW.x,dragStartW.y),b=w2s(dragCurW.x,dragCurW.y);
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  if(tool==='arc'&&arcPh>0&&arcA){
+    ctx.save();ctx.strokeStyle=color;ctx.lineWidth=strokeW*vpZ;ctx.lineCap='round';ctx.globalAlpha=.6;
+    if(arcPh===1&&dragCurW){                                   // Inicio→cursor: cuerda punteada temporal
+      ctx.setLineDash([4*vpZ,3*vpZ]);const a=w2s(...arcA),b=w2s(dragCurW.x,dragCurW.y);
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);
+    } else if(arcPh===2&&arcB&&dragCurW){                      // curva viva por A · cursor(bombeo) · B
+      ctx.setLineDash([]);const poly=arcPolyPts({pts:[arcA,[dragCurW.x,dragCurW.y],arcB]});
+      ctx.beginPath();const p0=w2s(...poly[0]);ctx.moveTo(p0.x,p0.y);
+      for(let i=1;i<poly.length;i++){const p=w2s(...poly[i]);ctx.lineTo(p.x,p.y);}ctx.stroke();
+    }
+    ctx.fillStyle='#FE0000';[arcA,arcB].forEach(pt=>{if(pt){const s=w2s(...pt);ctx.beginPath();ctx.arc(s.x,s.y,3.5,0,Math.PI*2);ctx.fill();}});
     ctx.restore();return;
   }
   // DIM
@@ -1971,10 +1978,8 @@ function drawPreview(){
     } else if(dimPh===2&&dimA&&dimB&&dragCurW){
       const dx=dimB[0]-dimA[0],dy=dimB[1]-dimA[1],len=hyp(dx,dy);if(len>.001){
         const nx=-dy/len,ny=dx/len,mid={x:(dimA[0]+dimB[0])/2,y:(dimA[1]+dimB[1])/2};
-        // Fixed offset 2 grid cells, sign from cursor side
-        const dot=(dragCurW.x-mid.x)*nx+(dragCurW.y-mid.y)*ny;
-        const sign=dot>=0?1:-1;
-        const off=sign*cellPx*2;
+        // Offset VARIABLE: sigue la distancia perpendicular del cursor (arrastrar para separar)
+        const off=(dragCurW.x-mid.x)*nx+(dragCurW.y-mid.y)*ny;
         const oA=[dimA[0]+nx*off,dimA[1]+ny*off],oB=[dimB[0]+nx*off,dimB[1]+ny*off];
         const sA=w2s(...dimA),sB=w2s(...dimB),osA=w2s(...oA),osB=w2s(...oB);
         ctx.setLineDash([3*vpZ,3*vpZ]);ctx.beginPath();ctx.moveTo(sA.x,sA.y);ctx.lineTo(osA.x,osA.y);ctx.stroke();ctx.beginPath();ctx.moveTo(sB.x,sB.y);ctx.lineTo(osB.x,osB.y);ctx.stroke();
@@ -2310,8 +2315,11 @@ function handleDown(wp,rawW,scrn){
   }
 
   // ARC — drag like line, midpoint grip to curve
+  // ARCO — 3 puntos obligatorios: Inicio → Fin → punto sobre el arco (bombeo). Confirmar (soltar/pick) fija.
   if(tool==='arc'){
-    saveHistory();drawing=true;dragStartW={...wp};dragCurW={...wp};
+    if(arcPh===0){ arcA=[wp.x,wp.y]; arcPh=1; setHint('→ Toque el punto FINAL del arco'); render(); }
+    else if(arcPh===1){ arcB=[wp.x,wp.y]; arcPh=2; arcBulge=false; dragCurW={...wp}; setHint('→ Mueva para curvar; suelte para fijar'); render(); }
+    else if(arcPh===2){ arcBulge=true; dragCurW={...wp}; render(); }   // arranca el ajuste de bombeo (confirma al soltar)
     return;
   }
 
@@ -2328,21 +2336,8 @@ function handleDown(wp,rawW,scrn){
       dimB=[snapPt.x,snapPt.y];
       dimPh=2;setHint('→ Toque el lado donde va la cota');
     } else if(dimPh===2){
-      // Pick 3: determine side (which side of A-B the tap is on)
-      // Offset is always fixed at 2 grid cells, just sign depends on side
-      const dx=dimB[0]-dimA[0],dy=dimB[1]-dimA[1],len=hyp(dx,dy);
-      if(len>.001){
-        const nx=-dy/len,ny=dx/len;
-        const mid={x:(dimA[0]+dimB[0])/2,y:(dimA[1]+dimB[1])/2};
-        // Determine sign from which side user tapped
-        const dot=(wp.x-mid.x)*nx+(wp.y-mid.y)*ny;
-        const sign=dot>=0?1:-1;
-        // Fixed offset = 2 grid cells
-        const off=sign*cellPx*2;
-        saveHistory();
-        objects.push({type:'dim',pts:[dimA,dimB],offset:off,color,strokeW:1,fontSize:dimFontSize,id:nextId++});
-      }
-      dimPh=0;dimA=null;dimB=null;setHint('');render();
+      // Fase 3: arrastrar para separar la línea de cota (offset variable). Confirma al soltar.
+      dimAdjust=true; dragCurW={...wp}; render();
     }
     return;
   }
@@ -2360,7 +2355,7 @@ function handleDown(wp,rawW,scrn){
   if(tool==='circle'||tool==='poly'){saveHistory();drawing=true;dragStartW={...wp};dragCurW={...wp};return;}
 
   saveHistory();drawing=true;dragStartW={...wp};dragCurW={...wp};
-  if(tool==='pen')penPts=[[rawW.x,rawW.y]];
+  if(tool==='pen'){ const th=34/vpZ, s=nearNode(rawW.x,rawW.y,th); penPts=[s?[s[0],s[1]]:[rawW.x,rawW.y]]; }   // SmartPen: SNAP FUERTE del inicio a boca/caja/tablero
 }
 
 function handleDbl(wp){
@@ -2440,16 +2435,12 @@ function handleUp(wp,scrn){
     if(_pendingValid()){ drawPending=true; } else { dragStartW=dragCurW=null; if(history.length)history.pop(); }
     render(); return;
   }
-  if(tool==='arc'){
-    if(drawing&&dragStartW&&dragCurW&&hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ){
-      const mx=(dragStartW.x+dragCurW.x)/2,my=(dragStartW.y+dragCurW.y)/2;
-      objects.push({type:'arc',pts:[
-        [dragStartW.x,dragStartW.y],
-        [mx,my],
-        [dragCurW.x,dragCurW.y]
-      ],color,strokeW,lineType,id:nextId++});
-    } else history.pop();
-    drawing=false;dragStartW=null;dragCurW=null;render();
+  if(tool==='arc'){   // arco de 3 puntos: confirma el bombeo al SOLTAR (pick)
+    if(arcPh===2&&arcBulge){
+      const bp=dragCurW||{x:arcB[0],y:arcB[1]};
+      saveHistory(); objects.push({type:'arc',pts:[arcA.slice(),[bp.x,bp.y],arcB.slice()],color,strokeW,lineType,id:nextId++});
+      arcPh=0;arcA=null;arcB=null;arcBulge=false;setHint('');markDirty();render();toast('Arco creado ✓');
+    }
     return;
   }
   if(tool==='sline'){
@@ -2461,7 +2452,19 @@ function handleUp(wp,scrn){
     } else history.pop();
     drawing=false;dragStartW=null;dragCurW=null;render();return;
   }
-  if(tool==='dim')return;
+  if(tool==='dim'){   // cota CAD: al soltar en fase 3 fija la línea de cota a la distancia arrastrada
+    if(dimPh===2&&dimAdjust&&dimA&&dimB){
+      const p=dragCurW||{x:dimB[0],y:dimB[1]};
+      const dx=dimB[0]-dimA[0],dy=dimB[1]-dimA[1],len=hyp(dx,dy);
+      if(len>.001){
+        const nx=-dy/len,ny=dx/len, mid={x:(dimA[0]+dimB[0])/2,y:(dimA[1]+dimB[1])/2};
+        const off=(p.x-mid.x)*nx+(p.y-mid.y)*ny;   // distancia perpendicular firmada (sigue al cursor)
+        saveHistory(); objects.push({type:'dim',pts:[dimA,dimB],offset:off,color,strokeW:1,fontSize:dimFontSize,id:nextId++});
+      }
+      dimPh=0;dimA=null;dimB=null;dimAdjust=false;setHint('');markDirty();render();
+    }
+    return;
+  }
   if(tool==='move'||tool==='copy'){doMovEnd();return;}
   if(['hatch','pline','select','trim','eraser','text','block'].includes(tool))return;
   if(tool==='circle'&&drawing){
@@ -2478,12 +2481,12 @@ function handleUp(wp,scrn){
   if(tool==='line'){if(hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ)objects.push({type:'line',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW,lineType,id:nextId++});else history.pop();}
   else if(tool==='rect'){if(Math.abs(dragCurW.x-dragStartW.x)>2/vpZ&&Math.abs(dragCurW.y-dragStartW.y)>2/vpZ)objects.push({type:'rect',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW,lineType,id:nextId++});else history.pop();}
   else if(tool==='pen'){
+    // SmartPen = cañería: trazo LIBRE orgánico (sin enderezar, para medir metros reales).
+    // Solo se enganchan los EXTREMOS a boca/caja: inicio ya snapeado en handleDown; fin acá si está cerca.
     if(penPts.length>1){
-      const rec=recognizeStroke(penPts);
-      if(rec){
-        if(rec.type==='line'){const th=22/vpZ;rec.pts=[nearNode(rec.pts[0][0],rec.pts[0][1],th)||rec.pts[0],nearNode(rec.pts[1][0],rec.pts[1][1],th)||rec.pts[1]];}
-        Object.assign(rec,{color,strokeW,lineType,id:nextId++});objects.push(rec);
-      } else objects.push({type:'pen',pts:penPts,color,strokeW,lineType,id:nextId++});
+      const th=34/vpZ, last=penPts[penPts.length-1], se=nearNode(last[0],last[1],th);
+      if(se)penPts[penPts.length-1]=[se[0],se[1]];   // conexión final: auto-snap de cierre
+      objects.push({type:'pen',pts:penPts,color,strokeW,lineType,id:nextId++});
     } else history.pop();
     penPts=[];
   }
@@ -2717,7 +2720,7 @@ function ST(t){
   if(t!=='select'&&editGroupId){ editGroupId=null; showGroupEditBar(false); }   // cambiar de herramienta sale del modo aislado
   if(t!=='block')bloqueSel=null;
   if(t!=='arch')pendingArch=null;
-  dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;movSet=null;setHint('');
+  dimPh=0;dimA=null;dimB=null;dimAdjust=false;arcPh=0;arcA=null;arcB=null;arcBulge=false;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;movSet=null;setHint('');
   document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
   const btnH=document.getElementById('btn-herr');
@@ -3427,7 +3430,8 @@ function rasterizeDXF(ents){
 
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    if(tool==='arc'&&arcPh>0){arcPh=0;arcA=null;arcB=null;setHint('');render();}
+    if(tool==='arc'&&arcPh>0){arcPh=0;arcA=null;arcB=null;arcBulge=false;setHint('');render();}
+    else if(tool==='dim'&&dimPh>0){dimPh=0;dimA=null;dimB=null;dimAdjust=false;setHint('');render();}
     else if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive){plineActive=false;plinePts=[];render();}
     else{ST('select');}
   }

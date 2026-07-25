@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v73) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v74) · app pro
+- **Herramientas críticas restauradas a flujo CAD (v74, PENDIENTE-MOTOR-CAD §3):**
+  · **Arco de 3 puntos**: Inicio → Fin (cuerda punteada) → mover para curvar (curva viva por el 3er punto) →
+    soltar/pick fija. Estados `arcPh`/`arcBulge` (el 2º tap no auto-confirma). Ya no es arrastre.
+  · **Cota (dim) CAD**: pick A → pick B → **arrastrar** para separar la línea de cota (offset perpendicular
+    VARIABLE que sigue al cursor) → soltar fija. `dimAdjust` evita auto-confirmar.
+  · **SmartPen (cañería)**: inicio con **snap fuerte** a boca/caja (`nearNode`), **medio libre** (raw, sin
+    snap, curva orgánica → metros reales), **fin auto-snap** a boca cercana. Ya NO endereza (sin recognizeStroke).
 - **Motor CAD: dibujo continuo + snap ampliado (v73, pedido Ángel, Sección 3):**
   · **Línea CONTINUA (estilo AutoCAD)**: la herramienta `line` pasó de arrastre a **multipunto encadenado**
     (mismo camino que Muro/Polilínea). Tocás cada punto (o medida m + Enter) y la línea encadena; el punto
