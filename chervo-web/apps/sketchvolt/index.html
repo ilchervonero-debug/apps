@@ -3026,8 +3026,11 @@ function commitMeasure(){
     dragCurW={x:a[0]+dx*val*PPM,y:a[1]+dy*val*PPM}; commitPendingDraw(); inp.blur(); return;
   }
   if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0){
-    const a=plinePts[plinePts.length-1]; let dx=(dragCurW?dragCurW.x:a[0]+1)-a[0],dy=(dragCurW?dragCurW.y:a[1])-a[1],d=Math.hypot(dx,dy);
-    if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
+    const a=plinePts[plinePts.length-1]; let dx=(dragCurW?dragCurW.x:a[0]+1)-a[0],dy=(dragCurW?dragCurW.y:a[1])-a[1];
+    // La MEDIDA va EXACTA sobre el eje: si Ortho/Polar están activos, forzamos la dirección (no la del último toque torcido).
+    if(orthoOn){ if(Math.abs(dx)>=Math.abs(dy)){dy=0;}else{dx=0;} }
+    else if(polarOn){ const dd=Math.hypot(dx,dy)||1, step=polarStep*Math.PI/180, ang=Math.round(Math.atan2(dy,dx)/step)*step; dx=Math.cos(ang)*dd; dy=Math.sin(ang)*dd; }
+    let d=Math.hypot(dx,dy); if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
     const np=[a[0]+dx*val*PPM,a[1]+dy*val*PPM]; plinePts.push(np); dragCurW={x:np[0],y:np[1]}; inp.value=''; inp.focus(); render(); return;
   }
   const o=_selMeasObj();
@@ -4155,6 +4158,10 @@ document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==
 setInterval(_safeSave,60000);
 
 resize();
+// El rótulo flotante de herramienta SIEMPRE por encima del alto REAL de la barra (2 filas). ResizeObserver
+// = se recalcula cada vez que la barra cambia de alto (aparece/desaparece la fila de acciones), sin timings frágiles.
+(function(){ const pb=document.getElementById('propbar'), pt=document.getElementById('pbTool');
+  if(window.ResizeObserver && pb && pt){ new ResizeObserver(()=>{ if(!pt.classList.contains('hide')) pt.style.bottom=(pb.offsetHeight+14)+'px'; }).observe(pb); } })();
 {const b=document.getElementById('ptrBtn');if(b)b.innerHTML=_PTR_ICONS[ptrMode][1];}   // ícono inicial del modo de puntero
 if(typeof updateCuentaBtn==='function')updateCuentaBtn();   // botón de cuenta (login/nube)
 renderPanelIcons();

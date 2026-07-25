@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v85) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v86) · app pro
+- **Precisión: rótulo no pisa la barra + medida exacta en eje (v86, pedido Ángel):**
+  · **Fix texto sobrepuesto**: `#pbTool` usaba `var(--prop)` (1 fila) pero la barra tiene 2 → un
+    **ResizeObserver** sobre `#propbar` reubica el rótulo por encima del alto real cada vez que cambia.
+  · **Medida EXACTA sobre el eje**: `commitMeasure` ahora fuerza la dirección a Ortho (H/V) o Polar al tipear
+    la medida, así la línea va exacta al eje aunque el último toque haya quedado torcido (antes usaba la
+    dirección cruda de `dragCurW` → rompía la medida). Verificado: toque (200,40)+Ortho+3m → punto (300,0).
+  · Para el flujo "apuntar → soltar → confirmar" exacto está el modo **Cursor Anclado** (botón de puntero).
 - **Puerta interrumpe el muro (v85, pedido Ángel):** el parche blanco de la PUERTA ahora es más alto
   (`mH = H + max(4px, H*0.5)`) para tapar también el grosor de línea de las dos caras del muro → hueco
   limpio, sin las 2 líneas finas asomando. La VENTANA queda al ras (redibuja el rectángulo del muro = 2
