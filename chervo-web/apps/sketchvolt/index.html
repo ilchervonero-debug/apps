@@ -1062,21 +1062,30 @@ function snapToObject(wp){
   }
   return best||snpGrid(wp.x,wp.y);
 }
+// Intersección matemática de 2 segmentos (dentro de ambos). Devuelve [x,y] o null.
+function _segInt(a,b){
+  const x1=a[0][0],y1=a[0][1],x2=a[1][0],y2=a[1][1],x3=b[0][0],y3=b[0][1],x4=b[1][0],y4=b[1][1];
+  const d=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4); if(Math.abs(d)<1e-9)return null;   // paralelas
+  const t=((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4))/d, u=((x1-x3)*(y1-y2)-(y1-y3)*(x1-x2))/d;
+  if(t<-1e-4||t>1+1e-4||u<-1e-4||u>1+1e-4)return null;                        // fuera de los tramos
+  return [x1+t*(x2-x1), y1+t*(y2-y1)];
+}
 function getW(e){
   const raw=getRW(e);
   // IMÁN FUERTE a los puntos de la acción en curso: cerrar figura (1er punto) o continuar (último). Prioridad absoluta.
   if(snapObjOn){
     const STRONG=46/vpZ; let sb=null,sd=STRONG;
     const st=(x,y)=>{const d=hyp(raw.x-x,raw.y-y);if(d<sd){sd=d;sb={x,y};}};
-    if((tool==='pline'||tool==='mline')&&plineActive)for(const p of plinePts)st(p[0],p[1]);
+    if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive)for(const p of plinePts)st(p[0],p[1]);
     if(drawing&&dragStartW)st(dragStartW.x,dragStartW.y);
     if(sb){snapHit={x:sb.x,y:sb.y,kind:'end'};return sb;}
   }
-  const THRESH=(tool==='sline'?42:(_DRAG_TOOLS.includes(tool)||tool==='pline'||tool==='mline'?30:22))/vpZ;   // snap más fuerte al dibujar
+  const THRESH=(tool==='sline'?42:(_DRAG_TOOLS.includes(tool)||tool==='pline'||tool==='mline'||tool==='line'?30:22))/vpZ;   // snap más fuerte al dibujar
   let best=null,bestD=THRESH,kind=null;
   const take=(x,y,k)=>{const d=hyp(raw.x-x,raw.y-y);if(d<bestD){bestD=d;best={x,y};kind=k;}};
   // Snap a DIBUJOS (botón #snapBtn). Prioriza puntos precisos sobre "cercano".
   if(snapObjOn){
+    const segs=[];
     for(const obj of objects){
       if(!obj||!obj.pts)continue;
       if(obj.type==='circle'&&obj.pts[0]){
@@ -1085,8 +1094,11 @@ function getW(e){
         if(r>0){take(cx+r,cy,'quad');take(cx-r,cy,'quad');take(cx,cy+r,'quad');take(cx,cy-r,'quad');}
       } else if(obj.type==='poly'&&obj.pts[0]){ take(obj.pts[0][0],obj.pts[0][1],'center'); }
       for(const p of obj.pts){if(!p||p.length<2)continue;take(p[0],p[1],'end');}
-      for(const seg of getSegs(obj)){take((seg[0][0]+seg[1][0])/2,(seg[0][1]+seg[1][1])/2,'mid');}
+      for(const seg of getSegs(obj)){take((seg[0][0]+seg[1][0])/2,(seg[0][1]+seg[1][1])/2,'mid');segs.push(seg);}
     }
+    // INTERSECCIÓN: cruce matemático de 2 líneas. Solo entre segmentos CERCA del cursor (barato).
+    const R=THRESH*3, nr=segs.filter(s=>{const mnx=Math.min(s[0][0],s[1][0])-R,mxx=Math.max(s[0][0],s[1][0])+R,mny=Math.min(s[0][1],s[1][1])-R,mxy=Math.max(s[0][1],s[1][1])+R;return raw.x>=mnx&&raw.x<=mxx&&raw.y>=mny&&raw.y<=mxy;});
+    for(let i=0;i<nr.length;i++)for(let j=i+1;j<nr.length;j++){const ip=_segInt(nr[i],nr[j]);if(ip)take(ip[0],ip[1],'int');}
     if(!best){
       for(const obj of objects){
         if(!obj||!obj.pts)continue;
@@ -2002,7 +2014,7 @@ function drawPreview(){
     ctx.fillStyle='#FE0000';plinePts.forEach(p=>{const s=w2s(...p);ctx.beginPath();ctx.arc(s.x,s.y,3.5,0,Math.PI*2);ctx.fill();});
     ctx.restore();return;
   }
-  if(tool==='pline'&&plinePts.length>0){
+  if((tool==='pline'||tool==='line')&&plinePts.length>0){
     if(plineActive)drawTrackLine({x:plinePts[plinePts.length-1][0],y:plinePts[plinePts.length-1][1]});
     ctx.save();ctx.strokeStyle=color;ctx.lineWidth=strokeW*vpZ;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=.85;setDash(lineType,vpZ);
     ctx.beginPath();const p0=w2s(...plinePts[0]);ctx.moveTo(p0.x,p0.y);
@@ -2203,9 +2215,9 @@ function onTS(e){
   if(pinching)return;
   // Double-tap detection
   const now=Date.now();
-  if(now-plineLastTap<350&&(tool==='pline'||tool==='mline')){handleDbl(getW(e));plineLastTap=0;return;}
+  if(now-plineLastTap<350&&(tool==='pline'||tool==='mline'||tool==='line')){handleDbl(getW(e));plineLastTap=0;return;}
   if(now-hatchLastTap<350&&tool==='hatch'){commitHatch();hatchLastTap=0;return;}
-  plineLastTap=(tool==='pline'||tool==='mline')?now:plineLastTap;
+  plineLastTap=(tool==='pline'||tool==='mline'||tool==='line')?now:plineLastTap;
   hatchLastTap=(tool==='hatch')?now:hatchLastTap;
   touchActive=true;cursorS=getS(e);
   startLP(e);handleDown(constrainOP(getW(e)),getRW(e),getS(e));
@@ -2335,8 +2347,8 @@ function handleDown(wp,rawW,scrn){
     return;
   }
 
-  // PLINE / MURO — AutoCAD style: tocar para agregar puntos, doble toque cierra
-  if(tool==='pline'||tool==='mline'){
+  // PLINE / MURO / LÍNEA — AutoCAD style: tocar para agregar puntos y ENCADENAR; doble toque / ✓ termina.
+  if(tool==='pline'||tool==='mline'||tool==='line'){
     if(!plineActive){plineActive=true;plinePts=[[wp.x,wp.y]];}
     else{plinePts.push([wp.x,wp.y]);}
     render();return;
@@ -2352,6 +2364,11 @@ function handleDown(wp,rawW,scrn){
 }
 
 function handleDbl(wp){
+  if(tool==='line'&&plineActive&&plinePts.length>1){                          // cadena de líneas: cada tramo = un objeto 'line' editable
+    saveHistory();
+    for(let i=0;i<plinePts.length-1;i++)objects.push({type:'line',pts:[plinePts[i].slice(),plinePts[i+1].slice()],color,strokeW,lineType,id:nextId++});
+    plineActive=false;plinePts=[];setHint('');render();toast('Línea creada ✓');return;
+  }
   if(tool==='pline'&&plineActive&&plinePts.length>1){
     saveHistory();objects.push({type:'pline',pts:plinePts.slice(),closed:true,color,strokeW,lineType,id:nextId++});
     plineActive=false;plinePts=[];setHint('');render();toast('Polilínea creada ✓');
@@ -2713,7 +2730,7 @@ function ST(t){
 }
 // Panel guía: pasos en texto por herramienta (comandos en rojo <b>). El head se cubre al usar una.
 const GUIA={
-  line:['Línea','<b>Tocá</b> el inicio y <b>arrastrá</b> al fin. <b>Ortho/Polar</b> fijan el ángulo.'],
+  line:['Línea','<b>Tocá</b> cada punto (o <b>medida</b> m + <b>Enter</b>); la línea <b>encadena</b>. <b>Doble toque</b> o <b>✓</b> termina.'],
   sline:['SmartLine','<b>Arrastrá</b> de un nodo a otro: los extremos se <b>enganchan</b> solos.'],
   pline:['Polilínea','<b>Tocá</b> cada vértice; <b>doble toque</b> para terminar.'],
   mline:['Muro','<b>Tocá</b> las esquinas, o escribí la <b>medida</b> (m) + <b>Enter</b>. <b>Doble toque</b> cierra.'],
@@ -2742,7 +2759,7 @@ function drawTrackLine(A){
   ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();ctx.restore();
 }
 // ── DIBUJO POR MEDIDA (estilo DWG): al soltar queda PENDIENTE → escribís la medida + OK (o ✓) ──
-const _DRAG_TOOLS=['line','rect','circle','poly','sline','dim2'];
+const _DRAG_TOOLS=['rect','circle','poly','sline','dim2'];   // 'line' pasó a multipunto encadenado (estilo AutoCAD)
 function _pendingValid(){
   if(!dragStartW||!dragCurW)return false;
   if(tool==='rect')return Math.abs(dragCurW.x-dragStartW.x)>2/vpZ&&Math.abs(dragCurW.y-dragStartW.y)>2/vpZ;
@@ -2777,7 +2794,7 @@ function _selMeasObj(){ if(selIds.length!==1)return null; const o=selObj(); retu
 function syncMeasureUI(){
   const inp=document.getElementById('pbMeasure'); if(!inp)return;
   const paDel=document.getElementById('paDel'), paOk=document.getElementById('paOk'), pa=document.getElementById('propActions');
-  const multipt=(tool==='pline'||tool==='mline')&&plineActive&&plinePts.length>0;
+  const multipt=(tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0;
   const dragging=drawing&&_DRAG_TOOLS.includes(tool)&&dragStartW&&dragCurW;
   const selO=(!drawPending&&!multipt&&!dragging)?_selMeasObj():null;
   const showMeas=drawPending||multipt||dragging||!!selO;
@@ -2797,7 +2814,7 @@ function commitMeasure(){
     if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
     dragCurW={x:a[0]+dx*val*PPM,y:a[1]+dy*val*PPM}; commitPendingDraw(); inp.blur(); return;
   }
-  if((tool==='pline'||tool==='mline')&&plineActive&&plinePts.length>0){
+  if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0){
     const a=plinePts[plinePts.length-1]; let dx=(dragCurW?dragCurW.x:a[0]+1)-a[0],dy=(dragCurW?dragCurW.y:a[1])-a[1],d=Math.hypot(dx,dy);
     if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
     const np=[a[0]+dx*val*PPM,a[1]+dy*val*PPM]; plinePts.push(np); dragCurW={x:np[0],y:np[1]}; inp.value=''; inp.focus(); render(); return;
@@ -2811,7 +2828,7 @@ function measureKey(e){
 }
 document.addEventListener('keydown',e=>{
   const inp=document.getElementById('pbMeasure'); if(!inp||document.activeElement===inp)return;
-  const ctx2=drawPending||((tool==='pline'||tool==='mline')&&plineActive&&plinePts.length>0)||_selMeasObj();
+  const ctx2=drawPending||((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0)||_selMeasObj();
   if(!ctx2)return;
   if(/^[0-9.,]$/.test(e.key)){ inp.value+=(e.key===','?'.':e.key); inp.focus(); }
   else if(e.key==='Enter'){ commitMeasure(); }
@@ -2833,9 +2850,10 @@ function setMlJust(j){ mlJust=j;
 // Restringe el punto vivo a horizontal/vertical (Ortho) o a ángulos de polarStep (Polar), respecto al ancla.
 function constrainOP(wp){
   if(!wp||(!orthoOn&&!polarOn))return wp;
+  if(snapHit)return wp;   // Object Snap SIEMPRE domina sobre Ortho/Polar (garantiza cierres/cruces)
   let ax,ay;
-  if((tool==='pline'||tool==='mline')&&plineActive&&plinePts.length){ ax=plinePts[plinePts.length-1][0]; ay=plinePts[plinePts.length-1][1]; }
-  else if(drawing&&dragStartW&&(tool==='line'||tool==='sline'||tool==='dim2')){ ax=dragStartW.x; ay=dragStartW.y; }
+  if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length){ ax=plinePts[plinePts.length-1][0]; ay=plinePts[plinePts.length-1][1]; }
+  else if(drawing&&dragStartW&&(tool==='sline'||tool==='dim2')){ ax=dragStartW.x; ay=dragStartW.y; }
   else return wp;
   const dx=wp.x-ax, dy=wp.y-ay;
   if(orthoOn){ return (Math.abs(dx)>=Math.abs(dy))?{x:wp.x,y:ay}:{x:ax,y:wp.y}; }
@@ -3410,7 +3428,7 @@ function rasterizeDXF(ents){
 window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(tool==='arc'&&arcPh>0){arcPh=0;arcA=null;arcB=null;setHint('');render();}
-    else if((tool==='pline'||tool==='mline')&&plineActive){plineActive=false;plinePts=[];render();}
+    else if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive){plineActive=false;plinePts=[];render();}
     else{ST('select');}
   }
 });

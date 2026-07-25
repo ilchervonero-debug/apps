@@ -116,7 +116,16 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v72) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v73) · app pro
+- **Motor CAD: dibujo continuo + snap ampliado (v73, pedido Ángel, Sección 3):**
+  · **Línea CONTINUA (estilo AutoCAD)**: la herramienta `line` pasó de arrastre a **multipunto encadenado**
+    (mismo camino que Muro/Polilínea). Tocás cada punto (o medida m + Enter) y la línea encadena; el punto
+    nuevo es el inicio del siguiente tramo. Termina con **doble toque** o **✓**; sale con **Escape**. Cada
+    tramo se guarda como objeto `line` editable. `line` salió de `_DRAG_TOOLS`.
+  · **Snap ampliado**: además de Extremo/Medio/Centro/Cuad/Cercano, ahora reconoce **Intersección**
+    (`_segInt`, cruce matemático de 2 segmentos, solo entre segmentos cerca del cursor = barato).
+  · **Object Snap DOMINA Ortho/Polar**: `constrainOP` no aplica restricción si hay `snapHit` activo
+    (garantiza cierres y enganches a vértices/cruces).
 - **Barra inferior en 2 filas + fila de acción en 3 zonas (v72, pedido Ángel):**
   · **2 filos reales**: `#propbar>#propActions` (más específico que `#propbar>div`) fuerza `flex:1 1 100%`
     → la fila de acción SIEMPRE cae en su propio piso aunque las propiedades sean angostas (ej. Línea).
