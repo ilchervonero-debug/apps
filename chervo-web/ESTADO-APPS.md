@@ -116,7 +116,15 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v81) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v82) · app pro
+- **Undo en comando + Enter=aceptar (v82, pedido Ángel):**
+  · Botón **"un paso atrás" (`#paUndo` → `stepBack()`) al lado del ✓** en la fila de acciones. Retrocede
+    DENTRO del comando (borra el último punto/fase de línea/muro/polilínea/arco/cota/hatch/cinta) SIN salir;
+    si no hay comando en curso → `undo()` global. Resuelve que el undo del head queda tapado por el panel guía.
+  · La fila de acciones ahora aparece también en **arco y cota** (antes solo medida/multipunto), con undo + ✓.
+    El undo se oculta en selección pura; la fila se oculta al quedar sin comando ni selección.
+  · **Enter = aceptar**: `_enterAccept` — con medida escrita la aplica; **sin medida, finaliza el comando**
+    igual que el ✓ (antes Enter vacío no hacía nada).
 - **SmartPen rehecho (v81, pedido Ángel):** el trazo se **pegaba a todo** tras el 1er punto y perdía la
   forma. Ahora: en `getW`, si `tool==='pen'&&drawing&&penPts.length>0` → devuelve `raw` y `snapHit=null`
   (LIBRE, sin snap). Solo el 1er punto se engancha (`nearNode` en handleDown). Al **soltar se convierte**:

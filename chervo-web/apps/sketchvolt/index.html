@@ -150,7 +150,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 #propActions #pbMeasure{width:78px;font-size:16px;font-family:var(--font);padding:6px 9px;
   border:1.5px solid #d0d0d3;border-radius:9px;outline:none;text-align:center;color:var(--ink);}  /* recuadro gris, no rojo */
 #propActions #pbMeasure:focus{border-color:#8e8e93;}
-#propActions #paOk{grid-column:2;grid-row:1;justify-self:center;}           /* Aceptar / confirmar — al centro */
+#propActions #paCenter{grid-column:2;grid-row:1;justify-self:center;display:flex;align-items:center;gap:18px;}  /* undo + aceptar, al centro */
 #propActions #paDel{grid-column:3;grid-row:1;justify-self:end;color:#8e8e93;} /* Tacho = borrar objeto — aislado a la derecha */
 #propbar::-webkit-scrollbar{display:none;}
 .pl{font-size:9px;font-weight:600;color:var(--label);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
@@ -883,8 +883,11 @@ details.mas[open] summary:before{content:'▾ ';}
   <!-- LÍNEA DE ACCIÓN (dinámica): borrar (tacho gris) · aprobar/finalizar (tick). Centrada, abajo. -->
   <div id="propActions">
     <span id="pbMeasBox"><span class="ml">Medida</span><input type="text" inputmode="decimal" id="pbMeasure" placeholder="m" autocomplete="off" onkeydown="measureKey(event)"></span>
+    <span id="paCenter">
+      <button id="paUndo" class="pib" data-tip="Un paso atrás" onclick="stepBack()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H6"/><polyline points="7 6 3 10 7 14"/></svg></button>
+      <button id="paOk" class="pib ok" data-tip="Listo (Enter)" onclick="_paOkFn&&_paOkFn()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
+    </span>
     <button id="paDel" class="pib" data-tip="Borrar" onclick="_paDelFn&&_paDelFn()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
-    <button id="paOk" class="pib ok" data-tip="Listo" onclick="_paOkFn&&_paOkFn()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
   </div>
   <span id="pbHint" style="display:none"></span>
 </div>
@@ -2119,6 +2122,17 @@ let _urT=0;          // throttle anti-spam de deshacer/rehacer (deep-clone es ca
 function saveHistory(){history.push(JSON.parse(JSON.stringify(objects)));if(history.length>HIST_MAX)history.shift();redo=[];markDirty();}
 function undo(){const n=Date.now();if(n-_urT<140)return;_urT=n;if(!history.length){toast('Nada para deshacer');return;}redo.push(JSON.parse(JSON.stringify(objects)));if(redo.length>HIST_MAX)redo.shift();objects=history.pop();render();markDirty();}
 function redoAct(){const n=Date.now();if(n-_urT<140)return;_urT=n;if(!redo.length){toast('Nada para rehacer');return;}history.push(JSON.parse(JSON.stringify(objects)));if(history.length>HIST_MAX)history.shift();objects=redo.pop();render();markDirty();}
+// UN PASO ATRÁS sin salir del comando: borra el último punto/fase del comando activo; si no hay comando, undo global.
+function stepBack(){
+  if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length){
+    plinePts.pop(); if(!plinePts.length)plineActive=false; render(); syncMeasureUI(); return; }
+  if(tool==='hatch'&&hatchPts.length){ hatchPts.pop(); render(); return; }
+  if(tool==='arc'&&arcPh>0){ if(arcPh===2){arcPh=1;arcB=null;arcBulge=false;setHint('→ Toque el punto FINAL del arco');} else {arcPh=0;arcA=null;setHint('');} render(); syncMeasureUI(); return; }
+  if(tool==='dim'&&dimPh>0){ if(dimPh===2){dimPh=1;dimB=null;dimAdjust=false;} else {dimPh=0;dimA=null;} render(); syncMeasureUI(); return; }
+  if(tool==='tape'&&tapePh>0){ resetTape(); render(); syncMeasureUI(); return; }
+  if(drawPending){ cancelPendingDraw(); return; }
+  undo();   // sin comando en curso → deshacer normal (funciona igual dentro de cualquier herramienta)
+}
 
 // LONG PRESS
 let lpStartS=null;
@@ -2929,23 +2943,34 @@ function _selMeasObj(){ if(selIds.length!==1)return null; const o=selObj(); retu
 // Estado de la barra de acción de abajo (medida + tacho + ✓), fuente única de verdad.
 function syncMeasureUI(){
   const inp=document.getElementById('pbMeasure'); if(!inp)return;
-  const paDel=document.getElementById('paDel'), paOk=document.getElementById('paOk'), pa=document.getElementById('propActions');
+  const paDel=document.getElementById('paDel'), paOk=document.getElementById('paOk'), pa=document.getElementById('propActions'), paUndo=document.getElementById('paUndo');
   const multipt=(tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0;
   const dragging=drawing&&_DRAG_TOOLS.includes(tool)&&dragStartW&&dragCurW;
   const tapeMeas=tool==='tape'&&tapePh===1&&tapeMode==='measure'&&dragCurW&&tapeA;
   const tapeGuide=tool==='tape'&&tapePh===1&&tapeMode==='guide';
+  const arcAct=tool==='arc'&&arcPh>0, dimAct=tool==='dim'&&dimPh>0;
   const selO=(!drawPending&&!multipt&&!dragging&&!tapeMeas&&!tapeGuide)?_selMeasObj():null;
-  const showMeas=drawPending||multipt||dragging||tapeMeas||tapeGuide||!!selO;
-  const box=document.getElementById('pbMeasBox'); if(box)box.style.display=showMeas?'flex':'none';
-  if(!showMeas){ if(document.activeElement===inp)inp.blur(); inp.value=''; return; }
-  if(selO&&document.activeElement!==inp){ inp.value=(+_objMeasure(selO).toFixed(2)); }
-  if(tapeMeas&&document.activeElement!==inp){ inp.value=(hyp(dragCurW.x-tapeA[0],dragCurW.y-tapeA[1])/PPM).toFixed(2); }   // distancia viva A→cursor
+  const showBox=drawPending||multipt||dragging||tapeMeas||tapeGuide||!!selO;         // input de medida
+  const cmdActive=drawPending||multipt||tapeMeas||tapeGuide||arcAct||dimAct;         // comando de dibujo en curso
+  const box=document.getElementById('pbMeasBox'); if(box)box.style.display=showBox?'flex':'none';
+  if(showBox){
+    if(selO&&document.activeElement!==inp){ inp.value=(+_objMeasure(selO).toFixed(2)); }
+    if(tapeMeas&&document.activeElement!==inp){ inp.value=(hyp(dragCurW.x-tapeA[0],dragCurW.y-tapeA[1])/PPM).toFixed(2); }
+  } else { if(document.activeElement===inp)inp.blur(); inp.value=''; }
+  if(paUndo)paUndo.style.display=cmdActive?'':'none';   // "un paso atrás" solo con comando en curso
   if(drawPending){ _paDelFn=cancelPendingDraw; _paOkFn=commitPendingDraw; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(multipt){ _paDelFn=cancelMultipoint; _paOkFn=finishMultipoint; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(tapeMeas){ _paDelFn=resetTape; _paOkFn=()=>{ if(tapeA&&dragCurW){_tapeFlash={a:tapeA.slice(),b:[dragCurW.x,dragCurW.y],t:Date.now()};clearTimeout(_tapeFlashT);_tapeFlashT=setTimeout(()=>{_tapeFlash=null;render();},1500);} resetTape(); refreshBottom(); render(); }; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(tapeGuide){ _paDelFn=resetTape; _paOkFn=commitMeasure; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
+  else if(arcAct){ _paDelFn=()=>{ arcPh=0;arcA=null;arcB=null;arcBulge=false;setHint('');render(); };
+    _paOkFn=()=>{ if(arcPh===2&&arcB){ const bp=dragCurW||{x:arcB[0],y:arcB[1]}; saveHistory(); objects.push({type:'arc',pts:[arcA.slice(),[bp.x,bp.y],arcB.slice()],color,strokeW,lineType,id:nextId++}); arcPh=0;arcA=null;arcB=null;arcBulge=false;setHint('');markDirty();render(); } };
+    paDel.style.display=''; paOk.style.display=(arcPh===2)?'':'none'; pa.style.display='grid'; }
+  else if(dimAct){ _paDelFn=()=>{ dimPh=0;dimA=null;dimB=null;dimAdjust=false;setHint('');render(); };
+    _paOkFn=()=>{ if(dimPh===2&&dimA&&dimB){ const p=dragCurW||{x:dimB[0],y:dimB[1]},dx=dimB[0]-dimA[0],dy=dimB[1]-dimA[1],len=hyp(dx,dy); if(len>.001){const nx=-dy/len,ny=dx/len,mid={x:(dimA[0]+dimB[0])/2,y:(dimA[1]+dimB[1])/2},off=(p.x-mid.x)*nx+(p.y-mid.y)*ny; saveHistory();objects.push({type:'dim',pts:[dimA,dimB],offset:off,color,strokeW:1,fontSize:dimFontSize,id:nextId++});} dimPh=0;dimA=null;dimB=null;dimAdjust=false;setHint('');markDirty();render(); } };
+    paDel.style.display=''; paOk.style.display=(dimPh===2)?'':'none'; pa.style.display='grid'; }
   else if(dragging){ paDel.style.display='none'; paOk.style.display='none'; pa.style.display='grid'; }
-  // en selección: el tacho/✓ los define showSelBar; solo agregamos la medida (pa ya visible).
+  else if(!selO){ pa.style.display='none'; }   // nada en curso ni selección → ocultar la fila (evita quedar pegada)
+  // en selección: el tacho/✓ los maneja showSelBar.
 }
 function commitMeasure(){
   const inp=document.getElementById('pbMeasure'); if(!inp)return;
@@ -2969,16 +2994,24 @@ function commitMeasure(){
   const o=_selMeasObj();
   if(o){ saveHistory(); _setObjMeasure(o,val); markDirty(); inp.blur(); render(); }
 }
+// Enter = aceptar. Si hay medida escrita, la aplica; si NO, funciona igual que el ✓ (finaliza el comando).
+function _enterAccept(){
+  const inp=document.getElementById('pbMeasure');
+  const has=inp&&parseFloat((inp.value||'').replace(',','.'))>0;
+  if(has){ commitMeasure(); return; }
+  if(_paOkFn&&_paOkFn!==commitMeasure){ _paOkFn(); return; }   // sin medida → aceptar/finalizar (como el tick verde)
+  commitMeasure();
+}
 function measureKey(e){
-  if(e.key==='Enter'){ e.preventDefault(); commitMeasure(); }
+  if(e.key==='Enter'){ e.preventDefault(); _enterAccept(); }
   else if(e.key==='Escape'){ e.preventDefault(); e.target.value=''; e.target.blur(); }
 }
 document.addEventListener('keydown',e=>{
   const inp=document.getElementById('pbMeasure'); if(!inp||document.activeElement===inp)return;
-  const ctx2=drawPending||((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0)||(tool==='tape'&&tapePh===1&&tapeMode==='guide')||_selMeasObj();
+  const ctx2=drawPending||((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0)||(tool==='tape'&&tapePh===1&&tapeMode==='guide')||(tool==='arc'&&arcPh>0)||(tool==='dim'&&dimPh>0)||_selMeasObj();
   if(!ctx2)return;
   if(/^[0-9.,]$/.test(e.key)){ inp.value+=(e.key===','?'.':e.key); inp.focus(); }
-  else if(e.key==='Enter'){ commitMeasure(); }
+  else if(e.key==='Enter'){ _enterAccept(); }
 });
 function updateGuide(){
   const g=document.getElementById('guide'), gd=GUIA[tool];
