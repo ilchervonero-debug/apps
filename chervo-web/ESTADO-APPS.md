@@ -116,7 +116,15 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v89) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v90) · app pro
+- **Lógica de barra por familia + fix multi-selección (v90, pedido Ángel):**
+  · **Fix crítico**: en multi-selección (2+ objetos) NO aparecían Borrar ni Agrupar → `syncMeasureUI`
+    ocultaba la fila con `else if(!selO)` (selO solo existe para 1 objeto medible). Corregido a
+    `else if(selIds.length===0)`: con cualquier selección la fila queda y `showSelBar` maneja agrupar/tacho/✓.
+  · **Misma lógica para toda herramienta de un FAB** (`_isFabTool`, `_CAD_TOOLS`): la fila de acción aparece
+    siempre con **Borrar** (`_cancelDrawTool`: cancela lo en curso o sale de la herramienta); **✓ solo si hay
+    algo que aceptar**; **Medida solo si aplica**. El branch `dragging` también muestra Borrar (antes lo ocultaba).
+  · Verificado: multi-selección → agrupar + tacho + ✓ visibles.
 - **Delay del toque para zoom/pan a 2 dedos (v89, pedido Ángel):** en `onTS` el `handleDown` se DIFIERE
   `TAP_DELAY=70ms` (el snap se ve al instante con un `render()`). Si entra un 2º dedo en ese lapso → `_clearTap`
   cancela el trazo y pasa a pinch/pan (ya no dibuja por toque casi-simultáneo). `onTM` dispara el trazo

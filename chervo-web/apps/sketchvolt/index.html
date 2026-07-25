@@ -2993,6 +2993,20 @@ function _setObjMeasure(o,val){ const d=val*PPM;
   else if(o.type==='circle'||o.type==='poly')o.r=d; }
 function _selMeasObj(){ if(selIds.length!==1)return null; const o=selObj(); return (o&&['line','rect','circle','poly','dim2'].includes(o.type))?o:null; }
 // Estado de la barra de acción de abajo (medida + tacho + ✓), fuente única de verdad.
+// Herramientas de los FABs (Dibujo/Símbolos/Arquitectura). Todas comparten la MISMA lógica de barra:
+// borrar SIEMPRE visible; ✓ solo si hay algo que aceptar; Medida solo si aplica.
+const _CAD_TOOLS=['line','sline','arc','pline','mline','rect','circle','poly','text','dim','dim2','tape','hatch'];
+function _isFabTool(t){ return _CAD_TOOLS.includes(t)||t==='block'||t==='arch'||t==='pen'; }
+// Borrar/Cancelar unificado: si hay un comando en curso lo cancela; si no, sale de la herramienta.
+function _cancelDrawTool(){
+  if(drawPending){ cancelPendingDraw(); return; }
+  if(plineActive){ cancelMultipoint(); return; }
+  if(tool==='arc'&&arcPh>0){ arcPh=0;arcA=null;arcB=null;arcBulge=false;setHint('');render(); return; }
+  if(tool==='dim'&&dimPh>0){ dimPh=0;dimA=null;dimB=null;dimAdjust=false;setHint('');render(); return; }
+  if(tool==='tape'&&tapePh>0){ resetTape();render(); return; }
+  if(tool==='hatch'&&hatchPts.length){ hatchPts=[];render(); return; }
+  ST('select');   // nada en curso → salir de la herramienta
+}
 function syncMeasureUI(){
   const inp=document.getElementById('pbMeasure'); if(!inp)return;
   const paDel=document.getElementById('paDel'), paOk=document.getElementById('paOk'), pa=document.getElementById('propActions'), paUndo=document.getElementById('paUndo');
@@ -3026,9 +3040,10 @@ function syncMeasureUI(){
   else if(dimAct){ _paDelFn=()=>{ dimPh=0;dimA=null;dimB=null;dimAdjust=false;setHint('');render(); };
     _paOkFn=()=>{ if(dimPh===2&&dimA&&dimB){ const p=dragCurW||{x:dimB[0],y:dimB[1]},dx=dimB[0]-dimA[0],dy=dimB[1]-dimA[1],len=hyp(dx,dy); if(len>.001){const nx=-dy/len,ny=dx/len,mid={x:(dimA[0]+dimB[0])/2,y:(dimA[1]+dimB[1])/2},off=(p.x-mid.x)*nx+(p.y-mid.y)*ny; saveHistory();objects.push({type:'dim',pts:[dimA,dimB],offset:off,color,strokeW:1,fontSize:dimFontSize,id:nextId++});} dimPh=0;dimA=null;dimB=null;dimAdjust=false;setHint('');markDirty();render(); } };
     paDel.style.display=''; paOk.style.display=(dimPh===2)?'':'none'; pa.style.display='grid'; }
-  else if(dragging){ paDel.style.display='none'; paOk.style.display='none'; pa.style.display='grid'; }
-  else if(!selO){ pa.style.display='none'; }   // nada en curso ni selección → ocultar la fila (evita quedar pegada)
-  // en selección: el tacho/✓ los maneja showSelBar.
+  else if(dragging){ _paDelFn=_cancelDrawTool; _paOkFn=null; paDel.style.display=''; paOk.style.display='none'; pa.style.display='grid'; }
+  else if(_isFabTool(tool)){ _paDelFn=_cancelDrawTool; _paOkFn=null; paDel.style.display=''; paOk.style.display='none'; pa.style.display='grid'; }   // familia FAB activa: BORRAR siempre visible
+  else if(selIds.length===0){ pa.style.display='none'; }   // sin selección NI comando → ocultar la fila
+  // con selección (1 o varios): el tacho/✓ y agrupar los maneja showSelBar (no los tocamos acá).
 }
 function commitMeasure(){
   const inp=document.getElementById('pbMeasure'); if(!inp)return;
