@@ -82,17 +82,19 @@ body{display:flex;flex-direction:column;background:#fff;}
 .ph-hsep{height:1px;background:#e5e5ea;margin:2px 0;}
 /* botones herramienta — icono NEGRO fino, sin fondo; activo = icono rojo + borde rojo */
 .phb{
-  width:62px;height:62px;border-radius:10px;
+  width:70px;min-height:66px;border-radius:10px;padding:6px 2px;
   background:transparent;border:none;color:var(--ink);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:box-shadow .12s,transform .08s;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;transition:transform .08s;
 }
-.phb svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:1.1;
+.phb svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.2;
   stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+.phb span{font-size:13px;color:#8e8e93;font-weight:400;line-height:1.05;pointer-events:none;text-align:center;overflow-wrap:anywhere;}
 .phb.on{color:var(--accent);}
+.phb.on span{color:var(--accent);}
 .phb:active{transform:scale(.92);}
 /* FAB herramientas — cuadrado esquinas redondeadas; icono rojo fino, borde rojo */
 #btn-herr{
-  position:fixed;right:16px;top:10%;
+  position:fixed;right:16px;top:14%;
   width:56px;height:56px;border-radius:14px;
   background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
   display:flex;align-items:center;justify-content:center;
@@ -125,7 +127,7 @@ body{display:flex;flex-direction:column;background:#fff;}
   border-radius:18px 18px 0 0;
   box-shadow:0 -6px 26px rgba(0,0,0,.10);
   display:flex;align-items:center;align-content:center;flex-wrap:wrap;justify-content:space-evenly;
-  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));gap:6px 4px;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:12px 6px;
   transform:translateY(112%);transition:transform .24s cubic-bezier(.3,1,.4,1);
 }
 /* Los grupos activos llenan el ancho y reparten sus controles (no amontonados al centro). */
@@ -153,7 +155,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 #propActions #paCenter{grid-column:2;grid-row:1;justify-self:center;display:flex;align-items:center;gap:18px;}  /* undo + aceptar, al centro */
 #propActions #paDel{grid-column:3;grid-row:1;justify-self:end;color:#8e8e93;} /* Tacho = borrar objeto — aislado a la derecha */
 #propbar::-webkit-scrollbar{display:none;}
-.pl{font-size:9px;font-weight:600;color:var(--label);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+.pl{font-size:11px;font-weight:500;color:#8e8e93;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
 .pdiv{width:1px;height:20px;background:rgba(0,0,0,.1);flex-shrink:0;}
 #propbar input[type=range]{accent-color:var(--accent);flex-shrink:0;}
 #propbar select{background:#f2f2f7;color:var(--ink);border:1px solid #e5e5ea;border-radius:6px;padding:3px 6px;font-size:11px;font-family:var(--font);flex-shrink:0;}
@@ -197,8 +199,8 @@ body{display:flex;flex-direction:column;background:#fff;}
 #pbTool.hide{display:none;}
 #pbHint{font-size:11px;color:var(--accent);white-space:nowrap;flex-shrink:0;font-weight:500;}
 /* Campo apilado: rótulo ARRIBA, control ABAJO (evita el slide lateral) */
-.fi{display:inline-flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;}
-.fi>.fl{font-size:10px;font-weight:600;color:var(--label);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;line-height:1;}
+.fi{display:inline-flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
+.fi>.fl{font-size:11px;font-weight:500;color:#8e8e93;letter-spacing:.03em;text-transform:uppercase;white-space:nowrap;line-height:1;}
 .fi input[type=range]{margin:0;}
 /* Orden INVISIBLE: los campos apenas espaciados, sin caja ni divisores.
    (A Ángel no le gustan las grillas/cajas visibles; el orden existe pero no se ve.) */
@@ -396,17 +398,17 @@ body{display:flex;flex-direction:column;background:#fff;}
 .ctab tr.tot td{font-size:18px;background:#fafafa;border-top:1.5px solid #e5e5ea;}
 
 /* FAB ELECTRICIDAD — segundo FAB, al lado del de herramientas */
-#btn-elec{position:fixed;right:82px;top:10%;width:56px;height:56px;border-radius:14px;
+#btn-elec{position:fixed;right:82px;top:14%;width:56px;height:56px;border-radius:14px;
   background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
   display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.12);z-index:160;}
 #btn-elec:active{background:#f2f2f7;}
 #btn-elec svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 /* FAB Librería de bloques arquitectónicos (iLDraft) */
-#btn-arch{position:fixed;right:148px;top:10%;width:56px;height:56px;border-radius:14px;
+#btn-arch{position:fixed;right:148px;top:14%;width:56px;height:56px;border-radius:14px;
   background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
   display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.12);z-index:160;}
 #btn-arch:active{background:#f2f2f7;}
-#btn-arch svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+#btn-arch svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 /* FABs planos y grises: ícono negro por defecto; rojo SOLO cuando su panel está activo (.on) */
 #btn-herr,#btn-elec,#btn-arch{background:#f2f2f7;border:none;color:#1c1c1e;box-shadow:0 4px 12px rgba(0,0,0,.08);transition:background .2s,color .2s;}
 #btn-herr.on,#btn-elec.on,#btn-arch.on{color:var(--accent);}
@@ -422,15 +424,19 @@ body{display:flex;flex-direction:column;background:#fff;}
   display:none;flex-direction:column;padding:12px;width:300px;max-height:68vh;}
 #panel-unit.open{display:flex;animation:phDown .18s ease;}
 .pu-scroll{overflow-y:auto;padding-right:4px;scrollbar-width:thin;}
-.pu-title{font-size:14px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;
-  margin:10px 0 6px;font-weight:600;border-bottom:1px solid #e5e5ea;padding-bottom:3px;}
+/* Título de categoría: gris sutil, fino, SIN rojo ni negrita ni caja. Legible (14px). */
+.pu-title{font-size:14px;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em;
+  margin:14px 0 8px;font-weight:500;}
 .pu-title:first-child{margin-top:0;}
-.pu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
-.pu-item{background:#f7f7f8;border:1.5px solid transparent;border-radius:10px;padding:9px 2px;
-  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;text-align:center;}
-.pu-item:active{border-color:var(--accent);}
-.pu-item svg{width:30px;height:30px;fill:none;stroke:var(--ink);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
-.pu-item span{font-size:14px;color:var(--ink);line-height:1.05;pointer-events:none;}
+.pu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+/* Ítem naked: sin caja ni borde; resalta el trazo del ícono al presionar. */
+.pu-item{background:transparent;border:none;border-radius:10px;padding:10px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;text-align:center;}
+.pu-item:active svg{stroke:var(--accent);}
+.pu-item svg{width:32px;height:32px;fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+/* Nombre del ítem: legible (16px), fino, tinta. Envuelve a 2 líneas si hace falta (no trunca, no se solapa). */
+.pu-item span{font-size:16px;color:var(--ink);font-weight:400;line-height:1.15;pointer-events:none;max-width:100%;overflow-wrap:anywhere;}
+.pu-grid{align-items:start;}
 .cdot{width:22px;height:22px;border-radius:50%;border:1.5px solid #d0d0d3;cursor:pointer;flex-shrink:0;padding:0;}
 /* Barra inferior: es un PANEL que sube/baja desde abajo. Sin nada activo, se desliza fuera
    (translateY) y el canvas/grilla llena todo el pie; al haber contexto, sube (.up). */
@@ -573,27 +579,27 @@ details.mas[open] summary:before{content:'▾ ';}
   <div class="ph-col">
     <span class="ph-lbl">Dibujo</span>
     <div class="ph-g3">
-      <button class="phb" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg></button>
-      <button class="phb" data-t="sline" data-tip="SmartLine · cañería eléctrica" onclick="ST('sline');closeTools()"><svg viewBox="0 0 24 24"><line x1="6" y1="18" x2="18" y2="6"/><circle cx="6" cy="18" r="2.3" style="fill:currentColor"/><circle cx="18" cy="6" r="2.3" style="fill:currentColor"/></svg></button>
-      <button class="phb" data-t="arc" onclick="ST('arc');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 19 Q 8 5 20 8" fill="none"/></svg></button>
-      <button class="phb" data-t="pline" onclick="ST('pline');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 18 7 6 12 14 17 8 21 14"/></svg></button>
-      <button class="phb" data-t="mline" data-tip="Muro (multilínea)" onclick="ST('mline');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="20" x2="11" y2="4"/><line x1="13" y1="20" x2="19" y2="4"/></svg></button>
-      <button class="phb" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
-      <button class="phb" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></button>
-      <button class="phb" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg></button>
-      <button class="phb" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
-      <button class="phb" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg></button>
-      <button class="phb" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg></button>
-      <button class="phb" data-t="tape" data-tip="Cinta métrica · guías" onclick="ST('tape');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v6a6 6 0 0 1-6 6H4z"/><circle cx="9" cy="10" r="3"/><path d="M9 20v-2M13 20v-3M17 20v-2"/></svg></button>
-      <button class="phb" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg></button>
+      <button class="phb" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg><span>Línea</span></button>
+      <button class="phb" data-t="sline" data-tip="SmartLine · cañería eléctrica" onclick="ST('sline');closeTools()"><svg viewBox="0 0 24 24"><line x1="6" y1="18" x2="18" y2="6"/><circle cx="6" cy="18" r="2.3" style="fill:currentColor"/><circle cx="18" cy="6" r="2.3" style="fill:currentColor"/></svg><span>SmartLine</span></button>
+      <button class="phb" data-t="arc" onclick="ST('arc');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 19 Q 8 5 20 8" fill="none"/></svg><span>Arco</span></button>
+      <button class="phb" data-t="pline" onclick="ST('pline');closeTools()"><svg viewBox="0 0 24 24"><polyline points="3 18 7 6 12 14 17 8 21 14"/></svg><span>Polilínea</span></button>
+      <button class="phb" data-t="mline" data-tip="Muro (multilínea)" onclick="ST('mline');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="20" x2="11" y2="4"/><line x1="13" y1="20" x2="19" y2="4"/></svg><span>Muro</span></button>
+      <button class="phb" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg><span>Rectáng.</span></button>
+      <button class="phb" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg><span>Círculo</span></button>
+      <button class="phb" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg><span>Polígono</span></button>
+      <button class="phb" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg><span>Texto</span></button>
+      <button class="phb" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg><span>Cota</span></button>
+      <button class="phb" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg><span>Cota dir.</span></button>
+      <button class="phb" data-t="tape" data-tip="Cinta métrica · guías" onclick="ST('tape');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v6a6 6 0 0 1-6 6H4z"/><circle cx="9" cy="10" r="3"/><path d="M9 20v-2M13 20v-3M17 20v-2"/></svg><span>Cinta</span></button>
+      <button class="phb" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg><span>Relleno</span></button>
     </div>
   </div>
   <div class="ph-hsep"></div>
   <div class="ph-col">
     <span class="ph-lbl">Edición</span>
     <div class="ph-g3">
-      <button class="phb" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg></button>
-      <button class="phb" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg></button>
+      <button class="phb" data-t="eraser" onclick="ST('eraser');closeTools()"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l5-5"/></svg><span>Goma</span></button>
+      <button class="phb" data-t="trim" onclick="ST('trim');closeTools()"><svg viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><line x1="6" y1="15" x2="6" y2="9"/><line x1="6" y1="12" x2="21" y2="3"/><line x1="6" y1="12" x2="21" y2="21"/></svg><span>Recortar</span></button>
     </div>
   </div>
 </div>

@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v86) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v87) · app pro
+- **Legibilidad + nombres de herramientas (v87, pedido Ángel, doc §1):** paneles FAB **naked** (sin cajas):
+  `.pu-item` transparente, `.pu-title` gris `#8e8e93` fino 14px (no rojo/negrita), nombres de ítem 16px
+  que envuelven a 2 líneas (no truncan). **Nombres bajo cada herramienta** (`.phb span`, gris) para que los
+  chicos las reconozcan en clase. Etiquetas de la barra (`.pl`/`.fl`) a gris fino 11px (no negrita) + más
+  aire (`.fi` gap 4px, barra row-gap 12px) → sin solapamiento. FABs unificados (íconos 28-32px, `top:14%`).
 - **Precisión: rótulo no pisa la barra + medida exacta en eje (v86, pedido Ángel):**
   · **Fix texto sobrepuesto**: `#pbTool` usaba `var(--prop)` (1 fila) pero la barra tiene 2 → un
     **ResizeObserver** sobre `#propbar` reubica el rótulo por encima del alto real cada vez que cambia.
