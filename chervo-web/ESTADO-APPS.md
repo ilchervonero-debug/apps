@@ -116,7 +116,16 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v77) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v78) · app pro
+- **Estabilidad para 299 usuarios (v78):** todo cliente, sin backend.
+  · **Auto-guardado**: `_safeSave` en `beforeunload` + `pagehide` + `visibilitychange`(hidden) + intervalo
+    de 60s. En móvil `beforeunload` no siempre dispara → por eso los tres eventos. Recuperación tras crash =
+    localStorage siempre al día (al reabrir carga el último estado).
+  · **Undo/Redo tope 20** (`HIST_MAX`, antes 40) → evita fugas de memoria en gama baja.
+  · **Anti-spam**: guard en `handleDown` descarta disparos <55ms (no duplica geometría); throttle 140ms en
+    deshacer/rehacer (deep-clone caro).
+  · **Auth/backend (Firebase/Supabase + JWT + user_id + 403): PENDIENTE** — requiere backend real, credenciales
+    del proveedor y saca datos de menores a la nube (decisión de Ángel). Ver nota abajo.
 - **Cinta métrica + líneas guía (v77, estilo SketchUp):** herramienta `tape` (botón huincha en el panel).
   · **Modo Medir**: pick en vacío/vértice → pick B; la distancia aparece VIVA en el input Medida (m);
     al confirmar muestra un flash con la medida y NO deja geometría.

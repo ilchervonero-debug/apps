@@ -2097,9 +2097,11 @@ function drawPreview(){
 }
 
 // HISTORY
-function saveHistory(){history.push(JSON.parse(JSON.stringify(objects)));if(history.length>40)history.shift();redo=[];markDirty();}
-function undo(){if(!history.length){toast('Nada para deshacer');return;}redo.push(JSON.parse(JSON.stringify(objects)));objects=history.pop();render();markDirty();}
-function redoAct(){if(!redo.length){toast('Nada para rehacer');return;}history.push(JSON.parse(JSON.stringify(objects)));objects=redo.pop();render();markDirty();}
+const HIST_MAX=20;   // tope de memoria: máx 20 pasos (evita fugas en gama baja)
+let _urT=0;          // throttle anti-spam de deshacer/rehacer (deep-clone es caro)
+function saveHistory(){history.push(JSON.parse(JSON.stringify(objects)));if(history.length>HIST_MAX)history.shift();redo=[];markDirty();}
+function undo(){const n=Date.now();if(n-_urT<140)return;_urT=n;if(!history.length){toast('Nada para deshacer');return;}redo.push(JSON.parse(JSON.stringify(objects)));if(redo.length>HIST_MAX)redo.shift();objects=history.pop();render();markDirty();}
+function redoAct(){const n=Date.now();if(n-_urT<140)return;_urT=n;if(!redo.length){toast('Nada para rehacer');return;}history.push(JSON.parse(JSON.stringify(objects)));if(history.length>HIST_MAX)history.shift();objects=redo.pop();render();markDirty();}
 
 // LONG PRESS
 let lpStartS=null;
@@ -2322,7 +2324,10 @@ function onTE(e){
 }
 
 // CORE HANDLERS
+let _lastDownT=0;
 function handleDown(wp,rawW,scrn){
+  // Anti-spam: descarta disparos duplicados/rebotes < 55ms (evita geometría duplicada por toques repetidos).
+  const _nowD=Date.now(); if(_nowD-_lastDownT<55)return; _lastDownT=_nowD;
   if(drawPending){ commitPendingDraw(); }   // un nuevo toque fija el trazo pendiente y arranca otro
   if(calibrando){
     calibPts.push([rawW.x,rawW.y]);
@@ -3951,7 +3956,14 @@ function imprimirConteo(){
 }
 
 // autosave al salir
-window.addEventListener('beforeunload',()=>{ if(planta)savePlanta(); });
+// ── Persistencia robusta / recuperación ante cierre o crash ──
+function _safeSave(){ try{ if(planta)savePlanta(); }catch(e){} }
+window.addEventListener('beforeunload',_safeSave);
+// En móvil beforeunload no siempre dispara: guardamos también al ocultar/segundo plano y al descargar la página.
+window.addEventListener('pagehide',_safeSave);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden')_safeSave(); });
+// Red de seguridad: autoguardado silencioso cada 60s aunque el usuario no cambie de pantalla.
+setInterval(_safeSave,60000);
 
 resize();
 {const b=document.getElementById('ptrBtn');if(b)b.innerHTML=_PTR_ICONS[ptrMode][1];}   // ícono inicial del modo de puntero
