@@ -116,7 +116,17 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v82) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v83) · app pro
+- **Aceptación uniforme + tips cerrables + SmartPen libre (v83, pedido Ángel):**
+  · **✓/Enter aceptan en la Cinta**: el ✓ de la guía crea con el número escrito O con la distancia
+    arrastrada (antes usaba `commitMeasure` y sin número no hacía nada). Todos los comandos aceptan igual
+    por ✓ y por Enter (`_enterAccept`).
+  · **Doble-tap exacto**: al finalizar multipunto, si el último punto quedó <18px del anterior (el 1er toque
+    del doble-tap), se descarta → ya no "mueve las cosas".
+  · **Tips cerrables**: tap en los textos del `#guide` → `dismissGuide()` lo oculta (flag `_guideDismissed`,
+    se resetea al cambiar de herramienta).
+  · **SmartPen libre**: excluido del modo Anclado (`ptrMode===1 && tool!=='pen'` en onTS/onTE) → dibuja
+    arrastrando como lápiz libre en cualquier modo; 1er punto snap, convierte al soltar.
 - **Undo en comando + Enter=aceptar (v82, pedido Ángel):**
   · Botón **"un paso atrás" (`#paUndo` → `stepBack()`) al lado del ✓** en la fila de acciones. Retrocede
     DENTRO del comando (borra el último punto/fase de línea/muro/polilínea/arco/cota/hatch/cinta) SIN salir;

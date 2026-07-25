@@ -733,8 +733,8 @@ details.mas[open] summary:before{content:'▾ ';}
 </div>
 <!-- Panel guía: cuando hay herramienta activa, el head muestra los pasos en texto (comandos en rojo) -->
 <div id="guide">
-  <span class="gtool" id="guideTool">Herramienta</span>
-  <div class="gtxt" id="guideTxt"></div>
+  <span class="gtool" id="guideTool" onclick="dismissGuide()" style="cursor:pointer">Herramienta</span>
+  <div class="gtxt" id="guideTxt" onclick="dismissGuide()" style="cursor:pointer"></div>
   <button class="gesc" onclick="ST('select')" data-tip="Salir de la herramienta"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-7 1-4 7z"/></svg></button>
 </div>
 
@@ -2303,7 +2303,8 @@ function onTS(e){
   const now=Date.now();
   const _multi=(tool==='pline'||tool==='mline'||tool==='line');
   // ── MODO ANCLADO (§1): arrastrás para mover la cruz, soltás y ANCLA; el próximo tap CONFIRMA en la coord anclada ──
-  if(ptrMode===1){
+  // El SmartPen (lápiz libre) NUNCA usa anclado: dibuja arrastrando en cualquier modo.
+  if(ptrMode===1 && tool!=='pen'){
     const s=getS(e);
     if(anchorArmed){                       // este tap = CONFIRMAR el pick en el punto anclado (no en el tap)
       _wasConfirm=true; cursorS=anchorS?{...anchorS}:s;
@@ -2345,7 +2346,7 @@ function onTE(e){
   if(Object.keys(touches).length<2){pinching=false;pinch0=null;panning=false;}
   if(pinching)return;
   // ── MODO ANCLADO: soltar NO confirma; ancla la cruz y espera el tap de confirmación ──
-  if(ptrMode===1){
+  if(ptrMode===1 && tool!=='pen'){
     if(_wasConfirm){ _wasConfirm=false; touchActive=false; render(); return; }   // era el tap de confirmar (ya ejecutado en onTS)
     const s=getS(e); cursorS={...s}; anchorS={...s}; anchorPt=constrainOP(getW(e)); anchorArmed=true;   // ANCLA (queda la cruz fija)
     render(); return;
@@ -2483,6 +2484,11 @@ function handleDown(wp,rawW,scrn){
 }
 
 function handleDbl(wp){
+  // El doble-tap suma un punto con su 1er toque; si quedó casi encima del anterior, lo descartamos (finaliza EXACTO, sin mover nada).
+  if(plineActive&&plinePts.length>=2){
+    const a=plinePts[plinePts.length-1],b=plinePts[plinePts.length-2];
+    if(hyp(a[0]-b[0],a[1]-b[1])<18/vpZ)plinePts.pop();
+  }
   if(tool==='line'&&plineActive&&plinePts.length>1){                          // cadena de líneas: cada tramo = un objeto 'line' editable
     saveHistory();
     for(let i=0;i<plinePts.length-1;i++)objects.push({type:'line',pts:[plinePts[i].slice(),plinePts[i+1].slice()],color,strokeW,lineType,id:nextId++});
@@ -2866,7 +2872,7 @@ function ST(t){
   if(t!=='select'&&editGroupId){ editGroupId=null; showGroupEditBar(false); }   // cambiar de herramienta sale del modo aislado
   if(t!=='block')bloqueSel=null;
   if(t!=='arch')pendingArch=null;
-  dimPh=0;dimA=null;dimB=null;dimAdjust=false;arcPh=0;arcA=null;arcB=null;arcBulge=false;arcEditId=null;arcEditOrig=null;arcEditDragging=false;tapePh=0;tapeMode=null;tapeA=null;tapeRef=null;movId=null;movSet=null;anchorArmed=false;anchorPt=null;anchorS=null;_wasConfirm=false;setHint('');
+  dimPh=0;dimA=null;dimB=null;dimAdjust=false;arcPh=0;arcA=null;arcB=null;arcBulge=false;arcEditId=null;arcEditOrig=null;arcEditDragging=false;tapePh=0;tapeMode=null;tapeA=null;tapeRef=null;movId=null;movSet=null;anchorArmed=false;anchorPt=null;anchorS=null;_wasConfirm=false;_guideDismissed=false;setHint('');
   document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
   const btnH=document.getElementById('btn-herr');
@@ -2961,7 +2967,13 @@ function syncMeasureUI(){
   if(drawPending){ _paDelFn=cancelPendingDraw; _paOkFn=commitPendingDraw; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(multipt){ _paDelFn=cancelMultipoint; _paOkFn=finishMultipoint; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(tapeMeas){ _paDelFn=resetTape; _paOkFn=()=>{ if(tapeA&&dragCurW){_tapeFlash={a:tapeA.slice(),b:[dragCurW.x,dragCurW.y],t:Date.now()};clearTimeout(_tapeFlashT);_tapeFlashT=setTimeout(()=>{_tapeFlash=null;render();},1500);} resetTape(); refreshBottom(); render(); }; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
-  else if(tapeGuide){ _paDelFn=resetTape; _paOkFn=commitMeasure; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
+  else if(tapeGuide){ _paDelFn=resetTape; _paOkFn=()=>{
+      if(!tapeRef){resetTape();refreshBottom();render();return;}
+      const v=parseFloat((inp.value||'').replace(',','.')), cur=dragCurW||{x:tapeRef.px,y:tapeRef.py}, pr=perpOf(tapeRef,cur);
+      const offW=(v>0)?((pr.d>=0?1:-1)*v*PPM):pr.d;   // número escrito, o la distancia arrastrada
+      if(Math.abs(offW)>1e-3){ saveHistory(); createGuide(tapeRef,offW); }
+      resetTape(); inp.value=''; if(document.activeElement===inp)inp.blur(); refreshBottom(); render();
+    }; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(arcAct){ _paDelFn=()=>{ arcPh=0;arcA=null;arcB=null;arcBulge=false;setHint('');render(); };
     _paOkFn=()=>{ if(arcPh===2&&arcB){ const bp=dragCurW||{x:arcB[0],y:arcB[1]}; saveHistory(); objects.push({type:'arc',pts:[arcA.slice(),[bp.x,bp.y],arcB.slice()],color,strokeW,lineType,id:nextId++}); arcPh=0;arcA=null;arcB=null;arcBulge=false;setHint('');markDirty();render(); } };
     paDel.style.display=''; paOk.style.display=(arcPh===2)?'':'none'; pa.style.display='grid'; }
@@ -3013,9 +3025,11 @@ document.addEventListener('keydown',e=>{
   if(/^[0-9.,]$/.test(e.key)){ inp.value+=(e.key===','?'.':e.key); inp.focus(); }
   else if(e.key==='Enter'){ _enterAccept(); }
 });
+let _guideDismissed=false;
+function dismissGuide(){ _guideDismissed=true; document.getElementById('guide').classList.remove('show'); }   // tap en los textos → cerrar tips
 function updateGuide(){
   const g=document.getElementById('guide'), gd=GUIA[tool];
-  if(gd && tool!=='select'){ document.getElementById('guideTool').textContent=gd[0]; document.getElementById('guideTxt').innerHTML=gd[1]; g.classList.add('show'); }
+  if(gd && tool!=='select' && !_guideDismissed){ document.getElementById('guideTool').textContent=gd[0]; document.getElementById('guideTxt').innerHTML=gd[1]; g.classList.add('show'); }
   else g.classList.remove('show');
 }
 function toggleGrid(){gridOn=!gridOn;document.getElementById('gridBtn').classList.toggle('on',gridOn);if(_panelMode!=='grid')openBottomPanel('grid');else{refreshBottom();render();}toast('Grilla '+(gridOn?'ON':'OFF'));}
