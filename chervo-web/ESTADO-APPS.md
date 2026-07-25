@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v93) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v94) · app pro
+- **SmartPen hace splines suaves (v94, pedido Ángel):** la curva sinuosa ya no se convierte en polilínea
+  recta sino en **`spline` Catmull-Rom** (líneas sinuosas tipo CAD). El trazo libre se limpia con RDP →
+  puntos de control, y `_catmull`/`splinePoly` los interpola en curva suave (14 muestras/tramo). Nuevo tipo
+  `spline` integrado en drawObj, getSegs (hit/goma), export DXF (poly muestreado), conteo de metros y
+  zLevel 30. Trazo recto sigue → línea; cerrado → rect/círculo. Verificado: onda sinuosa → curva fluida.
 - **Cotas: snap fuerte a cualquier vértice (v93, pedido Ángel):** `snapToObject` reescrito con **prioridad
   absoluta al vértice** (extremos/centros) sobre puntos medios, y radio grande para cotas (58px vs 30). En
   `getW` el THRESH de `dim`/`dim2` sube a 52px. Verificado: pick a ~42px del vértice engancha exacto; entre
