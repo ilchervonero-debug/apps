@@ -1073,33 +1073,20 @@ function getRW(e){const s=getS(e);return s2w(s.x,s.y);}
 function snpGrid(wx,wy){return{x:Math.round(wx/cellPx)*cellPx,y:Math.round(wy/cellPx)*cellPx};}
 
 function snapToObject(wp){
-  const THRESH=30/vpZ;
-  let best=null,bestD=THRESH;
+  // Cotas: imán MUY fuerte a cualquier VÉRTICE (radio grande), con prioridad absoluta sobre puntos medios.
+  const dimTool=(tool==='dim'||tool==='dim2');
+  const VTH=(dimTool?58:30)/vpZ, MTH=30/vpZ;
+  let bestV=null,bV=VTH, bestM=null,bM=MTH;
+  const tV=(x,y)=>{const d=hyp(wp.x-x,wp.y-y);if(d<bV){bV=d;bestV={x,y};}};   // vértices/extremos/centros
+  const tM=(x,y)=>{const d=hyp(wp.x-x,wp.y-y);if(d<bM){bM=d;bestM={x,y};}};   // puntos medios
   for(const obj of objects){
     if(!obj||!obj.pts)continue;
-    // Circle/poly: snap to center (invisible snap point)
-    if((obj.type==='circle'||obj.type==='poly')&&obj.pts[0]){
-      const d=hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1]);
-      if(d<bestD){bestD=d;best={x:obj.pts[0][0],y:obj.pts[0][1]};}
-    }
-    // Endpoints
-    for(const p of obj.pts){
-      if(!p||p.length<2)continue;
-      const d=hyp(wp.x-p[0],wp.y-p[1]);
-      if(d<bestD){bestD=d;best={x:p[0],y:p[1]};}
-    }
-    // Segment endpoints and midpoints
-    for(const seg of getSegs(obj)){
-      for(const p of seg){
-        const d=hyp(wp.x-p[0],wp.y-p[1]);
-        if(d<bestD){bestD=d;best={x:p[0],y:p[1]};}
-      }
-      const mx=(seg[0][0]+seg[1][0])/2,my=(seg[0][1]+seg[1][1])/2;
-      const d=hyp(wp.x-mx,wp.y-my);
-      if(d<bestD){bestD=d;best={x:mx,y:my};}
-    }
+    if((obj.type==='circle'||obj.type==='poly')&&obj.pts[0]) tV(obj.pts[0][0],obj.pts[0][1]);   // centro
+    for(const p of obj.pts){ if(p&&p.length>=2) tV(p[0],p[1]); }                                 // vértices
+    for(const seg of getSegs(obj)){ tV(seg[0][0],seg[0][1]); tV(seg[1][0],seg[1][1]);            // extremos de cada tramo
+      tM((seg[0][0]+seg[1][0])/2,(seg[0][1]+seg[1][1])/2); }                                     // medio
   }
-  return best||snpGrid(wp.x,wp.y);
+  return bestV||bestM||snpGrid(wp.x,wp.y);   // VÉRTICE gana siempre; si no, medio; si no, grilla
 }
 // Simplificación Ramer–Douglas–Peucker: limpia el garabato dejando una curva suave con pocos puntos.
 function _strokeDiag(pts){let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9;for(const p of pts){mnx=Math.min(mnx,p[0]);mny=Math.min(mny,p[1]);mxx=Math.max(mxx,p[0]);mxy=Math.max(mxy,p[1]);}return hyp(mxx-mnx,mxy-mny);}
@@ -1132,7 +1119,7 @@ function getW(e){
     if(drawing&&dragStartW)st(dragStartW.x,dragStartW.y);
     if(sb){snapHit={x:sb.x,y:sb.y,kind:'end'};return sb;}
   }
-  const THRESH=(tool==='sline'?42:(_DRAG_TOOLS.includes(tool)||tool==='pline'||tool==='mline'||tool==='line'?30:22))/vpZ;   // snap más fuerte al dibujar
+  const THRESH=(tool==='sline'?42:(tool==='dim'||tool==='dim2'?52:(_DRAG_TOOLS.includes(tool)||tool==='pline'||tool==='mline'||tool==='line'?30:22)))/vpZ;   // cotas: imán MUY fuerte al vértice
   let best=null,bestD=THRESH,kind=null;
   const take=(x,y,k)=>{const d=hyp(raw.x-x,raw.y-y);if(d<bestD){bestD=d;best={x,y};kind=k;}};
   // Snap a DIBUJOS (botón #snapBtn). Prioriza puntos precisos sobre "cercano".

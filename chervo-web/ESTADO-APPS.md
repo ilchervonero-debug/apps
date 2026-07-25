@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v91) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v93) · app pro
+- **Cotas: snap fuerte a cualquier vértice (v93, pedido Ángel):** `snapToObject` reescrito con **prioridad
+  absoluta al vértice** (extremos/centros) sobre puntos medios, y radio grande para cotas (58px vs 30). En
+  `getW` el THRESH de `dim`/`dim2` sube a 52px. Verificado: pick a ~42px del vértice engancha exacto; entre
+  vértice y medio cercanos gana el vértice.
+- **FABs subidos medio fab (v92):** `top: calc(14% - 28px)` en los 3.
 - **Barra de propiedades: nombres de texto debajo + centrado parejo (v91, pedido Ángel):**
   · Las etiquetas de propiedad pasan de **ícono a TEXTO** y van **DEBAJO** del control (`.fi>.fl{order:2}`).
     Conversión ícono→texto 100% por CSS (sin tocar HTML): `.fi>.fl[title] svg{display:none}` +
