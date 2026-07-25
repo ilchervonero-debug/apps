@@ -794,8 +794,8 @@ details.mas[open] summary:before{content:'▾ ';}
       <input type="number" id="archL" step="0.05" style="width:64px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center" onchange="updateArch('l', this.value)"></span>
     <span class="fi" id="archTxtWrap" style="display:none"><span class="fl">Texto</span>
       <input type="text" id="archTxt" maxlength="4" style="width:54px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center" oninput="updateArch('txt', this.value)"></span>
-    <button class="pib" data-tip="Rotar 90°" onclick="updateArch('rot')"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></button>
-    <button class="pib" data-tip="Espejo" onclick="updateArch('flip')"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-4 5 4 5"/><path d="M16 7l4 5-4 5" opacity=".4"/></svg></button>
+    <button class="pib" data-tip="Invertir horizontal" onclick="updateArch('flip')"><svg viewBox="0 0 24 24"><path d="M3 9h14"/><path d="M14 6l3 3-3 3"/><path d="M21 15H7"/><path d="M10 12l-3 3 3 3"/></svg></button>
+    <button class="pib" data-tip="Invertir vertical" onclick="updateArch('flipV')"><svg viewBox="0 0 24 24"><path d="M9 21V7"/><path d="M6 10l3-3 3 3"/><path d="M15 3v14"/><path d="M18 14l-3 3-3-3"/></svg></button>
     <button class="pib" id="btnAnchor" data-tip="Anclar a muro" onclick="updateArch('anchor')"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
     <span id="archTypeWrap" style="display:none;align-items:center;gap:4px">
       <button class="pib" id="btnBatiente" data-tip="Batiente" onclick="updateArch('variant','batiente')"><svg viewBox="0 0 24 24"><path d="M4 22V2h4v20M8 22c0-8.8 7.2-16 16-16v2c-7.7 0-14 6.3-14 14"/></svg></button>
@@ -1404,7 +1404,7 @@ function drawArchObj(obj){
   const pos=w2s(obj.pts[0][0],obj.pts[0][1]);
   const W=(obj.w||0.8)*PPM*vpZ, H=(obj.l||0.15)*PPM*vpZ, ink=sel?'#007aff':(obj.color||'#1c1c1e');
   ctx.save();
-  ctx.translate(pos.x,pos.y); ctx.rotate((obj.rotation||0)*Math.PI/180); if(obj.flip)ctx.scale(-1,1);
+  ctx.translate(pos.x,pos.y); ctx.rotate((obj.rotation||0)*Math.PI/180); if(obj.flip)ctx.scale(-1,1); if(obj.flipV)ctx.scale(1,-1);
   ctx.strokeStyle=ink; ctx.fillStyle=ink; ctx.lineWidth=1.5*vpZ; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.setLineDash([]);
   const k=obj.kind, dash=[3*vpZ,3*vpZ], mch=Math.max(1.2*vpZ,W*0.05);
   const rr=(x,y,w,h)=>ctx.strokeRect(x,y,w,h);
@@ -3011,7 +3011,8 @@ function updateArch(prop,val){
   if(prop==='w') o.w=parseFloat(val)||o.w;
   if(prop==='l') o.l=parseFloat(val)||o.l;
   if(prop==='rot') o.rotation=((o.rotation||0)+90)%360;
-  if(prop==='flip') o.flip=!o.flip;
+  if(prop==='flip') o.flip=!o.flip;       // invertir horizontal
+  if(prop==='flipV') o.flipV=!o.flipV;    // invertir vertical
   if(prop==='variant') o.variant=val;
   if(prop==='anchor') o.anchored=!o.anchored;
   if(prop==='txt'){ o.txt=(val||'').toUpperCase(); markDirty(); render(); return; }   // sin re-showSelBar (no perder foco al tipear)

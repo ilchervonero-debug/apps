@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v70) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v71) · app pro
+- **Orientación de aberturas por flips estrictos (v71, pedido Ángel):** prohibido el ícono de
+  rotación/refresh. Se reemplazó por dos íconos de flechas rectas paralelas opuestas:
+  **Invertir horizontal ⇆** (`updateArch('flip')` → `o.flip`, `scale(-1,1)`) e **Invertir vertical ⇅**
+  (`updateArch('flipV')` → `o.flipV`, `scale(1,-1)` en `drawArchObj`). Tipo (batiente/corrediza/plegable)
+  siguen como íconos minimalistas; medidas por inputs.
 - **Íconos sueltos "naked" (v70, pedido Ángel):** CERO botones clásicos. El activo resalta SOLO con
   color de trazo rojo, sin marco. Se quitó el `box-shadow: inset` (marco rojo) de `.pib.on`, `.tb.on`,
   `.phb.on` y del anclaje (`#btnAnchor`). El botón Escape (`.gesc`) ahora es flecha roja suelta
