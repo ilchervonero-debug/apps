@@ -116,7 +116,18 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v83) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v84) · app pro
+- **Z-order + masking + SmartPen al eléctrico (v84, doc maestro §3/§5):**
+  · **`zLevelOf(o)`**: default por categoría — 0 base, 10 mline, 20 arch/mobiliario, 30 block/eléctrica/pen;
+    `obj.zLevel` lo pisa a mano. `render()` dibuja por zLevel (estable por id); los muros van en batch al
+    llegar al nivel ≥10 (juntas limpias); lo de nivel superior los tapa por relleno **sin cortar la mline**.
+  · **Flechas Frente/Fondo** en el head (al lado de Ortho/Polar): `zBringFront`/`zSendBack` suben/bajan el
+    `zLevel` del objeto seleccionado (max+1 / min-1).
+  · **Enmascarado no destructivo**: relleno blanco detrás de mobiliario (`drawArchObj`) y símbolos
+    eléctricos (case block) → tapan piso/muro sin destruirlos. Verificado visual.
+  · **SmartPen reubicado**: sale del FAB de Dibujo, entra al FAB Eléctrico (sección "Cañería").
+  · Pendiente del doc maestro: §1 afinar grosor íconos 1.1-1.2 y unificar tamaños FAB vs barras; §2
+    consolidar grupos en 3 familias; §4 debounce 65ms multitouch; §6 anidación infinita de grupos.
 - **Aceptación uniforme + tips cerrables + SmartPen libre (v83, pedido Ángel):**
   · **✓/Enter aceptan en la Cinta**: el ✓ de la guía crea con el número escrito O con la distancia
     arrastrada (antes usaba `commitMeasure` y sin número no hacía nada). Todos los comandos aceptan igual

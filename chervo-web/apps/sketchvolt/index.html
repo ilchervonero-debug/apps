@@ -581,7 +581,6 @@ details.mas[open] summary:before{content:'▾ ';}
       <button class="phb" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></button>
       <button class="phb" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg></button>
       <button class="phb" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg></button>
-      <button class="phb" data-t="pen" onclick="ST('pen');closeTools()"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
       <button class="phb" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
       <button class="phb" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg></button>
       <button class="phb" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg></button>
@@ -659,6 +658,10 @@ details.mas[open] summary:before{content:'▾ ';}
       <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
       Traer caja de referencias
     </button>
+    <div class="pu-title">Cañería</div>
+    <div class="pu-grid">
+      <div class="pu-item" onclick="ST('pen');closeUnit()"><svg viewBox="0 0 32 32"><path d="M6 26 C 10 12 14 24 18 14 S 26 8 28 6"/><circle cx="6" cy="26" r="2.4" fill="#FE0000" stroke="none"/></svg><span>SmartPen</span></div>
+    </div>
     <div class="pu-title">Tomas monofásicas</div>
     <div class="pu-grid">
       <div class="pu-item" data-block="toma_linea" onclick="pickUnit(this,'Toma monofásica')"><svg viewBox="0 0 32 32"><path d="M6 20 A 10 10 0 0 1 26 20"/><line x1="16" y1="10" x2="16" y2="7"/><line x1="3" y1="20" x2="29" y2="20"/></svg><span>Monofásico</span></div>
@@ -728,6 +731,8 @@ details.mas[open] summary:before{content:'▾ ';}
     <div id="opFloat">
       <button id="orthoBtn" data-tip="Ortho (H/V)" onclick="toggleOrtho()"><svg viewBox="0 0 24 24"><path d="M6 4 V20 H20"/><rect x="6" y="15" width="5" height="5" rx=".5"/></svg><span class="lbl">Ortho</span></button>
       <button id="polarBtn" data-tip="Polar" onclick="togglePolar()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12 H21"/><path d="M12 12 L18.4 5.6"/></svg><span class="lbl">Polar</span></button>
+      <button id="frontBtn" data-tip="Traer al frente" onclick="zBringFront()"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12" rx="1.5"/><path d="M9 20h11V9" opacity=".45"/><path d="M13 12l3-3 3 3M16 9v7"/></svg><span class="lbl">Frente</span></button>
+      <button id="backBtn" data-tip="Enviar al fondo" onclick="zSendBack()"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="1.5"/><path d="M4 15V4h11" opacity=".45"/><path d="M8 12l-3 3-3-3M5 15V8"/></svg><span class="lbl">Fondo</span></button>
     </div>
   </div>
 </div>
@@ -1215,18 +1220,32 @@ window.addEventListener('resize',resize);
 function setDash(lt,z){ctx.setLineDash(lt==='dashed'?[8*z,5*z]:lt==='dotted'?[2*z,4*z]:[]);}
 
 // RENDER
+// Nivel Z de un objeto: usa obj.zLevel si fue fijado a mano; si no, el default por categoría.
+// 0 = geometría base · 10 = muros · 20 = aberturas/mobiliario · 30 = eléctrica/SmartPen.
+function zLevelOf(o){
+  if(o.zLevel!=null)return o.zLevel;
+  if(o.type==='mline')return 10;
+  if(o.type==='arch')return 20;
+  if(o.type==='block')return 30;
+  if(o.type==='pen')return 30;
+  if(o.type==='line'&&o.elec)return 30;
+  return 0;
+}
 function render(){
   ctx.clearRect(0,0,cv.width,cv.height);
   drawSheet();
   drawGrid();
   drawFondo();
-  objects.filter(o=>o.type==='hatch').forEach(drawObj);
-  objects.filter(o=>o.type!=='hatch'&&o.type!=='block'&&o.type!=='arch'&&o.type!=='mline').forEach(drawObj);
-  drawWalls();   // muros en pase batcheado (juntas limpias muro-muro + ocultan lo de abajo)
-  // Los bloques arquitectónicos (puertas/ventanas) van sobre el muro para poder enmascararlo.
-  objects.filter(o=>o.type==='arch').forEach(drawObj);
-  // La SIMBOLOGÍA eléctrica va SIEMPRE por encima del plano y del dibujo (capa superior).
-  objects.filter(o=>o.type==='block').forEach(drawObj);
+  // Orden de dibujo POR zLevel (estable por id). Los muros van en un pase batcheado (juntas limpias)
+  // en su nivel; lo de nivel ≥10 se dibuja DESPUÉS de los muros (los tapa vía relleno, sin cortar la mline).
+  const sorted=objects.slice().sort((a,b)=>(zLevelOf(a)-zLevelOf(b))||((a.id||0)-(b.id||0)));
+  let wallsDone=false; const flushWalls=()=>{ if(!wallsDone){ drawWalls(); wallsDone=true; } };
+  for(const o of sorted){
+    if(o.type==='mline')continue;              // batcheados
+    if(zLevelOf(o)>=10)flushWalls();           // al llegar al nivel de muros o superior → dibujar muros
+    drawObj(o);
+  }
+  flushWalls();
   drawOrigin();
   drawPreview();
   if(!_exporting)drawCursorSnap();
@@ -1465,6 +1484,8 @@ function drawArchObj(obj){
   const circ=(cx,cy,r)=>{ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();};
   const elip=(cx,cy,rx,ry)=>{ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.stroke();};
   const ln=(x1,y1,x2,y2)=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
+  // Enmascarado NO destructivo: relleno blanco detrás del mobiliario (tapa piso/muro sin cortarlos).
+  if(k!=='puerta'&&k!=='ventana'&&k!=='corte'){ ctx.save();ctx.fillStyle='#fff';ctx.fillRect(-W/2,-H/2,W,H);ctx.restore(); ctx.fillStyle=ink; }
   if(k==='puerta'||k==='ventana'){
     // Enmascarado del muro: parche blanco + mochetas.
     ctx.fillStyle='#fff'; ctx.fillRect(-W/2,-H/2,W,H);
@@ -1559,7 +1580,10 @@ function drawObj(obj){
     case 'dim2':{ctx.setLineDash([]);drawDim2Obj(obj);break;}
     case 'arc':{drawArcObj(obj);break;}
     case 'hatch':{ctx.setLineDash([]);drawHatchObj(obj);break;}
-    case 'block':{ctx.setLineDash([]);renderSimbologiaUNIT(obj.pts[0][0],obj.pts[0][1],obj.blockType,blkWorldPx(obj),obj.rotation||0,(sel?'#007aff':(obj.color||'#1c1c1e')),obj.flip);break;}
+    case 'block':{ctx.setLineDash([]);
+      const _bp=w2s(obj.pts[0][0],obj.pts[0][1]), _br=blkWorldPx(obj)*vpZ/2;   // enmascarado no destructivo: tapa el muro debajo
+      ctx.save();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(_bp.x,_bp.y,_br*0.9,0,Math.PI*2);ctx.fill();ctx.restore();
+      renderSimbologiaUNIT(obj.pts[0][0],obj.pts[0][1],obj.blockType,blkWorldPx(obj),obj.rotation||0,(sel?'#007aff':(obj.color||'#1c1c1e')),obj.flip);break;}
   }
   ctx.restore();
 }
@@ -3036,6 +3060,13 @@ function toggleGrid(){gridOn=!gridOn;document.getElementById('gridBtn').classLis
 function toggleSnapCursor(){snapObjOn=!snapObjOn;document.getElementById('snapBtn').classList.toggle('on',snapObjOn);render();toast('Snap '+(snapObjOn?'ON':'OFF'));}
 function toggleOrtho(){ orthoOn=!orthoOn; if(orthoOn){polarOn=false;document.getElementById('polarBtn').classList.remove('on');} document.getElementById('orthoBtn').classList.toggle('on',orthoOn); toast('Ortho '+(orthoOn?'ON':'OFF')); }
 function togglePolar(){ polarOn=!polarOn; if(polarOn){orthoOn=false;document.getElementById('orthoBtn').classList.remove('on');} document.getElementById('polarBtn').classList.toggle('on',polarOn); toast('Polar '+(polarOn?'ON · '+polarStep+'°':'OFF')); }
+// Draw order MANUAL: sube/baja el zLevel del/los objeto(s) seleccionados.
+function zBringFront(){ if(!selIds.length){toast('Elegí un objeto');return;} saveHistory();
+  const mx=objects.reduce((m,o)=>Math.max(m,zLevelOf(o)),0);
+  selIds.forEach((id,i)=>{const o=objects.find(x=>x.id===id);if(o)o.zLevel=mx+1+i;}); markDirty();render();toast('Al frente'); }
+function zSendBack(){ if(!selIds.length){toast('Elegí un objeto');return;} saveHistory();
+  const mn=objects.reduce((m,o)=>Math.min(m,zLevelOf(o)),0);
+  selIds.forEach((id,i)=>{const o=objects.find(x=>x.id===id);if(o)o.zLevel=mn-1-i;}); markDirty();render();toast('Al fondo'); }
 function setMlSep(v){ mlSepM=v; const o=selObj(); if(o&&o.type==='mline'){saveHistory();o.sepM=v;markDirty();} render(); }
 function setMlJust(j){ mlJust=j;
   [['mlAxC','center'],['mlAxI','inner'],['mlAxE','outer']].forEach(([id,k])=>{const b=document.getElementById(id);if(b){const on=k===j;b.style.background=on?'var(--accent)':'#f2f2f7';b.style.color=on?'#fff':'var(--ink)';b.style.borderColor=on?'var(--accent)':'#e5e5ea';}});
