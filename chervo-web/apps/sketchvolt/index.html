@@ -95,7 +95,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 .phb:active{transform:scale(.92);}
 /* FAB herramientas — cuadrado esquinas redondeadas; icono rojo fino, borde rojo */
 #btn-herr{
-  position:fixed;right:16px;top:14%;
+  position:fixed;right:16px;top:calc(14% - 28px);
   width:56px;height:56px;border-radius:14px;
   background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
   display:flex;align-items:center;justify-content:center;
@@ -403,13 +403,13 @@ body{display:flex;flex-direction:column;background:#fff;}
 .ctab tr.tot td{font-size:18px;background:#fafafa;border-top:1.5px solid #e5e5ea;}
 
 /* FAB ELECTRICIDAD — segundo FAB, al lado del de herramientas */
-#btn-elec{position:fixed;right:82px;top:14%;width:56px;height:56px;border-radius:14px;
+#btn-elec{position:fixed;right:82px;top:calc(14% - 28px);width:56px;height:56px;border-radius:14px;
   background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
   display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.12);z-index:160;}
 #btn-elec:active{background:#f2f2f7;}
 #btn-elec svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 /* FAB Librería de bloques arquitectónicos (iLDraft) */
-#btn-arch{position:fixed;right:148px;top:14%;width:56px;height:56px;border-radius:14px;
+#btn-arch{position:fixed;right:148px;top:calc(14% - 28px);width:56px;height:56px;border-radius:14px;
   background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
   display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.12);z-index:160;}
 #btn-arch:active{background:#f2f2f7;}
