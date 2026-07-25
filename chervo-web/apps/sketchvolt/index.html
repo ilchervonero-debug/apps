@@ -383,6 +383,17 @@ body{display:flex;flex-direction:column;background:#fff;}
   display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.12);z-index:160;}
 #btn-elec:active{background:#f2f2f7;}
 #btn-elec svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+/* FAB Librería de bloques arquitectónicos (iLDraft) */
+#btn-arch{position:fixed;right:148px;top:10%;width:56px;height:56px;border-radius:14px;
+  background:#fff;border:1.5px solid var(--accent);color:var(--accent);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.12);z-index:160;}
+#btn-arch:active{background:#f2f2f7;}
+#btn-arch svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+#panel-arch{position:fixed;top:calc(10% + 68px);right:0;background:#fff;border:1px solid #e5e5ea;
+  border-radius:16px 0 16px 16px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:150;
+  display:none;flex-direction:column;padding:12px;width:300px;max-height:68vh;}
+#panel-arch.open{display:flex;}
+#panel-arch .pu-scroll{overflow-y:auto;}
 /* PANEL SIMBOLOGÍA UNIT */
 #panel-unit{position:fixed;top:calc(10% + 68px);right:0;background:#fff;border:1px solid #e5e5ea;
   border-radius:16px 0 16px 16px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:150;
@@ -568,6 +579,39 @@ details.mas[open] summary:before{content:'▾ ';}
 <button id="btn-elec" data-tip="Electricidad" onclick="fabElec()">
   <svg viewBox="0 0 24 24"><path d="M13 2 L4 14 h6 l-1 8 9-12 h-6 z"/></svg>
 </button>
+
+<!-- FAB Librería de bloques arquitectónicos (iLDraft) -->
+<button id="btn-arch" data-tip="Bloques / muebles" onclick="toggleArchPanel()">
+  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="5" rx="1"/><rect x="13" y="10" width="8" height="11" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/></svg>
+</button>
+<div id="panel-arch"><div class="pu-scroll">
+  <div class="pu-title">Aberturas</div>
+  <div class="pu-grid">
+    <div class="pu-item" data-arch="puerta" onclick="pickArch('puerta')"><span>Puerta</span></div>
+    <div class="pu-item" data-arch="ventana" onclick="pickArch('ventana')"><span>Ventana</span></div>
+  </div>
+  <div class="pu-title">Cocina</div>
+  <div class="pu-grid">
+    <div class="pu-item" data-arch="mesada" onclick="pickArch('mesada')"><span>Mesada</span></div>
+    <div class="pu-item" data-arch="pileta" onclick="pickArch('pileta')"><span>Pileta</span></div>
+    <div class="pu-item" data-arch="anafe" onclick="pickArch('anafe')"><span>Anafe</span></div>
+    <div class="pu-item" data-arch="heladera" onclick="pickArch('heladera')"><span>Heladera</span></div>
+  </div>
+  <div class="pu-title">Baños</div>
+  <div class="pu-grid">
+    <div class="pu-item" data-arch="inodoro" onclick="pickArch('inodoro')"><span>Inodoro</span></div>
+    <div class="pu-item" data-arch="lavatorio" onclick="pickArch('lavatorio')"><span>Lavatorio</span></div>
+    <div class="pu-item" data-arch="ducha" onclick="pickArch('ducha')"><span>Ducha</span></div>
+    <div class="pu-item" data-arch="bidet" onclick="pickArch('bidet')"><span>Bidet</span></div>
+  </div>
+  <div class="pu-title">Mobiliario</div>
+  <div class="pu-grid">
+    <div class="pu-item" data-arch="sofa" onclick="pickArch('sofa')"><span>Sofá</span></div>
+    <div class="pu-item" data-arch="mesa" onclick="pickArch('mesa')"><span>Mesa</span></div>
+    <div class="pu-item" data-arch="cama" onclick="pickArch('cama')"><span>Cama</span></div>
+    <div class="pu-item" data-arch="silla" onclick="pickArch('silla')"><span>Silla</span></div>
+  </div>
+</div></div>
 
 <!-- PANEL SIMBOLOGÍA UNIT (Uruguay) -->
 <div id="panel-unit">
@@ -905,6 +949,7 @@ let fondoImg=null,fondoAprobado=false,modoAjusteFondo=false;
 let imgScale=1,imgScaleBase=1,imgOpacity=0.5,imgX=0,imgY=0,fondoDrag=null;
 // bloque de simbología eléctrica UNIT
 let bloqueSel=null,bloqueNom='',bloqueGiro=0,bloqueCM=40;   // tamaño REAL del símbolo (cm), unificado con la grilla/cotas
+let pendingArch=null;   // bloque arquitectónico elegido en la librería (iLDraft)
 let selId=null;                 // objeto seleccionado (compat: cuando hay UNO solo)
 let selIds=[];                  // selección múltiple (fuente de verdad)
 let editGroupId=null;           // modo aislado: editando los miembros de este grupo
@@ -1066,7 +1111,9 @@ function render(){
   drawGrid();
   drawFondo();
   objects.filter(o=>o.type==='hatch').forEach(drawObj);
-  objects.filter(o=>o.type!=='hatch'&&o.type!=='block').forEach(drawObj);
+  objects.filter(o=>o.type!=='hatch'&&o.type!=='block'&&o.type!=='arch').forEach(drawObj);
+  // Los bloques arquitectónicos (puertas/ventanas) van sobre el muro para poder enmascararlo.
+  objects.filter(o=>o.type==='arch').forEach(drawObj);
   // La SIMBOLOGÍA eléctrica va SIEMPRE por encima del plano y del dibujo (capa superior).
   objects.filter(o=>o.type==='block').forEach(drawObj);
   drawOrigin();
@@ -1212,6 +1259,63 @@ function _mlStroke(pts,sepM,just){
   ctx.moveTo(s1[n].x,s1[n].y); ctx.lineTo(s2[n].x,s2[n].y); ctx.stroke();   // tapas en extremos
 }
 function drawMlineObj(obj){ _mlStroke(obj.pts,obj.sepM,obj.just); }
+
+// ── BLOQUES ARQUITECTÓNICOS (iLDraft) — vista en planta, tamaño en metros (w×l) ──
+const ARCH_DEF={
+  puerta:{w:0.85,l:0.15,cat:'Aberturas',variant:'batiente'}, ventana:{w:1.0,l:0.15,cat:'Aberturas',variant:'corrediza'},
+  inodoro:{w:0.4,l:0.6,cat:'Baños'}, lavatorio:{w:0.5,l:0.45,cat:'Baños'}, ducha:{w:0.9,l:0.9,cat:'Baños'}, bidet:{w:0.4,l:0.55,cat:'Baños'},
+  mesada:{w:2.0,l:0.6,cat:'Cocina'}, pileta:{w:0.5,l:0.42,cat:'Cocina'}, anafe:{w:0.6,l:0.5,cat:'Cocina'}, heladera:{w:0.7,l:0.7,cat:'Cocina'},
+  sofa:{w:1.8,l:0.85,cat:'Mobiliario'}, mesa:{w:1.4,l:0.8,cat:'Mobiliario'}, cama:{w:1.4,l:1.9,cat:'Mobiliario'}, silla:{w:0.45,l:0.45,cat:'Mobiliario'}
+};
+const ARCH_NOM={puerta:'Puerta',ventana:'Ventana',inodoro:'Inodoro',lavatorio:'Lavatorio',ducha:'Ducha',bidet:'Bidet',mesada:'Mesada',pileta:'Pileta',anafe:'Anafe',heladera:'Heladera',sofa:'Sofá',mesa:'Mesa',cama:'Cama',silla:'Silla'};
+function archNom(k){return ARCH_NOM[k]||k;}
+function drawArchObj(obj){
+  const sel=obj.id===movId||obj.id===rotId||selIds.includes(obj.id);
+  const pos=w2s(obj.pts[0][0],obj.pts[0][1]);
+  const W=(obj.w||0.8)*PPM*vpZ, H=(obj.l||0.15)*PPM*vpZ, ink=sel?'#007aff':(obj.color||'#1c1c1e');
+  ctx.save();
+  ctx.translate(pos.x,pos.y); ctx.rotate((obj.rotation||0)*Math.PI/180); if(obj.flip)ctx.scale(-1,1);
+  ctx.strokeStyle=ink; ctx.fillStyle=ink; ctx.lineWidth=1.5*vpZ; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.setLineDash([]);
+  const k=obj.kind, dash=[3*vpZ,3*vpZ], mch=Math.max(1.2*vpZ,W*0.05);
+  if(k==='puerta'||k==='ventana'){
+    // ENMASCARADO: parche blanco (oculta las líneas continuas del muro) + mochetas oscuras (corte del muro).
+    ctx.fillStyle='#fff'; ctx.fillRect(-W/2,-H/2,W,H);
+    ctx.fillStyle=ink; ctx.fillRect(-W/2,-H/2,mch,H); ctx.fillRect(W/2-mch,-H/2,mch,H);
+  }
+  if(k==='puerta'){
+    if((obj.variant||'batiente')==='corrediza'){ ctx.strokeRect(-W/2,-H*0.16,W*0.52,H*0.55); ctx.strokeRect(-W*0.02,-H*0.02,W*0.52,H*0.55); }
+    else { const hx=-W/2+mch, sw=W-2*mch; ctx.beginPath();ctx.moveTo(hx,H/2);ctx.lineTo(hx,H/2-sw);ctx.stroke(); ctx.beginPath();ctx.setLineDash(dash);ctx.arc(hx,H/2,sw,-Math.PI/2,0,false);ctx.stroke();ctx.setLineDash([]); }
+  } else if(k==='ventana'){
+    ctx.strokeRect(-W/2,-H/2,W,H); ctx.beginPath();ctx.moveTo(-W/2,0);ctx.lineTo(W/2,0);ctx.stroke();
+    if((obj.variant||'corrediza')==='batiente'){ ctx.beginPath();ctx.setLineDash(dash);ctx.arc(0,H/2,W/2,Math.PI,0,true);ctx.stroke();ctx.setLineDash([]); }
+    else { ctx.strokeRect(-W/2,-H*0.34,W*0.55,H*0.68); ctx.strokeRect(0,-H*0.34,W*0.55,H*0.68); }
+  } else if(k==='inodoro'){ ctx.strokeRect(-W/2,-H/2,W,H*0.26); ctx.beginPath();ctx.ellipse(0,H*0.1,W*0.42,H*0.34,0,0,Math.PI*2);ctx.stroke();
+  } else if(k==='lavatorio'){ ctx.strokeRect(-W/2,-H/2,W,H); ctx.beginPath();ctx.ellipse(0,H*0.05,W*0.36,H*0.3,0,0,Math.PI*2);ctx.stroke();
+  } else if(k==='ducha'){ ctx.strokeRect(-W/2,-H/2,W,H); ctx.beginPath();ctx.moveTo(-W/2,-H/2);ctx.lineTo(W/2,H/2);ctx.moveTo(W/2,-H/2);ctx.lineTo(-W/2,H/2);ctx.stroke(); ctx.beginPath();ctx.arc(0,0,W*0.08,0,Math.PI*2);ctx.stroke();
+  } else if(k==='bidet'){ ctx.beginPath();ctx.ellipse(0,0,W*0.44,H*0.44,0,0,Math.PI*2);ctx.stroke(); ctx.beginPath();ctx.arc(0,-H*0.26,W*0.08,0,Math.PI*2);ctx.stroke();
+  } else if(k==='mesada'){ ctx.strokeRect(-W/2,-H/2,W,H);
+  } else if(k==='pileta'){ ctx.strokeRect(-W/2,-H/2,W,H); ctx.strokeRect(-W*0.36,-H*0.3,W*0.72,H*0.6); ctx.beginPath();ctx.arc(0,-H*0.36,W*0.05,0,Math.PI*2);ctx.stroke();
+  } else if(k==='anafe'){ ctx.strokeRect(-W/2,-H/2,W,H); const rr=Math.min(W,H)*0.16; [[-0.22,-0.22],[0.22,-0.22],[-0.22,0.22],[0.22,0.22]].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x*W,y*H,rr,0,Math.PI*2);ctx.stroke();});
+  } else if(k==='heladera'){ ctx.strokeRect(-W/2,-H/2,W,H); ctx.beginPath();ctx.moveTo(-W/2,-H*0.08);ctx.lineTo(W/2,-H*0.08);ctx.stroke();
+  } else if(k==='sofa'){ ctx.strokeRect(-W/2,-H/2,W,H); ctx.strokeRect(-W/2+W*0.06,-H/2+H*0.16,W*0.88,H*0.7);
+  } else if(k==='mesa'){ ctx.strokeRect(-W/2,-H/2,W,H);
+  } else if(k==='cama'){ ctx.strokeRect(-W/2,-H/2,W,H); ctx.beginPath();ctx.moveTo(-W/2,-H/2+H*0.3);ctx.lineTo(W/2,-H/2+H*0.3);ctx.stroke(); ctx.strokeRect(-W/2+W*0.06,-H/2+H*0.05,W*0.36,H*0.2); ctx.strokeRect(W/2-W*0.42,-H/2+H*0.05,W*0.36,H*0.2);
+  } else if(k==='silla'){ ctx.strokeRect(-W/2,-H/2,W,H); ctx.beginPath();ctx.moveTo(-W/2,-H/2+H*0.26);ctx.lineTo(W/2,-H/2+H*0.26);ctx.stroke();
+  }
+  ctx.restore();
+}
+// Anclaje magnético de puertas/ventanas al muro (mline) más cercano: rota al ángulo del segmento y hereda su ancho.
+function snapArchToMl(blk){
+  let bestD=0.7*PPM, target=null, ang=0, wallW=null, cx=blk.pts[0][0], cy=blk.pts[0][1];
+  objects.forEach(o=>{ if(o.type!=='mline')return;
+    for(let i=0;i<o.pts.length-1;i++){
+      const a=o.pts[i],b=o.pts[i+1],dx=b[0]-a[0],dy=b[1]-a[1],l2=dx*dx+dy*dy; if(!l2)continue;
+      const t=clamp(((cx-a[0])*dx+(cy-a[1])*dy)/l2,0,1), px=a[0]+t*dx, py=a[1]+t*dy, d=hyp(cx-px,cy-py);
+      if(d<bestD){ bestD=d; target=[px,py]; ang=Math.atan2(dy,dx)*180/Math.PI; wallW=o.sepM; }
+    }
+  });
+  if(target){ blk.pts[0]=target; blk.rotation=ang; if(wallW)blk.l=wallW; }
+}
 function drawObj(obj){
   if(!obj||!obj.pts)return;
   const sel=obj.id===movId||obj.id===rotId||selIds.includes(obj.id);
@@ -1235,6 +1339,7 @@ function drawObj(obj){
     }
     case 'pline':{if(obj.pts.length<2)break;ctx.beginPath();const sp=w2s(...obj.pts[0]);ctx.moveTo(sp.x,sp.y);for(let i=1;i<obj.pts.length;i++){const p=w2s(...obj.pts[i]);ctx.lineTo(p.x,p.y);}if(obj.closed)ctx.closePath();ctx.stroke();break;}
     case 'mline':{ if(obj.pts.length<2)break; ctx.setLineDash([]); drawMlineObj(obj); break; }
+    case 'arch':{ drawArchObj(obj); break; }
     case 'pen':{if(obj.pts.length<2)break;ctx.beginPath();const s0=w2s(...obj.pts[0]);ctx.moveTo(s0.x,s0.y);for(let i=1;i<obj.pts.length;i++){const p=w2s(...obj.pts[i]);ctx.lineTo(p.x,p.y);}ctx.stroke();break;}
     case 'circle':{const c=w2s(...obj.pts[0]),r=obj.r*vpZ;ctx.beginPath();ctx.arc(c.x,c.y,r,0,Math.PI*2);ctx.stroke();break;}
     case 'poly':{const c=w2s(...obj.pts[0]),r=obj.r*vpZ,n=obj.sides||4;ctx.beginPath();for(let i=0;i<n;i++){const a=(-Math.PI/2)+(2*Math.PI*i/n);i===0?ctx.moveTo(c.x+r*Math.cos(a),c.y+r*Math.sin(a)):ctx.lineTo(c.x+r*Math.cos(a),c.y+r*Math.sin(a));}ctx.closePath();ctx.stroke();break;}
@@ -1991,6 +2096,17 @@ function handleDown(wp,rawW,scrn){
     setSel([nid]);           // el símbolo queda seleccionado, esperando edición
     showSelBar();render();toast(bloqueNom+' ✓ · tocá el rayo para estampar otro');return;
   }
+  if(tool==='arch'){
+    if(!pendingArch){toast('Elegí un bloque');return;}
+    saveHistory();
+    const d=ARCH_DEF[pendingArch]||{w:0.6,l:0.5};
+    const isCarp=(pendingArch==='puerta'||pendingArch==='ventana'), nm=archNom(pendingArch);
+    const blk={type:'arch',kind:pendingArch,pts:[[wp.x,wp.y]],w:d.w,l:d.l,rotation:0,flip:false,variant:d.variant||'',anchored:isCarp,color:'#1c1c1e',id:nextId++};
+    if(isCarp)snapArchToMl(blk);
+    objects.push(blk); markDirty();
+    ST('select'); setSel([blk.id]); showSelBar(); render();
+    toast(nm+' ✓ · tocá el ícono para colocar otro');return;
+  }
   if(tool==='select'){
     // Check arc grip first
     for(let i=objects.length-1;i>=0;i--){
@@ -2227,7 +2343,7 @@ function doMovStart(wp){const T=28/vpZ;
   toast('Tocá el objeto');
 }
 function doMovDrag(wp){ if(!movSet||!movStart)return; const dx=wp.x-movStart.x,dy=wp.y-movStart.y;
-  movSet.forEach(m=>{ const o=objects.find(x=>x.id===m.id); if(o)o.pts=m.orig.map(p=>[p[0]+dx,p[1]+dy]); }); render(); }
+  movSet.forEach(m=>{ const o=objects.find(x=>x.id===m.id); if(o){o.pts=m.orig.map(p=>[p[0]+dx,p[1]+dy]); if(o.type==='arch'&&o.anchored)snapArchToMl(o);} }); render(); }
 function doMovEnd(){
   // Si movés un miembro DENTRO de un componente (modo aislado), propagá el mismo desplazamiento
   // a la pieza equivalente de todas las instancias (lógica SketchUp).
@@ -2333,6 +2449,7 @@ function closeTextCard(){document.getElementById('txtCard').style.display='none'
 function hitTest(wp,obj,T){
   if(!obj.pts)return false;
   if(obj.type==='block')return hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])<blkWorldPx(obj)/2+T*0.4;
+  if(obj.type==='arch')return hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])<Math.max(obj.w||0.6,obj.l||0.4)/2*PPM+T*0.4;
   if(obj.type==='circle')return Math.abs(hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])-obj.r)<T*2;
   if(obj.type==='poly'){const c=obj.pts[0],r=obj.r,n=obj.sides||4;for(let i=0;i<n;i++){const a0=(-Math.PI/2)+(2*Math.PI*i/n),a1=(-Math.PI/2)+(2*Math.PI*(i+1)/n);if(distPS(wp,[c[0]+r*Math.cos(a0),c[1]+r*Math.sin(a0)],[c[0]+r*Math.cos(a1),c[1]+r*Math.sin(a1)])<T)return true;}return false;}
   if(obj.type==='text')return hyp(wp.x-obj.pts[0][0],wp.y-obj.pts[0][1])<T*3;
@@ -2416,6 +2533,7 @@ function ST(t){
   tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];setSel([]);_selScaleBase=null;marquee=null;
   if(t!=='select'&&editGroupId){ editGroupId=null; showGroupEditBar(false); }   // cambiar de herramienta sale del modo aislado
   if(t!=='block')bloqueSel=null;
+  if(t!=='arch')pendingArch=null;
   dimPh=0;dimA=null;dimB=null;arcPh=0;arcA=null;arcB=null;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;movSet=null;setHint('');
   document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
@@ -2433,6 +2551,7 @@ const GUIA={
   sline:['SmartLine','<b>Arrastrá</b> de un nodo a otro: los extremos se <b>enganchan</b> solos.'],
   pline:['Polilínea','<b>Tocá</b> cada vértice; <b>doble toque</b> para terminar.'],
   mline:['Muro','<b>Tocá</b> cada esquina del muro; <b>doble toque</b> para cerrar. Ancho y eje abajo.'],
+  arch:['Bloque','<b>Tocá</b> para colocar. Puertas/ventanas se <b>anclan</b> al muro y lo cortan.'],
   rect:['Rectángulo','<b>Arrastrá</b> de una esquina a la opuesta.'],
   circle:['Círculo','<b>Arrastrá</b> del centro hacia el radio.'],
   poly:['Polígono','<b>Arrastrá</b> del centro a un vértice.'],
@@ -2624,10 +2743,31 @@ function setDimFont(sz){
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 // ══════════ SIMBOLOGÍA ELÉCTRICA (FAB) ══════════
 let _unitOpen=false;
-function toggleUnit(){_unitOpen=!_unitOpen;document.getElementById('panel-unit').classList.toggle('open',_unitOpen);if(_unitOpen)closeTools();}
+function toggleUnit(){_unitOpen=!_unitOpen;document.getElementById('panel-unit').classList.toggle('open',_unitOpen);if(_unitOpen){closeTools();closeArch();}}
 function closeUnit(){_unitOpen=false;document.getElementById('panel-unit').classList.remove('open');}
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-unit')&&!e.target.closest('#btn-elec'))closeUnit();},{passive:true});
+document.addEventListener('click',function(e){if(!e.target.closest('#panel-arch')&&!e.target.closest('#btn-arch'))closeArch();},{passive:true});
 function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;ultimoSimbolo={sel:bloqueSel,nom};closeUnit();fabElecSym(bloqueSel);ST('block');toast('Tocá para estampar · '+nom);}
+// ── Librería de bloques arquitectónicos (iLDraft) ──
+let _archOpen=false;
+function toggleArchPanel(){_archOpen=!_archOpen;document.getElementById('panel-arch').classList.toggle('open',_archOpen);if(_archOpen){closeTools();closeUnit();}}
+function closeArch(){_archOpen=false;document.getElementById('panel-arch').classList.remove('open');}
+function pickArch(kind){pendingArch=kind;closeArch();ST('arch');toast('Tocá para colocar · '+archNom(kind));}
+function mkArchCanvas(kind,cssPx){
+  const d=ARCH_DEF[kind]||{w:0.6,l:0.5}, dpr=window.devicePixelRatio||1, c=document.createElement('canvas');
+  c.width=Math.round(cssPx*dpr); c.height=Math.round(cssPx*dpr); c.style.width=cssPx+'px'; c.style.height=cssPx+'px'; c.style.pointerEvents='none';
+  const g=c.getContext('2d'); g.scale(dpr,dpr);
+  const _c=ctx,_z=vpZ,_x=vpX,_y=vpY;
+  ctx=g; vpZ=(cssPx*0.82)/(Math.max(d.w,d.l)*PPM); vpX=cssPx/2; vpY=cssPx/2;
+  drawArchObj({type:'arch',kind,pts:[[0,0]],w:d.w,l:d.l,rotation:0,variant:d.variant||'',color:'#1c1c1e',id:-999});
+  ctx=_c; vpZ=_z; vpX=_x; vpY=_y;
+  return c;
+}
+function renderArchIcons(){
+  document.querySelectorAll('#panel-arch .pu-item[data-arch]').forEach(it=>{
+    const c=mkArchCanvas(it.dataset.arch,34); const old=it.querySelector('canvas'); if(old)old.replaceWith(c); else it.insertBefore(c,it.firstChild);
+  });
+}
 // ── CAJA DE REFERENCIAS (leyenda de vivienda) — se trae al plano; copiás desde acá ──
 // Cada símbolo es un bloque marcado `ref:true`: SE IMPRIME y sirve de paleta, pero NO
 // se cuenta en el conteo (y al copiarlo, la copia sí cuenta). Cada uno con su color.
@@ -2728,7 +2868,7 @@ function applyToolBar(){
   show('grpBlock',t==='block');
   show('grpMline',t==='mline');
   const names={select:'Seleccionar',line:'Línea',arc:'Arco · arrastrá A→B · grip ↕ para curvar',pline:'Polilínea · doble toque cierra',mline:'Muro · doble toque cierra',rect:'Rectángulo',circle:'Círculo',poly:'Polígono',pen:'Trazo libre',text:'Texto',dim:'Cota · A → B → posición',dim2:'Cota directa · A → B',hatch:'Relleno · doble toque cierra',eraser:'Goma',trim:'Trim',move:'Mover',copy:'Copiar'};
-  const pt=document.getElementById('pbTool'); if(pt)pt.textContent=t==='block'?(bloqueNom||'Símbolo'):(names[t]||t);
+  const pt=document.getElementById('pbTool'); if(pt)pt.textContent=t==='block'?(bloqueNom||'Símbolo'):(t==='arch'?(archNom(pendingArch)||'Bloque'):(names[t]||t));
   _syncSwatches(); refreshBottom();
 }
 function openBottomPanel(mode){
@@ -3390,6 +3530,7 @@ window.addEventListener('beforeunload',()=>{ if(planta)savePlanta(); });
 
 resize();
 renderPanelIcons();
+renderArchIcons();
 renderProyList();
 document.getElementById('scrHome').classList.add('on');
 if(screen.orientation && screen.orientation.lock){
