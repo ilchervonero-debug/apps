@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v67) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v68) · app pro
 - **Paquete UI/geometría/librería (v66-v67, pedido Ángel):**
   · **Escape siempre visible**: botón Salir (`.gesc`) en la barra de tips `#guide`, ahora **gris**
     (bg `#f2f2f7`, textos grises, comandos en negro, **sin rojo**). FABs planos grises, rojos solo `.on`.
@@ -133,6 +133,11 @@ Versión = número de caché del SW.
     bacha simple/pileta doble/heladera/lavarropas/calefón/microondas/campana), Mobiliario (sofá/sillón/
     cama 1-2 pl/mesa/silla), Extras (auto, corte con `obj.txt` — *texto editable pendiente*). Panel
     reorganizado; íconos con el mismo motor (`mkArchCanvas`).
+- **iLDraft — cruce muro-muro + corte editable (v68):** los muros se dibujan en un **pase batcheado**
+  `drawWalls()` — relleno blanco de todos los cuerpos + bordes de cada muro **recortando el interior de
+  los otros** (clip evenodd) → las juntas muro-muro (T/X/L) se **abren limpias**, las líneas siguen sin
+  quedar montadas. **Corte**: `obj.txt` editable desde `#archTxt` en la barra (`updateArch('txt')`),
+  se dibuja en ambos círculos del símbolo de sección.
 - **iLDraft en SketchVolt — Módulo 1: Muro/multilínea (v61):** herramienta `mline` (botón en panel de
   dibujo). Doble línea paralela al eje con **ancho en metros** (10/15/20/30 cm, `mlSepM`) y
   **justificación** Centro/Int/Ext (`mlJust`); tapas en los extremos. Multipunto como pline (toca
