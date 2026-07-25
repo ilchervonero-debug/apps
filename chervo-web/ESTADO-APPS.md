@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v60) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v61) · app pro
+- **iLDraft en SketchVolt — Módulo 1: Muro/multilínea (v61):** herramienta `mline` (botón en panel de
+  dibujo). Doble línea paralela al eje con **ancho en metros** (10/15/20/30 cm, `mlSepM`) y
+  **justificación** Centro/Int/Ext (`mlJust`); tapas en los extremos. Multipunto como pline (toca
+  esquinas, doble toque cierra), compatible con Ortho/Polar y su línea guía. Objeto `type:'mline'`
+  (`pts`,`sepM`,`just`); render `drawMlineObj`/`_mlStroke` con offset mitrado `mlineOffsetPts`; UI
+  `#grpMline` (ancho+eje) en el propbar; guía propia. Pendiente iLDraft: **Módulo 2** librería de bloques
+  arquitectónicos (con anclaje magnético + enmascarado de vanos) y **Módulo 3** cotas por teclado.
 - **Guía discreta + línea guía infinita de Polar (v60):** el panel guía se hizo **discreto** (texto gris
   fino peso 300, **sin negritas**, comandos apenas más oscuros por tono — no rojo; solo el nombre de la
   herramienta en rojo chico), para que no sea protagonista. **Polar/Ortho dibujan una línea guía
