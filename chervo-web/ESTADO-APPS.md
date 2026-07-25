@@ -116,7 +116,15 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v74) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v75) · app pro
+- **Modos de puntero + cursor anclado (v75, PENDIENTE-MOTOR-CAD §1):** botón en el head (`#ptrBtn`,
+  `cyclePtrMode`) que cicla 3 modos:
+  · **0 Directo**: sin offset, toca = punto (getS oy=0). Ideal paneo/selección.
+  · **1 Anclado (precisión móvil)**: arrastrás → cruz con offset Y; **soltás y ANCLA** (queda fija);
+    el próximo **tap en cualquier lado CONFIRMA** el pick en la coord anclada (no en la del tap).
+    Doble confirmación = terminar (handleDbl). Lógica en `onTS`/`onTE` con `anchorArmed`/`anchorPt`/`_wasConfirm`.
+  · **2 Ratón/cruz viva (default)**: comportamiento actual (offset + fija al soltar). Sin regresión.
+  Testeado headless: el punto se coloca en la coord anclada, no en la del tap de confirmación.
 - **Herramientas críticas restauradas a flujo CAD (v74, PENDIENTE-MOTOR-CAD §3):**
   · **Arco de 3 puntos**: Inicio → Fin (cuerda punteada) → mover para curvar (curva viva por el 3er punto) →
     soltar/pick fija. Estados `arcPh`/`arcBulge` (el 2º tap no auto-confirma). Ya no es arrastre.

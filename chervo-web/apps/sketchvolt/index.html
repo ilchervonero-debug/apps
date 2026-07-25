@@ -553,6 +553,7 @@ details.mas[open] summary:before{content:'▾ ';}
   <button class="ti ti-t" data-tip="Imagen" onclick="openImagen()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
   <button class="ti ti-t on" id="snapBtn" data-tip="Snap del cursor" onclick="toggleSnapCursor()"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="13" rx="1" style="stroke-dasharray:2.2 2.2"/><rect x="13.5" y="3.5" width="7" height="7" rx="1" style="stroke:#FE0000"/></svg></button>
   <button class="ti ti-t on" id="gridBtn" data-tip="Grilla y medidas" onclick="toggleGrid()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></button>
+  <button class="ti ti-t" id="ptrBtn" data-tip="Modo de puntero" onclick="cyclePtrMode()"></button>
   <input type="file" id="planoInput" accept="image/*,application/pdf,.dxf" style="display:none" onchange="onImportFile(event)">
   <div style="flex:1"></div>
   <button class="ti ti-t on" data-t="select" id="escBtn" data-tip="Seleccionar / ESC" onclick="ST('select')" style="margin-right:8px;margin-left:14px;border-left:2px solid rgba(0,0,0,.12);padding-left:10px;border-radius:0 8px 8px 0"><svg viewBox="0 0 24 24"><path d="M4 3l16 10-7.5 .7-3.8 7.3z"/></svg></button>
@@ -976,6 +977,19 @@ let orthoOn=false,polarOn=false,polarStep=15;   // Ortho (H/V) y Polar (ángulos
 let drawPending=false;   // al soltar un trazo queda pendiente: se fija con medida + OK (o ✓)
 // Cursor visual con offset (problema del dedo gordo) + snap magnético con glifos
 let cursorS=null,snapHit=null,touchActive=false;const CURSOR_OFFY=58;
+// ── MODO DE PUNTERO (§1): 0 Directo · 1 Anclado (precisión móvil) · 2 Ratón/cruz viva (default) ──
+let ptrMode=2, anchorArmed=false, anchorPt=null, anchorS=null, _wasConfirm=false;
+const _PTR_ICONS=[
+  ['Directo','<svg viewBox="0 0 24 24"><path d="M9 3v10"/><path d="M6.5 5.5 9 3l2.5 2.5"/><path d="M9 13c0 4 2.5 6 5 6 3 0 4-2 4-5v-3a1.5 1.5 0 0 0-3 0v-1a1.5 1.5 0 0 0-3 0v-1a1.5 1.5 0 0 0-3 0z"/></svg>'],
+  ['Anclado','<svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="10"/><line x1="4" y1="14" x2="20" y2="14"/><circle cx="12" cy="14" r="1.6"/><path d="M12 14v7"/><path d="M6 18a6 6 0 0 0 12 0"/></svg>'],
+  ['Ratón','<svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="5"/><line x1="12" y1="6" x2="12" y2="10"/></svg>']
+];
+function cyclePtrMode(){
+  ptrMode=(ptrMode+1)%3; anchorArmed=false; anchorPt=null; anchorS=null;
+  const b=document.getElementById('ptrBtn'); if(b){ b.innerHTML=_PTR_ICONS[ptrMode][1]; b.classList.toggle('on',ptrMode!==2); }
+  const d={0:'Directo · toca = punto',1:'Anclado · arrastrá, soltá y tocá para fijar (preciso)',2:'Ratón · cruz viva, fija al soltar'};
+  toast(d[ptrMode]); render();
+}
 // pline — continuous drag, double-click closes
 let plineActive=false,plinePts=[],plineLastTap=0;
 let mlSepM=0.15, mlJust='center';   // Muro (multilínea): ancho en metros y justificación (center/inner/outer)
@@ -1029,7 +1043,7 @@ const w2s=(wx,wy)=>({x:wx*vpZ+vpX,y:wy*vpZ+vpY});
 const s2w=(sx,sy)=>({x:(sx-vpX)/vpZ,y:(sy-vpY)/vpZ});
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const hyp=(a,b)=>Math.sqrt(a*a+b*b);
-function getS(e){const r=cv.getBoundingClientRect();const t=(e.touches&&e.touches.length)?e.touches[0]:(e.changedTouches&&e.changedTouches.length)?e.changedTouches[0]:e;const oy=(e.touches||e.changedTouches)?CURSOR_OFFY:0;return{x:t.clientX-r.left,y:t.clientY-r.top-oy};}
+function getS(e){const r=cv.getBoundingClientRect();const t=(e.touches&&e.touches.length)?e.touches[0]:(e.changedTouches&&e.changedTouches.length)?e.changedTouches[0]:e;const oy=((e.touches||e.changedTouches)&&ptrMode!==0)?CURSOR_OFFY:0;return{x:t.clientX-r.left,y:t.clientY-r.top-oy};}
 function getRW(e){const s=getS(e);return s2w(s.x,s.y);}
 function snpGrid(wx,wy){return{x:Math.round(wx/cellPx)*cellPx,y:Math.round(wy/cellPx)*cellPx};}
 
@@ -2218,11 +2232,26 @@ function onTS(e){
     pinch0={dist:hyp(t1.x-t0.x,t1.y-t0.y),z:vpZ,mx,my,vx:vpX,vy:vpY};panning=true;panRef={sx:mx,sy:my,vx:vpX,vy:vpY};return;
   }
   if(pinching)return;
-  // Double-tap detection
   const now=Date.now();
-  if(now-plineLastTap<350&&(tool==='pline'||tool==='mline'||tool==='line')){handleDbl(getW(e));plineLastTap=0;return;}
+  const _multi=(tool==='pline'||tool==='mline'||tool==='line');
+  // ── MODO ANCLADO (§1): arrastrás para mover la cruz, soltás y ANCLA; el próximo tap CONFIRMA en la coord anclada ──
+  if(ptrMode===1){
+    const s=getS(e);
+    if(anchorArmed){                       // este tap = CONFIRMAR el pick en el punto anclado (no en el tap)
+      _wasConfirm=true; cursorS=anchorS?{...anchorS}:s;
+      const wp=anchorPt||constrainOP(getW(e));
+      if(now-plineLastTap<450&&_multi){ handleDbl(wp); plineLastTap=0; anchorArmed=false;anchorPt=null;anchorS=null; render(); return; } // doble confirmación = terminar
+      plineLastTap=_multi?now:plineLastTap;
+      handleDown(wp,getRW(e),cursorS); handleUp(wp,cursorS);
+      anchorArmed=false; anchorPt=null; anchorS=null; render(); return;
+    }
+    _wasConfirm=false; touchActive=true; cursorS=s;                 // arranca posicionamiento (mueve la cruz, sin comprometer)
+    const raw=getRW(e),wp=constrainOP(getW(e)); dragCurW={...wp}; handleMove(wp,raw,s); render(); return;
+  }
+  // Double-tap detection (modos Directo/Ratón)
+  if(now-plineLastTap<350&&_multi){handleDbl(getW(e));plineLastTap=0;return;}
   if(now-hatchLastTap<350&&tool==='hatch'){commitHatch();hatchLastTap=0;return;}
-  plineLastTap=(tool==='pline'||tool==='mline'||tool==='line')?now:plineLastTap;
+  plineLastTap=_multi?now:plineLastTap;
   hatchLastTap=(tool==='hatch')?now:hatchLastTap;
   touchActive=true;cursorS=getS(e);
   startLP(e);handleDown(constrainOP(getW(e)),getRW(e),getS(e));
@@ -2247,6 +2276,12 @@ function onTE(e){
   for(const t of e.changedTouches)delete touches[t.identifier];
   if(Object.keys(touches).length<2){pinching=false;pinch0=null;panning=false;}
   if(pinching)return;
+  // ── MODO ANCLADO: soltar NO confirma; ancla la cruz y espera el tap de confirmación ──
+  if(ptrMode===1){
+    if(_wasConfirm){ _wasConfirm=false; touchActive=false; render(); return; }   // era el tap de confirmar (ya ejecutado en onTS)
+    const s=getS(e); cursorS={...s}; anchorS={...s}; anchorPt=constrainOP(getW(e)); anchorArmed=true;   // ANCLA (queda la cruz fija)
+    render(); return;
+  }
   const wp=constrainOP(getW(e));dragCurW={...wp};handleUp(wp,getS(e));
   touchActive=false;cursorS=null;snapHit=null;render();
 }
@@ -2720,7 +2755,7 @@ function ST(t){
   if(t!=='select'&&editGroupId){ editGroupId=null; showGroupEditBar(false); }   // cambiar de herramienta sale del modo aislado
   if(t!=='block')bloqueSel=null;
   if(t!=='arch')pendingArch=null;
-  dimPh=0;dimA=null;dimB=null;dimAdjust=false;arcPh=0;arcA=null;arcB=null;arcBulge=false;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;movSet=null;setHint('');
+  dimPh=0;dimA=null;dimB=null;dimAdjust=false;arcPh=0;arcA=null;arcB=null;arcBulge=false;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;movSet=null;anchorArmed=false;anchorPt=null;anchorS=null;_wasConfirm=false;setHint('');
   document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
   const btnH=document.getElementById('btn-herr');
@@ -3833,6 +3868,7 @@ function imprimirConteo(){
 window.addEventListener('beforeunload',()=>{ if(planta)savePlanta(); });
 
 resize();
+{const b=document.getElementById('ptrBtn');if(b)b.innerHTML=_PTR_ICONS[ptrMode][1];}   // ícono inicial del modo de puntero
 renderPanelIcons();
 renderArchIcons();
 renderProyList();
