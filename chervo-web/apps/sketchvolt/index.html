@@ -147,27 +147,24 @@ body{display:flex;flex-direction:column;background:#fff;}
 /* Coordenada cartesiana: texto negro suelto arriba-izquierda del canvas (sin fondo ni caja) */
 #coord{position:absolute;top:8px;left:12px;z-index:20;font-size:14px;color:#1c1c1e;
   white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;}
-/* Ortho / Polar: flotando junto a las coordenadas (negros; rojos al activarse) */
-#opFloat{position:absolute;top:30px;left:12px;z-index:21;display:flex;gap:14px;}
-#opFloat button{background:none;border:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:1px;}
-#opFloat button svg{width:30px;height:30px;fill:none;stroke:#1c1c1e;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff);}
-#opFloat button .lbl{font-size:11px;color:#1c1c1e;line-height:1;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;}
+/* Contenedor superior-izquierdo: coordenada + Ortho/Polar en una fila, flotando */
+#topControls{position:absolute;top:12px;left:12px;z-index:21;display:flex;align-items:center;gap:16px;pointer-events:none;}
+#topControls #coord{position:static;}
+#opFloat{display:flex;gap:10px;flex-direction:row;pointer-events:auto;}
+#opFloat button{background:none;border:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:row;align-items:center;gap:4px;}
+#opFloat button svg{width:24px;height:24px;fill:none;stroke:#1c1c1e;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 2px #fff);}
+#opFloat button .lbl{font-size:12px;font-weight:500;color:#1c1c1e;text-shadow:0 0 3px #fff,0 0 3px #fff;}
 #opFloat button.on svg{stroke:#FE0000;}
 #opFloat button.on .lbl{color:#FE0000;}
 /* Panel guía / instructivo: reemplaza el head cuando hay una herramienta activa */
-#guide{position:fixed;top:0;left:0;right:0;height:auto;min-height:var(--tb);z-index:60;background:#fff;
+#guide{position:fixed;top:0;left:0;right:0;height:auto;min-height:var(--tb);z-index:60;background:#fcfcfc;
   border-bottom:1px solid #e5e5ea;display:none;align-items:center;gap:10px;padding:6px 6px 6px 14px;}
 #guide.show{display:flex;}
-#guide .gtool{font-size:13px;color:#FE0000;font-weight:400;white-space:nowrap;flex-shrink:0;padding-right:10px;border-right:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center;}
-#guide .gtxt{flex:1;min-width:0;font-size:15px;color:#7a7a7a;font-weight:300;line-height:1.25;}
-#guide .gtxt b{color:#1c1c1e;font-weight:400;}
+#guide .gtool{font-size:13px;color:#1c1c1e;font-weight:500;white-space:nowrap;flex-shrink:0;padding-right:10px;border-right:1px solid rgba(0,0,0,.1);align-self:stretch;display:flex;align-items:center;}
+#guide .gtxt{flex:1;min-width:0;font-size:12.5px;color:#8e8e93;font-weight:400;line-height:1.25;}
+#guide .gtxt b{color:#1c1c1e;font-weight:500;}
 #guide .gx{flex-shrink:0;background:none;border:none;color:#1c1c1e;cursor:pointer;padding:7px;}
 #guide .gx svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
-/* Cota dinámica por teclado (estilo AutoCAD): caja flotante cerca del cursor */
-#dimTip{position:fixed;display:none;z-index:200;width:82px;padding:5px 8px;border:1.5px solid var(--accent);
-  border-radius:9px;background:#fff;color:#1c1c1e;font-family:var(--font);font-size:16px;text-align:center;
-  box-shadow:0 3px 12px rgba(0,0,0,.16);outline:none;}
-#dimTip.show{display:block;}
 /* Chip flotante del modo aislado (editar grupo) */
 #groupEditBar{display:none;position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:210;
   background:#fff;border:1.5px solid var(--accent);border-radius:20px;padding:5px 6px 5px 14px;
@@ -394,6 +391,10 @@ body{display:flex;flex-direction:column;background:#fff;}
   display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.12);z-index:160;}
 #btn-arch:active{background:#f2f2f7;}
 #btn-arch svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+/* FABs planos y grises: ícono negro por defecto; rojo SOLO cuando su panel está activo (.on) */
+#btn-herr,#btn-elec,#btn-arch{background:#f2f2f7;border:none;color:#1c1c1e;box-shadow:0 4px 12px rgba(0,0,0,.08);transition:background .2s,color .2s;}
+#btn-herr.on,#btn-elec.on,#btn-arch.on{color:var(--accent);}
+#btn-herr:active,#btn-elec:active,#btn-arch:active{background:#e9e9ee;}
 #panel-arch{position:fixed;top:calc(10% + 68px);right:0;background:#fff;border:1px solid #e5e5ea;
   border-radius:16px 0 16px 16px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:150;
   display:none;flex-direction:column;padding:12px;width:300px;max-height:68vh;}
@@ -688,14 +689,15 @@ details.mas[open] summary:before{content:'▾ ';}
   </div>
 </div>
 
-<div id="wrap"><canvas id="cv"></canvas><span id="coord">0, 0</span>
-  <div id="opFloat">
-    <button id="orthoBtn" data-tip="Ortho (H/V)" onclick="toggleOrtho()"><svg viewBox="0 0 24 24"><path d="M5 4 V19 H20"/><path d="M5 12 H12 V19"/></svg><span class="lbl">Ortho</span></button>
-    <button id="polarBtn" data-tip="Polar" onclick="togglePolar()"><svg viewBox="0 0 24 24"><path d="M4 20 H20"/><path d="M4 20 A16 16 0 0 1 9 8"/><path d="M4 20 L17 11"/></svg><span class="lbl">Polar</span></button>
+<div id="wrap"><canvas id="cv"></canvas>
+  <div id="topControls">
+    <span id="coord">0, 0</span>
+    <div id="opFloat">
+      <button id="orthoBtn" data-tip="Ortho (H/V)" onclick="toggleOrtho()"><svg viewBox="0 0 24 24"><path d="M5 4 V19 H20"/><path d="M5 12 H12 V19"/></svg><span class="lbl">Ortho</span></button>
+      <button id="polarBtn" data-tip="Polar" onclick="togglePolar()"><svg viewBox="0 0 24 24"><path d="M4 20 H20"/><path d="M4 20 A16 16 0 0 1 9 8"/><path d="M4 20 L17 11"/></svg><span class="lbl">Polar</span></button>
+    </div>
   </div>
 </div>
-<!-- Cota dinámica: escribí la distancia (m) y Enter para fijar el próximo punto en el ángulo actual -->
-<input id="dimTip" type="text" inputmode="decimal" placeholder="m" autocomplete="off" onkeydown="dimTipKey(event)">
 <!-- Panel guía: cuando hay herramienta activa, el head muestra los pasos en texto (comandos en rojo) -->
 <div id="guide">
   <span class="gtool" id="guideTool">Herramienta</span>
@@ -763,6 +765,22 @@ details.mas[open] summary:before{content:'▾ ';}
         <button id="mlAxI" onclick="setMlJust('inner')" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;color:var(--ink);font-family:var(--font);font-size:12px;cursor:pointer">Int</button>
         <button id="mlAxE" onclick="setMlJust('outer')" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;color:var(--ink);font-family:var(--font);font-size:12px;cursor:pointer">Ext</button>
       </span></span>
+  </div>
+  <div id="grpMeasure" style="display:none;align-items:center;gap:8px">
+    <span class="fi"><span class="fl" style="color:var(--accent)">Medida (m)</span>
+      <input type="text" inputmode="decimal" id="pbMeasure" placeholder="Ej: 3.50" style="width:82px;font-size:16px;font-family:var(--font);padding:4px 8px;border:1.5px solid var(--accent);border-radius:8px;outline:none;text-align:center" onkeydown="measureKey(event)"></span>
+  </div>
+  <div id="grpArch" style="display:none;align-items:center;gap:8px">
+    <span class="fi"><span class="fl">Ancho (m)</span>
+      <input type="number" id="archW" step="0.05" style="width:64px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center" onchange="updateArch('w', this.value)"></span>
+    <span class="fi"><span class="fl">Muro (m)</span>
+      <input type="number" id="archL" step="0.05" style="width:64px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center" onchange="updateArch('l', this.value)"></span>
+    <button class="pib" data-tip="Rotar 90°" onclick="updateArch('rot')"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></button>
+    <button class="pib" data-tip="Espejo" onclick="updateArch('flip')"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-4 5 4 5"/><path d="M16 7l4 5-4 5" opacity=".4"/></svg></button>
+    <span id="archTypeWrap" style="display:none;align-items:center;gap:4px">
+      <button class="pib" id="btnBatiente" data-tip="Batiente" onclick="updateArch('variant','batiente')"><svg viewBox="0 0 24 24"><path d="M4 22V2h4v20M8 22c0-8.8 7.2-16 16-16v2c-7.7 0-14 6.3-14 14"/></svg></button>
+      <button class="pib" id="btnCorrediza" data-tip="Corrediza" onclick="updateArch('variant','corrediza')"><svg viewBox="0 0 24 24"><path d="M2 22h20M4 2v20M20 2v20M4 12h16M10 9l-3 3 3 3M14 9l3 3-3 3"/></svg></button>
+    </span>
   </div>
   <div id="grpEraser" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl" title="Goma"><svg viewBox="0 0 24 24"><path d="M19 20H8.5l-4.21-4.3a1 1 0 0 1 0-1.41l10-10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41L14 16"/><path d="M18 13.3L10.7 6"/></svg></span>
@@ -1126,7 +1144,7 @@ function render(){
   drawOrigin();
   drawPreview();
   if(!_exporting)drawCursorSnap();
-  if(!_exporting)showDimTip();
+  if(!_exporting)updateMeasureUI();
 }
 
 // HOJA (papel A4/A3/A2) en coordenadas mundo — el dibujo vive dentro de la hoja a escala.
@@ -2531,8 +2549,8 @@ function setHint(msg){const el=document.getElementById('pbHint');el.textContent=
 
 // TOOL PANEL
 let _toolsOpen=false;
-function toggleTools(){_toolsOpen=!_toolsOpen;document.getElementById('panel-herr').classList.toggle('open',_toolsOpen);}
-function closeTools(){_toolsOpen=false;document.getElementById('panel-herr').classList.remove('open');}
+function toggleTools(){_toolsOpen=!_toolsOpen;document.getElementById('panel-herr').classList.toggle('open',_toolsOpen);document.getElementById('btn-herr').classList.toggle('on',_toolsOpen);}
+function closeTools(){_toolsOpen=false;document.getElementById('panel-herr').classList.remove('open');document.getElementById('btn-herr').classList.remove('on');}
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr')&&!e.target.closest('#btn-herr'))closeTools();},{passive:true});
 
 // TOOLBAR
@@ -2583,34 +2601,37 @@ function drawTrackLine(A){
   ctx.save();ctx.strokeStyle='#FE0000';ctx.globalAlpha=.45;ctx.lineWidth=1;ctx.setLineDash([7,6]);
   ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();ctx.restore();
 }
-// ── Cota dinámica por teclado (iLDraft): escribir distancia (m) + Enter fija el próximo punto ──
-function _dimCtx(){ return (tool==='mline'||tool==='pline')&&plineActive&&plinePts.length>0; }
-function showDimTip(){
-  const el=document.getElementById('dimTip'); if(!el)return;
-  if(_dimCtx()&&dragCurW){
-    const s=w2s(dragCurW.x,dragCurW.y);
-    el.style.left=Math.min(window.innerWidth-92,Math.max(4,s.x+16))+'px';
-    el.style.top=Math.max(4,s.y-44)+'px';
-    el.classList.add('show');
-  } else { el.classList.remove('show'); el.value=''; if(document.activeElement===el)el.blur(); }
+// ── INGRESO DIRECTO DE DISTANCIAS (estilo DWG/AutoCAD) — input "Medida (m)" en el propbar ──
+function updateMeasureUI(){
+  const isDrawing = drawing || plineActive || (tool==='dim'&&dimPh>0);
+  const grp=document.getElementById('grpMeasure'); if(grp){ grp.style.display=isDrawing?'flex':'none'; }
+  if(!isDrawing){ const inp=document.getElementById('pbMeasure'); if(inp){ inp.value=''; if(document.activeElement===inp)inp.blur(); } }
 }
-function commitDimInput(){
-  if(!_dimCtx()||!dragCurW)return;
-  const el=document.getElementById('dimTip'), val=parseFloat((el.value||'').replace(',','.'));
-  if(!(val>0))return;
-  const a=plinePts[plinePts.length-1]; let dx=dragCurW.x-a[0], dy=dragCurW.y-a[1]; const d=Math.hypot(dx,dy);
+function commitMeasure(){
+  const inp=document.getElementById('pbMeasure'); if(!inp)return;
+  const val=parseFloat((inp.value||'').replace(',','.')); if(!(val>0))return;
+  let a,cur;
+  if((tool==='pline'||tool==='mline')&&plineActive&&plinePts.length>0){ a=plinePts[plinePts.length-1]; cur=dragCurW; }
+  else if(drawing&&dragStartW&&dragCurW){ a=[dragStartW.x,dragStartW.y]; cur=dragCurW; }
+  else return;
+  if(!cur)return;
+  let dx=cur.x-a[0], dy=cur.y-a[1]; const d=Math.hypot(dx,dy);
   if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
-  const np=[a[0]+dx*val*PPM, a[1]+dy*val*PPM];
-  plinePts.push(np); dragCurW={x:np[0],y:np[1]}; el.value=''; render();
+  const nx=a[0]+dx*val*PPM, ny=a[1]+dy*val*PPM, nw={x:nx,y:ny};
+  dragCurW=nw;
+  if(tool==='pline'||tool==='mline'){ plinePts.push([nx,ny]); inp.value=''; inp.focus(); }
+  else { handleUp(nw,{x:0,y:0}); inp.blur(); }
+  render();
 }
-function dimTipKey(e){
-  if(e.key==='Enter'){ e.preventDefault(); commitDimInput(); }
+function measureKey(e){
+  if(e.key==='Enter'){ e.preventDefault(); commitMeasure(); }
   else if(e.key==='Escape'){ e.preventDefault(); e.target.value=''; e.target.blur(); }
 }
 document.addEventListener('keydown',e=>{
-  if(!_dimCtx())return; const el=document.getElementById('dimTip'); if(!el||document.activeElement===el)return;
-  if(/^[0-9.,]$/.test(e.key)){ el.value+=(e.key===','?'.':e.key); el.focus(); }
-  else if(e.key==='Enter'){ commitDimInput(); }
+  const isDrawing = drawing || plineActive; const inp=document.getElementById('pbMeasure');
+  if(!isDrawing||!inp||document.activeElement===inp)return;
+  if(/^[0-9.,]$/.test(e.key)){ inp.value+=(e.key===','?'.':e.key); inp.focus(); }
+  else if(e.key==='Enter'){ commitMeasure(); }
 });
 function updateGuide(){
   const g=document.getElementById('guide'), gd=GUIA[tool];
@@ -2780,15 +2801,15 @@ function setDimFont(sz){
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 // ══════════ SIMBOLOGÍA ELÉCTRICA (FAB) ══════════
 let _unitOpen=false;
-function toggleUnit(){_unitOpen=!_unitOpen;document.getElementById('panel-unit').classList.toggle('open',_unitOpen);if(_unitOpen){closeTools();closeArch();}}
-function closeUnit(){_unitOpen=false;document.getElementById('panel-unit').classList.remove('open');}
+function toggleUnit(){_unitOpen=!_unitOpen;document.getElementById('panel-unit').classList.toggle('open',_unitOpen);document.getElementById('btn-elec').classList.toggle('on',_unitOpen);if(_unitOpen){closeTools();closeArch();}}
+function closeUnit(){_unitOpen=false;document.getElementById('panel-unit').classList.remove('open');document.getElementById('btn-elec').classList.remove('on');}
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-unit')&&!e.target.closest('#btn-elec'))closeUnit();},{passive:true});
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-arch')&&!e.target.closest('#btn-arch'))closeArch();},{passive:true});
 function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;ultimoSimbolo={sel:bloqueSel,nom};closeUnit();fabElecSym(bloqueSel);ST('block');toast('Tocá para estampar · '+nom);}
 // ── Librería de bloques arquitectónicos (iLDraft) ──
 let _archOpen=false;
-function toggleArchPanel(){_archOpen=!_archOpen;document.getElementById('panel-arch').classList.toggle('open',_archOpen);if(_archOpen){closeTools();closeUnit();}}
-function closeArch(){_archOpen=false;document.getElementById('panel-arch').classList.remove('open');}
+function toggleArchPanel(){_archOpen=!_archOpen;document.getElementById('panel-arch').classList.toggle('open',_archOpen);document.getElementById('btn-arch').classList.toggle('on',_archOpen);if(_archOpen){closeTools();closeUnit();}}
+function closeArch(){_archOpen=false;document.getElementById('panel-arch').classList.remove('open');document.getElementById('btn-arch').classList.remove('on');}
 function pickArch(kind){pendingArch=kind;closeArch();ST('arch');toast('Tocá para colocar · '+archNom(kind));}
 function mkArchCanvas(kind,cssPx){
   const d=ARCH_DEF[kind]||{w:0.6,l:0.5}, dpr=window.devicePixelRatio||1, c=document.createElement('canvas');
@@ -2804,6 +2825,18 @@ function renderArchIcons(){
   document.querySelectorAll('#panel-arch .pu-item[data-arch]').forEach(it=>{
     const c=mkArchCanvas(it.dataset.arch,34); const old=it.querySelector('canvas'); if(old)old.replaceWith(c); else it.insertBefore(c,it.firstChild);
   });
+}
+// Editar la abertura/mueble seleccionado: medida, ancho de muro, rotar, espejo, tipo (batiente/corrediza).
+function updateArch(prop,val){
+  const o=selObj(); if(!o||o.type!=='arch')return;
+  saveHistory();
+  if(prop==='w') o.w=parseFloat(val)||o.w;
+  if(prop==='l') o.l=parseFloat(val)||o.l;
+  if(prop==='rot') o.rotation=((o.rotation||0)+90)%360;
+  if(prop==='flip') o.flip=!o.flip;
+  if(prop==='variant') o.variant=val;
+  if(o.anchored) snapArchToMl(o);   // re-evaluar el corte si está anclada al muro
+  markDirty(); showSelBar(); render();
 }
 // ── CAJA DE REFERENCIAS (leyenda de vivienda) — se trae al plano; copiás desde acá ──
 // Cada símbolo es un bloque marcado `ref:true`: SE IMPRIME y sirve de paleta, pero NO
@@ -2865,7 +2898,7 @@ function setBlockCM(v){ bloqueCM=+v; }
 // (la hoja comanda la impresión). No se toca desde el canvas.
 // ── BARRA INFERIOR DINÁMICA — un solo contexto a la vez (herramienta · selección · panel) ──
 let _panelMode=null;
-const _ALL_GRP=['grpTool','grpLine','grpColor','grpSize','grpFont','grpSides','grpHatch','grpDim','grpEraser','grpBlock','grpMline','grpSel','grpMulti','grpGrid','grpExport','grpImage'];
+const _ALL_GRP=['grpTool','grpLine','grpColor','grpSize','grpFont','grpSides','grpHatch','grpDim','grpEraser','grpBlock','grpMline','grpMeasure','grpArch','grpSel','grpMulti','grpGrid','grpExport','grpImage'];
 function _hideAllGrp(){ _ALL_GRP.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';}); showActions(false,false); }
 // Línea de acción de abajo: tacho (gris) y/o tick (aprobar/finalizar). Centrada, dinámica.
 // Recibe las FUNCIONES de cada contexto (borrar/quitar, terminar/listo). Sin función → oculto.
@@ -3034,16 +3067,31 @@ function showSelBar(){
   // 1 seleccionado → propiedades del objeto
   const o=selObj();
   if(!o){ _selScaleBase=null; applyToolBar(); return; }
-  const isB=o.type==='block', hasLine=['line','rect','pline','pen','circle','poly','arc'].includes(o.type);
+  const isB=o.type==='block', isArch=o.type==='arch', hasLine=['line','rect','pline','pen','circle','poly','arc'].includes(o.type);
   document.getElementById('gsBlockCtl').style.display=isB?'inline-flex':'none';
   document.getElementById('gsLineCtl').style.display=hasLine?'inline-flex':'none';
-  document.getElementById('gsScaleCtl').style.display=isB?'none':'inline-flex';
+  document.getElementById('gsScaleCtl').style.display=(isB||isArch)?'none':'inline-flex';
+  const grpArch=document.getElementById('grpArch');
+  if(grpArch){
+    grpArch.style.display=isArch?'flex':'none';
+    if(isArch){
+      document.getElementById('archW').value=o.w;
+      document.getElementById('archL').value=o.l;
+      const isCarp=(o.kind==='puerta'||o.kind==='ventana');
+      document.getElementById('archTypeWrap').style.display=isCarp?'inline-flex':'none';
+      if(isCarp){
+        const variant=o.variant||(o.kind==='puerta'?'batiente':'corrediza');
+        document.getElementById('btnBatiente').style.color=(variant==='batiente')?'var(--accent)':'var(--ink)';
+        document.getElementById('btnCorrediza').style.color=(variant==='corrediza')?'var(--accent)':'var(--ink)';
+      }
+    }
+  }
   if(isB){ document.getElementById('gsMM').value=(o.cm!=null?o.cm:(o.mm!=null?o.mm*10:30)); document.getElementById('gsGiro').value=o.rotation||0; document.getElementById('gsAlt').value=(o.altura!=null?o.altura:30); }
   if(hasLine){ document.getElementById('gsSW').value=o.strokeW||2; document.getElementById('gsLT').value=o.lineType||'solid'; }
   _selScaleBase=null; const gsc=document.getElementById('gsScale'); if(gsc)gsc.value=100;
   g.style.display='flex';
   showActions(selDelete, null);   // 1 objeto: solo tacho (gris) en la línea de acción
-  const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isB?'Símbolo':'Objeto';
+  const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isB?'Símbolo':(isArch?archNom(o.kind):'Objeto');
   _syncSwatches(); refreshBottom();
 }
 

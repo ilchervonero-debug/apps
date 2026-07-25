@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v63) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v64) · app pro
 - **iLDraft en SketchVolt — Módulo 1: Muro/multilínea (v61):** herramienta `mline` (botón en panel de
   dibujo). Doble línea paralela al eje con **ancho en metros** (10/15/20/30 cm, `mlSepM`) y
   **justificación** Centro/Int/Ext (`mlJust`); tapas en los extremos. Multipunto como pline (toca
@@ -136,6 +136,14 @@ Versión = número de caché del SW.
   en `render()`); `commitDimInput()` proyecta `último_punto + dir(cursor)·(val·PPM)`; `dimTipKey` (Enter/
   Esc) + listener global de teclado (dígitos enfocan el input). 1 unidad = 1 m (PPM=100). **iLDraft
   integrado: 3/3 módulos** (muro, librería+anclaje+enmascarado, cota por teclado).
+- **iLDraft — refinamiento UI + edición de aberturas (v64, pedido Ángel):** coordenada + Ortho/Polar
+  reagrupados en `#topControls` (fila, íconos con rótulo al lado). La **cota por teclado** pasó del
+  tooltip flotante a un input **MEDIDA (M)** en el propbar (`#grpMeasure`, `updateMeasureUI`/
+  `commitMeasure`/`measureKey`); soporta también línea/círculo (via `handleUp`). **Guía** más suave
+  (fondo `#fcfcfc`, nombre negro peso 500, texto gris, sin negrita pesada). **FABs planos y grises**
+  (`#btn-herr/#btn-elec/#btn-arch` fondo `#f2f2f7`, ícono negro); se ponen **rojos solo con su panel
+  abierto** (`.on` en los toggles). **Edición de aberturas** al seleccionar (`#grpArch`+`updateArch`):
+  Ancho, ancho de Muro, Rotar 90°, Espejo, y **Batiente/Corrediza** (re-ancla y re-corta el muro).
 - **Guía discreta + línea guía infinita de Polar (v60):** el panel guía se hizo **discreto** (texto gris
   fino peso 300, **sin negritas**, comandos apenas más oscuros por tono — no rojo; solo el nombre de la
   herramienta en rojo chico), para que no sea protagonista. **Polar/Ortho dibujan una línea guía
