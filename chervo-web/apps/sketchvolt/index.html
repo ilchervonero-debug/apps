@@ -581,6 +581,7 @@ details.mas[open] summary:before{content:'▾ ';}
       <button class="phb" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
       <button class="phb" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg></button>
       <button class="phb" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg></button>
+      <button class="phb" data-t="tape" data-tip="Cinta métrica · guías" onclick="ST('tape');closeTools()"><svg viewBox="0 0 24 24"><path d="M4 8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v6a6 6 0 0 1-6 6H4z"/><circle cx="9" cy="10" r="3"/><path d="M9 20v-2M13 20v-3M17 20v-2"/></svg></button>
       <button class="phb" data-t="hatch" onclick="ST('hatch');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="3" x2="7" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="17" y1="3" x2="17" y2="21"/></svg></button>
     </div>
   </div>
@@ -999,6 +1000,8 @@ let hatchPts=[],hatchLastTap=0;
 let dimPh=0,dimA=null,dimB=null,dimAdjust=false,dimFontSize=10;
 // arc — 3 clicks: A, B, ctrl point
 let arcPh=0,arcA=null,arcB=null,arcBulge=false,arcEditId=null,arcEditOrig=null,arcEditDragging=false;
+// ── CINTA MÉTRICA ── tapePh 0/1 · modo 'measure'|'guide' · tapeRef = segmento de referencia · flash de medida
+let tapePh=0,tapeMode=null,tapeA=null,tapeRef=null,_tapeFlash=null,_tapeFlashT=null;
 // move/copy
 let movId=null,movStart=null;
 // context
@@ -1511,6 +1514,11 @@ function drawObj(obj){
   setDash(obj.lineType||'solid',vpZ);
   switch(obj.type){
     case 'line':{const a=w2s(...obj.pts[0]),b=w2s(...obj.pts[1]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();if(obj.elec){ctx.save();ctx.fillStyle=ctx.strokeStyle;for(const p of[a,b]){ctx.beginPath();ctx.arc(p.x,p.y,2.6,0,7);ctx.fill();}ctx.restore();}break;}
+    case 'guide_line':{   // LÍNEA GUÍA: fina, dash largo, celeste técnico. NO se imprime (se salta al exportar).
+      if(_exporting)break;
+      const a=w2s(...obj.pts[0]),b=w2s(...obj.pts[1]);
+      ctx.save();ctx.strokeStyle=sel?'#0a60d0':'#007aff';ctx.lineWidth=(sel?1.6:1)*vpZ;ctx.setLineDash([10*vpZ,7*vpZ]);
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.restore();break;}
     case 'rect':{
       // Draw as 4-point polygon so rotation works
       const[[ax,ay],[bx,by]]=obj.pts;
@@ -1940,6 +1948,33 @@ function drawArrow(fx,fy,tx,ty,col){
 }
 
 function drawPreview(){
+  // CINTA MÉTRICA — flash de medida (queda un instante tras confirmar)
+  if(_tapeFlash){
+    const a=w2s(..._tapeFlash.a),b=w2s(..._tapeFlash.b),d=(hyp(_tapeFlash.b[0]-_tapeFlash.a[0],_tapeFlash.b[1]-_tapeFlash.a[1])/PPM);
+    ctx.save();ctx.strokeStyle='#007aff';ctx.fillStyle='#007aff';ctx.lineWidth=1.4;ctx.setLineDash([5*vpZ,4*vpZ]);
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);
+    drawArrow(a.x,a.y,b.x,b.y,'#007aff');drawArrow(b.x,b.y,a.x,a.y,'#007aff');
+    const mx=(a.x+b.x)/2,my=(a.y+b.y)/2,lbl=d.toFixed(2)+' m';ctx.font=`600 ${Math.max(11,12*vpZ)}px -apple-system,sans-serif`;
+    const tw=ctx.measureText(lbl).width;ctx.fillStyle='#fff';ctx.fillRect(mx-tw/2-4,my-9*vpZ-8,tw+8,18);ctx.fillStyle='#007aff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lbl,mx,my-9*vpZ+1);
+    ctx.restore();
+  }
+  // CINTA MÉTRICA — preview activo (medir A→cursor, o guía paralela al segmento de referencia)
+  if(tool==='tape'&&tapePh===1&&tapeA&&dragCurW){
+    ctx.save();
+    if(tapeMode==='measure'){
+      const a=w2s(...tapeA),b=w2s(dragCurW.x,dragCurW.y);
+      ctx.strokeStyle='#007aff';ctx.lineWidth=1.3;ctx.setLineDash([5*vpZ,4*vpZ]);
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);
+      drawArrow(a.x,a.y,b.x,b.y,'#007aff');drawArrow(b.x,b.y,a.x,a.y,'#007aff');
+    } else if(tapeRef){   // guía: recta paralela que sigue la distancia perpendicular del cursor
+      const pr=perpOf(tapeRef,dragCurW),L=1e5,bx=tapeRef.px+pr.nx*pr.d,by=tapeRef.py+pr.ny*pr.d;
+      const p1=w2s(bx-pr.ux*L,by-pr.uy*L),p2=w2s(bx+pr.ux*L,by+pr.uy*L);
+      ctx.strokeStyle='#007aff';ctx.lineWidth=1;ctx.setLineDash([10*vpZ,7*vpZ]);
+      ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();ctx.setLineDash([]);
+      const rp=w2s(tapeRef.px,tapeRef.py);ctx.fillStyle='#007aff';ctx.beginPath();ctx.arc(rp.x,rp.y,3.5,0,7);ctx.fill();
+    }
+    ctx.restore();
+  }
   // RECUADRO de selección (arrastre): azul=ventana (izq→der), verde punteado=cruce (der→izq)
   if(tool==='select'&&marquee){
     const a=w2s(marquee.x0,marquee.y0),b=w2s(marquee.x1,marquee.y1);
@@ -2350,6 +2385,24 @@ function handleDown(wp,rawW,scrn){
   }
 
   // ARC — drag like line, midpoint grip to curve
+  // CINTA MÉTRICA — pick en vacío = medir A→B; pick sobre una línea = guía paralela (distancia por teclado)
+  if(tool==='tape'){
+    if(tapePh===0){
+      const ref=segUnderPt(wp,12/vpZ);
+      if(ref){ tapeMode='guide'; tapeRef=ref; tapeA=[ref.px,ref.py]; setHint('→ Arrastrá al lado y escribí la distancia (m) + Enter'); }
+      else { tapeMode='measure'; tapeA=[wp.x,wp.y]; setHint('→ Pick del punto B (la medida aparece abajo)'); }
+      tapePh=1; dragCurW={...wp}; render();
+    } else {
+      if(tapeMode==='measure'){
+        _tapeFlash={a:tapeA.slice(),b:[wp.x,wp.y],t:Date.now()};
+        clearTimeout(_tapeFlashT); _tapeFlashT=setTimeout(()=>{_tapeFlash=null;render();},1500);
+        resetTape();
+      } else { const pr=perpOf(tapeRef,wp); if(Math.abs(pr.d)>1e-3)createGuide(tapeRef,pr.d); resetTape(); }
+      render();
+    }
+    return;
+  }
+
   // ARCO — 3 puntos obligatorios: Inicio → Fin → punto sobre el arco (bombeo). Confirmar (soltar/pick) fija.
   if(tool==='arc'){
     if(arcPh===0){ arcA=[wp.x,wp.y]; arcPh=1; setHint('→ Toque el punto FINAL del arco'); render(); }
@@ -2470,6 +2523,7 @@ function handleUp(wp,scrn){
     if(_pendingValid()){ drawPending=true; } else { dragStartW=dragCurW=null; if(history.length)history.pop(); }
     render(); return;
   }
+  if(tool==='tape')return;   // cinta: medir/guía se resuelven en handleDown (o Enter para guía exacta)
   if(tool==='arc'){   // arco de 3 puntos: confirma el bombeo al SOLTAR (pick)
     if(arcPh===2&&arcBulge){
       const bp=dragCurW||{x:arcB[0],y:arcB[1]};
@@ -2532,6 +2586,7 @@ function handleUp(wp,scrn){
 function doEraseAt(wp){
   const sz=(+document.getElementById('pbEraserSize').value)/vpZ/2;const toRemove=[],toAdd=[];
   for(let oi=objects.length-1;oi>=0;oi--){const obj=objects[oi];const segs=getSegs(obj);if(!segs.length)continue;
+    if(obj.type==='guide_line'){ if(segs.some(s=>distPS(wp,s[0],s[1])<sz)){toRemove.push(oi);} continue; }   // guía = se borra ENTERA (no se parte)
     let changed=false;const surv=[];
     for(const seg of segs){if(distPS(wp,seg[0],seg[1])<sz){changed=true;const t=clamp(tOnSeg(wp,seg[0],seg[1]),0,1);if(t>0.05)surv.push([seg[0],lerpA(seg[0],seg[1],t)]);if(t<0.95)surv.push([lerpA(seg[0],seg[1],t),seg[1]]);}else surv.push([seg[0],seg[1]]);}
     if(changed){toRemove.push(oi);for(const s of surv)if(hyp(s[1][0]-s[0][0],s[1][1]-s[0][1])>1/vpZ)toAdd.push({type:'line',pts:[s[0],s[1]],color:obj.color,strokeW:obj.strokeW,lineType:obj.lineType||'solid',id:nextId++});}}
@@ -2682,6 +2737,24 @@ function hitTest(wp,obj,T){
 function distPS(p,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],l2=dx*dx+dy*dy;if(!l2)return hyp(p.x-a[0],p.y-a[1]);const t=clamp(((p.x-a[0])*dx+(p.y-a[1])*dy)/l2,0,1);return hyp(p.x-(a[0]+t*dx),p.y-(a[1]+t*dy));}
 function tOnSeg(p,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],l2=dx*dx+dy*dy;if(!l2)return 0;return((p.x-a[0])*dx+(p.y-a[1])*dy)/l2;}
 function lerpA(a,b,t){return[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];}
+// ── Cinta métrica: helpers ──
+// Segmento real más cercano al punto (para decidir modo GUÍA). Devuelve {a,b,px,py} o null.
+function segUnderPt(wp,th){
+  let best=null,bd=th;
+  for(const o of objects){ if(!o||!o.pts||o.type==='block'||o.type==='text')continue;
+    for(const s of getSegs(o)){ const d=distPS(wp,s[0],s[1]); if(d<bd){ const t=clamp(tOnSeg(wp,s[0],s[1]),0,1);
+      bd=d; best={a:s[0].slice(),b:s[1].slice(),px:s[0][0]+t*(s[1][0]-s[0][0]),py:s[0][1]+t*(s[1][1]-s[0][1])}; } } }
+  return best;
+}
+// Distancia perpendicular FIRMADA (mundo px) del punto p a la recta del segmento ref, y la normal unitaria.
+function perpOf(ref,p){ const dx=ref.b[0]-ref.a[0],dy=ref.b[1]-ref.a[1],len=hyp(dx,dy)||1; const nx=-dy/len,ny=dx/len;
+  return { d:(p.x-ref.px)*nx+(p.y-ref.py)*ny, nx, ny, ux:dx/len, uy:dy/len }; }
+// Crea una LÍNEA GUÍA infinita, paralela al ref, a offset (mundo px, firmado) desde el punto pickeado.
+function createGuide(ref,offW){ const g=perpOf(ref,{x:ref.px,y:ref.py}); const L=1e5;
+  const bx=ref.px+g.nx*offW, by=ref.py+g.ny*offW;
+  objects.push({type:'guide_line',pts:[[bx-g.ux*L,by-g.uy*L],[bx+g.ux*L,by+g.uy*L]],color:'#007aff',id:nextId++});
+  markDirty(); }
+function resetTape(){ tapePh=0;tapeMode=null;tapeA=null;tapeRef=null;setHint(''); }
 function getSegs(obj){
   if(!obj||!obj.pts)return[];
   if(obj.type==='line')return[[obj.pts[0],obj.pts[1]]];
@@ -2755,7 +2828,7 @@ function ST(t){
   if(t!=='select'&&editGroupId){ editGroupId=null; showGroupEditBar(false); }   // cambiar de herramienta sale del modo aislado
   if(t!=='block')bloqueSel=null;
   if(t!=='arch')pendingArch=null;
-  dimPh=0;dimA=null;dimB=null;dimAdjust=false;arcPh=0;arcA=null;arcB=null;arcBulge=false;arcEditId=null;arcEditOrig=null;arcEditDragging=false;movId=null;movSet=null;anchorArmed=false;anchorPt=null;anchorS=null;_wasConfirm=false;setHint('');
+  dimPh=0;dimA=null;dimB=null;dimAdjust=false;arcPh=0;arcA=null;arcB=null;arcBulge=false;arcEditId=null;arcEditOrig=null;arcEditDragging=false;tapePh=0;tapeMode=null;tapeA=null;tapeRef=null;movId=null;movSet=null;anchorArmed=false;anchorPt=null;anchorS=null;_wasConfirm=false;setHint('');
   document.querySelectorAll('.tb[data-t],.ti-t[data-t],.phb[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   const phbActive=document.querySelector('.phb[data-t="'+t+'"]');
   const btnH=document.getElementById('btn-herr');
@@ -2772,6 +2845,7 @@ const GUIA={
   sline:['SmartLine','<b>Arrastrá</b> de un nodo a otro: los extremos se <b>enganchan</b> solos.'],
   pline:['Polilínea','<b>Tocá</b> cada vértice; <b>doble toque</b> para terminar.'],
   mline:['Muro','<b>Tocá</b> las esquinas, o escribí la <b>medida</b> (m) + <b>Enter</b>. <b>Doble toque</b> cierra.'],
+  tape:['Cinta métrica','Pick en <b>vacío</b> = medir A→B. Pick <b>sobre una línea</b> = guía paralela: escribí la <b>distancia</b> (m) + <b>Enter</b>.'],
   arch:['Bloque','<b>Tocá</b> para colocar. Puertas/ventanas se <b>anclan</b> al muro y lo cortan.'],
   rect:['Rectángulo','<b>Arrastrá</b> de una esquina a la opuesta.'],
   circle:['Círculo','<b>Arrastrá</b> del centro hacia el radio.'],
@@ -2834,19 +2908,30 @@ function syncMeasureUI(){
   const paDel=document.getElementById('paDel'), paOk=document.getElementById('paOk'), pa=document.getElementById('propActions');
   const multipt=(tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0;
   const dragging=drawing&&_DRAG_TOOLS.includes(tool)&&dragStartW&&dragCurW;
-  const selO=(!drawPending&&!multipt&&!dragging)?_selMeasObj():null;
-  const showMeas=drawPending||multipt||dragging||!!selO;
+  const tapeMeas=tool==='tape'&&tapePh===1&&tapeMode==='measure'&&dragCurW&&tapeA;
+  const tapeGuide=tool==='tape'&&tapePh===1&&tapeMode==='guide';
+  const selO=(!drawPending&&!multipt&&!dragging&&!tapeMeas&&!tapeGuide)?_selMeasObj():null;
+  const showMeas=drawPending||multipt||dragging||tapeMeas||tapeGuide||!!selO;
   const box=document.getElementById('pbMeasBox'); if(box)box.style.display=showMeas?'flex':'none';
   if(!showMeas){ if(document.activeElement===inp)inp.blur(); inp.value=''; return; }
   if(selO&&document.activeElement!==inp){ inp.value=(+_objMeasure(selO).toFixed(2)); }
+  if(tapeMeas&&document.activeElement!==inp){ inp.value=(hyp(dragCurW.x-tapeA[0],dragCurW.y-tapeA[1])/PPM).toFixed(2); }   // distancia viva A→cursor
   if(drawPending){ _paDelFn=cancelPendingDraw; _paOkFn=commitPendingDraw; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(multipt){ _paDelFn=cancelMultipoint; _paOkFn=finishMultipoint; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
+  else if(tapeMeas){ _paDelFn=resetTape; _paOkFn=()=>{ if(tapeA&&dragCurW){_tapeFlash={a:tapeA.slice(),b:[dragCurW.x,dragCurW.y],t:Date.now()};clearTimeout(_tapeFlashT);_tapeFlashT=setTimeout(()=>{_tapeFlash=null;render();},1500);} resetTape(); refreshBottom(); render(); }; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
+  else if(tapeGuide){ _paDelFn=resetTape; _paOkFn=commitMeasure; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(dragging){ paDel.style.display='none'; paOk.style.display='none'; pa.style.display='grid'; }
   // en selección: el tacho/✓ los define showSelBar; solo agregamos la medida (pa ya visible).
 }
 function commitMeasure(){
   const inp=document.getElementById('pbMeasure'); if(!inp)return;
   const val=parseFloat((inp.value||'').replace(',','.')); if(!(val>0)){ inp.blur(); return; }
+  // CINTA · GUÍA: distancia exacta escrita → línea guía paralela, del lado donde se arrastró el cursor.
+  if(tool==='tape'&&tapeMode==='guide'&&tapeRef){
+    const cur=dragCurW||{x:tapeRef.px,y:tapeRef.py};
+    const sign=(perpOf(tapeRef,cur).d>=0)?1:-1;
+    saveHistory(); createGuide(tapeRef, sign*val*PPM); resetTape(); inp.value=''; inp.blur(); refreshBottom(); render(); return;
+  }
   if(drawPending&&dragStartW&&dragCurW){
     let a=[dragStartW.x,dragStartW.y],dx=dragCurW.x-a[0],dy=dragCurW.y-a[1],d=Math.hypot(dx,dy);
     if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
@@ -2866,7 +2951,7 @@ function measureKey(e){
 }
 document.addEventListener('keydown',e=>{
   const inp=document.getElementById('pbMeasure'); if(!inp||document.activeElement===inp)return;
-  const ctx2=drawPending||((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0)||_selMeasObj();
+  const ctx2=drawPending||((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0)||(tool==='tape'&&tapePh===1&&tapeMode==='guide')||_selMeasObj();
   if(!ctx2)return;
   if(/^[0-9.,]$/.test(e.key)){ inp.value+=(e.key===','?'.':e.key); inp.focus(); }
   else if(e.key==='Enter'){ commitMeasure(); }
@@ -2911,7 +2996,7 @@ function contentBounds(){
   let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity,any=false;
   const ext=(x,y)=>{if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;any=true;};
   for(const o of objects){
-    if(!o||!o.pts)continue;
+    if(!o||!o.pts||o.type==='guide_line')continue;   // las guías son infinitas y no imprimibles → fuera del encuadre
     if((o.type==='circle'||o.type==='poly')&&o.pts[0]){const[cx,cy]=o.pts[0],r=o.r||0;ext(cx-r,cy-r);ext(cx+r,cy+r);continue;}
     o.pts.forEach(p=>ext(p[0],p[1]));
   }
@@ -3182,7 +3267,7 @@ function applyToolBar(){
   show('grpEraser',t==='eraser');
   show('grpBlock',t==='block');
   show('grpMline',t==='mline');
-  const names={select:'Seleccionar',line:'Línea',arc:'Arco · arrastrá A→B · grip ↕ para curvar',pline:'Polilínea · doble toque cierra',mline:'Muro · doble toque cierra',rect:'Rectángulo',circle:'Círculo',poly:'Polígono',pen:'Trazo libre',text:'Texto',dim:'Cota · A → B → posición',dim2:'Cota directa · A → B',hatch:'Relleno · doble toque cierra',eraser:'Goma',trim:'Trim',move:'Mover',copy:'Copiar'};
+  const names={select:'Seleccionar',line:'Línea',arc:'Arco · arrastrá A→B · grip ↕ para curvar',pline:'Polilínea · doble toque cierra',mline:'Muro · doble toque cierra',rect:'Rectángulo',circle:'Círculo',poly:'Polígono',pen:'Trazo libre',text:'Texto',dim:'Cota · A → B → posición',dim2:'Cota directa · A → B',hatch:'Relleno · doble toque cierra',eraser:'Goma',trim:'Trim',move:'Mover',copy:'Copiar',tape:'Cinta métrica'};
   const pt=document.getElementById('pbTool'); if(pt)pt.textContent=t==='block'?(bloqueNom||'Símbolo'):(t==='arch'?(archNom(pendingArch)||'Bloque'):(names[t]||t));
   _syncSwatches(); refreshBottom();
 }
@@ -3467,6 +3552,7 @@ window.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     if(tool==='arc'&&arcPh>0){arcPh=0;arcA=null;arcB=null;arcBulge=false;setHint('');render();}
     else if(tool==='dim'&&dimPh>0){dimPh=0;dimA=null;dimB=null;dimAdjust=false;setHint('');render();}
+    else if(tool==='tape'&&tapePh>0){resetTape();render();}
     else if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive){plineActive=false;plinePts=[];render();}
     else{ST('select');}
   }

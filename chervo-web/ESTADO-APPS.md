@@ -116,7 +116,16 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v76) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v77) · app pro
+- **Cinta métrica + líneas guía (v77, estilo SketchUp):** herramienta `tape` (botón huincha en el panel).
+  · **Modo Medir**: pick en vacío/vértice → pick B; la distancia aparece VIVA en el input Medida (m);
+    al confirmar muestra un flash con la medida y NO deja geometría.
+  · **Modo Guía**: pick SOBRE un segmento (línea/muro/borde) → arrastrás al lado y escribís la distancia
+    (m) + Enter → crea una **línea guía infinita** paralela exacta (o pick directo = distancia perpendicular).
+  · **`guide_line`**: fina, dash largo, celeste `#007aff`. **Seleccionable** (Select) y **borrable** una a una
+    (Goma borra la guía entera). Snap normal la reconoce (near + intersecciones). **No imprimible**: excluida
+    de export PNG/PDF/DXF, del conteo de materiales y del encuadre (`contentBounds`).
+  · Helpers: `segUnderPt`, `perpOf`, `createGuide`, `resetTape`. Estados `tapePh`/`tapeMode`/`tapeRef`.
 - **Fix Ortho (v76):** el snap a GRILLA seteaba `snapHit` en cada movimiento y (por la regla "snap domina
   Ortho/Polar") anulaba Ortho → el cursor iba libre (parecía Polar). Ahora solo el snap a OBJETOS domina
   (`snapHit.kind!=='grid'`); Ortho vuelve a bloquear estricto a 90° (H/V).
