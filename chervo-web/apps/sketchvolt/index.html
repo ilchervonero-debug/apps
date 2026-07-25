@@ -136,13 +136,18 @@ body{display:flex;flex-direction:column;background:#fff;}
    viven en la línea de acción de abajo). Con #propbar>#id para ganarle en especificidad a #propbar>div. */
 #propbar>#grpSel,#propbar>#grpMulti,#propbar>#grpImage,#propbar>#grpExport,#propbar>#grpGrid,
 #propbar>#grpBlock,#propbar>#grpHatch,#propbar>#grpDim{flex:1 1 100%;justify-content:space-evenly;}
-/* LÍNEA DE ACCIÓN (abajo, centrada, separada por una línea): borrar / aprobar / finalizar.
-   El tacho va GRIS y centrado; si hay algo que aprobar aparece el tick y comparten el centro. */
-#propActions{flex:1 1 100%;order:99;display:none;justify-content:center;align-items:center;gap:34px;
-  border-top:1px solid #ececec;margin-top:4px;padding-top:6px;}
-#propActions #paDel{color:#8e8e93;}
-#propActions #pbMeasure{margin-right:auto;width:104px;font-size:16px;font-family:var(--font);padding:6px 9px;
-  border:1.5px solid var(--accent);border-radius:9px;outline:none;text-align:center;color:var(--ink);flex-shrink:0;}
+/* Fila de ACCIÓN full-width propia (2do piso): #propbar>#id le gana en especificidad a #propbar>div,
+   así SIEMPRE cae en su propia fila aunque las propiedades de arriba sean angostas (ej. Línea).
+   3 zonas FIJAS (grid) — no se mueven aunque falte un ícono: Medida (izq) · Aceptar (centro) · Tacho (der). */
+#propbar>#propActions{flex:1 1 100%;order:99;display:none;grid-template-columns:1fr 1fr 1fr;align-items:center;
+  border-top:1px solid #ececec;margin-top:4px;padding-top:8px;}
+#propActions #pbMeasBox{grid-column:1;grid-row:1;justify-self:start;display:none;align-items:center;gap:7px;}
+#propActions #pbMeasBox .ml{font-size:14px;color:#8e8e93;white-space:nowrap;}   /* rótulo "Medida" gris al lado */
+#propActions #pbMeasure{width:78px;font-size:16px;font-family:var(--font);padding:6px 9px;
+  border:1.5px solid #d0d0d3;border-radius:9px;outline:none;text-align:center;color:var(--ink);}  /* recuadro gris, no rojo */
+#propActions #pbMeasure:focus{border-color:#8e8e93;}
+#propActions #paOk{grid-column:2;grid-row:1;justify-self:center;}           /* Aceptar / confirmar — al centro */
+#propActions #paDel{grid-column:3;grid-row:1;justify-self:end;color:#8e8e93;} /* Tacho = borrar objeto — aislado a la derecha */
 #propbar::-webkit-scrollbar{display:none;}
 .pl{font-size:9px;font-weight:600;color:var(--label);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
 .pdiv{width:1px;height:20px;background:rgba(0,0,0,.1);flex-shrink:0;}
@@ -782,9 +787,9 @@ details.mas[open] summary:before{content:'▾ ';}
       <select id="pbMlSep" onchange="setMlSep(+this.value)"><option value="0.1">10 cm</option><option value="0.15" selected>15 cm</option><option value="0.2">20 cm</option><option value="0.3">30 cm</option></select></span>
     <span class="fi"><span class="fl">Eje</span>
       <span style="display:flex;gap:4px">
+        <button id="mlAxE" onclick="setMlJust('outer')" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;color:var(--ink);font-family:var(--font);font-size:12px;cursor:pointer">Ext</button>
         <button id="mlAxC" onclick="setMlJust('center')" style="padding:4px 9px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:var(--font);font-size:12px;cursor:pointer">Centro</button>
         <button id="mlAxI" onclick="setMlJust('inner')" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;color:var(--ink);font-family:var(--font);font-size:12px;cursor:pointer">Int</button>
-        <button id="mlAxE" onclick="setMlJust('outer')" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;color:var(--ink);font-family:var(--font);font-size:12px;cursor:pointer">Ext</button>
       </span></span>
   </div>
   <div id="grpArch" style="display:none;align-items:center;gap:8px">
@@ -871,7 +876,7 @@ details.mas[open] summary:before{content:'▾ ';}
   </div>
   <!-- LÍNEA DE ACCIÓN (dinámica): borrar (tacho gris) · aprobar/finalizar (tick). Centrada, abajo. -->
   <div id="propActions">
-    <input type="text" inputmode="decimal" id="pbMeasure" placeholder="Medida m" autocomplete="off" style="display:none" onkeydown="measureKey(event)">
+    <span id="pbMeasBox"><span class="ml">Medida</span><input type="text" inputmode="decimal" id="pbMeasure" placeholder="m" autocomplete="off" onkeydown="measureKey(event)"></span>
     <button id="paDel" class="pib" data-tip="Borrar" onclick="_paDelFn&&_paDelFn()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
     <button id="paOk" class="pib ok" data-tip="Listo" onclick="_paOkFn&&_paOkFn()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
   </div>
@@ -2776,12 +2781,12 @@ function syncMeasureUI(){
   const dragging=drawing&&_DRAG_TOOLS.includes(tool)&&dragStartW&&dragCurW;
   const selO=(!drawPending&&!multipt&&!dragging)?_selMeasObj():null;
   const showMeas=drawPending||multipt||dragging||!!selO;
-  inp.style.display=showMeas?'':'none';
+  const box=document.getElementById('pbMeasBox'); if(box)box.style.display=showMeas?'flex':'none';
   if(!showMeas){ if(document.activeElement===inp)inp.blur(); inp.value=''; return; }
   if(selO&&document.activeElement!==inp){ inp.value=(+_objMeasure(selO).toFixed(2)); }
-  if(drawPending){ _paDelFn=cancelPendingDraw; _paOkFn=commitPendingDraw; paDel.style.display=''; paOk.style.display=''; pa.style.display='flex'; }
-  else if(multipt){ _paDelFn=cancelMultipoint; _paOkFn=finishMultipoint; paDel.style.display=''; paOk.style.display=''; pa.style.display='flex'; }
-  else if(dragging){ paDel.style.display='none'; paOk.style.display='none'; pa.style.display='flex'; }
+  if(drawPending){ _paDelFn=cancelPendingDraw; _paOkFn=commitPendingDraw; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
+  else if(multipt){ _paDelFn=cancelMultipoint; _paOkFn=finishMultipoint; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
+  else if(dragging){ paDel.style.display='none'; paOk.style.display='none'; pa.style.display='grid'; }
   // en selección: el tacho/✓ los define showSelBar; solo agregamos la medida (pa ya visible).
 }
 function commitMeasure(){
@@ -3090,7 +3095,7 @@ function showActions(delFn, okFn){
   const pa=document.getElementById('propActions'); if(!pa)return;
   document.getElementById('paDel').style.display=_paDelFn?'':'none';
   document.getElementById('paOk').style.display=_paOkFn?'':'none';
-  pa.style.display=(_paDelFn||_paOkFn)?'flex':'none';
+  pa.style.display=(_paDelFn||_paOkFn)?'grid':'none';
 }
 function refreshBottom(){
   syncMeasureUI();   // medida (dibujo pendiente / muro / selección editable) siempre en sincronía
@@ -3098,7 +3103,9 @@ function refreshBottom(){
   const pb=document.getElementById('propbar'); if(pb)pb.classList.toggle('up', !idle);   // panel sube (contexto) o baja (vacío)
   const pt=document.getElementById('pbTool');
   if(pt){ pt.classList.toggle('hide', idle);                                             // rótulo suelto se oculta en vacío
-    if(!idle && pb){ pt.style.bottom=(pb.offsetHeight + 18)+'px'; }                       // …y flota CLARAMENTE encima del panel (despegado), alto real aunque envuelva
+    // …y flota CLARAMENTE encima del panel (despegado). Difiero al próximo frame para
+    // leer el alto REAL ya con las 2 filas maquetadas (si no, mide 1 fila y se pisa).
+    if(!idle && pb){ requestAnimationFrame(()=>{ pt.style.bottom=(pb.offsetHeight + 16)+'px'; }); }
   }
 }
 // Contexto HERRAMIENTA: nombre + props de la herramienta activa (nada de selección ni panel).

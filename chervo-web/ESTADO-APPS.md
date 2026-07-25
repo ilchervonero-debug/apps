@@ -116,7 +116,17 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v71) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v72) · app pro
+- **Barra inferior en 2 filas + fila de acción en 3 zonas (v72, pedido Ángel):**
+  · **2 filos reales**: `#propbar>#propActions` (más específico que `#propbar>div`) fuerza `flex:1 1 100%`
+    → la fila de acción SIEMPRE cae en su propio piso aunque las propiedades sean angostas (ej. Línea).
+    Antes se amontonaba todo en una línea.
+  · **Fila de acción = grid 3 zonas fijas** (`grid-row:1` en las 3, así no se van a un 3er renglón):
+    **Medida (izq) · Aceptar ✓ (centro) · Tacho borrar (der, aislado)**. El tacho es BORRAR objeto.
+  · **Medida**: rótulo "Medida" gris al lado del recuadro; recuadro con **borde gris** (no rojo), placeholder "m".
+  · **Título flotante** de herramienta se calcula en `requestAnimationFrame` → lee el alto real de 2 filas
+    y flota despegado, sin pisar la fila 1.
+  · **EJE del muro reordenado**: **Ext · Centro · Int** (exterior izq, centro al medio, interior der).
 - **Orientación de aberturas por flips estrictos (v71, pedido Ángel):** prohibido el ícono de
   rotación/refresh. Se reemplazó por dos íconos de flechas rectas paralelas opuestas:
   **Invertir horizontal ⇆** (`updateArch('flip')` → `o.flip`, `scale(-1,1)`) e **Invertir vertical ⇅**
