@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v79) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v81) · app pro
+- **SmartPen rehecho (v81, pedido Ángel):** el trazo se **pegaba a todo** tras el 1er punto y perdía la
+  forma. Ahora: en `getW`, si `tool==='pen'&&drawing&&penPts.length>0` → devuelve `raw` y `snapHit=null`
+  (LIBRE, sin snap). Solo el 1er punto se engancha (`nearNode` en handleDown). Al **soltar se convierte**:
+  `recognizeStroke` (recta→`line`, cerrado→rect/círculo); curva abierta → `_simplifyRDP` (Douglas-Peucker)
+  → `pline` suave. Ya NO auto-snapea el final. Testeado: recta→line, semicírculo→pline (33→9 pts).
+- **Nube opt-in (v80):** SketchVolt no toma sola la sesión compartida con la bitácora; la nube se activa
+  solo con login explícito (`sv_cloud_optin`). `logout` lo limpia.
 - **Auth + Nube (v79, Firebase — reusa proyecto de Bitácora `bitacorapp-3df06`):**
   · SDK 9.23 compat en el head (si no cargan, la app sigue 100% local). `firebaseConfig` embebido.
   · **Login**: Google (popup) + **Magic Link** (enlace por correo, sin contraseña). Botón de cuenta en el

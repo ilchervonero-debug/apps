@@ -1083,6 +1083,17 @@ function snapToObject(wp){
   }
   return best||snpGrid(wp.x,wp.y);
 }
+// Simplificación Ramer–Douglas–Peucker: limpia el garabato dejando una curva suave con pocos puntos.
+function _strokeDiag(pts){let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9;for(const p of pts){mnx=Math.min(mnx,p[0]);mny=Math.min(mny,p[1]);mxx=Math.max(mxx,p[0]);mxy=Math.max(mxy,p[1]);}return hyp(mxx-mnx,mxy-mny);}
+function _simplifyRDP(pts,eps){
+  if(!pts||pts.length<3)return (pts||[]).slice();
+  const keep=new Array(pts.length).fill(false); keep[0]=keep[pts.length-1]=true;
+  const stack=[[0,pts.length-1]];
+  while(stack.length){ const seg=stack.pop(),s=seg[0],e=seg[1]; let dmax=0,idx=-1;
+    for(let i=s+1;i<e;i++){ const d=distPS({x:pts[i][0],y:pts[i][1]},pts[s],pts[e]); if(d>dmax){dmax=d;idx=i;} }
+    if(dmax>eps&&idx>-1){ keep[idx]=true; stack.push([s,idx]); stack.push([idx,e]); } }
+  const out=[]; for(let i=0;i<pts.length;i++)if(keep[i])out.push(pts[i]); return out;
+}
 // Intersección matemática de 2 segmentos (dentro de ambos). Devuelve [x,y] o null.
 function _segInt(a,b){
   const x1=a[0][0],y1=a[0][1],x2=a[1][0],y2=a[1][1],x3=b[0][0],y3=b[0][1],x4=b[1][0],y4=b[1][1];
@@ -1093,6 +1104,8 @@ function _segInt(a,b){
 }
 function getW(e){
   const raw=getRW(e);
+  // SmartPen: SOLO el primer punto se engancha. Ya arrancado el trazo → LIBRE, sin snap a nada.
+  if(tool==='pen'&&drawing&&penPts&&penPts.length>0){ snapHit=null; return raw; }
   // IMÁN FUERTE a los puntos de la acción en curso: cerrar figura (1er punto) o continuar (último). Prioridad absoluta.
   if(snapObjOn){
     const STRONG=46/vpZ; let sb=null,sd=STRONG;
@@ -2579,12 +2592,14 @@ function handleUp(wp,scrn){
   if(tool==='line'){if(hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ)objects.push({type:'line',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW,lineType,id:nextId++});else history.pop();}
   else if(tool==='rect'){if(Math.abs(dragCurW.x-dragStartW.x)>2/vpZ&&Math.abs(dragCurW.y-dragStartW.y)>2/vpZ)objects.push({type:'rect',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW,lineType,id:nextId++});else history.pop();}
   else if(tool==='pen'){
-    // SmartPen = cañería: trazo LIBRE orgánico (sin enderezar, para medir metros reales).
-    // Solo se enganchan los EXTREMOS a boca/caja: inicio ya snapeado en handleDown; fin acá si está cerca.
+    // SmartPen: dibujás LIBRE (solo el 1er punto se enganchó) y al soltar se CONVIERTE a geometría pura.
     if(penPts.length>1){
-      const th=34/vpZ, last=penPts[penPts.length-1], se=nearNode(last[0],last[1],th);
-      if(se)penPts[penPts.length-1]=[se[0],se[1]];   // conexión final: auto-snap de cierre
-      objects.push({type:'pen',pts:penPts,color,strokeW,lineType,id:nextId++});
+      const rec=recognizeStroke(penPts);   // ¿recta / rectángulo / círculo?
+      if(rec){ Object.assign(rec,{color,strokeW,lineType,id:nextId++}); objects.push(rec); }   // el inicio ya está snapeado; el fin NO se toca
+      else {                                // curva abierta → polilínea suave (limpia el temblor)
+        const eps=Math.max(6/vpZ,_strokeDiag(penPts)*0.02), simp=_simplifyRDP(penPts,eps);
+        objects.push({type:'pline',pts:(simp.length>1?simp:penPts),closed:false,color,strokeW,lineType,id:nextId++});
+      }
     } else history.pop();
     penPts=[];
   }
@@ -2865,7 +2880,7 @@ const GUIA={
   hatch:['Sombreado','<b>Tocá</b> dentro de un contorno cerrado.'],
   trim:['Recortar','<b>Tocá</b> el tramo que querés eliminar.'],
   eraser:['Goma','<b>Arrastrá</b> sobre lo que querés borrar.'],
-  pen:['Lápiz','<b>Arrastrá</b> libremente para dibujar a mano alzada.'],
+  pen:['SmartPen','<b>Arrastrá</b> libre; al soltar se <b>convierte</b> en recta o curva limpia. Solo el <b>1er punto</b> se engancha.'],
   block:['Símbolo','<b>Tocá</b> para estampar. Ajustá <b>giro</b> y <b>tamaño</b> abajo.'],
   move:['Mover','<b>Arrastrá</b> el elemento a su nueva posición.'],
   copy:['Copiar','<b>Tocá</b> un elemento y <b>arrastrá</b> la copia.']
