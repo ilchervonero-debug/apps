@@ -139,6 +139,8 @@ body{display:flex;flex-direction:column;background:#fff;}
 #propActions{flex:1 1 100%;order:99;display:none;justify-content:center;align-items:center;gap:34px;
   border-top:1px solid #ececec;margin-top:4px;padding-top:6px;}
 #propActions #paDel{color:#8e8e93;}
+#propActions #pbMeasure{margin-right:auto;width:104px;font-size:16px;font-family:var(--font);padding:6px 9px;
+  border:1.5px solid var(--accent);border-radius:9px;outline:none;text-align:center;color:var(--ink);flex-shrink:0;}
 #propbar::-webkit-scrollbar{display:none;}
 .pl{font-size:9px;font-weight:600;color:var(--label);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
 .pdiv{width:1px;height:20px;background:rgba(0,0,0,.1);flex-shrink:0;}
@@ -702,8 +704,6 @@ details.mas[open] summary:before{content:'▾ ';}
 <div id="guide">
   <span class="gtool" id="guideTool">Herramienta</span>
   <div class="gtxt" id="guideTxt"></div>
-  <button class="gx" onclick="undo()" data-tip="Deshacer"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
-  <button class="gx" onclick="ST('select')" data-tip="Salir"><svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
 </div>
 
 <!-- Chip del modo aislado (editar grupo) -->
@@ -766,10 +766,6 @@ details.mas[open] summary:before{content:'▾ ';}
         <button id="mlAxE" onclick="setMlJust('outer')" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;color:var(--ink);font-family:var(--font);font-size:12px;cursor:pointer">Ext</button>
       </span></span>
   </div>
-  <div id="grpMeasure" style="display:none;align-items:center;gap:8px">
-    <span class="fi"><span class="fl" style="color:var(--accent)">Medida (m)</span>
-      <input type="text" inputmode="decimal" id="pbMeasure" placeholder="Ej: 3.50" style="width:82px;font-size:16px;font-family:var(--font);padding:4px 8px;border:1.5px solid var(--accent);border-radius:8px;outline:none;text-align:center" onkeydown="measureKey(event)"></span>
-  </div>
   <div id="grpArch" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Ancho (m)</span>
       <input type="number" id="archW" step="0.05" style="width:64px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center" onchange="updateArch('w', this.value)"></span>
@@ -777,6 +773,7 @@ details.mas[open] summary:before{content:'▾ ';}
       <input type="number" id="archL" step="0.05" style="width:64px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center" onchange="updateArch('l', this.value)"></span>
     <button class="pib" data-tip="Rotar 90°" onclick="updateArch('rot')"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></button>
     <button class="pib" data-tip="Espejo" onclick="updateArch('flip')"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-4 5 4 5"/><path d="M16 7l4 5-4 5" opacity=".4"/></svg></button>
+    <button class="pib" id="btnAnchor" data-tip="Anclar a muro" onclick="updateArch('anchor')"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
     <span id="archTypeWrap" style="display:none;align-items:center;gap:4px">
       <button class="pib" id="btnBatiente" data-tip="Batiente" onclick="updateArch('variant','batiente')"><svg viewBox="0 0 24 24"><path d="M4 22V2h4v20M8 22c0-8.8 7.2-16 16-16v2c-7.7 0-14 6.3-14 14"/></svg></button>
       <button class="pib" id="btnCorrediza" data-tip="Corrediza" onclick="updateArch('variant','corrediza')"><svg viewBox="0 0 24 24"><path d="M2 22h20M4 2v20M20 2v20M4 12h16M10 9l-3 3 3 3M14 9l3 3-3 3"/></svg></button>
@@ -850,6 +847,7 @@ details.mas[open] summary:before{content:'▾ ';}
   </div>
   <!-- LÍNEA DE ACCIÓN (dinámica): borrar (tacho gris) · aprobar/finalizar (tick). Centrada, abajo. -->
   <div id="propActions">
+    <input type="text" inputmode="decimal" id="pbMeasure" placeholder="Medida m" autocomplete="off" style="display:none" onkeydown="measureKey(event)">
     <button id="paDel" class="pib" data-tip="Borrar" onclick="_paDelFn&&_paDelFn()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
     <button id="paOk" class="pib ok" data-tip="Listo" onclick="_paOkFn&&_paOkFn()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
   </div>
@@ -946,6 +944,7 @@ let objects=[],nextId=1,history=[],redo=[];
 let _exporting=false;
 let drawing=false,dragStartW=null,dragCurW=null,penPts=[];
 let orthoOn=false,polarOn=false,polarStep=15;   // Ortho (H/V) y Polar (ángulos), excluyentes
+let drawPending=false;   // al soltar un trazo queda pendiente: se fija con medida + OK (o ✓)
 // Cursor visual con offset (problema del dedo gordo) + snap magnético con glifos
 let cursorS=null,snapHit=null,touchActive=false;const CURSOR_OFFY=58;
 // pline — continuous drag, double-click closes
@@ -1144,7 +1143,7 @@ function render(){
   drawOrigin();
   drawPreview();
   if(!_exporting)drawCursorSnap();
-  if(!_exporting)updateMeasureUI();
+  if(!_exporting)syncMeasureUI();
 }
 
 // HOJA (papel A4/A3/A2) en coordenadas mundo — el dibujo vive dentro de la hoja a escala.
@@ -1887,7 +1886,7 @@ function drawPreview(){
     ctx.save();ctx.strokeStyle='#007aff';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(p.x,p.y,sz,0,Math.PI*2);ctx.stroke();ctx.restore();
   }
   // (indicador de snap unificado: lo pinta drawCursorSnap con glifos naranja/gris)
-  if(!drawing||!dragStartW||!dragCurW)return;
+  if((!drawing&&!drawPending)||!dragStartW||!dragCurW)return;
   if(tool==='line'||tool==='sline'||tool==='dim2')drawTrackLine(dragStartW);
   ctx.save();ctx.strokeStyle=color;ctx.lineWidth=strokeW*vpZ;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=.55;setDash(lineType,vpZ);
   const a=w2s(dragStartW.x,dragStartW.y),b=w2s(dragCurW.x,dragCurW.y);
@@ -2105,6 +2104,7 @@ function onTE(e){
 
 // CORE HANDLERS
 function handleDown(wp,rawW,scrn){
+  if(drawPending){ commitPendingDraw(); }   // un nuevo toque fija el trazo pendiente y arranca otro
   if(calibrando){
     calibPts.push([rawW.x,rawW.y]);
     if(calibPts.length===2){ document.getElementById('calMod').classList.add('show');setTimeout(()=>document.getElementById('calVal').focus(),120); }
@@ -2244,6 +2244,7 @@ function handleMove(wp,raw,scrn){
   if(modoAjusteFondo&&drawing&&fondoDrag){imgX=fondoDrag.ix+(raw.x-fondoDrag.mx);imgY=fondoDrag.iy+(raw.y-fondoDrag.my);render();return;}
   if(panning&&!pinching){vpX=panRef.vx+scrn.x-panRef.sx;vpY=panRef.vy+scrn.y-panRef.sy;render();return;}
   if(tool==='select'&&marquee){ marquee.x1=raw.x; marquee.y1=raw.y; render(); return; }
+  if(drawPending&&!drawing)return;   // trazo pendiente (dedo levantado): no lo movemos hasta OK/nuevo trazo
   dragCurW={...wp};
   if(tool==='eraser'&&drawing){doEraseAt(wp);render();return;}
   if(tool==='pen'&&drawing)penPts.push([raw.x,raw.y]);
@@ -2277,12 +2278,11 @@ function handleUp(wp,scrn){
   }
   if(tool==='select'&&arcEditDragging){arcEditDragging=false;arcEditId=null;arcEditOrig=null;drawing=false;render();return;}
   if(tool==='eraser'){drawing=false;render();return;}
-  if(tool==='dim2'){
-    if(drawing&&dragStartW&&dragCurW&&hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ){
-      objects.push({type:'dim2',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW:1,fontSize:dimFontSize,id:nextId++});
-    } else history.pop();
-    drawing=false;dragStartW=null;dragCurW=null;render();
-    return;
+  // Al soltar un trazo de dibujo queda PENDIENTE: se fija escribiendo la medida + OK (o el ✓). Arc/pen quedan inmediatos.
+  if(drawing && _DRAG_TOOLS.includes(tool) && dragStartW && dragCurW){
+    drawing=false;
+    if(_pendingValid()){ drawPending=true; } else { dragStartW=dragCurW=null; if(history.length)history.pop(); }
+    render(); return;
   }
   if(tool==='arc'){
     if(drawing&&dragStartW&&dragCurW&&hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ){
@@ -2556,6 +2556,7 @@ document.addEventListener('click',function(e){if(!e.target.closest('#panel-herr'
 // TOOLBAR
 function ST(t){
   if(tcId)closeTextCard();
+  if(drawPending)commitPendingDraw();   // cambiar de herramienta fija el trazo pendiente
   tool=t;drawing=false;penPts=[];plineActive=false;plinePts=[];hatchPts=[];setSel([]);_selScaleBase=null;marquee=null;
   if(t!=='select'&&editGroupId){ editGroupId=null; showGroupEditBar(false); }   // cambiar de herramienta sale del modo aislado
   if(t!=='block')bloqueSel=null;
@@ -2601,35 +2602,78 @@ function drawTrackLine(A){
   ctx.save();ctx.strokeStyle='#FE0000';ctx.globalAlpha=.45;ctx.lineWidth=1;ctx.setLineDash([7,6]);
   ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.stroke();ctx.restore();
 }
-// ── INGRESO DIRECTO DE DISTANCIAS (estilo DWG/AutoCAD) — input "Medida (m)" en el propbar ──
-function updateMeasureUI(){
-  const isDrawing = drawing || plineActive || (tool==='dim'&&dimPh>0);
-  const grp=document.getElementById('grpMeasure'); if(grp){ grp.style.display=isDrawing?'flex':'none'; }
-  if(!isDrawing){ const inp=document.getElementById('pbMeasure'); if(inp){ inp.value=''; if(document.activeElement===inp)inp.blur(); } }
+// ── DIBUJO POR MEDIDA (estilo DWG): al soltar queda PENDIENTE → escribís la medida + OK (o ✓) ──
+const _DRAG_TOOLS=['line','rect','circle','poly','sline','dim2'];
+function _pendingValid(){
+  if(!dragStartW||!dragCurW)return false;
+  if(tool==='rect')return Math.abs(dragCurW.x-dragStartW.x)>2/vpZ&&Math.abs(dragCurW.y-dragStartW.y)>2/vpZ;
+  return hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ;
+}
+function commitPendingDraw(){
+  if(!drawPending)return; drawPending=false;
+  if(!dragStartW||!dragCurW||!_pendingValid()){ dragStartW=dragCurW=null; if(history.length)history.pop(); applyToolBar(); render(); return; }
+  const a=[dragStartW.x,dragStartW.y], b=[dragCurW.x,dragCurW.y]; const nid=nextId++; let obj=null;
+  if(tool==='line')obj={type:'line',pts:[a,b],color,strokeW,lineType,id:nid};
+  else if(tool==='sline'){const th=42/vpZ,A=nearNode(a[0],a[1],th)||a,B=nearNode(b[0],b[1],th)||b;obj={type:'line',elec:true,pts:[A,B],color,strokeW,lineType,id:nid};}
+  else if(tool==='rect')obj={type:'rect',pts:[a,b],color,strokeW,lineType,id:nid};
+  else if(tool==='circle')obj={type:'circle',pts:[a],r:hyp(b[0]-a[0],b[1]-a[1]),color,strokeW,lineType,id:nid};
+  else if(tool==='poly')obj={type:'poly',pts:[a],r:hyp(b[0]-a[0],b[1]-a[1]),sides:+document.getElementById('pbSides').value||4,color,strokeW,lineType,id:nid};
+  else if(tool==='dim2')obj={type:'dim2',pts:[a,b],color,strokeW:1,fontSize:dimFontSize,id:nid};
+  dragStartW=dragCurW=null;
+  if(obj){objects.push(obj);markDirty();}
+  applyToolBar(); render();
+}
+function cancelPendingDraw(){ drawPending=false; dragStartW=dragCurW=null; if(history.length)history.pop(); applyToolBar(); render(); }
+function finishMultipoint(){ handleDbl(dragCurW||{x:0,y:0}); }
+function cancelMultipoint(){ plineActive=false; plinePts=[]; applyToolBar(); render(); }
+// Medida "principal" de un objeto de dibujo (m) para verla/editarla desde la selección.
+function _objMeasure(o){ if(!o)return null;
+  if(o.type==='line'||o.type==='dim2'||o.type==='rect'){const a=o.pts[0],b=o.pts[1];return hyp(b[0]-a[0],b[1]-a[1])/PPM;}
+  if(o.type==='circle'||o.type==='poly')return (o.r||0)/PPM; return null; }
+function _setObjMeasure(o,val){ const d=val*PPM;
+  if(o.type==='line'||o.type==='dim2'||o.type==='rect'){const a=o.pts[0],b=o.pts[1];let dx=b[0]-a[0],dy=b[1]-a[1];const l=hyp(dx,dy)||1;o.pts[1]=[a[0]+dx/l*d,a[1]+dy/l*d];}
+  else if(o.type==='circle'||o.type==='poly')o.r=d; }
+function _selMeasObj(){ if(selIds.length!==1)return null; const o=selObj(); return (o&&['line','rect','circle','poly','dim2'].includes(o.type))?o:null; }
+// Estado de la barra de acción de abajo (medida + tacho + ✓), fuente única de verdad.
+function syncMeasureUI(){
+  const inp=document.getElementById('pbMeasure'); if(!inp)return;
+  const paDel=document.getElementById('paDel'), paOk=document.getElementById('paOk'), pa=document.getElementById('propActions');
+  const multipt=(tool==='pline'||tool==='mline')&&plineActive&&plinePts.length>0;
+  const dragging=drawing&&_DRAG_TOOLS.includes(tool)&&dragStartW&&dragCurW;
+  const selO=(!drawPending&&!multipt&&!dragging)?_selMeasObj():null;
+  const showMeas=drawPending||multipt||dragging||!!selO;
+  inp.style.display=showMeas?'':'none';
+  if(!showMeas){ if(document.activeElement===inp)inp.blur(); inp.value=''; return; }
+  if(selO&&document.activeElement!==inp){ inp.value=(+_objMeasure(selO).toFixed(2)); }
+  if(drawPending){ _paDelFn=cancelPendingDraw; _paOkFn=commitPendingDraw; paDel.style.display=''; paOk.style.display=''; pa.style.display='flex'; }
+  else if(multipt){ _paDelFn=cancelMultipoint; _paOkFn=finishMultipoint; paDel.style.display=''; paOk.style.display=''; pa.style.display='flex'; }
+  else if(dragging){ paDel.style.display='none'; paOk.style.display='none'; pa.style.display='flex'; }
+  // en selección: el tacho/✓ los define showSelBar; solo agregamos la medida (pa ya visible).
 }
 function commitMeasure(){
   const inp=document.getElementById('pbMeasure'); if(!inp)return;
-  const val=parseFloat((inp.value||'').replace(',','.')); if(!(val>0))return;
-  let a,cur;
-  if((tool==='pline'||tool==='mline')&&plineActive&&plinePts.length>0){ a=plinePts[plinePts.length-1]; cur=dragCurW; }
-  else if(drawing&&dragStartW&&dragCurW){ a=[dragStartW.x,dragStartW.y]; cur=dragCurW; }
-  else return;
-  if(!cur)return;
-  let dx=cur.x-a[0], dy=cur.y-a[1]; const d=Math.hypot(dx,dy);
-  if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
-  const nx=a[0]+dx*val*PPM, ny=a[1]+dy*val*PPM, nw={x:nx,y:ny};
-  dragCurW=nw;
-  if(tool==='pline'||tool==='mline'){ plinePts.push([nx,ny]); inp.value=''; inp.focus(); }
-  else { handleUp(nw,{x:0,y:0}); inp.blur(); }
-  render();
+  const val=parseFloat((inp.value||'').replace(',','.')); if(!(val>0)){ inp.blur(); return; }
+  if(drawPending&&dragStartW&&dragCurW){
+    let a=[dragStartW.x,dragStartW.y],dx=dragCurW.x-a[0],dy=dragCurW.y-a[1],d=Math.hypot(dx,dy);
+    if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
+    dragCurW={x:a[0]+dx*val*PPM,y:a[1]+dy*val*PPM}; commitPendingDraw(); inp.blur(); return;
+  }
+  if((tool==='pline'||tool==='mline')&&plineActive&&plinePts.length>0){
+    const a=plinePts[plinePts.length-1]; let dx=(dragCurW?dragCurW.x:a[0]+1)-a[0],dy=(dragCurW?dragCurW.y:a[1])-a[1],d=Math.hypot(dx,dy);
+    if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
+    const np=[a[0]+dx*val*PPM,a[1]+dy*val*PPM]; plinePts.push(np); dragCurW={x:np[0],y:np[1]}; inp.value=''; inp.focus(); render(); return;
+  }
+  const o=_selMeasObj();
+  if(o){ saveHistory(); _setObjMeasure(o,val); markDirty(); inp.blur(); render(); }
 }
 function measureKey(e){
   if(e.key==='Enter'){ e.preventDefault(); commitMeasure(); }
   else if(e.key==='Escape'){ e.preventDefault(); e.target.value=''; e.target.blur(); }
 }
 document.addEventListener('keydown',e=>{
-  const isDrawing = drawing || plineActive; const inp=document.getElementById('pbMeasure');
-  if(!isDrawing||!inp||document.activeElement===inp)return;
+  const inp=document.getElementById('pbMeasure'); if(!inp||document.activeElement===inp)return;
+  const ctx2=drawPending||((tool==='pline'||tool==='mline')&&plineActive&&plinePts.length>0)||_selMeasObj();
+  if(!ctx2)return;
   if(/^[0-9.,]$/.test(e.key)){ inp.value+=(e.key===','?'.':e.key); inp.focus(); }
   else if(e.key==='Enter'){ commitMeasure(); }
 });
@@ -2835,6 +2879,7 @@ function updateArch(prop,val){
   if(prop==='rot') o.rotation=((o.rotation||0)+90)%360;
   if(prop==='flip') o.flip=!o.flip;
   if(prop==='variant') o.variant=val;
+  if(prop==='anchor') o.anchored=!o.anchored;
   if(o.anchored) snapArchToMl(o);   // re-evaluar el corte si está anclada al muro
   markDirty(); showSelBar(); render();
 }
@@ -2898,7 +2943,7 @@ function setBlockCM(v){ bloqueCM=+v; }
 // (la hoja comanda la impresión). No se toca desde el canvas.
 // ── BARRA INFERIOR DINÁMICA — un solo contexto a la vez (herramienta · selección · panel) ──
 let _panelMode=null;
-const _ALL_GRP=['grpTool','grpLine','grpColor','grpSize','grpFont','grpSides','grpHatch','grpDim','grpEraser','grpBlock','grpMline','grpMeasure','grpArch','grpSel','grpMulti','grpGrid','grpExport','grpImage'];
+const _ALL_GRP=['grpTool','grpLine','grpColor','grpSize','grpFont','grpSides','grpHatch','grpDim','grpEraser','grpBlock','grpMline','grpArch','grpSel','grpMulti','grpGrid','grpExport','grpImage'];
 function _hideAllGrp(){ _ALL_GRP.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';}); showActions(false,false); }
 // Línea de acción de abajo: tacho (gris) y/o tick (aprobar/finalizar). Centrada, dinámica.
 // Recibe las FUNCIONES de cada contexto (borrar/quitar, terminar/listo). Sin función → oculto.
@@ -2912,6 +2957,7 @@ function showActions(delFn, okFn){
   pa.style.display=(_paDelFn||_paOkFn)?'flex':'none';
 }
 function refreshBottom(){
+  syncMeasureUI();   // medida (dibujo pendiente / muro / selección editable) siempre en sincronía
   const idle = tool==='select' && selIds.length===0 && !modoAjusteFondo && !_panelMode;
   const pb=document.getElementById('propbar'); if(pb)pb.classList.toggle('up', !idle);   // panel sube (contexto) o baja (vacío)
   const pt=document.getElementById('pbTool');
@@ -3084,6 +3130,8 @@ function showSelBar(){
         document.getElementById('btnBatiente').style.color=(variant==='batiente')?'var(--accent)':'var(--ink)';
         document.getElementById('btnCorrediza').style.color=(variant==='corrediza')?'var(--accent)':'var(--ink)';
       }
+      const btnA=document.getElementById('btnAnchor');
+      if(btnA){ btnA.style.display=isCarp?'':'none'; btnA.style.color=o.anchored?'var(--accent)':'var(--ink)'; btnA.style.boxShadow=o.anchored?'inset 0 0 0 1.5px var(--accent)':'none'; }
     }
   }
   if(isB){ document.getElementById('gsMM').value=(o.cm!=null?o.cm:(o.mm!=null?o.mm*10:30)); document.getElementById('gsGiro').value=o.rotation||0; document.getElementById('gsAlt').value=(o.altura!=null?o.altura:30); }

@@ -116,7 +116,7 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v64) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v65) · app pro
 - **iLDraft en SketchVolt — Módulo 1: Muro/multilínea (v61):** herramienta `mline` (botón en panel de
   dibujo). Doble línea paralela al eje con **ancho en metros** (10/15/20/30 cm, `mlSepM`) y
   **justificación** Centro/Int/Ext (`mlJust`); tapas en los extremos. Multipunto como pline (toca
@@ -144,6 +144,15 @@ Versión = número de caché del SW.
   (`#btn-herr/#btn-elec/#btn-arch` fondo `#f2f2f7`, ícono negro); se ponen **rojos solo con su panel
   abierto** (`.on` en los toggles). **Edición de aberturas** al seleccionar (`#grpArch`+`updateArch`):
   Ancho, ancho de Muro, Rotar 90°, Espejo, y **Batiente/Corrediza** (re-ancla y re-corta el muro).
+- **iLDraft — dibujo por medida (estado pendiente) + editar medidas en selección + una sola acción
+  (v65, pedido Ángel):** al soltar un trazo (line/rect/circle/poly/sline/dim2) queda **PENDIENTE**
+  (`drawPending`, no se crea aún); se fija escribiendo la **Medida (m) + ✓** (o Enter). El input de
+  medida y el ✓/tacho viven en **una sola fila de acción abajo** (`#propActions`: medida a la izquierda,
+  un único ✓) — se quitaron los botones de la barra guía (era la doble aprobación). **Seleccionando** un
+  elemento de dibujo se **edita su medida** (línea=largo, círculo/polígono=radio, rect=diagonal;
+  `_objMeasure`/`_setObjMeasure`); los **bloques** se escalan, no por medida. `commitPendingDraw`/
+  `cancelPendingDraw`, `syncMeasureUI` (fuente única); pending se confirma al tocar/cambiar de
+  herramienta. **Aberturas**: botón **Anclar a muro** (`updateArch('anchor')`).
 - **Guía discreta + línea guía infinita de Polar (v60):** el panel guía se hizo **discreto** (texto gris
   fino peso 300, **sin negritas**, comandos apenas más oscuros por tono — no rojo; solo el nombre de la
   herramienta en rojo chico), para que no sea protagonista. **Polar/Ortho dibujan una línea guía
