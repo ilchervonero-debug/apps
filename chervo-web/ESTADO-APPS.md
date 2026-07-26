@@ -116,7 +116,11 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v95) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v96) · app pro
+- **Baños rehechos con referencia CAD (v96, pedido Ángel):** el inodoro y demás quedaban feos. Rehechos:
+  **inodoro** = mochila (tanque) + taza en forma de HUEVO (bézier) + aro interior; **bidet** = huevo + grifería;
+  **bacha/lavatorio** = mesada + bacha ovalada + interior + grifería; **ducha** = cuadro + marco + líneas que
+  convergen al **desagüe en la esquina** (estilo plano CAD). Todo con relleno blanco no destructivo.
 - **Librería de arquitectura mejorada (v95, dibujos de Ángel adaptados):** integré los símbolos detallados
   que pasó Ángel, **adaptados** de su modelo (`(ctx,obj)`, metros, origen arriba-izq) al motor de SketchVolt
   (centrado→arriba-izq vía `translate(-W/2,-H/2)`, metros→px). Mejorados: inodoro (mochila+taza+hueco),
