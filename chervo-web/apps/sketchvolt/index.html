@@ -629,8 +629,10 @@ details.mas[open] summary:before{content:'▾ ';}
   <div class="pu-title">Baños</div>
   <div class="pu-grid">
     <div class="pu-item" data-arch="inodoro" onclick="pickArch('inodoro')"><span>Inodoro</span></div>
+    <div class="pu-item" data-arch="inodoro_2" onclick="pickArch('inodoro_2')"><span>Inodoro 2</span></div>
     <div class="pu-item" data-arch="bidet" onclick="pickArch('bidet')"><span>Bidet</span></div>
-    <div class="pu-item" data-arch="bacha" onclick="pickArch('bacha')"><span>Bacha</span></div>
+    <div class="pu-item" data-arch="bacha" onclick="pickArch('bacha')"><span>Bacha 1</span></div>
+    <div class="pu-item" data-arch="bacha_2" onclick="pickArch('bacha_2')"><span>Bacha 2</span></div>
     <div class="pu-item" data-arch="ducha" onclick="pickArch('ducha')"><span>Ducha</span></div>
     <div class="pu-item" data-arch="banera" onclick="pickArch('banera')"><span>Bañera</span></div>
   </div>
@@ -640,7 +642,8 @@ details.mas[open] summary:before{content:'▾ ';}
     <div class="pu-item" data-arch="anafe" onclick="pickArch('anafe')"><span>Anafe</span></div>
     <div class="pu-item" data-arch="bacha_s" onclick="pickArch('bacha_s')"><span>Bacha simple</span></div>
     <div class="pu-item" data-arch="pileta_d" onclick="pickArch('pileta_d')"><span>Pileta doble</span></div>
-    <div class="pu-item" data-arch="heladera" onclick="pickArch('heladera')"><span>Heladera</span></div>
+    <div class="pu-item" data-arch="heladera" onclick="pickArch('heladera')"><span>Heladera grande</span></div>
+    <div class="pu-item" data-arch="heladera_ch" onclick="pickArch('heladera_ch')"><span>Heladera chica</span></div>
     <div class="pu-item" data-arch="lavarropas" onclick="pickArch('lavarropas')"><span>Lavarropas</span></div>
     <div class="pu-item" data-arch="calefon" onclick="pickArch('calefon')"><span>Calefón</span></div>
     <div class="pu-item" data-arch="microondas" onclick="pickArch('microondas')"><span>Microondas</span></div>
@@ -648,13 +651,17 @@ details.mas[open] summary:before{content:'▾ ';}
   </div>
   <div class="pu-title">Mobiliario</div>
   <div class="pu-grid">
-    <div class="pu-item" data-arch="sofa" onclick="pickArch('sofa')"><span>Sofá</span></div>
+    <div class="pu-item" data-arch="sofa_2" onclick="pickArch('sofa_2')"><span>Sofá 2</span></div>
+    <div class="pu-item" data-arch="sofa" onclick="pickArch('sofa')"><span>Sofá 3</span></div>
     <div class="pu-item" data-arch="sillon" onclick="pickArch('sillon')"><span>Sillón</span></div>
     <div class="pu-item" data-arch="cama_1" onclick="pickArch('cama_1')"><span>Cama 1 pl.</span></div>
     <div class="pu-item" data-arch="cama_2" onclick="pickArch('cama_2')"><span>Cama 2 pl.</span></div>
+    <div class="pu-item" data-arch="cama_king" onclick="pickArch('cama_king')"><span>Cama King</span></div>
     <div class="pu-item" data-arch="mesa" onclick="pickArch('mesa')"><span>Mesa 4</span></div>
     <div class="pu-item" data-arch="mesa_6" onclick="pickArch('mesa_6')"><span>Mesa 6</span></div>
-    <div class="pu-item" data-arch="silla" onclick="pickArch('silla')"><span>Silla</span></div>
+    <div class="pu-item" data-arch="silla" onclick="pickArch('silla')"><span>Silla 1</span></div>
+    <div class="pu-item" data-arch="silla_2" onclick="pickArch('silla_2')"><span>Silla 2</span></div>
+    <div class="pu-item" data-arch="silla_3" onclick="pickArch('silla_3')"><span>Silla 3</span></div>
   </div>
   <div class="pu-title">Extras</div>
   <div class="pu-grid">
@@ -1461,8 +1468,10 @@ const ARCH_DEF={
   ventana:{kind:'ventana',variant:'corrediza',w:1.2,l:0.15,cat:'Aberturas',nom:'Ventana'},
   // ── Baños ──
   inodoro:{kind:'inodoro',w:0.4,l:0.6,cat:'Baños',nom:'Inodoro'},
+  inodoro_2:{kind:'inodoro',variant:'2',w:0.4,l:0.58,cat:'Baños',nom:'Inodoro 2'},
   bidet:{kind:'bidet',w:0.4,l:0.55,cat:'Baños',nom:'Bidet'},
-  bacha:{kind:'bacha',w:0.5,l:0.45,cat:'Baños',nom:'Bacha'},
+  bacha:{kind:'bacha',w:0.5,l:0.45,cat:'Baños',nom:'Bacha 1'},
+  bacha_2:{kind:'bacha',variant:'2',w:0.5,l:0.45,cat:'Baños',nom:'Bacha 2'},
   ducha:{kind:'ducha',w:0.9,l:0.9,cat:'Baños',nom:'Ducha'},
   banera:{kind:'banera',w:0.75,l:1.6,cat:'Baños',nom:'Bañera'},
   // ── Cocina / Lavadero ──
@@ -1470,19 +1479,24 @@ const ARCH_DEF={
   anafe:{kind:'anafe',w:0.6,l:0.5,cat:'Cocina / Lavadero',nom:'Anafe'},
   bacha_s:{kind:'bacha_s',w:0.45,l:0.4,cat:'Cocina / Lavadero',nom:'Bacha simple'},
   pileta_d:{kind:'pileta_d',w:0.8,l:0.45,cat:'Cocina / Lavadero',nom:'Pileta doble'},
-  heladera:{kind:'heladera',w:0.7,l:0.7,cat:'Cocina / Lavadero',nom:'Heladera'},
+  heladera:{kind:'heladera',w:0.7,l:0.7,cat:'Cocina / Lavadero',nom:'Heladera grande'},
+  heladera_ch:{kind:'heladera',variant:'ch',w:0.55,l:0.6,cat:'Cocina / Lavadero',nom:'Heladera chica'},
   lavarropas:{kind:'lavarropas',w:0.6,l:0.6,cat:'Cocina / Lavadero',nom:'Lavarropas'},
   calefon:{kind:'calefon',w:0.45,l:0.45,cat:'Cocina / Lavadero',nom:'Calefón'},
   microondas:{kind:'microondas',w:0.5,l:0.35,cat:'Cocina / Lavadero',nom:'Microondas'},
   campana:{kind:'campana',w:0.6,l:0.6,cat:'Cocina / Lavadero',nom:'Campana'},
   // ── Mobiliario ──
-  sofa:{kind:'sofa',w:1.8,l:0.85,cat:'Mobiliario',nom:'Sofá'},
+  sofa:{kind:'sofa',w:1.8,l:0.85,cat:'Mobiliario',nom:'Sofá 3'},
+  sofa_2:{kind:'sofa',variant:'2',w:1.3,l:0.85,cat:'Mobiliario',nom:'Sofá 2'},
   sillon:{kind:'sillon',w:0.8,l:0.8,cat:'Mobiliario',nom:'Sillón'},
   cama_1:{kind:'cama_1',w:0.9,l:1.9,cat:'Mobiliario',nom:'Cama 1 pl.'},
   cama_2:{kind:'cama_2',w:1.4,l:1.9,cat:'Mobiliario',nom:'Cama 2 pl.'},
+  cama_king:{kind:'cama_2',variant:'king',w:1.8,l:2.0,cat:'Mobiliario',nom:'Cama King'},
   mesa:{kind:'mesa',variant:'mesa_4',w:1.2,l:0.8,cat:'Mobiliario',nom:'Mesa 4'},
   mesa_6:{kind:'mesa',variant:'mesa_6',w:1.8,l:0.9,cat:'Mobiliario',nom:'Mesa 6'},
-  silla:{kind:'silla',w:0.45,l:0.45,cat:'Mobiliario',nom:'Silla'},
+  silla:{kind:'silla',w:0.45,l:0.45,cat:'Mobiliario',nom:'Silla 1'},
+  silla_2:{kind:'silla',variant:'2',w:0.5,l:0.5,cat:'Mobiliario',nom:'Silla 2'},
+  silla_3:{kind:'silla',variant:'3',w:0.55,l:0.52,cat:'Mobiliario',nom:'Silla 3'},
   // ── Extras ──
   auto:{kind:'auto',w:1.8,l:4.3,cat:'Extras',nom:'Auto'},
   corte:{kind:'corte',w:1.0,l:0.5,cat:'Extras',nom:'Corte'}
@@ -1527,45 +1541,61 @@ function drawArchObj(obj){
     const EL=(cx,cy,rx,ry,fill)=>{ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);if(fill)ctx.fill();ctx.stroke();};
     const AR=(cx,cy,r,fill)=>{ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);if(fill)ctx.fill();ctx.stroke();};
     const LN=(x1,y1,x2,y2)=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
+    const RR=(x,y,ww,hh,r,fill)=>{ctx.beginPath(); if(ctx.roundRect){ctx.roundRect(x,y,ww,hh,r);} else {ctx.moveTo(x+r,y);ctx.arcTo(x+ww,y,x+ww,y+hh,r);ctx.arcTo(x+ww,y+hh,x,y+hh,r);ctx.arcTo(x,y+hh,x,y,r);ctx.arcTo(x,y,x+ww,y,r);ctx.closePath();} if(fill)ctx.fill(); ctx.stroke();};
+    const v=obj.variant||'', m=Math.min(w,h), F='#fff';
     if(k==='inodoro'){
-        // Mochila (tanque) atrás + taza en forma de HUEVO (más realista, estilo CAD).
-        ctx.fillStyle='#fff'; ctx.fillRect(w*0.15,0,w*0.7,h*0.2); SR(w*0.15,0,w*0.7,h*0.2);
-        ctx.beginPath(); ctx.moveTo(w*0.30,h*0.24);
-        ctx.bezierCurveTo(w*0.10,h*0.42, w*0.16,h*0.96, w*0.50,h*0.97);
-        ctx.bezierCurveTo(w*0.84,h*0.96, w*0.90,h*0.42, w*0.70,h*0.24);
-        ctx.closePath(); ctx.fill(); ctx.stroke();
-        EL(w*0.5,h*0.56,w*0.24,h*0.25,false);   // aro interior
-    } else if(k==='bidet'){
-        ctx.fillStyle='#fff'; ctx.beginPath(); ctx.moveTo(w*0.32,h*0.16);
-        ctx.bezierCurveTo(w*0.10,h*0.38, w*0.15,h*0.96, w*0.50,h*0.97);
-        ctx.bezierCurveTo(w*0.85,h*0.96, w*0.90,h*0.38, w*0.68,h*0.16);
-        ctx.closePath(); ctx.fill(); ctx.stroke();
-        EL(w*0.5,h*0.58,w*0.20,h*0.26,false); AR(w*0.5,h*0.13,w*0.05,false);
-    } else if(k==='bacha'){ SR(0,0,w,h); EL(w*0.5,h*0.55,w*0.37,h*0.33,true); EL(w*0.5,h*0.55,w*0.2,h*0.18,false); AR(w*0.5,h*0.13,w*0.05,false);
-    } else if(k==='ducha'){ SR(0,0,w,h); SR(w*0.06,h*0.06,w*0.88,h*0.88);
-        const cx=w*0.88,cy=h*0.88; [[0.1,0.5],[0.1,0.28],[0.1,0.1],[0.28,0.1],[0.5,0.1]].forEach(p=>LN(cx,cy,w*p[0],h*p[1])); AR(cx,cy,w*0.045,true);
-    } else if(k==='banera'){ SR(0,0,w,h); const r=w*0.1; ctx.beginPath();ctx.moveTo(w*0.1+r,h*0.1);ctx.lineTo(w*0.9-r,h*0.1);ctx.quadraticCurveTo(w*0.9,h*0.1,w*0.9,h*0.1+r);ctx.lineTo(w*0.9,h*0.9-r);ctx.quadraticCurveTo(w*0.9,h*0.9,w*0.9-r,h*0.9);ctx.lineTo(w*0.1+r,h*0.9);ctx.quadraticCurveTo(w*0.1,h*0.9,w*0.1,h*0.9-r);ctx.lineTo(w*0.1,h*0.1+r);ctx.quadraticCurveTo(w*0.1,h*0.1,w*0.1+r,h*0.1);ctx.stroke(); AR(w*0.8,h/2,w*0.05,false);
-    } else if(k==='cocina'){ SR(0,0,w,h); LN(w*0.1,h*0.92,w*0.9,h*0.92); [[0.3,0.3],[0.7,0.3],[0.3,0.62],[0.7,0.62]].forEach(p=>{AR(w*p[0],h*p[1],Math.min(w,h)*0.15,false);AR(w*p[0],h*p[1],Math.min(w,h)*0.06,false);});
-    } else if(k==='anafe'){ SR(0,0,w,h); [[0.28,0.28],[0.72,0.28],[0.28,0.72],[0.72,0.72]].forEach(p=>AR(w*p[0],h*p[1],Math.min(w,h)*0.16,false));
-    } else if(k==='pileta_d'||k==='bacha_s'){ SR(0,0,w,h);
-        if(k==='pileta_d'){ SR(w*0.05,h*0.1,w*0.25,h*0.8); SR(w*0.35,h*0.1,w*0.25,h*0.8); for(let i=1;i<=6;i++)LN(w*0.65,h*(0.12+i*0.115),w*0.95,h*(0.12+i*0.115)); }
-        else { SR(w*0.05,h*0.1,w*0.4,h*0.8); for(let i=1;i<=6;i++)LN(w*0.5,h*(0.12+i*0.115),w*0.95,h*(0.12+i*0.115)); }
-    } else if(k==='heladera'){ SR(0,0,w,h); LN(0,h*0.3,w,h*0.3); LN(w*0.82,h*0.1,w*0.82,h*0.24); LN(w*0.82,h*0.36,w*0.82,h*0.62);
-    } else if(k==='lavarropas'){ SR(0,0,w,h); AR(w/2,h*0.55,Math.min(w,h)*0.3,false); AR(w/2,h*0.55,Math.min(w,h)*0.14,false); LN(w*0.12,h*0.14,w*0.88,h*0.14);
-    } else if(k==='calefon'){ SR(0,0,w,h); AR(w/2,h/2,Math.min(w,h)*0.3,false);
-    } else if(k==='microondas'){ SR(0,0,w,h); SR(w*0.08,h*0.15,w*0.6,h*0.7);
-    } else if(k==='campana'){ SR(0,0,w,h); LN(0,0,w,h); LN(w,0,0,h);
-    } else if(k==='sofa'||k==='sillon'){ SR(0,0,w,h); SR(0,0,w,h*0.3);
-        if(k==='sofa'){ SR(0,h*0.3,w*0.12,h*0.7); SR(w*0.88,h*0.3,w*0.12,h*0.7); const sw=(w*0.76)/3; SR(w*0.12,h*0.3,sw,h*0.7);SR(w*0.12+sw,h*0.3,sw,h*0.7);SR(w*0.12+sw*2,h*0.3,sw,h*0.7); }
-        else { SR(0,h*0.3,w*0.25,h*0.7); SR(w*0.75,h*0.3,w*0.25,h*0.7); SR(w*0.25,h*0.3,w*0.5,h*0.7); }
-    } else if(k==='cama_1'||k==='cama_2'){ SR(0,0,w,h);
-        if(k==='cama_2'){ SR(w*0.1,h*0.06,w*0.35,h*0.16); SR(w*0.55,h*0.06,w*0.35,h*0.16); ctx.beginPath();ctx.moveTo(0,h*0.6);ctx.bezierCurveTo(w*0.3,h*0.52,w*0.7,h*0.68,w,h*0.6);ctx.stroke(); }
-        else { SR(w*0.2,h*0.06,w*0.6,h*0.16); LN(0,h*0.55,w,h*0.55); ctx.beginPath();ctx.moveTo(w,h*0.55);ctx.lineTo(w*0.7,h*0.55);ctx.lineTo(w,h*0.8);ctx.stroke(); }
-    } else if(k==='mesa'){ SR(0,0,w,h); const cs=Math.min(0.4*PPM*vpZ,Math.min(w,h)*0.55), g=0.08*PPM*vpZ;
-        const chair=(cx,cy,ang)=>{ctx.save();ctx.translate(cx,cy);ctx.rotate(ang);ctx.fillStyle='#fff';ctx.fillRect(-cs/2,-cs/2,cs,cs);ctx.strokeRect(-cs/2,-cs/2,cs,cs);ctx.strokeRect(-cs/2,-cs/2-cs*0.2,cs,cs*0.2);ctx.restore();};
-        if(obj.variant==='mesa_6'){ chair(w*0.3,h+cs/2+g,0);chair(w*0.7,h+cs/2+g,0);chair(w*0.3,-cs/2-g,Math.PI);chair(w*0.7,-cs/2-g,Math.PI);chair(-cs/2-g,h/2,Math.PI/2);chair(w+cs/2+g,h/2,-Math.PI/2); }
+        ctx.fillStyle=F;
+        RR(w*0.14,0,w*0.72,h*0.2,m*0.03,true);            // mochila
+        LN(w*0.44,h*0.09,w*0.56,h*0.09);                  // pulsador
+        if(v==='2'){ RR(w*0.18,h*0.22,w*0.64,h*0.76,m*0.32,true); RR(w*0.30,h*0.34,w*0.40,h*0.50,m*0.22,false); } // taza en D
+        else { RR(w*0.16,h*0.22,w*0.68,h*0.76,m*0.16,true); RR(w*0.28,h*0.34,w*0.44,h*0.52,m*0.12,false); }       // taza semicuadrada
+    } else if(k==='bidet'){ ctx.fillStyle=F;
+        RR(w*0.18,h*0.06,w*0.64,h*0.9,m*0.34,true); RR(w*0.32,h*0.30,w*0.36,h*0.5,m*0.24,false);
+        ctx.fillStyle=ink; AR(w*0.5,h*0.16,m*0.03,true); ctx.fillStyle=F;
+    } else if(k==='bacha'){ ctx.fillStyle=F; SR(0,0,w,h);
+        if(v==='2'){ EL(w*0.5,h*0.52,w*0.34,h*0.30,true); } else { RR(w*0.14,h*0.18,w*0.72,h*0.6,m*0.14,true); }
+        ctx.fillStyle=ink; AR(w*0.5,h*0.5,m*0.04,true); ctx.fillStyle=F; AR(w*0.5,h*0.1,m*0.04,false);
+    } else if(k==='ducha'){ ctx.fillStyle=F; SR(0,0,w,h); LN(0,0,w,h); LN(w,0,0,h);
+        ctx.fillStyle=ink; AR(w*0.5,h*0.5,m*0.05,true); ctx.fillStyle=F;
+    } else if(k==='banera'){ ctx.fillStyle=F; RR(0,0,w,h,m*0.14,true); RR(w*0.1,h*0.12,w*0.8,h*0.76,m*0.1,false);
+        ctx.fillStyle=ink; AR(w*0.5,h*0.86,m*0.04,true); ctx.fillStyle=F;
+    } else if(k==='cocina'){ ctx.fillStyle=F; SR(0,0,w,h); LN(w*0.1,h*0.9,w*0.9,h*0.9);
+        [[0.3,0.3],[0.7,0.3],[0.3,0.62],[0.7,0.62]].forEach(p=>{AR(w*p[0],h*p[1],m*0.14,false);AR(w*p[0],h*p[1],m*0.05,false);});
+    } else if(k==='anafe'){ ctx.fillStyle=F; RR(0,0,w,h,m*0.06,true);
+        [[0.3,0.3],[0.7,0.3],[0.3,0.7],[0.7,0.7]].forEach(p=>{AR(w*p[0],h*p[1],m*0.15,false);AR(w*p[0],h*p[1],m*0.05,false);});
+    } else if(k==='bacha_s'){ ctx.fillStyle=F; SR(0,0,w,h); RR(w*0.1,h*0.16,w*0.6,h*0.68,m*0.12,true);
+        ctx.fillStyle=ink; AR(w*0.4,h*0.5,m*0.04,true); ctx.fillStyle=F; AR(w*0.85,h*0.2,m*0.05,false);
+    } else if(k==='pileta_d'){ ctx.fillStyle=F; SR(0,0,w,h);
+        RR(w*0.06,h*0.16,w*0.4,h*0.68,m*0.1,true); RR(w*0.54,h*0.16,w*0.4,h*0.68,m*0.1,true);
+        ctx.fillStyle=ink; AR(w*0.26,h*0.5,m*0.035,true); AR(w*0.74,h*0.5,m*0.035,true); ctx.fillStyle=F;
+    } else if(k==='heladera'){ ctx.fillStyle=F; RR(0,0,w,h,m*0.05,true);
+        if(v==='ch'){ LN(w*0.85,h*0.14,w*0.85,h*0.44); }
+        else { LN(0,h*0.34,w,h*0.34); LN(w*0.85,h*0.1,w*0.85,h*0.26); LN(w*0.85,h*0.44,w*0.85,h*0.7); }
+    } else if(k==='lavarropas'){ ctx.fillStyle=F; RR(0,0,w,h,m*0.05,true); AR(w/2,h*0.56,m*0.28,false); AR(w/2,h*0.56,m*0.12,false); LN(w*0.12,h*0.16,w*0.88,h*0.16);
+    } else if(k==='calefon'){ ctx.fillStyle=F; RR(0,0,w,h,m*0.4,true); AR(w/2,h/2,m*0.22,false);
+    } else if(k==='microondas'){ ctx.fillStyle=F; RR(0,0,w,h,m*0.05,true); LN(w*0.72,h*0.1,w*0.72,h*0.9); SR(w*0.08,h*0.2,w*0.56,h*0.6);
+    } else if(k==='campana'){ ctx.fillStyle=F; SR(0,0,w,h); RR(w*0.2,h*0.2,w*0.6,h*0.6,m*0.05,false); LN(0,0,w*0.2,h*0.2); LN(w,0,w*0.8,h*0.2); LN(0,h,w*0.2,h*0.8); LN(w,h,w*0.8,h*0.8);
+    } else if(k==='sofa'){ const n=(v==='2')?2:3; ctx.fillStyle=F;
+        RR(0,h*0.12,w,h*0.88,m*0.12,true); RR(0,0,w*0.14,h,m*0.12,true); RR(w*0.86,0,w*0.14,h,m*0.12,true);
+        const x0=w*0.14, sw=(w*0.72)/n; for(let i=0;i<n;i++) RR(x0+i*sw+w*0.01,h*0.24,sw-w*0.02,h*0.66,m*0.1,false);
+    } else if(k==='sillon'){ ctx.fillStyle=F;
+        RR(0,h*0.12,w,h*0.88,m*0.14,true); RR(0,0,w*0.2,h,m*0.14,true); RR(w*0.8,0,w*0.2,h,m*0.14,true); RR(w*0.22,h*0.24,w*0.56,h*0.66,m*0.12,false);
+    } else if(k==='cama_1'){ ctx.fillStyle=F; RR(0,0,w,h,m*0.06,true);
+        RR(w*0.18,h*0.04,w*0.64,h*0.16,m*0.06,true); LN(0,h*0.24,w,h*0.24);
+        ctx.beginPath();ctx.moveTo(0,h*0.24);ctx.lineTo(w,h*0.24);ctx.lineTo(w*0.82,h*0.98);ctx.stroke();
+    } else if(k==='cama_2'){ ctx.fillStyle=F; RR(0,0,w,h,m*0.05,true);
+        RR(w*0.08,h*0.04,w*0.38,h*0.15,m*0.05,true); RR(w*0.54,h*0.04,w*0.38,h*0.15,m*0.05,true);
+        LN(0,h*0.24,w,h*0.24); RR(w*0.04,h*0.24,w*0.92,h*0.72,m*0.04,false);
+    } else if(k==='mesa'){ ctx.fillStyle=F; RR(0,0,w,h,m*0.06,true);
+        const cs=Math.min(0.42*PPM*vpZ,Math.min(w,h)*0.6), g=0.06*PPM*vpZ, cr=cs*0.18;
+        const chair=(cx,cy,ang)=>{ctx.save();ctx.translate(cx,cy);ctx.rotate(ang);ctx.fillStyle=F;RR(-cs/2,-cs/2,cs,cs,cr,true);RR(-cs/2,-cs/2-cs*0.18,cs,cs*0.18,cr*0.6,true);ctx.restore();};
+        if(v==='mesa_6'){ chair(w*0.3,h+cs/2+g,0);chair(w*0.7,h+cs/2+g,0);chair(w*0.3,-cs/2-g,Math.PI);chair(w*0.7,-cs/2-g,Math.PI);chair(-cs/2-g,h/2,Math.PI/2);chair(w+cs/2+g,h/2,-Math.PI/2); }
         else { chair(w/2,h+cs/2+g,0);chair(w/2,-cs/2-g,Math.PI);chair(-cs/2-g,h/2,Math.PI/2);chair(w+cs/2+g,h/2,-Math.PI/2); }
-    } else if(k==='silla'){ SR(0,0,w,h); SR(0,-h*0.16,w,h*0.16); }
+    } else if(k==='silla'){ ctx.fillStyle=F;
+        if(v==='2'){ RR(w*0.08,h*0.16,w*0.84,h*0.8,m*0.3,true); RR(w*0.14,h*0.02,w*0.72,h*0.24,m*0.2,true); }
+        else if(v==='3'){ RR(0,h*0.14,w,h*0.86,m*0.16,true); RR(w*0.16,0,w*0.68,h*0.24,m*0.1,true); LN(w*0.05,h*0.32,w*0.05,h*0.9); LN(w*0.95,h*0.32,w*0.95,h*0.9); }
+        else { RR(w*0.1,h*0.18,w*0.8,h*0.78,m*0.08,true); RR(w*0.1,0,w*0.8,h*0.2,m*0.06,true); }
+    }
     ctx.restore();
   } else if(k==='auto'){ // vista en planta simple de un auto
       ctx.beginPath(); const rw=W*0.5,rh=H*0.5,cr=Math.min(W,H)*0.22;

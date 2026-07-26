@@ -116,8 +116,16 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v96) · app pro
-- **Baños rehechos con referencia CAD (v96, pedido Ángel):** el inodoro y demás quedaban feos. Rehechos:
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v97) · app pro
+- **Librería curada y modernizada (v97, pedido Ángel: "cuadrados, modernos, estilizados, sin adorno"):**
+  reescribí TODO el mobiliario/artefactos con estilo plano moderno (rects redondeados `RR`, poco detalle).
+  Nuevas variantes agregadas: **Inodoro 2** (taza en D), **Bacha 1** (rect redond.) y **Bacha 2** (óvalo),
+  **Heladera grande** (con freezer) y **Heladera chica**, **Sofá 2** y **Sofá 3** cuerpos, **Cama King**,
+  **Silla 1/2/3** (cuadrada / redondeada / con brazos). Inodoro ya NO redondo (semicuadrado). Sofás/sillón
+  con apoyabrazos y cojines redondeados; camas con almohadas+acolchado; mesas con sillas redondeadas;
+  campana=trapecio; ducha=cuadro+X+desagüe central. Todo con relleno blanco no destructivo. 35 bloques,
+  verificados sin error de dibujo (smoke test headless). Menú `#panel-arch` e íconos actualizados.
+- **(histórico) Baños rehechos con referencia CAD (v96, pedido Ángel):** el inodoro y demás quedaban feos. Rehechos:
   **inodoro** = mochila (tanque) + taza en forma de HUEVO (bézier) + aro interior; **bidet** = huevo + grifería;
   **bacha/lavatorio** = mesada + bacha ovalada + interior + grifería; **ducha** = cuadro + marco + líneas que
   convergen al **desagüe en la esquina** (estilo plano CAD). Todo con relleno blanco no destructivo.
