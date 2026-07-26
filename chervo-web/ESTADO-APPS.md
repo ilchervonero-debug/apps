@@ -116,7 +116,13 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v94) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v95) · app pro
+- **Librería de arquitectura mejorada (v95, dibujos de Ángel adaptados):** integré los símbolos detallados
+  que pasó Ángel, **adaptados** de su modelo (`(ctx,obj)`, metros, origen arriba-izq) al motor de SketchVolt
+  (centrado→arriba-izq vía `translate(-W/2,-H/2)`, metros→px). Mejorados: inodoro (mochila+taza+hueco),
+  bidet, bacha, ducha (marco+cruz+desagüe), cocina (4 hornallas), heladera, sofá (3 cuerpos)/sillón (1),
+  cama 1/2 plazas (almohadas+acolchado), pileta doble/simple (con escurridor), mesa 4/6 con sillas alrededor.
+  Nuevos: **Bañera** y **Mesa 6** (en `ARCH_DEF` + menú). Todo con enmascarado blanco no destructivo. 0 errores.
 - **SmartPen hace splines suaves (v94, pedido Ángel):** la curva sinuosa ya no se convierte en polilínea
   recta sino en **`spline` Catmull-Rom** (líneas sinuosas tipo CAD). El trazo libre se limpia con RDP →
   puntos de control, y `_catmull`/`splinePoly` los interpola en curva suave (14 muestras/tramo). Nuevo tipo
