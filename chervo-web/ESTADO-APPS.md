@@ -116,7 +116,11 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v97) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v98) · app pro
+- **Puertas rehechas en líneas finas (v98, pedido Ángel: "nada de jambas negras ni bloques"):** con su
+  lámina de símbolos de referencia. Batiente = hoja perpendicular + arco de giro fino sólido. Corrediza =
+  riel en el eje + hoja corrida como rectángulo fino (se eliminaron los 2 bloques gruesos). Plegable/acordeón
+  = zigzag fino de paneles. SIN jambas negras (solo la interrupción fina del muro).
 - **Librería curada y modernizada (v97, pedido Ángel: "cuadrados, modernos, estilizados, sin adorno"):**
   reescribí TODO el mobiliario/artefactos con estilo plano moderno (rects redondeados `RR`, poco detalle).
   Nuevas variantes agregadas: **Inodoro 2** (taza en D), **Bacha 1** (rect redond.) y **Bacha 2** (óvalo),

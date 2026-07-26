@@ -1526,10 +1526,19 @@ function drawArchObj(obj){
     ctx.fillStyle=ink; ctx.fillRect(-W/2,-H/2,mch,H); ctx.fillRect(W/2-mch,-H/2,mch,H);
   }
   if(k==='puerta'){
-    const v=obj.variant||'batiente';
-    if(v==='corrediza'){ rr(-W/2,-H*0.16,W*0.52,H*0.55); rr(-W*0.02,-H*0.02,W*0.52,H*0.55); }
-    else if(v==='plegable'){ const seg=(W-2*mch)/4; ctx.beginPath(); for(let i=0;i<=4;i++){const x=-W/2+mch+i*seg,y=(i%2?H*0.5:-H*0.5);i?ctx.lineTo(x,y):ctx.moveTo(x,y);} ctx.stroke(); }
-    else { const hx=-W/2+mch, sw=W-2*mch; ln(hx,H/2,hx,H/2-sw); ctx.beginPath();ctx.setLineDash(dash);ctx.arc(hx,H/2,sw,-Math.PI/2,0,false);ctx.stroke();ctx.setLineDash([]); }
+    const v=obj.variant||'batiente', xL=-W/2+mch, xR=W/2-mch, ow=xR-xL;
+    if(v==='corrediza'){
+      ln(xL,0,xR,0);                 // riel en el eje del muro
+      rr(xL,H*0.12,ow*0.6,H*0.5);    // hoja corrida (rectángulo fino), no bloque
+    } else if(v==='plegable'){       // acordeón: zigzag fino de paneles plegados
+      const n=4, seg=ow/n, amp=Math.max(H*1.6,ow*0.12);
+      ctx.beginPath();
+      for(let i=0;i<=n;i++){ const x=xL+i*seg, y=(i%2?-amp:0); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+      ctx.stroke();
+    } else {                          // batiente: hoja perpendicular + arco de giro fino
+      ln(xL,H/2,xL,H/2-ow);
+      ctx.beginPath();ctx.arc(xL,H/2,ow,-Math.PI/2,0,false);ctx.stroke();
+    }
   } else if(k==='ventana'){
     rr(-W/2,-H/2,W,H); ln(-W/2,0,W/2,0);
     if((obj.variant||'corrediza')==='batiente'){ ctx.beginPath();ctx.setLineDash(dash);ctx.arc(0,H/2,W/2,Math.PI,0,true);ctx.stroke();ctx.setLineDash([]); }
