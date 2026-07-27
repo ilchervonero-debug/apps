@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v105) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v106) · app pro
+- **4 menús idénticos (v106, pedido Ángel):** el panel **Dibujo** se pasó de la estructura vieja
+  (`ph-col/ph-lbl/ph-g3/phb`, columnas fijas 72px) a la MISMA de Arquitectura/Eléctrica
+  (`pu-scroll/pu-title/pu-grid/pu-item`): grilla que llena el ancho (3 cols, 5 en PC), mismos títulos y
+  mismos ítems. Títulos de Entorno también a `.pu-title`. Los 4 menús renderizan igual. Verificado: 15 ítems
+  en 3 grupos, selección de herramienta OK, 0 errores.
 - **Paneles cristal tipo iOS (v105, pedido Ángel):** los 4 dropdowns pasan a **tarjeta flotante** despegada de
   los bordes (`top:106px;left/right:12px`), esquinas `border-radius:18px`, fondo `rgba(255,255,255,.82)` con
   **`backdrop-filter:blur(20px) saturate(180%)`** (glassmorphism real: se ve el dibujo desenfocado detrás),
