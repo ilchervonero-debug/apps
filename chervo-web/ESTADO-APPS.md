@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v15) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v16) · fork del canvas de SketchVolt
+- **v16: Firebase/nube en iLDraw (pedido Ángel: menos apps solo-local en el móvil).** iLDraw ya heredaba el
+  código cloud de SketchVolt (mismo proyecto `bitacorapp-3df06`, local-first). Cableado propio: colección
+  **`usuarios/{uid}/ildraw/{id}`** (aislada de sketchvolt), flags **`ild_cloud_optin`/`ild_maillink`**, y
+  **devuelto el botón de Cuenta** en el home (Google o Magic Link, opt-in). Local-first: localStorage
+  `ildraw_flash` sigue siendo la fuente; la nube hace merge (nunca borra) y sube. Reglas Firestore ya cubren
+  `usuarios/{uid}/{document=**}` (sin cambios de consola). Verificado headless: botón presente, `cloudCol`→ildraw,
+  0 errores (el SDK no carga en sandbox por red, igual que SketchVolt; en el dominio sí).
 - **v15 / SketchVolt v110: desplegables de menú más compactos (ambas apps).** Apretada la grilla de los menús
   del canvas SIN sumar columnas: row-gap 8→4, padding ítem 8→4, gap ítem 6→4, margin título 14/8→8/4, gap panel
   12→7, padding panel 16→12, env-row row-gap→4. Ahora entra todo el menú (los 3 grupos) sin scroll; legibilidad

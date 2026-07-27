@@ -550,7 +550,7 @@ details.mas[open] summary:before{content:'▾ ';}
 
 <!-- ══════════ SHELL: PROYECTOS ══════════ -->
 <div class="scr" id="scrHome">
-  <div class="scr-head"><div class="wm">iL<b>Draw</b></div></div>
+  <div class="scr-head"><div class="wm">iL<b>Draw</b></div><button id="btnCuenta" onclick="menuCuenta()" data-tip="Cuenta / nube" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--ink);display:flex;align-items:center"></button></div>
   <div class="scr-body">
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <input type="text" id="newHojaName" placeholder="Nombre del dibujo (opcional)…" onkeydown="if(event.key==='Enter')crearHoja()" style="flex:1;min-width:0;background:rgba(242,242,247,.9);border:1px solid rgba(0,0,0,.1);border-radius:12px;padding:12px 14px;font-size:16px;font-family:var(--font);color:var(--ink)">
@@ -4324,19 +4324,19 @@ let cloudUser=null, _cloudReady=false, _cloudPushT=null;
     // Completar Magic Link (si el usuario abrió el enlace del correo).
     const auth=firebase.auth();
     if(auth.isSignInWithEmailLink && auth.isSignInWithEmailLink(location.href)){
-      let email=localStorage.getItem('sv_maillink')||prompt('Confirmá tu correo para entrar:');
-      if(email){ auth.signInWithEmailLink(email,location.href).then(()=>{localStorage.removeItem('sv_maillink');history.replaceState(null,'',location.pathname);}).catch(()=>toast('El enlace expiró, pedí otro')); }
+      let email=localStorage.getItem('ild_maillink')||prompt('Confirmá tu correo para entrar:');
+      if(email){ auth.signInWithEmailLink(email,location.href).then(()=>{localStorage.removeItem('ild_maillink');history.replaceState(null,'',location.pathname);}).catch(()=>toast('El enlace expiró, pedí otro')); }
     }
     // OPT-IN: aunque exista sesión compartida con la bitácora, NO entramos solos.
-    // La nube se activa solo si el usuario tocó "iniciar sesión" en SketchVolt (flag sv_cloud_optin).
+    // La nube se activa solo si el usuario tocó "iniciar sesión" (flag ild_cloud_optin).
     auth.onAuthStateChanged(u=>{
-      if(u && localStorage.getItem('sv_cloud_optin')==='1'){ cloudUser=u; cloudPull(); }
+      if(u && localStorage.getItem('ild_cloud_optin')==='1'){ cloudUser=u; cloudPull(); }
       else { cloudUser=null; }
       if(typeof updateCuentaBtn==='function')updateCuentaBtn();
     });
   }catch(e){ _cloudReady=false; }
 })();
-function cloudCol(){ return firebase.firestore().collection('usuarios').doc(cloudUser.uid).collection('sketchvolt'); }
+function cloudCol(){ return firebase.firestore().collection('usuarios').doc(cloudUser.uid).collection('ildraw'); }
 // MERGE seguro: unión por id; ante conflicto gana el de mayor 'mod'. NUNCA borra un proyecto local.
 function mergeProy(local,cloud){
   const by={}; (local||[]).forEach(p=>{if(p&&p.id)by[p.id]=p;});
@@ -4365,17 +4365,17 @@ async function cloudPushNow(){
   }catch(e){}
 }
 function loginGoogle(){ if(!_cloudReady)return toast('Sin conexión a la nube');
-  localStorage.setItem('sv_cloud_optin','1');   // opt-in explícito: a partir de acá la nube queda activa
+  localStorage.setItem('ild_cloud_optin','1');   // opt-in explícito: a partir de acá la nube queda activa
   firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
     .then(u=>{ cloudUser=u.user||firebase.auth().currentUser; updateCuentaBtn(); cloudPull(); toast('Sesión iniciada ✓'); })
-    .catch(e=>{ localStorage.removeItem('sv_cloud_optin'); if(e.code!=='auth/popup-closed-by-user')toast('No se pudo entrar'); }); }
+    .catch(e=>{ localStorage.removeItem('ild_cloud_optin'); if(e.code!=='auth/popup-closed-by-user')toast('No se pudo entrar'); }); }
 function loginMagicLink(){ if(!_cloudReady)return toast('Sin conexión a la nube');
   const email=(prompt('Tu correo (te mando un enlace para entrar):')||'').trim(); if(!email)return;
-  localStorage.setItem('sv_cloud_optin','1');
+  localStorage.setItem('ild_cloud_optin','1');
   firebase.auth().sendSignInLinkToEmail(email,{url:location.href,handleCodeInApp:true})
-    .then(()=>{ localStorage.setItem('sv_maillink',email); toast('Te mandé un enlace al correo ✓'); })
-    .catch(()=>{ localStorage.removeItem('sv_cloud_optin'); toast('No se pudo enviar el enlace'); }); }
-function logoutCloud(){ localStorage.removeItem('sv_cloud_optin'); cloudUser=null; updateCuentaBtn();
+    .then(()=>{ localStorage.setItem('ild_maillink',email); toast('Te mandé un enlace al correo ✓'); })
+    .catch(()=>{ localStorage.removeItem('ild_cloud_optin'); toast('No se pudo enviar el enlace'); }); }
+function logoutCloud(){ localStorage.removeItem('ild_cloud_optin'); cloudUser=null; updateCuentaBtn();
   if(_cloudReady)firebase.auth().signOut().then(()=>toast('Sesión cerrada')); }
 const _ICON_USER='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 function updateCuentaBtn(){
