@@ -116,7 +116,16 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v103) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v104) · app pro
+- **Paneles unificados + Press Long centrado (v104, pedido Ángel):** Panel **Entorno** = grupo **IMPORTAR**
+  (Imagen aislada arriba, listo para DXF/PDF/IA) + grupo **ENTORNO DE DIBUJO** (Grilla/Puntero/Snap/Ortho/Polar
+  en grilla 3-col, naked). **Frente/Fondo eliminados de Entorno** (y `#opFloat` removido del canvas). Panel
+  **Dibujo** reorganizado en 3 categorías `.ph-lbl`+grid: **TRAZADO** (línea/smartline/arco/polilínea/muro/
+  rect/círculo/polígono), **ANOTACIÓN Y RELLENO** (texto/cota/cota dir/cinta/relleno), **EDICIÓN** (goma/recortar).
+  **Menú Press Long** ahora **fijo y 100% centrado** (`top/left:50% + translate(-50%,-50%)`), **fila única sin
+  scroll**, con Frente/Fondo integrados (`ctxDo('front'/'back')`→zBringFront/zSendBack) y el **tacho = mismo SVG
+  exacto del propbar**; resto de íconos homologados (.ci, stroke 1.2). Verificado headless: 7 botones sin
+  desborde, Entorno 1+5, Dibujo 3 grupos, 0 errores.
 - **Header afinado + PC (v103, pedido Ángel):** botones de Entorno **desnudos** (sin recuadro, ícono+texto,
   activo=rojo). Pestaña "Electricidad"→**"Eléctrica"**. Las **4 pestañas fijas al ancho** (`flex:1`), **sin
   scroll lateral** (`overflow:hidden`); en teléfono se ocultan los íconos de pestaña para que entren solo los

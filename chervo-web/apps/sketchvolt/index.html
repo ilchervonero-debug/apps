@@ -239,11 +239,13 @@ body{display:flex;flex-direction:column;background:#fff;}
 .exq:active{color:var(--accent);}
 
 /* CONTEXT MENU — liquid glass */
-#ctx{display:none;position:fixed;z-index:300;
+/* Menú Press Long: SIEMPRE centrado en pantalla, fila única sin scroll */
+#ctx{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:300;
   background:#fff;border:1px solid #e5e5ea;border-radius:14px;
-  box-shadow:0 6px 24px rgba(0,0,0,.15);padding:6px;gap:2px;}
+  box-shadow:0 6px 24px rgba(0,0,0,.15);padding:8px;gap:8px;
+  flex-direction:row;flex-wrap:nowrap;max-width:calc(100vw - 20px);}
 #ctx.show{display:flex;}
-.ci{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:10px;
+.ci{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:10px;flex-shrink:0;
   background:none;border:none;color:var(--ink);cursor:pointer;}
 .ci:active{background:rgba(0,0,0,.06);}
 .ci svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
@@ -504,8 +506,8 @@ details.mas[open] summary:before{content:'▾ ';}
   border:none;border-bottom:1px solid #e5e5ea;box-shadow:0 12px 32px rgba(0,0,0,.10);
   padding:16px 12px;z-index:190;max-height:56vh;overflow-y:auto;display:none;}
 #panel-entorno.open,#panel-herr.open,#panel-arch.open,#panel-unit.open{display:flex;flex-direction:column;gap:12px;animation:phDown .18s ease;}
-/* Botones de Entorno DESNUDOS (sin recuadro): ícono + texto; activo = rojo (color, no borde) */
-#panel-entorno .env-row{display:flex;gap:8px 6px;flex-wrap:wrap;justify-content:flex-start;}
+/* Botones de Entorno DESNUDOS (sin recuadro) en GRILLA de 3 columnas; ícono + texto; activo = rojo */
+#panel-entorno .env-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 #panel-entorno .env-row button{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;padding:8px 6px;min-width:72px;color:var(--ink);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:color .12s;}
 #panel-entorno .env-row button.on{color:var(--accent);}
 #panel-entorno .env-row button:hover{color:var(--accent);}
@@ -515,7 +517,7 @@ details.mas[open] summary:before{content:'▾ ';}
 /* ── Optimización PC / pantallas anchas ── */
 @media(min-width:700px){
   .pu-grid{grid-template-columns:repeat(5,1fr);}
-  #panel-entorno .env-row{gap:10px;}
+  #panel-entorno .env-row{grid-template-columns:repeat(5,1fr);gap:10px;}
 }
 @media(min-width:960px){
   #panel-entorno,#panel-herr,#panel-arch,#panel-unit{padding-left:max(16px,calc((100% - 920px)/2));padding-right:max(16px,calc((100% - 920px)/2));}
@@ -647,8 +649,10 @@ details.mas[open] summary:before{content:'▾ ';}
 
 <!-- PANEL ENTORNO — controles de entorno (grilla, puntero, ortho, polar, frente/fondo, snap, imagen) -->
 <div id="panel-entorno">
-  <span class="ph-lbl" style="font-size:14px;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em">Entorno de dibujo</span>
-  <div class="env-row" id="envRowHost"></div>
+  <span class="ph-lbl">Importar</span>
+  <div class="env-row" id="envImport"></div>
+  <span class="ph-lbl">Entorno de dibujo</span>
+  <div class="env-row" id="envSpace"></div>
 </div>
 
 <!-- BAR 1 -->
@@ -674,7 +678,7 @@ details.mas[open] summary:before{content:'▾ ';}
 <!-- PANEL HERRAMIENTAS — sube desde el FAB -->
 <div id="panel-herr">
   <div class="ph-col">
-    <span class="ph-lbl">Dibujo</span>
+    <span class="ph-lbl">Trazado</span>
     <div class="ph-g3">
       <button class="phb" data-t="line" onclick="ST('line');closeTools()"><svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg><span>Línea</span></button>
       <button class="phb" data-t="sline" data-tip="SmartLine · cañería eléctrica" onclick="ST('sline');closeTools()"><svg viewBox="0 0 24 24"><line x1="6" y1="18" x2="18" y2="6"/><circle cx="6" cy="18" r="2.3" style="fill:currentColor"/><circle cx="18" cy="6" r="2.3" style="fill:currentColor"/></svg><span>SmartLine</span></button>
@@ -684,6 +688,12 @@ details.mas[open] summary:before{content:'▾ ';}
       <button class="phb" data-t="rect" onclick="ST('rect');closeTools()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg><span>Rectáng.</span></button>
       <button class="phb" data-t="circle" onclick="ST('circle');closeTools()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg><span>Círculo</span></button>
       <button class="phb" data-t="poly" onclick="ST('poly');closeTools()"><svg viewBox="0 0 24 24"><polygon points="12 3 20 9 17 19 7 19 4 9"/></svg><span>Polígono</span></button>
+    </div>
+  </div>
+  <div class="ph-hsep"></div>
+  <div class="ph-col">
+    <span class="ph-lbl">Anotación y relleno</span>
+    <div class="ph-g3">
       <button class="phb" data-t="text" onclick="ST('text');closeTools()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg><span>Texto</span></button>
       <button class="phb" data-t="dim" onclick="ST('dim');closeTools()"><svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="21" y1="6" x2="21" y2="18"/></svg><span>Cota</span></button>
       <button class="phb" data-t="dim2" onclick="ST('dim2');closeTools()"><svg viewBox="0 0 24 24"><line x1="4" y1="18" x2="20" y2="6"/><line x1="4" y1="14" x2="4" y2="22"/><line x1="20" y1="2" x2="20" y2="10"/></svg><span>Cota dir.</span></button>
@@ -1027,7 +1037,9 @@ details.mas[open] summary:before{content:'▾ ';}
   <button class="ci" onclick="ctxDo('copy')" title="Copiar"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
   <button class="ci" onclick="ctxDo('rotate')" title="Rotar"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/></svg></button>
   <button class="ci" onclick="ctxDo('mirror')" title="Espejo"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7l-4 5 4 5"/><path d="M16 7l4 5-4 5" opacity=".4"/></svg></button>
-  <button class="ci danger" onclick="ctxDo('delete')" title="Borrar"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
+  <button class="ci" onclick="ctxDo('front')" title="Traer al frente"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="12" height="12" rx="1.5"/><path d="M9 20h11V9" opacity=".45"/><path d="M13 12l3-3 3 3M16 9v7"/></svg></button>
+  <button class="ci" onclick="ctxDo('back')" title="Enviar al fondo"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="1.5"/><path d="M4 15V4h11" opacity=".45"/><path d="M8 12l-3 3-3-3M5 15V8"/></svg></button>
+  <button class="ci danger" onclick="ctxDo('delete')" title="Borrar"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
 </div>
 
 <!-- TARJETA CONTEXTUAL DE TEXTO (§4) -->
@@ -2349,9 +2361,8 @@ function doCtxAt(wp,sp){
       // si el objeto es de un grupo (y no estás en modo aislado), el menú opera sobre el grupo
       if(!(selIds.length>1&&selIds.includes(o.id))) setSel((o.group&&!editGroupId)?groupIds(o.group):[o.id]);
       showSelBar(); render();
-      const m=document.getElementById('ctx');m.classList.add('show');
-      let lx=sp.x-130,ty=sp.y-70;if(lx<8)lx=8;if(lx+270>window.innerWidth)lx=window.innerWidth-270;if(ty<60)ty=sp.y+16;
-      m.style.left=lx+'px';m.style.top=ty+'px';return;
+      document.getElementById('ctx').classList.add('show');   // centrado fijo por CSS (no depende del toque)
+      return;
     }
   }
   if(selIds.length){ setSel([]); showSelBar(); render(); }
@@ -2390,6 +2401,8 @@ function ctxDo(action){
   else if(action==='copy'){ST('copy');setSel(set);toast('Tocá y arrastrá para copiar');}
   else if(action==='mirror'){saveHistory();mirrorSet(set);markDirty();render();toast('Espejo aplicado');}
   else if(action==='rotate'){ startRotate(set); }
+  else if(action==='front'){ setSel(set); zBringFront(); }
+  else if(action==='back'){ setSel(set); zSendBack(); }
   ctxObjId=null;
 }
 
@@ -3296,16 +3309,20 @@ function toggleRibbon(id){
     if(id==='unit'&&typeof renderArchIcons==='function'){} }
 }
 function closeRibbon(){ if(currentRibbon)toggleRibbon(currentRibbon); }
-// Mueve los controles de entorno (grilla, snap, puntero, imagen, ortho, polar, frente, fondo) al panel Entorno.
+// Reparte los controles de entorno: IMPORTAR (imagen) arriba, y ENTORNO DE DIBUJO (grilla/puntero/snap/ortho/polar).
+// Frente/Fondo NO van acá: viven en el menú Press Long (contextual).
 function _mountEntorno(){
-  const host=document.getElementById('envRowHost'); if(!host||host._done)return; host._done=true;
-  const add=(el,lbl)=>{ if(!el)return; if(lbl)el.setAttribute('data-lbl',lbl); el.classList.remove('ti','ti-t'); host.appendChild(el); };
-  add(document.getElementById('gridBtn'),'Grilla');
-  add(document.getElementById('ptrBtn'),'Puntero');
-  add(document.getElementById('snapBtn'),'Snap');
-  add(document.getElementById('imgBtn'),'Imagen');
-  const of=document.getElementById('opFloat');   // ortho/polar/frente/fondo (ya traen su .lbl)
-  if(of)[...of.children].forEach(b=>host.appendChild(b));
+  const imp=document.getElementById('envImport'), sp=document.getElementById('envSpace');
+  if(!imp||!sp||imp._done)return; imp._done=true;
+  const mv=(host,id,lbl)=>{ const el=document.getElementById(id); if(!el)return;
+    el.classList.remove('ti','ti-t'); if(lbl && !el.querySelector('.lbl'))el.setAttribute('data-lbl',lbl); host.appendChild(el); };
+  mv(imp,'imgBtn','Imagen');
+  mv(sp,'gridBtn','Grilla');
+  mv(sp,'ptrBtn','Puntero');
+  mv(sp,'snapBtn','Snap');
+  mv(sp,'orthoBtn','Ortho');     // ortho/polar traen su propio .lbl
+  mv(sp,'polarBtn','Polar');
+  const of=document.getElementById('opFloat'); if(of)of.remove();   // saca frente/fondo del canvas (van al Press Long)
 }
 function toggleGrid(){gridOn=!gridOn;document.getElementById('gridBtn').classList.toggle('on',gridOn);if(_panelMode!=='grid')openBottomPanel('grid');else{refreshBottom();render();}toast('Grilla '+(gridOn?'ON':'OFF'));}
 function toggleSnapCursor(){snapObjOn=!snapObjOn;document.getElementById('snapBtn').classList.toggle('on',snapObjOn);render();toast('Snap '+(snapObjOn?'ON':'OFF'));}
