@@ -116,7 +116,16 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v101) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v102) · app pro
+- **HEADER DOBLE + pestañas ribbon (v102, rediseño de shell pedido por Ángel):** reemplaza la `.bar`, los 3
+  FAB y `#topControls`/`#guide` por un header fijo de 2 niveles. Nivel 1: logo (→dashboard), deshacer/rehacer,
+  guía de herramienta (texto, se cierra al tocar), y cursor/Seleccionar a la derecha. Nivel 2: 4 pestañas
+  **Entorno · Dibujo · Arquitectura · Electricidad** que abren paneles dropdown (una a la vez; re-tocar cierra).
+  `toggleRibbon()` maneja exclusión; `_mountEntorno()` MUEVE (sin duplicar IDs) grilla/puntero/snap/imagen +
+  ortho/polar/frente/fondo al panel Entorno. Los paneles herr/arch/unit se reusan tal cual (solo reposicionados
+  por CSS como dropdown, ganando por orden). `updateGuide/dismissGuide` apuntan al header (`#l1-guide/#l1-normal`);
+  `#guide` viejo eliminado (evita IDs duplicados). Listeners click-away ahora ignoran `#top-header`. Verificado
+  headless: header + 4 tabs, Entorno con 8 controles, guía muestra la herramienta, 0 errores JS.
 - **Táctil CAD PRO — lógica de Ángel (v101, reemplaza `_chainAim` de v100):** en encadenado (mline/pline/
   línea, modo Directo) el 1er punto arranca en `handleDown` (`_justStartedChain`) y los siguientes se fijan
   al SOLTAR un **tap limpio** (`isTap` = arrastre <15px, comparando `scrn` vs `_dragStartS`). **Arrastrar solo
