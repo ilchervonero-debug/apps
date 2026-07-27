@@ -116,6 +116,17 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
+### iLDraw — `apps/ildraw/` · (SW ildraw-v12) · fork del canvas de SketchVolt
+- **iLDraw = canvas de SketchVolt sin Eléctrica ni dashboard (pedido Ángel).** Fork de `sketchvolt/index.html`:
+  · Sacada la pestaña **Eléctrica** (`tab-unit` + `panel-unit`) y **SmartLine**; quedan Entorno/Dibujo/Arquitectura.
+  · **Sin dashboard de proyectos** de SketchVolt. En su lugar un **flash estilo iLVolt**: input *Nombre del dibujo
+    (opcional)* + **Crear** (sin nombre → "Dibujo N"), **Abrir archivo de respaldo**, y lista de dibujos (abrir /
+    guardar archivo `.ildraw` / borrar). Cada dibujo = un proyecto de 1 hoja; se abre directo al canvas (sin pasar
+    por dashboard). `goDash`/logo vuelven al flash. Persistencia local en `ildraw_flash`; respaldo por archivo
+    JSON (`exportHoja`/`importArchivo`). Reusa el motor (`openPlanta`/`savePlanta`/`markDirty`).
+  · Título/wordmark **iLDraw** (iL rojo + Draw plata). Verificado headless: crear→canvas→dibujar→autosave→volver
+    →reabrir persiste; 3 pestañas; sin errores JS; sin overflow. Manifest/SW ya eran iLDraw (bump a v12).
+
 ### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v108) · app pro
 - **Guías de cinta: borrado + z-order (v108, pedido Ángel):** las `guide_line` ahora rinden **arriba de todo**
   (`zLevelOf`=40). Se pueden **borrar línea por línea**: al seleccionar una guía, el propbar muestra el **tacho**
