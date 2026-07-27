@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v100) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v101) · app pro
+- **Táctil CAD PRO — lógica de Ángel (v101, reemplaza `_chainAim` de v100):** en encadenado (mline/pline/
+  línea, modo Directo) el 1er punto arranca en `handleDown` (`_justStartedChain`) y los siguientes se fijan
+  al SOLTAR un **tap limpio** (`isTap` = arrastre <15px, comparando `scrn` vs `_dragStartS`). **Arrastrar solo
+  orienta** (no clava punto). `handleDown` ya no clava en encadenado activo. Borrada la línea vieja de commit
+  de `tool==='line'` en `handleUp` (rect promovido de `else if`→`if`). Delay 120→150ms, umbral 10→15px.
+  Cierre por doble-tap solo si el 2º toque cae <26px del 1º. Verificado headless: tap A/B/C=1/2/3, arrastre
+  no suma, doble-tap cierra, pinch 2 dedos sin vértice fantasma.
 - **Táctil CAD "apuntar-y-soltar" en encadenado (v100, Ángel: cursor pegado + delay 2 dedos):** mline/pline/
   línea en modo Directo ya NO colocan el vértice al tocar a ciegas: se APUNTA con el dedo (rubber-band + snap
   en vivo) y el vértice se fija al SOLTAR → precisión y el cursor sigue el dedo (no queda pegado al punto

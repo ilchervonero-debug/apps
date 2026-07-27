@@ -2403,14 +2403,14 @@ cv.addEventListener('wheel',e=>{e.preventDefault();const s=getS(e),f=e.deltaY<0?
 
 // DELAY del toque (§3): el 1er dedo NO dibuja al instante; espera ~70ms. Si entra un 2º dedo → pinch/pan
 // (no dibuja). Así un toque a 2 dedos casi-simultáneo hace zoom, no una línea. El snap SÍ se ve al instante.
-let _tapT=null,_tapPend=null,_chainAim=false,_lastTapS=null; const TAP_DELAY=120, TAP_MOVE=10/1;   // 120ms · umbral 10px pantalla
+let _tapT=null,_tapPend=null,_lastTapS=null,_dragStartS=null,_justStartedChain=false; const TAP_DELAY=150, TAP_MOVE=15/1;   // 150ms salva el zoom a 2 dedos sin falsos taps · umbral 15px
 function _clearTap(){ clearTimeout(_tapT); _tapT=null; _tapPend=null; }
 function onTS(e){
   e.preventDefault();
   for(const t of e.changedTouches)touches[t.identifier]={x:t.clientX,y:t.clientY};
   if(Object.keys(touches).length===2){
     _clearTap();                                    // cancela el toque pendiente → era pinch a 2 dedos
-    pinching=true;drawing=false;penPts=[];_chainAim=false;cancelLP();   // (el encadenado de muro/línea NO se descarta al hacer pinch; el vértice apuntado se descarta sin colocarse)
+    pinching=true;drawing=false;penPts=[];cancelLP();   // (el encadenado de muro/línea NO se descarta al hacer pinch)
     const ids=Object.keys(touches);const t0=touches[ids[0]],t1=touches[ids[1]];const r=cv.getBoundingClientRect();
     const mx=(t0.x+t1.x)/2-r.left,my=(t0.y+t1.y)/2-r.top;
     pinch0={dist:hyp(t1.x-t0.x,t1.y-t0.y),z:vpZ,mx,my,vx:vpX,vy:vpY};panning=true;panRef={sx:mx,sy:my,vx:vpX,vy:vpY};return;
@@ -2440,14 +2440,7 @@ function onTS(e){
   if(now-hatchLastTap<350&&tool==='hatch'){commitHatch();hatchLastTap=0;return;}
   plineLastTap=_multi?now:plineLastTap; if(_multi)_lastTapS=_s2;
   hatchLastTap=(tool==='hatch')?now:hatchLastTap;
-  touchActive=true;cursorS=getS(e);
-  // CADENA (mline/pline/línea) en modo Directo: APUNTAR con el dedo y CONFIRMAR al SOLTAR (CAD táctil).
-  // El vértice NO se coloca al tocar a ciegas: se fija al levantar, tras verlo con snap → precisión y el
-  // cursor sigue el dedo (no queda pegado al punto anterior). Un 2º dedo hace pinch sin dejar vértice.
-  if(_multi && ptrMode===2){
-    const wp=constrainOP(getW(e)), raw=getRW(e); dragCurW={...wp};
-    _chainAim=true; startLP(e); handleMove(wp,raw,cursorS); render(); return;
-  }
+  touchActive=true;cursorS=getS(e); _dragStartS=cursorS;
   startLP(e);
   // Diferimos el handleDown: mostramos snap ya (render), pero el trazo/punto espera TAP_DELAY.
   const wp=constrainOP(getW(e)), raw=getRW(e), s=getS(e); render();
@@ -2482,8 +2475,6 @@ function onTE(e){
     const s=getS(e); cursorS={...s}; anchorS={...s}; anchorPt=constrainOP(getW(e)); anchorArmed=true;   // ANCLA (queda la cruz fija)
     render(); return;
   }
-  // CADENA modo Directo: al SOLTAR se coloca el vértice en la coord apuntada (con snap) — recién ahora.
-  if(_chainAim){ _chainAim=false; const wp=constrainOP(getW(e)); dragCurW={...wp}; handleDown(wp,getRW(e),getS(e)); touchActive=false;cursorS=null;snapHit=null;render(); return; }
   // Toque pendiente que no llegó a moverse ni a dispararse por tiempo → fue un TAP limpio: colocá ahora.
   if(_tapPend){ clearTimeout(_tapT);_tapT=null; const p=_tapPend;_tapPend=null; handleDown(p.wp,p.raw,p.s); handleUp(p.wp,p.s); touchActive=false;cursorS=null;snapHit=null;render(); return; }
   const wp=constrainOP(getW(e));dragCurW={...wp};handleUp(wp,getS(e));
@@ -2604,9 +2595,9 @@ function handleDown(wp,rawW,scrn){
 
   // PLINE / MURO / LÍNEA — AutoCAD style: tocar para agregar puntos y ENCADENAR; doble toque / ✓ termina.
   if(tool==='pline'||tool==='mline'||tool==='line'){
-    if(!plineActive){plineActive=true;plinePts=[[wp.x,wp.y]];}
-    else{plinePts.push([wp.x,wp.y]);}
-    render();return;
+    if(!plineActive){ plineActive=true; plinePts=[[wp.x,wp.y]]; _justStartedChain=true; }
+    // Ya activa: NO clavamos punto acá. Arrastrar solo mueve el cursor para dar orientación.
+    render(); return;
   }
 
   // HATCH — tap points, double-tap closes
@@ -2676,6 +2667,16 @@ function handleMove(wp,raw,scrn){
 function handleUp(wp,scrn){
   if(modoAjusteFondo){drawing=false;fondoDrag=null;return;}
   if(panning){panning=false;return;}
+  // LÓGICA CAD PRO: tap limpio = fija punto. Arrastre = solo orienta (no clava).
+  if((tool==='pline'||tool==='mline'||tool==='line') && plineActive){
+    const isTap = _dragStartS && hyp(scrn.x - _dragStartS.x, scrn.y - _dragStartS.y) < 15;
+    if(isTap){
+      if(_justStartedChain){ _justStartedChain=false; }   // el 1er punto ya se puso en handleDown
+      else { plinePts.push([wp.x, wp.y]); }
+    }
+    _justStartedChain=false;                                // tras cualquier gesto, deja de ser "recién iniciado"
+    drawing=false; render(); return;
+  }
   // RECUADRO de selección terminado
   if(tool==='select'&&marquee){
     const dx=Math.abs(marquee.x1-marquee.x0),dy=Math.abs(marquee.y1-marquee.y0);
@@ -2744,8 +2745,7 @@ function handleUp(wp,scrn){
     drawing=false;render();return;
   }
   if(!drawing)return;
-  if(tool==='line'){if(hyp(dragCurW.x-dragStartW.x,dragCurW.y-dragStartW.y)>2/vpZ)objects.push({type:'line',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW,lineType,id:nextId++});else history.pop();}
-  else if(tool==='rect'){if(Math.abs(dragCurW.x-dragStartW.x)>2/vpZ&&Math.abs(dragCurW.y-dragStartW.y)>2/vpZ)objects.push({type:'rect',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW,lineType,id:nextId++});else history.pop();}
+  if(tool==='rect'){if(Math.abs(dragCurW.x-dragStartW.x)>2/vpZ&&Math.abs(dragCurW.y-dragStartW.y)>2/vpZ)objects.push({type:'rect',pts:[[dragStartW.x,dragStartW.y],[dragCurW.x,dragCurW.y]],color,strokeW,lineType,id:nextId++});else history.pop();}
   else if(tool==='pen'){
     // SmartPen: dibujás LIBRE (solo el 1er punto se enganchó) y al soltar se CONVIERTE a geometría pura.
     if(penPts.length>1){
