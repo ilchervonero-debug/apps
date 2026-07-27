@@ -487,6 +487,8 @@ details.mas[open] summary:before{content:'▾ ';}
 #l1-normal.show{display:flex;}
 .hdr-logo{font-size:18px;font-weight:800;color:var(--accent);letter-spacing:-.5px;cursor:pointer;flex-shrink:0;}
 .hdr-logo span{color:#C0C0C0;}
+.hdr-back{background:none;border:none;color:var(--accent);cursor:pointer;padding:4px 2px 4px 0;display:flex;align-items:center;flex-shrink:0;}
+.hdr-back svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
 .hdr-ur{display:flex;gap:2px;}
 #l1-guide{display:none;width:100%;align-items:center;gap:10px;cursor:pointer;}
 #l1-guide.show{display:flex;}
@@ -637,6 +639,7 @@ details.mas[open] summary:before{content:'▾ ';}
   <div class="level-1">
     <div class="l1-left">
       <div id="l1-normal" class="show">
+        <button class="hdr-back" onclick="goDash()" data-tip="Atrás · dibujos"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
         <div class="hdr-logo" onclick="goDash()">iL<span>Draw</span></div>
         <div class="hdr-ur">
           <button class="ti ti-t" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
@@ -3436,8 +3439,8 @@ function setDimFont(sz){
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 // ══════════ SIMBOLOGÍA ELÉCTRICA (FAB) ══════════
 let _unitOpen=false;
-function toggleUnit(){_unitOpen=!_unitOpen;document.getElementById('panel-unit').classList.toggle('open',_unitOpen);document.getElementById('btn-elec').classList.toggle('on',_unitOpen);if(_unitOpen){closeTools();closeArch();}}
-function closeUnit(){_unitOpen=false;document.getElementById('panel-unit').classList.remove('open');const t=document.getElementById('tab-unit');if(t)t.classList.remove('on');if(currentRibbon==='unit')currentRibbon=null;}
+function toggleUnit(){ const pu=document.getElementById('panel-unit'); if(!pu)return; _unitOpen=!_unitOpen;pu.classList.toggle('open',_unitOpen);const be=document.getElementById('btn-elec');if(be)be.classList.toggle('on',_unitOpen);if(_unitOpen){closeTools();closeArch();}}
+function closeUnit(){ const pu=document.getElementById('panel-unit'); if(!pu)return; _unitOpen=false;pu.classList.remove('open');const t=document.getElementById('tab-unit');if(t)t.classList.remove('on');if(currentRibbon==='unit')currentRibbon=null;}
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-unit')&&!e.target.closest('#tab-unit'))closeUnit();},{passive:true});
 document.addEventListener('click',function(e){if(!e.target.closest('#panel-arch')&&!e.target.closest('#tab-arch'))closeArch();},{passive:true});
 function pickUnit(el,nom){bloqueSel=el.dataset.block;bloqueNom=nom;ultimoSimbolo={sel:bloqueSel,nom};closeUnit();fabElecSym(bloqueSel);ST('block');toast('Tocá para estampar · '+nom);}

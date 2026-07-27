@@ -116,7 +116,11 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v13) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v14) · fork del canvas de SketchVolt
+- **v14: flecha "atrás" en el header (ambas apps) + fix null.** Devuelta la **flecha roja `‹`** al lado del
+  nombre en el header (llama `goDash()` → vuelve al flash/dashboard), en iLDraw y SketchVolt (`sketchvolt-v109`).
+  Fix: en iLDraw los listeners de "Eléctrica" llamaban `closeUnit()`/`toggleUnit()` que buscaban el `panel-unit`
+  borrado → null en cada click; ahora están **blindados** (`if(!pu)return`).
 - **v13 (pedido Ángel): tacho de vuelta + estándar de íconos legible.** El **tacho** vuelve al propbar al
   seleccionar cualquier objeto (borrar); la **X** queda solo para cancelar comandos en curso. **Estándar de
   tamaños unificado y legible** (no arbitrario): ítems de menú/entorno **24px** + label 14px; barras de acción

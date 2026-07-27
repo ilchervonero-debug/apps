@@ -487,6 +487,8 @@ details.mas[open] summary:before{content:'▾ ';}
 #l1-normal.show{display:flex;}
 .hdr-logo{font-size:18px;font-weight:800;color:var(--accent);letter-spacing:-.5px;cursor:pointer;flex-shrink:0;}
 .hdr-logo span{color:#C0C0C0;}
+.hdr-back{background:none;border:none;color:var(--accent);cursor:pointer;padding:4px 2px 4px 0;display:flex;align-items:center;flex-shrink:0;}
+.hdr-back svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
 .hdr-ur{display:flex;gap:2px;}
 #l1-guide{display:none;width:100%;align-items:center;gap:10px;cursor:pointer;}
 #l1-guide.show{display:flex;}
@@ -633,6 +635,7 @@ details.mas[open] summary:before{content:'▾ ';}
   <div class="level-1">
     <div class="l1-left">
       <div id="l1-normal" class="show">
+        <button class="hdr-back" onclick="goDash()" data-tip="Atrás"><svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg></button>
         <div class="hdr-logo" onclick="goDash()">Sketch<span>Volt</span></div>
         <div class="hdr-ur">
           <button class="ti ti-t" data-tip="Deshacer" onclick="undo()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H3"/><polyline points="7 6 3 10 7 14"/></svg></button>
