@@ -116,7 +116,11 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v14) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v15) · fork del canvas de SketchVolt
+- **v15 / SketchVolt v110: desplegables de menú más compactos (ambas apps).** Apretada la grilla de los menús
+  del canvas SIN sumar columnas: row-gap 8→4, padding ítem 8→4, gap ítem 6→4, margin título 14/8→8/4, gap panel
+  12→7, padding panel 16→12, env-row row-gap→4. Ahora entra todo el menú (los 3 grupos) sin scroll; legibilidad
+  intacta (íconos 24 + texto 14).
 - **v14: flecha "atrás" en el header (ambas apps) + fix null.** Devuelta la **flecha roja `‹`** al lado del
   nombre en el header (llama `goDash()` → vuelve al flash/dashboard), en iLDraw y SketchVolt (`sketchvolt-v109`).
   Fix: en iLDraw los listeners de "Eléctrica" llamaban `closeUnit()`/`toggleUnit()` que buscaban el `panel-unit`
