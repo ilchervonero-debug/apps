@@ -116,7 +116,12 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v12) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v13) · fork del canvas de SketchVolt
+- **v13 (pedido Ángel): tacho de vuelta + estándar de íconos legible.** El **tacho** vuelve al propbar al
+  seleccionar cualquier objeto (borrar); la **X** queda solo para cancelar comandos en curso. **Estándar de
+  tamaños unificado y legible** (no arbitrario): ítems de menú/entorno **24px** + label 14px; barras de acción
+  (propbar/Press Long) **22px**; pestañas **18px** + texto 15px. Íconos y texto en armonía (antes 30px = "miope
+  extremo"). (Aplica a iLDraw; SketchVolt mantiene su v107 — puedo espejar el estándar de íconos si Ángel quiere.)
 - **iLDraw = canvas de SketchVolt sin Eléctrica ni dashboard (pedido Ángel).** Fork de `sketchvolt/index.html`:
   · Sacada la pestaña **Eléctrica** (`tab-unit` + `panel-unit`) y **SmartLine**; quedan Entorno/Dibujo/Arquitectura.
   · **Sin dashboard de proyectos** de SketchVolt. En su lugar un **flash estilo iLVolt**: input *Nombre del dibujo

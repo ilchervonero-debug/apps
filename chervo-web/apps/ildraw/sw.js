@@ -1,4 +1,4 @@
-const CACHE = 'ildraw-v12';
+const CACHE = 'ildraw-v13';
 const ASSETS = [
   '/apps/ildraw/',
   '/apps/ildraw/index.html',

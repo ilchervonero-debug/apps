@@ -215,7 +215,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 /* Botón-ícono de propiedades (más íconos, menos texto) */
 .pib{width:44px;height:44px;border-radius:10px;background:transparent;border:none;color:var(--ink);
   cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.pib svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+.pib svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 .pib:active{background:rgba(0,0,0,.06);}
 .pib.danger{color:var(--red);}
 /* Aceptar/Terminar: grande y PELADO (sin halo/anillo) — el tick se nota por TAMAÑO, no por caja */
@@ -254,7 +254,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 .ci{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:10px;flex-shrink:0;
   background:none;border:none;color:var(--ink);cursor:pointer;}
 .ci:active{background:rgba(0,0,0,.06);}
-.ci svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
+.ci svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
 .ci.danger{color:var(--red);}
 
 /* MODALS */
@@ -447,7 +447,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pu-item{background:transparent;border:none;border-radius:10px;padding:8px 2px;
   display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;text-align:center;}
 .pu-item:active svg{stroke:var(--accent);}
-.pu-item svg{width:30px;height:30px;fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+.pu-item svg{width:24px;height:24px;fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 /* Nombre del ítem: gris sutil, 14px, fino. Envuelve a 2 líneas (no trunca, no se solapa). Igual que .phb. */
 .pu-item span{font-size:14px;color:#8e8e93;font-weight:400;line-height:1.1;pointer-events:none;max-width:100%;overflow-wrap:anywhere;}
 .cdot{width:22px;height:22px;border-radius:50%;border:1.5px solid #d0d0d3;cursor:pointer;flex-shrink:0;padding:0;}
@@ -504,7 +504,7 @@ details.mas[open] summary:before{content:'▾ ';}
 .tab-item{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--font);font-size:15px;font-weight:500;color:var(--ink);background:none;border:none;cursor:pointer;padding:8px 4px;white-space:nowrap;transition:color .12s;}
 .tab-item.on{color:var(--accent);}
 .tab-item:hover{color:var(--accent);}
-.tab-item svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+.tab-item svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
 /* Teléfono: solo texto (garantiza que los 4 entren sin cortar) · PC: texto + ícono + hover */
 @media(max-width:620px){ .tab-item{gap:0;} .tab-item svg{display:none;} }
 
@@ -523,7 +523,7 @@ details.mas[open] summary:before{content:'▾ ';}
 #panel-entorno .env-row button{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;padding:8px 6px;min-width:72px;color:var(--ink);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:color .12s;}
 #panel-entorno .env-row button.on{color:var(--accent);}
 #panel-entorno .env-row button:hover{color:var(--accent);}
-#panel-entorno .env-row button svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
+#panel-entorno .env-row button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;}
 #panel-entorno .env-row button .lbl{font-size:14px;font-weight:500;color:inherit;}
 #panel-entorno .env-row button[data-lbl]::after{content:attr(data-lbl);font-size:14px;font-weight:500;color:inherit;}
 /* ── Optimización PC / pantallas anchas ── */
@@ -3705,7 +3705,7 @@ function showSelBar(){
     _setScaleBase=null; const gms=document.getElementById('gmScale'); if(gms)gms.value=100;
     // Nombre/kind NO van en la barra (cero texto): el rótulo flotante #pbTool ya dice "Grupo · X".
     gm.style.display='flex';
-    showActions(null, terminarSel);   // multi: SIN tacho (borrar = Press Long); solo ✓ terminar
+    showActions(selDelete, terminarSel);   // multi: tacho (borrar) + ✓ terminar
     const nm=_selName();
     const pt=document.getElementById('pbTool'); if(pt)pt.textContent=(isComp?'Componente':(whole?'Grupo':'Selección'))+(nm?' · '+nm:'');
     _syncSwatches(); refreshBottom(); return;
@@ -3745,7 +3745,7 @@ function showSelBar(){
   // No mostramos grpSel (color/componente) — evita filas extra y barra alta.
   if(!isArch) g.style.display='flex';
   // 1 objeto: SIN tacho (borrar = Press Long) — EXCEPTO las GUÍAS de cinta, que se borran línea por línea desde propiedades.
-  showActions(o.type==='guide_line'?selDelete:null, null);
+  showActions(selDelete, null);   // 1 objeto: tacho para borrar (la X queda solo para cancelar comandos)
   const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isB?'Símbolo':(isArch?archNom(o.kind):'Objeto');
   _syncSwatches(); refreshBottom();
 }
