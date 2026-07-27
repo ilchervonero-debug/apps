@@ -75,7 +75,7 @@ body{display:flex;flex-direction:column;background:#fff;}
   padding:12px;gap:8px;
 }
 #panel-herr.open{display:flex;animation:phDown .18s ease;}
-@keyframes phDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes phDown{from{opacity:0;transform:translateY(-12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
 .ph-col{display:flex;flex-direction:column;gap:6px;}
 .ph-lbl{font-size:14px;font-weight:500;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em;}
 .ph-g3{display:grid;grid-template-columns:repeat(3,72px);gap:8px;}
@@ -499,12 +499,15 @@ details.mas[open] summary:before{content:'▾ ';}
 /* Teléfono: solo texto (garantiza que los 4 entren sin cortar) · PC: texto + ícono + hover */
 @media(max-width:620px){ .tab-item{gap:0;} .tab-item svg{display:none;} }
 
-/* Los 4 paneles como DROPDOWN desde el header (ganan por orden a las reglas viejas de posición) */
+/* Los 4 paneles como TARJETA FLOTANTE tipo iOS (cristal): despegada de los bordes, blur real */
 #panel-entorno,#panel-herr,#panel-arch,#panel-unit{
-  position:fixed;top:98px;left:0;right:0;bottom:auto;width:auto;border-radius:0;
-  background:rgba(255,255,255,0.97);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);
-  border:none;border-bottom:1px solid #e5e5ea;box-shadow:0 12px 32px rgba(0,0,0,.10);
-  padding:16px 12px;z-index:190;max-height:56vh;overflow-y:auto;display:none;}
+  position:fixed;top:106px;left:12px;right:12px;bottom:auto;width:auto;
+  background:rgba(255,255,255,0.82);
+  backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.55);border-radius:18px;
+  box-shadow:0 14px 44px rgba(0,0,0,.16);
+  padding:16px 14px;z-index:190;max-height:58vh;overflow-y:auto;display:none;
+  transform-origin:top center;}
 #panel-entorno.open,#panel-herr.open,#panel-arch.open,#panel-unit.open{display:flex;flex-direction:column;gap:12px;animation:phDown .18s ease;}
 /* Botones de Entorno DESNUDOS (sin recuadro) en GRILLA de 3 columnas; ícono + texto; activo = rojo */
 #panel-entorno .env-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
@@ -518,9 +521,6 @@ details.mas[open] summary:before{content:'▾ ';}
 @media(min-width:700px){
   .pu-grid{grid-template-columns:repeat(5,1fr);}
   #panel-entorno .env-row{grid-template-columns:repeat(5,1fr);gap:10px;}
-}
-@media(min-width:960px){
-  #panel-entorno,#panel-herr,#panel-arch,#panel-unit{padding-left:max(16px,calc((100% - 920px)/2));padding-right:max(16px,calc((100% - 920px)/2));}
 }
 .pu-item{cursor:pointer;} .pu-item:hover span{color:var(--accent);} .pu-item:hover svg{stroke:var(--accent);}
 .phb{cursor:pointer;} .phb:hover{color:var(--accent);}

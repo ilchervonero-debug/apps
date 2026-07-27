@@ -116,7 +116,13 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v104) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v105) · app pro
+- **Paneles cristal tipo iOS (v105, pedido Ángel):** los 4 dropdowns pasan a **tarjeta flotante** despegada de
+  los bordes (`top:106px;left/right:12px`), esquinas `border-radius:18px`, fondo `rgba(255,255,255,.82)` con
+  **`backdrop-filter:blur(20px) saturate(180%)`** (glassmorphism real: se ve el dibujo desenfocado detrás),
+  borde hairline claro + sombra `0 14px 44px`. Animación de apertura desde el header (`phDown`: translateY+scale,
+  `transform-origin:top center`). Quitado el centrado ≥960px (chocaba con la tarjeta full-width; en PC ya hay
+  5 columnas). Verificado headless: blur visible, 0 errores.
 - **Paneles unificados + Press Long centrado (v104, pedido Ángel):** Panel **Entorno** = grupo **IMPORTAR**
   (Imagen aislada arriba, listo para DXF/PDF/IA) + grupo **ENTORNO DE DIBUJO** (Grilla/Puntero/Snap/Ortho/Polar
   en grilla 3-col, naked). **Frente/Fondo eliminados de Entorno** (y `#opFloat` removido del canvas). Panel
