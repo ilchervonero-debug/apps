@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v102) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v103) · app pro
+- **Header afinado + PC (v103, pedido Ángel):** botones de Entorno **desnudos** (sin recuadro, ícono+texto,
+  activo=rojo). Pestaña "Electricidad"→**"Eléctrica"**. Las **4 pestañas fijas al ancho** (`flex:1`), **sin
+  scroll lateral** (`overflow:hidden`); en teléfono se ocultan los íconos de pestaña para que entren solo los
+  textos, en PC se ven ícono+texto+hover. **Optimización PC:** el bloqueo de orientación ahora solo aplica a
+  teléfono acostado (`landscape and max-height:560px`) → PC/tablet horizontal funcionan; `pu-grid` a 5
+  columnas ≥700px; paneles centrados (max 920px) ≥960px; hovers en pestañas/ítems/botones. Verificado headless
+  a 430px y 1280px: sin overflow, 0 errores.
 - **HEADER DOBLE + pestañas ribbon (v102, rediseño de shell pedido por Ángel):** reemplaza la `.bar`, los 3
   FAB y `#topControls`/`#guide` por un header fijo de 2 niveles. Nivel 1: logo (→dashboard), deshacer/rehacer,
   guía de herramienta (texto, se cierra al tocar), y cursor/Seleccionar a la derecha. Nivel 2: 4 pestañas
