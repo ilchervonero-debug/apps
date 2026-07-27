@@ -116,7 +116,13 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### iLWall — `apps/ilwall/` · (SW ilwall-v2) · cómputo de tabiques de yeso
+### iLWall — `apps/ilwall/` · (SW ilwall-v3) · cómputo de tabiques de yeso
+- **v3: navegación como iLCielorraso (pedido Ángel: "quedas atrapado, no hay forma de volver").** La navegación
+  existía (home→proj→editor, `goBack`/`btnBack`) pero el botón "Volver" era invisible (`border:none;background:none`)
+  y el título no daba contexto. Alineado a cielorraso (su base): **botón "Volver" ahora es una caja roja visible**
+  y el header muestra **breadcrumb** (`iLWall | Proyecto` en proj · `| Proyecto · edición` en editor). Editar lo
+  ya cargado sigue por "Editar" (restaura segments/openings/refuerzos) y "Cargar paredes". Verificado:
+  editor→proj→home, breadcrumb OK, 0 errores.
 - **DXF + muros por línea + refuerzos de encuentro + cantoneras (v2, pedido Ángel).**
   · **Parser DXF robusto**: saca BOM, `trim` de valores, tolera **decimales con coma** (`2,5`→2.5) — era la causa
     de "no toma los DXF". Lee LINE/LWPOLYLINE/POLYLINE.

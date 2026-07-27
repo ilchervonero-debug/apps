@@ -28,7 +28,8 @@ html,body{height:100%; background:var(--bg); font-size:16px; color:var(--ink); l
 header{background:var(--white); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--gray-m); flex-shrink:0;}
 #headTitle{font-size:22px; letter-spacing:-.5px; font-weight:800;}
 .il-red{color:var(--red); font-weight:800;}
-.header-btn{background:none; border:none; color:var(--ink); padding:8px 6px; cursor:pointer; font-size:16px; display:flex; align-items:center; gap:6px;}
+.header-btn{background:var(--white); border:1.5px solid var(--red); color:var(--red); padding:8px 14px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:500; font-family:'Exo',sans-serif; display:flex; align-items:center; gap:6px;}
+.header-btn:active{background:#f2f2f0;}
 
 /* VISTAS */
 .view{display:none; flex:1; overflow:hidden; flex-direction:column; position:relative;}
@@ -247,6 +248,12 @@ function navTo(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+view).classList.add('active');
   document.getElementById('btnBack').style.display = (view==='home') ? 'none' : 'flex';
+  // Breadcrumb en el header (contexto de dónde estás), como iLCielorraso.
+  const ht=document.getElementById('headTitle'), p=activeProj();
+  const bc=(txt)=>' <span style="font-size:16px;color:var(--gray-t);font-weight:500;margin-left:10px;">| '+esc(txt)+'</span>';
+  if(view==='home') ht.innerHTML='<span class="il-red">iL</span>Wall';
+  else if(view==='proj') ht.innerHTML='<span class="il-red">iL</span>Wall'+(p?bc(p.name):'');
+  else if(view==='editor') ht.innerHTML='<span class="il-red">iL</span>Wall'+(p?bc(p.name+' · edición'):bc('edición'));
   if(view==='editor') setTimeout(()=>{ resizeCanvas(); fitView(); },40);
   if(view==='proj') renderProject();
   if(view==='home') renderHome();
