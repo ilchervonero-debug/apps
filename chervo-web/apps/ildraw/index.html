@@ -440,12 +440,12 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pu-scroll{overflow-y:auto;padding-right:4px;scrollbar-width:thin;}
 /* Título de categoría: gris sutil, fino, SIN rojo ni negrita ni caja. Legible (14px). */
 .pu-title{font-size:14px;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em;
-  margin:14px 0 8px;font-weight:500;}
+  margin:8px 0 4px;font-weight:500;}
 .pu-title:first-child{margin-top:0;}
-.pu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-items:start;}
+.pu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 8px;align-items:start;}
 /* Ítem naked: sin caja; MISMA geometría/tamaños que .phb (todos los FABs iguales). */
-.pu-item{background:transparent;border:none;border-radius:10px;padding:8px 2px;
-  display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;text-align:center;}
+.pu-item{background:transparent;border:none;border-radius:10px;padding:4px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;text-align:center;}
 .pu-item:active svg{stroke:var(--accent);}
 .pu-item svg{width:24px;height:24px;fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
 /* Nombre del ítem: gris sutil, 14px, fino. Envuelve a 2 líneas (no trunca, no se solapa). Igual que .phb. */
@@ -517,11 +517,11 @@ details.mas[open] summary:before{content:'▾ ';}
   backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);
   border:1px solid rgba(255,255,255,0.55);border-radius:18px;
   box-shadow:0 14px 44px rgba(0,0,0,.16);
-  padding:16px 14px;z-index:190;max-height:58vh;overflow-y:auto;display:none;
+  padding:12px 14px;z-index:190;max-height:58vh;overflow-y:auto;display:none;
   transform-origin:top center;}
-#panel-entorno.open,#panel-herr.open,#panel-arch.open,#panel-unit.open{display:flex;flex-direction:column;gap:12px;animation:phDown .18s ease;}
+#panel-entorno.open,#panel-herr.open,#panel-arch.open,#panel-unit.open{display:flex;flex-direction:column;gap:7px;animation:phDown .18s ease;}
 /* Botones de Entorno DESNUDOS (sin recuadro) en GRILLA de 3 columnas; ícono + texto; activo = rojo */
-#panel-entorno .env-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+#panel-entorno .env-row{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 8px;}
 #panel-entorno .env-row button{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;padding:8px 6px;min-width:72px;color:var(--ink);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:color .12s;}
 #panel-entorno .env-row button.on{color:var(--accent);}
 #panel-entorno .env-row button:hover{color:var(--accent);}
