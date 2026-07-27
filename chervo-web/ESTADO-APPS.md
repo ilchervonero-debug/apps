@@ -116,6 +116,18 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
+### iLWall — `apps/ilwall/` · (SW ilwall-v2) · cómputo de tabiques de yeso
+- **DXF + muros por línea + refuerzos de encuentro + cantoneras (v2, pedido Ángel).**
+  · **Parser DXF robusto**: saca BOM, `trim` de valores, tolera **decimales con coma** (`2,5`→2.5) — era la causa
+    de "no toma los DXF". Lee LINE/LWPOLYLINE/POLYLINE.
+  · **Cada línea = un muro base** (ya generaba montantes por segmento; ahora se etiqueta y grafica como tal).
+  · **Encuentros automáticos** (`analyzeNodes`): une extremos a <4 cm y detecta **esquina** (2 muros en ángulo),
+    **T** (incluye cuando el extremo cae sobre el INTERIOR de un muro pasante) y **cruz**. Agrega refuerzos de
+    montante (esquina×2 · T×1 · cruz×2) al cómputo, suma sus uniones metal-metal.
+  · **Cantoneras**: 1 esquinero por esquina (u + ml a lo alto). En el cómputo y marcado en canvas:
+    **esquina = cuadro rojo (cantonera)**, **T/cruz = punto rojo (refuerzo)**. Status de import muestra
+    nº de muros/esquinas/T/cruces. Verificado headless (rectángulo=4 esquinas, +stem=1 T; coma OK).
+
 ### iLDraw — `apps/ildraw/` · (SW ildraw-v16) · fork del canvas de SketchVolt
 - **v16: Firebase/nube en iLDraw (pedido Ángel: menos apps solo-local en el móvil).** iLDraw ya heredaba el
   código cloud de SketchVolt (mismo proyecto `bitacorapp-3df06`, local-first). Cableado propio: colección
