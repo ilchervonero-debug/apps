@@ -116,7 +116,13 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v99) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v100) · app pro
+- **Táctil CAD "apuntar-y-soltar" en encadenado (v100, Ángel: cursor pegado + delay 2 dedos):** mline/pline/
+  línea en modo Directo ya NO colocan el vértice al tocar a ciegas: se APUNTA con el dedo (rubber-band + snap
+  en vivo) y el vértice se fija al SOLTAR → precisión y el cursor sigue el dedo (no queda pegado al punto
+  anterior). Delay de toque 70→120ms. Un 2º dedo hace pinch SIN dejar vértice suelto (`_chainAim=false`).
+  Doble-tap para cerrar ahora exige que el 2º toque caiga casi en el mismo punto (<26px): toques rápidos en
+  lugares distintos = vértices distintos, no cierra por error. Verificado con toques sintéticos headless.
 - **BUG rosa eliminado (v99, Ángel: "son horror rosas"):** la GRILLA del lienzo usaba `rgba(139,0,0,op)`
   = rojo oscuro a baja opacidad → se veía ROSA (lo prohibido por regla). Pasada a gris neutro
   `rgba(0,0,0,0.07)` (finas) y `rgba(0,0,0,0.10/0.18)` (metros). El fondo rosado teñía las aberturas.

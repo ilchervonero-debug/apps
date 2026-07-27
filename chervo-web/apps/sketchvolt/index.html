@@ -2403,14 +2403,14 @@ cv.addEventListener('wheel',e=>{e.preventDefault();const s=getS(e),f=e.deltaY<0?
 
 // DELAY del toque (§3): el 1er dedo NO dibuja al instante; espera ~70ms. Si entra un 2º dedo → pinch/pan
 // (no dibuja). Así un toque a 2 dedos casi-simultáneo hace zoom, no una línea. El snap SÍ se ve al instante.
-let _tapT=null,_tapPend=null; const TAP_DELAY=70, TAP_MOVE=10/1;   // 70ms · umbral 10px pantalla
+let _tapT=null,_tapPend=null,_chainAim=false,_lastTapS=null; const TAP_DELAY=120, TAP_MOVE=10/1;   // 120ms · umbral 10px pantalla
 function _clearTap(){ clearTimeout(_tapT); _tapT=null; _tapPend=null; }
 function onTS(e){
   e.preventDefault();
   for(const t of e.changedTouches)touches[t.identifier]={x:t.clientX,y:t.clientY};
   if(Object.keys(touches).length===2){
     _clearTap();                                    // cancela el toque pendiente → era pinch a 2 dedos
-    pinching=true;drawing=false;penPts=[];cancelLP();   // (el encadenado de muro/línea NO se descarta al hacer pinch)
+    pinching=true;drawing=false;penPts=[];_chainAim=false;cancelLP();   // (el encadenado de muro/línea NO se descarta al hacer pinch; el vértice apuntado se descarta sin colocarse)
     const ids=Object.keys(touches);const t0=touches[ids[0]],t1=touches[ids[1]];const r=cv.getBoundingClientRect();
     const mx=(t0.x+t1.x)/2-r.left,my=(t0.y+t1.y)/2-r.top;
     pinch0={dist:hyp(t1.x-t0.x,t1.y-t0.y),z:vpZ,mx,my,vx:vpX,vy:vpY};panning=true;panRef={sx:mx,sy:my,vx:vpX,vy:vpY};return;
@@ -2433,12 +2433,21 @@ function onTS(e){
     _wasConfirm=false; touchActive=true; cursorS=s;                 // arranca posicionamiento (mueve la cruz, sin comprometer)
     const raw=getRW(e),wp=constrainOP(getW(e)); dragCurW={...wp}; handleMove(wp,raw,s); render(); return;
   }
-  // Double-tap detection (modos Directo/Ratón)
-  if(now-plineLastTap<350&&_multi){handleDbl(getW(e));plineLastTap=0;return;}
+  // Double-tap (modo Directo): SOLO cierra el encadenado si el 2º toque cae casi en el MISMO punto.
+  // Toques rápidos en lugares distintos = vértices distintos (no cierra por error). Cerrar = doble-tap en sitio.
+  const _s2=getS(e);
+  if(now-plineLastTap<350&&_multi&&_lastTapS&&hyp(_s2.x-_lastTapS.x,_s2.y-_lastTapS.y)<26){handleDbl(getW(e));plineLastTap=0;_lastTapS=null;return;}
   if(now-hatchLastTap<350&&tool==='hatch'){commitHatch();hatchLastTap=0;return;}
-  plineLastTap=_multi?now:plineLastTap;
+  plineLastTap=_multi?now:plineLastTap; if(_multi)_lastTapS=_s2;
   hatchLastTap=(tool==='hatch')?now:hatchLastTap;
   touchActive=true;cursorS=getS(e);
+  // CADENA (mline/pline/línea) en modo Directo: APUNTAR con el dedo y CONFIRMAR al SOLTAR (CAD táctil).
+  // El vértice NO se coloca al tocar a ciegas: se fija al levantar, tras verlo con snap → precisión y el
+  // cursor sigue el dedo (no queda pegado al punto anterior). Un 2º dedo hace pinch sin dejar vértice.
+  if(_multi && ptrMode===2){
+    const wp=constrainOP(getW(e)), raw=getRW(e); dragCurW={...wp};
+    _chainAim=true; startLP(e); handleMove(wp,raw,cursorS); render(); return;
+  }
   startLP(e);
   // Diferimos el handleDown: mostramos snap ya (render), pero el trazo/punto espera TAP_DELAY.
   const wp=constrainOP(getW(e)), raw=getRW(e), s=getS(e); render();
@@ -2473,6 +2482,8 @@ function onTE(e){
     const s=getS(e); cursorS={...s}; anchorS={...s}; anchorPt=constrainOP(getW(e)); anchorArmed=true;   // ANCLA (queda la cruz fija)
     render(); return;
   }
+  // CADENA modo Directo: al SOLTAR se coloca el vértice en la coord apuntada (con snap) — recién ahora.
+  if(_chainAim){ _chainAim=false; const wp=constrainOP(getW(e)); dragCurW={...wp}; handleDown(wp,getRW(e),getS(e)); touchActive=false;cursorS=null;snapHit=null;render(); return; }
   // Toque pendiente que no llegó a moverse ni a dispararse por tiempo → fue un TAP limpio: colocá ahora.
   if(_tapPend){ clearTimeout(_tapT);_tapT=null; const p=_tapPend;_tapPend=null; handleDown(p.wp,p.raw,p.s); handleUp(p.wp,p.s); touchActive=false;cursorS=null;snapHit=null;render(); return; }
   const wp=constrainOP(getW(e));dragCurW={...wp};handleUp(wp,getS(e));
