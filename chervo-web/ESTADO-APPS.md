@@ -116,7 +116,17 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v106) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v107) · app pro
+- **Propbar Aberturas grilla rígida + limpieza + ajustes menú (v107, pedido Ángel):**
+  · **Familia Aberturas**: `#grpArch` pasa a **grilla rígida 5 cols × 2 filas con SLOTS FIJOS**.
+    Fila 1: Ancho(m) · Muro(m) · Invertir X(⇆) · Invertir Y(⇅) · **Vínculo/Proporción (cadena, acento)**.
+    Fila 2: Giro/Apertura(↻) · Ajuste/Marco(anclar) · Batiente · Corrediza · Plegable. Si un control no aplica,
+    el slot queda **transparente** (`.off` = visibility:hidden) SIN recolocar a los hermanos (memoria muscular).
+    Nueva prop `propLock` (chain) bloquea el aspecto al editar Ancho.
+  · **Limpieza**: NINGÚN tacho suelto en el propbar. `showActions` de selección (1 y múltiple) ya no muestra
+    borrar; el `paDel` durante comandos pasó a **X (Cancelar)**. **Eliminar = solo Press Long centrado**.
+  · **Menús**: al aplicar un control de **Entorno** el menú **colapsa** (como el resto de pestañas), para liberar
+    el lienzo. El **Puntero (3 modos)** vuelve al **header** (junto al cursor), fuera de Entorno.
 - **4 menús idénticos (v106, pedido Ángel):** el panel **Dibujo** se pasó de la estructura vieja
   (`ph-col/ph-lbl/ph-g3/phb`, columnas fijas 72px) a la MISMA de Arquitectura/Eléctrica
   (`pu-scroll/pu-title/pu-grid/pu-item`): grilla que llena el ancho (3 cols, 5 en PC), mismos títulos y

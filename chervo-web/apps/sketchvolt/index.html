@@ -222,6 +222,12 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pib.ok{color:var(--green);}
 .pib.ok svg{width:26px;height:26px;stroke-width:1.7;}
 .pib.on{color:var(--accent);}
+/* FAMILIA ABERTURAS: grilla RÍGIDA 5 columnas × 2 filas. Slots fijos: si no aplica, queda transparente
+   (visibility:hidden) sin recolocar a los hermanos → misma ubicación siempre (memoria muscular). */
+#grpArch{grid-template-columns:repeat(5,minmax(0,1fr));gap:2px 6px;align-items:center;justify-items:center;width:100%;}
+#grpArch.show{display:grid;}
+#grpArch .ga-inp{width:60px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center;}
+#grpArch .ga-slot.off{visibility:hidden;pointer-events:none;}
 /* Rótulo por ÍCONO (más íconos, menos letras): el .fl puede llevar un svg fino en gris */
 .fi>.fl svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;display:block;}
 /* Selector de color: un rectángulo de esquinas redondeadas (no un círculo) que abre la paleta */
@@ -487,7 +493,10 @@ details.mas[open] summary:before{content:'▾ ';}
 .guide-title{font-size:15px;font-weight:500;color:var(--ink);flex-shrink:0;border-right:1px solid #e5e5ea;padding-right:10px;}
 .guide-text{font-size:14px;color:var(--label);line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
 .guide-text b{color:var(--ink);font-weight:500;}
-.l1-right{flex-shrink:0;margin-left:12px;padding-left:12px;border-left:2px solid rgba(0,0,0,.12);}
+.l1-right{flex-shrink:0;margin-left:12px;padding-left:12px;border-left:2px solid rgba(0,0,0,.12);display:flex;align-items:center;gap:4px;}
+#hdrPtrSlot .ti{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--ink);}
+#hdrPtrSlot .ti.on{color:var(--accent);}
+#hdrPtrSlot .ti svg{width:24px;height:24px;}
 .cursor-btn{background:none;border:none;color:var(--accent);cursor:pointer;padding:4px 0 4px 8px;display:flex;}
 .cursor-btn svg{width:28px;height:28px;fill:currentColor;stroke:none;}
 /* 4 pestañas FIJAS al ancho, sin scroll lateral (flex:1 reparte parejo) */
@@ -636,6 +645,7 @@ details.mas[open] summary:before{content:'▾ ';}
       </div>
     </div>
     <div class="l1-right">
+      <span id="hdrPtrSlot" class="hdr-ur"></span>
       <button class="cursor-btn" onclick="ST('select')" id="hdrSel" data-tip="Seleccionar / ESC"><svg viewBox="0 0 24 24"><path d="M4 3l16 10-7.5 .7-3.8 7.3z"/></svg></button>
     </div>
   </div>
@@ -912,21 +922,23 @@ details.mas[open] summary:before{content:'▾ ';}
         <button id="mlAxI" onclick="setMlJust('inner')" style="padding:4px 9px;border-radius:6px;border:1px solid #e5e5ea;background:#f2f2f7;color:var(--ink);font-family:var(--font);font-size:12px;cursor:pointer">Int</button>
       </span></span>
   </div>
-  <div id="grpArch" style="display:none;align-items:center;gap:8px">
-    <span class="fi"><span class="fl">Ancho (m)</span>
-      <input type="number" id="archW" step="0.05" style="width:64px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center" onchange="updateArch('w', this.value)"></span>
-    <span class="fi"><span class="fl">Muro (m)</span>
-      <input type="number" id="archL" step="0.05" style="width:64px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center" onchange="updateArch('l', this.value)"></span>
-    <span class="fi" id="archTxtWrap" style="display:none"><span class="fl">Texto</span>
-      <input type="text" id="archTxt" maxlength="4" style="width:54px;font-size:15px;font-family:var(--font);border:1px solid #e5e5ea;border-radius:6px;padding:3px 4px;text-align:center" oninput="updateArch('txt', this.value)"></span>
-    <button class="pib" data-tip="Invertir horizontal" onclick="updateArch('flip')"><svg viewBox="0 0 24 24"><path d="M3 9h14"/><path d="M14 6l3 3-3 3"/><path d="M21 15H7"/><path d="M10 12l-3 3 3 3"/></svg></button>
-    <button class="pib" data-tip="Invertir vertical" onclick="updateArch('flipV')"><svg viewBox="0 0 24 24"><path d="M9 21V7"/><path d="M6 10l3-3 3 3"/><path d="M15 3v14"/><path d="M18 14l-3 3-3-3"/></svg></button>
-    <button class="pib" id="btnAnchor" data-tip="Anclar a muro" onclick="updateArch('anchor')"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
-    <span id="archTypeWrap" style="display:none;align-items:center;gap:4px">
-      <button class="pib" id="btnBatiente" data-tip="Batiente" onclick="updateArch('variant','batiente')"><svg viewBox="0 0 24 24"><path d="M4 22V2h4v20M8 22c0-8.8 7.2-16 16-16v2c-7.7 0-14 6.3-14 14"/></svg></button>
-      <button class="pib" id="btnCorrediza" data-tip="Corrediza" onclick="updateArch('variant','corrediza')"><svg viewBox="0 0 24 24"><path d="M2 22h20M4 2v20M20 2v20M4 12h16M10 9l-3 3 3 3M14 9l3 3-3 3"/></svg></button>
-      <button class="pib" id="btnPlegable" data-tip="Plegable" onclick="updateArch('variant','plegable')"><svg viewBox="0 0 24 24"><path d="M3 21V4l4 3-4 3 4 3-4 3 4 3M21 21V4"/></svg></button>
-    </span>
+  <div id="grpArch" style="display:none">
+    <!-- FILA 1 (slots fijos): Ancho · Muro · Invertir X · Invertir Y · Vínculo/Proporción -->
+    <span class="fi ga-slot"><span class="fl">Ancho (m)</span>
+      <input type="number" id="archW" step="0.05" class="ga-inp" onchange="updateArch('w', this.value)"></span>
+    <span class="fi ga-slot"><span class="fl">Muro (m)</span>
+      <input type="number" id="archL" step="0.05" class="ga-inp" onchange="updateArch('l', this.value)"></span>
+    <button class="pib ga-slot" data-tip="Invertir X / Lado" onclick="updateArch('flip')"><svg viewBox="0 0 24 24"><path d="M3 9h14"/><path d="M14 6l3 3-3 3"/><path d="M21 15H7"/><path d="M10 12l-3 3 3 3"/></svg></button>
+    <button class="pib ga-slot" data-tip="Invertir Y / Sentido" onclick="updateArch('flipV')"><svg viewBox="0 0 24 24"><path d="M9 21V7"/><path d="M6 10l3-3 3 3"/><path d="M15 3v14"/><path d="M18 14l-3 3-3-3"/></svg></button>
+    <button class="pib ga-slot" id="btnPropLock" data-tip="Vínculo / Proporción" onclick="updateArch('prop')"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+    <!-- FILA 2 (slots fijos): Giro/Apertura · Ajuste/Marco · variantes específicas -->
+    <button class="pib ga-slot" id="btnGiro" data-tip="Giro / Apertura" onclick="updateArch('rot')"><svg viewBox="0 0 24 24"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></button>
+    <button class="pib ga-slot" id="btnAnchor" data-tip="Ajuste / Marco" onclick="updateArch('anchor')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="7.5" y="7.5" width="9" height="9"/></svg></button>
+    <button class="pib ga-slot" id="btnBatiente" data-tip="Batiente" onclick="updateArch('variant','batiente')"><svg viewBox="0 0 24 24"><path d="M4 22V2h4v20M8 22c0-8.8 7.2-16 16-16v2c-7.7 0-14 6.3-14 14"/></svg></button>
+    <button class="pib ga-slot" id="btnCorrediza" data-tip="Corrediza" onclick="updateArch('variant','corrediza')"><svg viewBox="0 0 24 24"><path d="M2 22h20M4 2v20M20 2v20M4 12h16M10 9l-3 3 3 3M14 9l3 3-3 3"/></svg></button>
+    <button class="pib ga-slot" id="btnPlegable" data-tip="Plegable" onclick="updateArch('variant','plegable')"><svg viewBox="0 0 24 24"><path d="M3 21V4l4 3-4 3 4 3-4 3 4 3M21 21V4"/></svg></button>
+    <span class="fi ga-slot" id="archTxtWrap" style="display:none"><span class="fl">Texto</span>
+      <input type="text" id="archTxt" maxlength="4" class="ga-inp" oninput="updateArch('txt', this.value)"></span>
   </div>
   <div id="grpEraser" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl" title="Goma"><svg viewBox="0 0 24 24"><path d="M19 20H8.5l-4.21-4.3a1 1 0 0 1 0-1.41l10-10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41L14 16"/><path d="M18 13.3L10.7 6"/></svg></span>
@@ -1001,7 +1013,7 @@ details.mas[open] summary:before{content:'▾ ';}
       <button id="paUndo" class="pib" data-tip="Un paso atrás" onclick="stepBack()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H6"/><polyline points="7 6 3 10 7 14"/></svg></button>
       <button id="paOk" class="pib ok" data-tip="Listo (Enter)" onclick="_paOkFn&&_paOkFn()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
     </span>
-    <button id="paDel" class="pib" data-tip="Borrar" onclick="_paDelFn&&_paDelFn()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+    <button id="paDel" class="pib" data-tip="Cancelar" onclick="_paDelFn&&_paDelFn()"><svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
   </div>
   <span id="pbHint" style="display:none"></span>
 </div>
@@ -3310,11 +3322,16 @@ function _mountEntorno(){
     el.classList.remove('ti','ti-t'); if(lbl && !el.querySelector('.lbl'))el.setAttribute('data-lbl',lbl); host.appendChild(el); };
   mv(imp,'imgBtn','Imagen');
   mv(sp,'gridBtn','Grilla');
-  mv(sp,'ptrBtn','Puntero');
   mv(sp,'snapBtn','Snap');
   mv(sp,'orthoBtn','Ortho');     // ortho/polar traen su propio .lbl
   mv(sp,'polarBtn','Polar');
+  // El PUNTERO (3 modos) va al HEADER, no a Entorno (mantiene sus clases .ti para el estilo del head).
+  const ptr=document.getElementById('ptrBtn'), slot=document.getElementById('hdrPtrSlot');
+  if(ptr&&slot){ ptr.removeAttribute('data-lbl'); slot.appendChild(ptr); }
   const of=document.getElementById('opFloat'); if(of)of.remove();   // saca frente/fondo del canvas (van al Press Long)
+  // Colapsar el menú Entorno al aplicar cualquier control (como el resto de pestañas), para liberar el lienzo.
+  const pe=document.getElementById('panel-entorno');
+  if(pe)pe.addEventListener('click',e=>{ if(e.target.closest('button')) setTimeout(()=>{ if(currentRibbon==='entorno')toggleRibbon('entorno'); },30); });
 }
 function toggleGrid(){gridOn=!gridOn;document.getElementById('gridBtn').classList.toggle('on',gridOn);if(_panelMode!=='grid')openBottomPanel('grid');else{refreshBottom();render();}toast('Grilla '+(gridOn?'ON':'OFF'));}
 function toggleSnapCursor(){snapObjOn=!snapObjOn;document.getElementById('snapBtn').classList.toggle('on',snapObjOn);render();toast('Snap '+(snapObjOn?'ON':'OFF'));}
@@ -3517,11 +3534,12 @@ function renderArchIcons(){
 function updateArch(prop,val){
   const o=selObj(); if(!o||o.type!=='arch')return;
   saveHistory();
-  if(prop==='w') o.w=parseFloat(val)||o.w;
+  if(prop==='w'){ const nw=parseFloat(val)||o.w; if(o.propLock&&o.w){o.l=+(o.l*(nw/o.w)).toFixed(3);} o.w=nw; }
   if(prop==='l') o.l=parseFloat(val)||o.l;
   if(prop==='rot') o.rotation=((o.rotation||0)+90)%360;
-  if(prop==='flip') o.flip=!o.flip;       // invertir horizontal
-  if(prop==='flipV') o.flipV=!o.flipV;    // invertir vertical
+  if(prop==='flip') o.flip=!o.flip;       // invertir horizontal (X / lado)
+  if(prop==='flipV') o.flipV=!o.flipV;    // invertir vertical (Y / sentido)
+  if(prop==='prop') o.propLock=!o.propLock;   // vínculo / proporción (lock aspecto)
   if(prop==='variant') o.variant=val;
   if(prop==='anchor') o.anchored=!o.anchored;
   if(prop==='txt'){ o.txt=(val||'').toUpperCase(); markDirty(); render(); return; }   // sin re-showSelBar (no perder foco al tipear)
@@ -3752,7 +3770,7 @@ function showSelBar(){
     _setScaleBase=null; const gms=document.getElementById('gmScale'); if(gms)gms.value=100;
     // Nombre/kind NO van en la barra (cero texto): el rótulo flotante #pbTool ya dice "Grupo · X".
     gm.style.display='flex';
-    showActions(selDelete, terminarSel);   // línea de acción: tacho (gris) + tick (terminar)
+    showActions(null, terminarSel);   // multi: SIN tacho (borrar = Press Long); solo ✓ terminar
     const nm=_selName();
     const pt=document.getElementById('pbTool'); if(pt)pt.textContent=(isComp?'Componente':(whole?'Grupo':'Selección'))+(nm?' · '+nm:'');
     _syncSwatches(); refreshBottom(); return;
@@ -3766,23 +3784,23 @@ function showSelBar(){
   document.getElementById('gsScaleCtl').style.display=(isB||isArch)?'none':'inline-flex';
   const grpArch=document.getElementById('grpArch');
   if(grpArch){
-    grpArch.style.display=isArch?'flex':'none';
+    grpArch.classList.toggle('show',isArch);
+    grpArch.style.display=isArch?'grid':'none';
     if(isArch){
-      document.getElementById('archW').value=o.w;
-      document.getElementById('archL').value=o.l;
-      const isCarp=(o.kind==='puerta'||o.kind==='ventana');
-      document.getElementById('archTypeWrap').style.display=isCarp?'inline-flex':'none';
-      if(isCarp){
-        const variant=o.variant||(o.kind==='puerta'?'batiente':'corrediza');
-        const isP=o.kind==='puerta';
-        document.getElementById('btnBatiente').style.color=(variant==='batiente')?'var(--accent)':'var(--ink)';
-        document.getElementById('btnCorrediza').style.color=(variant==='corrediza')?'var(--accent)':'var(--ink)';
-        const bp=document.getElementById('btnPlegable'); bp.style.display=isP?'':'none'; bp.style.color=(variant==='plegable')?'var(--accent)':'var(--ink)';
-      }
-      const btnA=document.getElementById('btnAnchor');
-      if(btnA){ btnA.style.display=isCarp?'':'none'; btnA.style.color=o.anchored?'var(--accent)':'var(--ink)'; }
+      const aw=document.getElementById('archW'), al=document.getElementById('archL');
+      if(document.activeElement!==aw)aw.value=o.w;
+      if(document.activeElement!==al)al.value=o.l;
+      const isCarp=(o.kind==='puerta'||o.kind==='ventana'), isP=o.kind==='puerta', isCorte=o.kind==='corte';
+      const variant=o.variant||(o.kind==='puerta'?'batiente':'corrediza');
+      const slot=(id,on)=>{const e=document.getElementById(id);if(e)e.classList.toggle('off',!on);};   // slot fijo: off = transparente, sin recolocar
+      const col=(id,on)=>{const e=document.getElementById(id);if(e)e.style.color=on?'var(--accent)':'var(--ink)';};
+      col('btnPropLock',!!o.propLock);
+      slot('btnAnchor',isCarp); col('btnAnchor',!!o.anchored);
+      slot('btnBatiente',isCarp); col('btnBatiente',variant==='batiente');
+      slot('btnCorrediza',isCarp); col('btnCorrediza',variant==='corrediza');
+      slot('btnPlegable',isP); col('btnPlegable',variant==='plegable');
       const txw=document.getElementById('archTxtWrap');
-      if(txw){ const isCorte=o.kind==='corte'; txw.style.display=isCorte?'inline-flex':'none'; if(isCorte&&document.activeElement!==document.getElementById('archTxt'))document.getElementById('archTxt').value=o.txt||'A'; }
+      if(txw){ txw.style.display=isCorte?'flex':'none'; if(isCorte&&document.activeElement!==document.getElementById('archTxt'))document.getElementById('archTxt').value=o.txt||'A'; }
     }
   }
   if(isB){ document.getElementById('gsMM').value=(o.cm!=null?o.cm:(o.mm!=null?o.mm*10:30)); document.getElementById('gsGiro').value=o.rotation||0; document.getElementById('gsAlt').value=(o.altura!=null?o.altura:30); }
@@ -3791,7 +3809,7 @@ function showSelBar(){
   // Para aberturas, TODO se edita en grpArch (medidas, girar, espejar, anclar, tipo).
   // No mostramos grpSel (color/componente) — evita filas extra y barra alta.
   if(!isArch) g.style.display='flex';
-  showActions(selDelete, null);   // 1 objeto: solo tacho (gris) en la línea de acción
+  showActions(null, null);   // 1 objeto: SIN tacho (borrar = Press Long centrado). Acciones vacías.
   const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isB?'Símbolo':(isArch?archNom(o.kind):'Objeto');
   _syncSwatches(); refreshBottom();
 }
