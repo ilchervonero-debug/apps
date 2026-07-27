@@ -1349,6 +1349,7 @@ function setDash(lt,z){ctx.setLineDash(lt==='dashed'?[8*z,5*z]:lt==='dotted'?[2*
 // Nivel Z de un objeto: usa obj.zLevel si fue fijado a mano; si no, el default por categoría.
 // 0 = geometría base · 10 = muros · 20 = aberturas/mobiliario · 30 = eléctrica/SmartPen.
 function zLevelOf(o){
+  if(o.type==='guide_line')return 40;   // GUÍAS: siempre arriba de todo (son ayudas, no dibujo)
   if(o.zLevel!=null)return o.zLevel;
   if(o.type==='mline')return 10;
   if(o.type==='arch')return 20;
@@ -3220,6 +3221,7 @@ function syncMeasureUI(){
     if(tapeMeas&&document.activeElement!==inp){ inp.value=(hyp(dragCurW.x-tapeA[0],dragCurW.y-tapeA[1])/PPM).toFixed(2); }
   } else { if(document.activeElement===inp)inp.blur(); inp.value=''; }
   if(paUndo)paUndo.style.display=cmdActive?'':'none';   // "un paso atrás" solo con comando en curso
+  if(drawPending||multipt||tapeMeas||tapeGuide||arcAct||dimAct||dragging||_isFabTool(tool)) _paIcon('x');   // comando en curso → X (Cancelar)
   if(drawPending){ _paDelFn=cancelPendingDraw; _paOkFn=commitPendingDraw; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(multipt){ _paDelFn=cancelMultipoint; _paOkFn=finishMultipoint; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
   else if(tapeMeas){ _paDelFn=resetTape; _paOkFn=()=>{ if(tapeA&&dragCurW){_tapeFlash={a:tapeA.slice(),b:[dragCurW.x,dragCurW.y],t:Date.now()};clearTimeout(_tapeFlashT);_tapeFlashT=setTimeout(()=>{_tapeFlash=null;render();},1500);} resetTape(); refreshBottom(); render(); }; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
@@ -3611,11 +3613,15 @@ function _hideAllGrp(){ _ALL_GRP.forEach(id=>{const e=document.getElementById(id
 // Línea de acción de abajo: tacho (gris) y/o tick (aprobar/finalizar). Centrada, dinámica.
 // Recibe las FUNCIONES de cada contexto (borrar/quitar, terminar/listo). Sin función → oculto.
 let _paDelFn=null, _paOkFn=null;
+const _PA_TRASH='<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>';
+const _PA_X='<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
+function _paIcon(kind){ const d=document.getElementById('paDel'); if(!d)return; d.innerHTML=(kind==='trash')?_PA_TRASH:_PA_X; d.setAttribute('data-tip',kind==='trash'?'Borrar':'Cancelar'); }
 function showActions(delFn, okFn){
   _paDelFn=(typeof delFn==='function')?delFn:null;
   _paOkFn=(typeof okFn==='function')?okFn:null;
   const pa=document.getElementById('propActions'); if(!pa)return;
   document.getElementById('paDel').style.display=_paDelFn?'':'none';
+  if(_paDelFn)_paIcon('trash');   // showActions = acción de BORRAR/QUITAR → tacho
   document.getElementById('paOk').style.display=_paOkFn?'':'none';
   pa.style.display=(_paDelFn||_paOkFn)?'grid':'none';
 }
@@ -3809,7 +3815,8 @@ function showSelBar(){
   // Para aberturas, TODO se edita en grpArch (medidas, girar, espejar, anclar, tipo).
   // No mostramos grpSel (color/componente) — evita filas extra y barra alta.
   if(!isArch) g.style.display='flex';
-  showActions(null, null);   // 1 objeto: SIN tacho (borrar = Press Long centrado). Acciones vacías.
+  // 1 objeto: SIN tacho (borrar = Press Long) — EXCEPTO las GUÍAS de cinta, que se borran línea por línea desde propiedades.
+  showActions(o.type==='guide_line'?selDelete:null, null);
   const pt=document.getElementById('pbTool'); if(pt)pt.textContent=isB?'Símbolo':(isArch?archNom(o.kind):'Objeto');
   _syncSwatches(); refreshBottom();
 }

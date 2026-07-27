@@ -116,7 +116,13 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v107) · app pro
+### SketchVolt — `apps/sketchvolt/` · v1 (SW sketchvolt-v108) · app pro
+- **Guías de cinta: borrado + z-order (v108, pedido Ángel):** las `guide_line` ahora rinden **arriba de todo**
+  (`zLevelOf`=40). Se pueden **borrar línea por línea**: al seleccionar una guía, el propbar muestra el **tacho**
+  (excepción a la regla "sin tacho" de v107, porque la cinta es herramienta de dibujo) — además del Press Long.
+  El botón `paDel` cambia de ícono según contexto: **tacho** cuando es borrar (guía/quitar), **X** cuando es
+  cancelar un comando en curso (`_paIcon`). Verificado headless: guía seleccionable con tacho, borrado OK,
+  z=40, X en comando, 0 errores.
 - **Propbar Aberturas grilla rígida + limpieza + ajustes menú (v107, pedido Ángel):**
   · **Familia Aberturas**: `#grpArch` pasa a **grilla rígida 5 cols × 2 filas con SLOTS FIJOS**.
     Fila 1: Ancho(m) · Muro(m) · Invertir X(⇆) · Invertir Y(⇅) · **Vínculo/Proporción (cadena, acento)**.
