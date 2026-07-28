@@ -1,5 +1,14 @@
 # ESTADO-APPS.md — Registro vivo de iLStorage
 
+### Landing ilchervo.com — `chervo-web/index.html` · candado de acceso privado
+- **Candado en el landing (reemplaza el control por Notion).** Overlay full-screen que pide una **clave** antes
+  de mostrar el hub de apps; clave guardada como **SHA-256** (no en texto), recordada por dispositivo
+  (`localStorage il_access`). No toca las apps ni rompe las instaladas. **Clave temporal: `chervo-2026`** (Ángel
+  la cambia cuando quiera → recalcular el hash `G_HASH`). **Límite honesto**: protege el LANDING (nivel Notion);
+  las URLs directas de cada app siguen abiertas. Candado total por-app = middleware Vercel / plan Pro (pendiente
+  si lo pide).
+
+
 > **Para Claude:** este es el índice central de TODAS las apps. Es tu memoria:
 > cuando Ángel menciona una app, mirás su ficha acá — **no vas a averiguar ni a
 > releer todo el código**. Actualizá la ficha correspondiente **después de cada
