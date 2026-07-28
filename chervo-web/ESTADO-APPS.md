@@ -150,7 +150,14 @@ Versión = número de caché del SW.
     **esquina = cuadro rojo (cantonera)**, **T/cruz = punto rojo (refuerzo)**. Status de import muestra
     nº de muros/esquinas/T/cruces. Verificado headless (rectángulo=4 esquinas, +stem=1 T; coma OK).
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v21) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v23) · fork del canvas de SketchVolt
+- **v23 / SketchVolt v112: multiselección + doble-tap (ambas apps, meta-regla).**
+  · **Tacho de basura en multiselección:** `#gmDel` inline en `grpMulti` (junto a Agrupar/Escala/Color) →
+    `selDelete()`. La fila de acción `#propActions` (2do piso) quedaba fuera de pantalla en móvil; el tacho
+    inline garantiza borrar los seleccionados sin depender de esa fila.
+  · **Doble-tap "sólido" cierra/termina** en mline/pline/línea/hatch: ventana ampliada 350→**520ms** y
+    umbral 26→**32px** (un doble-tap deliberado cerraba tarde y no finalizaba). Verificado headless
+    (3 pts + doble-tap lento a 350ms/toque → objeto mline cerrado, sin cadena residual).
 - **v16: Firebase/nube en iLDraw (pedido Ángel: menos apps solo-local en el móvil).** iLDraw ya heredaba el
   código cloud de SketchVolt (mismo proyecto `bitacorapp-3df06`, local-first). Cableado propio: colección
   **`usuarios/{uid}/ildraw/{id}`** (aislada de sketchvolt), flags **`ild_cloud_optin`/`ild_maillink`**, y

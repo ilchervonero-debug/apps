@@ -142,7 +142,7 @@ body{display:flex;flex-direction:column;background:#fff;}
 /* Barras full-width que reparten sus controles parejo a lo ancho (el tacho/tick ya NO van acá:
    viven en la línea de acción de abajo). Con #propbar>#id para ganarle en especificidad a #propbar>div. */
 #propbar>#grpSel,#propbar>#grpMulti,#propbar>#grpImage,#propbar>#grpExport,#propbar>#grpGrid,
-#propbar>#grpBlock,#propbar>#grpHatch,#propbar>#grpDim{flex:1 1 100%;justify-content:space-evenly;}
+#propbar>#grpBlock,#propbar>#grpHatch{flex:1 1 100%;justify-content:space-evenly;}
 /* Fila de ACCIÓN full-width propia (2do piso): #propbar>#id le gana en especificidad a #propbar>div,
    así SIEMPRE cae en su propia fila aunque las propiedades de arriba sean angostas (ej. Línea).
    3 zonas FIJAS (grid) — no se mueven aunque falte un ícono: Medida (izq) · Aceptar (centro) · Tacho (der). */
@@ -994,6 +994,7 @@ details.mas[open] summary:before{content:'▾ ';}
     <span class="fi" id="gmScaleField"><span class="fl" title="Escala"><svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"><polyline points="15 4 20 4 20 9"/><polyline points="9 20 4 20 4 15"/><line x1="20" y1="4" x2="13" y2="11"/><line x1="4" y1="20" x2="11" y2="13"/></svg></span>
       <input type="range" id="gmScale" min="20" max="300" value="100" style="width:76px" oninput="selScaleSetLive(this.value)" onchange="selScaleSetEnd()"></span>
     <span class="fi" id="gmColorField"><button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
+    <button id="gmDel" class="pib" data-tip="Borrar" onclick="selDelete()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
   </div>
   <div id="grpGrid" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Grilla · guía de dibujo</span>
@@ -2553,7 +2554,7 @@ function onTS(e){
     if(anchorArmed){                       // este tap = CONFIRMAR el pick en el punto anclado (no en el tap)
       _wasConfirm=true; cursorS=anchorS?{...anchorS}:s;
       const wp=anchorPt||constrainOP(getW(e));
-      if(now-plineLastTap<450&&_multi){ handleDbl(wp); plineLastTap=0; anchorArmed=false;anchorPt=null;anchorS=null; render(); return; } // doble confirmación = terminar
+      if(now-plineLastTap<520&&_multi){ handleDbl(wp); plineLastTap=0; anchorArmed=false;anchorPt=null;anchorS=null; render(); return; } // doble confirmación = terminar
       plineLastTap=_multi?now:plineLastTap;
       handleDown(wp,getRW(e),cursorS); handleUp(wp,cursorS);
       anchorArmed=false; anchorPt=null; anchorS=null; render(); return;
@@ -2561,11 +2562,12 @@ function onTS(e){
     _wasConfirm=false; touchActive=true; cursorS=s;                 // arranca posicionamiento (mueve la cruz, sin comprometer)
     const raw=getRW(e),wp=constrainOP(getW(e)); dragCurW={...wp}; handleMove(wp,raw,s); render(); return;
   }
-  // Double-tap (modo Directo): SOLO cierra el encadenado si el 2º toque cae casi en el MISMO punto.
-  // Toques rápidos en lugares distintos = vértices distintos (no cierra por error). Cerrar = doble-tap en sitio.
+  // Double-tap: cierra/termina el encadenado si el 2º toque cae casi en el MISMO punto.
+  // Ventana amplia (520ms) para que un doble-tap DELIBERADO ("sólido") cierre sin fallar.
+  // Toques en lugares distintos = vértices distintos (no cierra por error). Cerrar = doble-tap en sitio.
   const _s2=getS(e);
-  if(now-plineLastTap<350&&_multi&&_lastTapS&&hyp(_s2.x-_lastTapS.x,_s2.y-_lastTapS.y)<26){handleDbl(getW(e));plineLastTap=0;_lastTapS=null;return;}
-  if(now-hatchLastTap<350&&tool==='hatch'){commitHatch();hatchLastTap=0;return;}
+  if(now-plineLastTap<520&&_multi&&_lastTapS&&hyp(_s2.x-_lastTapS.x,_s2.y-_lastTapS.y)<32){handleDbl(getW(e));plineLastTap=0;_lastTapS=null;return;}
+  if(now-hatchLastTap<520&&tool==='hatch'){commitHatch();hatchLastTap=0;return;}
   plineLastTap=_multi?now:plineLastTap; if(_multi)_lastTapS=_s2;
   hatchLastTap=(tool==='hatch')?now:hatchLastTap;
   touchActive=true;cursorS=getS(e); _dragStartS=cursorS;
@@ -3351,8 +3353,8 @@ function _mountEntorno(){
     el.classList.remove('ti','ti-t'); if(lbl && !el.querySelector('.lbl'))el.setAttribute('data-lbl',lbl); host.appendChild(el); };
   mv(imp,'imgBtn','Imagen');
   mv(sp,'gridBtn','Grilla');
-  mv(sp,'snapBtn','Snap obj.');
   mv(sp,'snapGridBtn','Snap grilla');
+  mv(sp,'snapBtn','Snap obj.');
   mv(sp,'orthoBtn','Ortho');     // ortho/polar traen su propio .lbl
   mv(sp,'polarBtn','Polar');
   // El PUNTERO (3 modos) va al HEADER, no a Entorno (mantiene sus clases .ti para el estilo del head).
