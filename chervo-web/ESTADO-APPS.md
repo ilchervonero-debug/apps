@@ -3,8 +3,8 @@
 ### Landing ilchervo.com — `chervo-web/index.html` · candado de acceso privado
 - **Candado en el landing (reemplaza el control por Notion).** Overlay full-screen que pide una **clave** antes
   de mostrar el hub de apps; clave guardada como **SHA-256** (no en texto), recordada por dispositivo
-  (`localStorage il_access`). No toca las apps ni rompe las instaladas. **Clave temporal: `chervo-2026`** (Ángel
-  la cambia cuando quiera → recalcular el hash `G_HASH`). **Límite honesto**: protege el LANDING (nivel Notion);
+  (`localStorage il_access`). No toca las apps ni rompe las instaladas. **Clave definitiva ya puesta por Ángel**
+  (guardada solo como hash `G_HASH`; para cambiarla, recalcular SHA-256 y reemplazar el hash). **Límite honesto**: protege el LANDING (nivel Notion);
   las URLs directas de cada app siguen abiertas. Candado total por-app = middleware Vercel / plan Pro (pendiente
   si lo pide).
 

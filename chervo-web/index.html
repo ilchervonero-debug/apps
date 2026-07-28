@@ -136,7 +136,7 @@
   <div class="g-err" id="gErr"></div>
 </div>
 <script>
-  const G_HASH='96fb24203dd989cae43a3b79716aba27134d1455ad1bbf1d941a582644b820da';   // SHA-256 de la clave (no queda la clave en texto)
+  const G_HASH='b9525f63c3415ac8240e9acacc7c7dbfe3c1209bf6671894c5217b844b355ae5';   // SHA-256 de la clave (no queda la clave en texto)
   async function _sha(s){ const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
   async function gCheck(){ const i=document.getElementById('gPass'), e=document.getElementById('gErr');
     const h=await _sha(i.value||''); if(h===G_HASH){ localStorage.setItem('il_access',G_HASH); document.getElementById('gate').classList.add('hide'); document.body.style.overflow=''; }
