@@ -10,5 +10,6 @@ build/
 .next/
 out/
 .cache/
+graphify-out/
 
 .vercel
