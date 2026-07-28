@@ -616,6 +616,8 @@ details.mas[open] summary:before{content:'▾ ';}
       <button id="prFootDel" class="prdel" style="display:none" onclick="prClearImg('foot')">Quitar</button></div>
   </div>
   <input type="file" id="prFile" accept="image/*" style="display:none" onchange="prImgLoaded(event)">
+  <div class="mlbl">Exportar archivo (sin encabezado ni pie)</div>
+  <div class="prseg"><button onclick="prExport('png')">PNG</button><button onclick="prExport('dxf')">DXF</button></div>
   <div class="mrow"><button onclick="prClose()">Cancelar</button><button class="ok" onclick="doImprimir()">Imprimir / PDF</button></div>
 </div></div>
 
@@ -3377,6 +3379,7 @@ function constrainOP(wp){
 }
 // ── EXPORTACIÓN (DXF / PNG / PDF · siempre limpio, sin grilla) ──
 function doExport(fmt){
+  _exportName=(proy&&proy.nombre)||(planta&&planta.nombre)||'dibujo';
   if(fmt==='dxf')return exportDXF();
   if(fmt==='pdf')return exportPDF();
   return exportPNG();
@@ -3438,10 +3441,11 @@ function proyThumb(p){ if(!p||!p.plantas)return null;
   for(const pl of p.plantas){ const u=plantaThumb(pl); if(u)return u; } return null; }
 function fFecha(ts){ if(!ts)return ''; try{ return new Date(ts).toLocaleString('es-UY',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
 
+function _expBase(){ return String(_exportName||'dibujo').replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')||'dibujo'; }
 async function exportPNG(){
   const url=renderCleanURL();if(!url){toast('Nada para exportar');return;}
-  const fn='ildraw_'+Date.now()+'.png';
-  if(navigator.share&&navigator.canShare){try{const blob=await(await fetch(url)).blob();const file=new File([blob],fn,{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'iLDraw'});return;}}catch(ex){if(ex.name==='AbortError')return;}}
+  const fn=_expBase()+'.png';
+  if(navigator.share&&navigator.canShare){try{const blob=await(await fetch(url)).blob();const file=new File([blob],fn,{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({files:[file]});return;}}catch(ex){if(ex.name==='AbortError')return;}}
   const a=document.createElement('a');a.download=fn;a.href=url;a.click();toast('PNG guardado ✓');
 }
 
@@ -3450,7 +3454,7 @@ function exportPDF(){
   const landscape=bb.w>=bb.h;
   const w=window.open('','_blank');
   if(!w){toast('Permití la ventana emergente');return;}
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>iLDraw</title>'+
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(_expBase())+'</title>'+
     '<style>@page{size:'+(landscape?'A4 landscape':'A4 portrait')+';margin:12mm}'+
     'html,body{margin:0;padding:0}img{width:100%;height:auto;display:block}</style></head>'+
     '<body><img src="'+url+'" onload="setTimeout(function(){window.print()},150)"></body></html>');
@@ -3478,10 +3482,10 @@ function exportDXF(){
   const s=1/PPM;
   const X=x=>(x*s).toFixed(4),Y=y=>(-y*s).toFixed(4);
   const e=[];
-  const line=(a,b)=>e.push('0','LINE','8','iLDraw','10',X(a[0]),'20',Y(a[1]),'30','0.0','11',X(b[0]),'21',Y(b[1]),'31','0.0');
-  const poly=(pts,closed)=>{e.push('0','LWPOLYLINE','8','iLDraw','90',String(pts.length),'70',closed?'1':'0');for(const p of pts)e.push('10',X(p[0]),'20',Y(p[1]));};
-  const circle=(c,r)=>e.push('0','CIRCLE','8','iLDraw','10',X(c[0]),'20',Y(c[1]),'30','0.0','40',(r*s).toFixed(4));
-  const text=(p,h,t)=>e.push('0','TEXT','8','iLDraw','10',X(p[0]),'20',Y(p[1]),'30','0.0','40',(h*s).toFixed(4),'1',String(t).replace(/\n/g,' '));
+  const line=(a,b)=>e.push('0','LINE','8','0','10',X(a[0]),'20',Y(a[1]),'30','0.0','11',X(b[0]),'21',Y(b[1]),'31','0.0');
+  const poly=(pts,closed)=>{e.push('0','LWPOLYLINE','8','0','90',String(pts.length),'70',closed?'1':'0');for(const p of pts)e.push('10',X(p[0]),'20',Y(p[1]));};
+  const circle=(c,r)=>e.push('0','CIRCLE','8','0','10',X(c[0]),'20',Y(c[1]),'30','0.0','40',(r*s).toFixed(4));
+  const text=(p,h,t)=>e.push('0','TEXT','8','0','10',X(p[0]),'20',Y(p[1]),'30','0.0','40',(h*s).toFixed(4),'1',String(t).replace(/\n/g,' '));
   for(const o of objects){
     if(!o||!o.pts)continue;
     switch(o.type){
@@ -3499,7 +3503,7 @@ function exportDXF(){
     }
   }
   const dxf=['0','SECTION','2','HEADER','9','$INSUNITS','70','6','0','ENDSEC','0','SECTION','2','ENTITIES',...e,'0','ENDSEC','0','EOF'].join('\n');
-  const a=document.createElement('a');a.download='ildraw_'+Date.now()+'.dxf';
+  const a=document.createElement('a');a.download=_expBase()+'.dxf';
   a.href=URL.createObjectURL(new Blob([dxf],{type:'application/dxf'}));a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1500);
   toast('DXF guardado ✓');
@@ -4013,7 +4017,15 @@ function renderHojas(){
   l.innerHTML=nueva+cards;
 }
 // ══════════ IMPRIMIR DESDE EL DASH: formato A4/A3/A2/A1 + encabezado y pie editable con imágenes ══════════
-let _prId=null, _prCfg={fmt:'A4',orient:'horiz'}, _prHeadImg=null, _prFootImg=null, _prImgTarget=null;
+let _prId=null, _prCfg={fmt:'A4',orient:'horiz'}, _prHeadImg=null, _prFootImg=null, _prImgTarget=null, _exportName='';
+// Exportar (PNG/DXF) el dibujo elegido desde el modal de impresión, sin tocar el que esté abierto.
+function prExport(fmt){
+  const p=proyectos.find(x=>x.id===_prId); if(!p){return;}
+  const pl=(p.plantas&&p.plantas[0])||null;
+  if(!pl||!(pl.objects||[]).length){toast('La hoja está en blanco');return;}
+  const sO=objects, sN=_exportName; objects=pl.objects; _exportName=p.nombre||'dibujo';
+  try{ if(fmt==='dxf')exportDXF(); else exportPNG(); } finally { objects=sO; _exportName=sN; }
+}
 function openPrint(id){
   const p=proyectos.find(x=>x.id===id); if(!p)return;
   _prId=id; const c=p.print||{};

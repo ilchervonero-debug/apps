@@ -150,7 +150,13 @@ Versión = número de caché del SW.
     **esquina = cuadro rojo (cantonera)**, **T/cruz = punto rojo (refuerzo)**. Status de import muestra
     nº de muros/esquinas/T/cruces. Verificado headless (rectángulo=4 esquinas, +stem=1 T; coma OK).
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v25) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v26) · fork del canvas de SketchVolt
+- **v26: salida SIN marca de la app + exportar PNG/DXF desde el modal.**
+  · **Cero branding por defecto** (pedido Ángel: nada de firma ni "hecho con esta app"): la impresión sólo
+    lleva lo que el usuario escribe (encabezado/pie). DXF ahora usa **capa `0`** (antes `iLDraw`); PNG/DXF/PDF
+    se nombran con el **nombre del dibujo** (antes `ildraw_<ts>`); sin título "iLDraw" en el PDF ni en el share.
+  · **Exportar PNG y DXF desde el modal de impresión** (`prExport`): exporta el dibujo elegido en el dash
+    sin abrirlo. Verificado headless (DXF sin "iLDraw", capa 0, 4 LINE; archivos `Casa_Melo.dxf/.png`).
 - **v25: dashboard con tarjetas + impresión propia desde el dash.**
   · **Dashboard igual a SketchVolt:** home "Dibujos" con tarjeta "+ Nuevo dibujo" y tarjetas con
     **miniatura** (proyThumb), nombre y fecha. Íconos de esquina: impresora (rojo, arriba-der) ·
