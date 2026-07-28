@@ -150,7 +150,7 @@ Versión = número de caché del SW.
     **esquina = cuadro rojo (cantonera)**, **T/cruz = punto rojo (refuerzo)**. Status de import muestra
     nº de muros/esquinas/T/cruces. Verificado headless (rectángulo=4 esquinas, +stem=1 T; coma OK).
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v18) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v19) · fork del canvas de SketchVolt
 - **v16: Firebase/nube en iLDraw (pedido Ángel: menos apps solo-local en el móvil).** iLDraw ya heredaba el
   código cloud de SketchVolt (mismo proyecto `bitacorapp-3df06`, local-first). Cableado propio: colección
   **`usuarios/{uid}/ildraw/{id}`** (aislada de sketchvolt), flags **`ild_cloud_optin`/`ild_maillink`**, y
