@@ -150,7 +150,15 @@ Versión = número de caché del SW.
     **esquina = cuadro rojo (cantonera)**, **T/cruz = punto rojo (refuerzo)**. Status de import muestra
     nº de muros/esquinas/T/cruces. Verificado headless (rectángulo=4 esquinas, +stem=1 T; coma OK).
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v29) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v30) · fork del canvas de SketchVolt
+- **v30 / SketchVolt v114: Press Long conserva la selección múltiple + grosor masivo (ambas apps).**
+  · **Press Long / tap sobre un objeto YA seleccionado NO colapsa la selección.** El bug: el `handleDown`
+    diferido (150ms) hacía `selectAt` y colapsaba el grupo ANTES de que el long-press (480ms) abriera el
+    menú. Ahora `handleDown` (select) preserva la selección si el objeto tocado ya está en una selección
+    múltiple/grupo activa (espeja el guard de `doCtxAt`). Las acciones del menú de grupo (mover, duplicar,
+    grosor, borrar, rotar) ya operaban sobre TODO el conjunto (`ctxDo`: set=selIds).
+  · **Grosor de línea masivo** en la barra de multiselección (`gmSW` → `selSet('strokeW',v)`), con valor
+    representativo al abrir. Verificado headless en ambas apps (sel conservada [1,2]; grosores [6/7,…]).
 - **v29 / SketchVolt v113: puntero desfasado (Anclado) dibuja rect/círculo/polígono (ambas apps).**
   En modo Anclado el confirm hacía `handleDown+handleUp` en el MISMO punto anclado → figura de tamaño
   cero → se descartaba (no se podía dibujar rect ni círculo). Ahora las herramientas de arrastre

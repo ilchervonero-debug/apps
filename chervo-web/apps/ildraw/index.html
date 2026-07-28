@@ -963,6 +963,8 @@ details.mas[open] summary:before{content:'▾ ';}
     <button id="gmDecomp" class="pib" data-tip="Descomponer" onclick="desagruparSel()"><svg viewBox="0 0 24 24"><polyline points="9 3 3 3 3 9"/><polyline points="15 3 21 3 21 9"/><polyline points="15 21 21 21 21 15"/><polyline points="9 21 3 21 3 15"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg></button>
     <span class="fi" id="gmScaleField"><span class="fl" title="Escala"><svg viewBox="0 0 24 24" style="width:15px;height:15px;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round"><polyline points="15 4 20 4 20 9"/><polyline points="9 20 4 20 4 15"/><line x1="20" y1="4" x2="13" y2="11"/><line x1="4" y1="20" x2="11" y2="13"/></svg></span>
       <input type="range" id="gmScale" min="20" max="300" value="100" style="width:76px" oninput="selScaleSetLive(this.value)" onchange="selScaleSetEnd()"></span>
+    <span class="fi" id="gmSWField"><span class="fl" title="Grosor de línea"><svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6" stroke-width="1"/><line x1="4" y1="12" x2="20" y2="12" stroke-width="2.4"/><line x1="4" y1="18" x2="20" y2="18" stroke-width="4.2"/></svg></span>
+      <input type="range" id="gmSW" min="1" max="10" value="2" style="width:64px" oninput="selSet('strokeW',+this.value)"></span>
     <span class="fi" id="gmColorField"><button class="cpick" style="background:#1c1c1e" onclick="openColorPop(this)"></button></span>
     <button id="gmDel" class="pib" data-tip="Borrar" onclick="selDelete()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
   </div>
@@ -2636,10 +2638,15 @@ function handleDown(wp,rawW,scrn){
       }
     }
     // ¿tocó un objeto? → seleccionar (grupo-aware). Si no → arranca el RECUADRO de arrastre.
-    const T=28/vpZ; let hit=false;
-    for(let i=objects.length-1;i>=0;i--){ const o=objects[i]; if(editGroupId&&o.group!==editGroupId)continue; if(hitTest(wp,o,T)){hit=true;break;} }
+    const T=28/vpZ; let hitObj=null;
+    for(let i=objects.length-1;i>=0;i--){ const o=objects[i]; if(editGroupId&&o.group!==editGroupId)continue; if(hitTest(wp,o,T)){hitObj=o;break;} }
     if(tcId)closeTextCard();
-    if(hit){ selectAt(wp); const so=(selId!=null)?objects.find(x=>x.id===selId):null; if(so&&so.type==='text')openTextCard(so,scrn); }
+    if(hitObj){
+      // Si el objeto tocado YA es parte de una selección múltiple/grupo activa → PRESERVAR la selección
+      // (no colapsar a ese objeto individual): así el Press Long conserva el grupo y su menú.
+      if(selIds.length>1 && selIds.includes(hitObj.id)){ /* mantener la selección actual */ }
+      else { selectAt(wp); const so=(selId!=null)?objects.find(x=>x.id===selId):null; if(so&&so.type==='text')openTextCard(so,scrn); }
+    }
     else { marquee={x0:rawW.x,y0:rawW.y,x1:rawW.x,y1:rawW.y}; drawing=true; }   // recuadro en coords crudas (sin snap)
     return;
   }
@@ -3790,6 +3797,10 @@ function showSelBar(){
     document.getElementById('gmDecomp').style.display=whole?'':'none';                 // Descomponer (grupo o componente)
     // Color: en GRUPO se cambia desde afuera (afecta sus piezas). En COMPONENTE no: va por el editor.
     document.getElementById('gmColorField').style.display=isComp?'none':'inline-flex';
+    // Grosor de línea masivo: aplica a toda la selección (selSet). Se refleja con un valor representativo.
+    document.getElementById('gmSWField').style.display=isComp?'none':'inline-flex';
+    const _swObj=selIds.map(id=>objects.find(x=>x.id===id)).find(o=>o&&o.strokeW!=null);
+    const gsw=document.getElementById('gmSW'); if(gsw)gsw.value=(_swObj&&_swObj.strokeW)||strokeW||2;
     // Escala de instancia (por fuera del editor): disponible en grupo y componente.
     _setScaleBase=null; const gms=document.getElementById('gmScale'); if(gms)gms.value=100;
     // Nombre/kind NO van en la barra (cero texto): el rótulo flotante #pbTool ya dice "Grupo · X".
