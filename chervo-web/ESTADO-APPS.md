@@ -150,7 +150,16 @@ Versión = número de caché del SW.
     **esquina = cuadro rojo (cantonera)**, **T/cruz = punto rojo (refuerzo)**. Status de import muestra
     nº de muros/esquinas/T/cruces. Verificado headless (rectángulo=4 esquinas, +stem=1 T; coma OK).
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v23) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v25) · fork del canvas de SketchVolt
+- **v25: dashboard con tarjetas + impresión propia desde el dash.**
+  · **Dashboard igual a SketchVolt:** home "Dibujos" con tarjeta "+ Nuevo dibujo" y tarjetas con
+    **miniatura** (proyThumb), nombre y fecha. Íconos de esquina: impresora (rojo, arriba-der) ·
+    guardar respaldo (abajo-izq) · tacho (abajo-der). `crearHoja(nom)` con nombre opcional vía modal.
+  · **Imprimir desde el dash** (ícono impresora en cada tarjeta): modal con **formato A4/A3/A2/A1**,
+    orientación apaisado/vertical, **encabezado y pie editables** (texto) y **carga de imagen** en cada
+    uno (logo/membrete, se reescala a máx 1400px). El dibujo (hoja en blanco) se ajusta centrado entre
+    las bandas. Los ajustes quedan guardados por dibujo (`p.print`). Salida = ventana → "Guardar como
+    PDF". Verificado headless: A3 vertical→`@page 297×420mm`, bandas con texto/imagen, img del dibujo, cfg persiste.
 - **v23 / SketchVolt v112: multiselección + doble-tap (ambas apps, meta-regla).**
   · **Tacho de basura en multiselección:** `#gmDel` inline en `grpMulti` (junto a Agrupar/Escala/Color) →
     `selDelete()`. La fila de acción `#propActions` (2do piso) quedaba fuera de pantalla en móvil; el tacho

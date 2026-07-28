@@ -274,6 +274,18 @@ body{display:flex;flex-direction:column;background:#fff;}
   font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;
   background:rgba(242,242,247,.9);color:var(--ink);}
 .mrow button.ok{background:var(--accent);color:#fff;border-color:var(--accent);}
+/* Modal Imprimir: segmentos formato/orientación + encabezado/pie con imagen */
+.prseg{display:flex;gap:6px;}
+.prseg button{flex:1;padding:10px;border-radius:10px;border:1px solid #e5e5ea;background:#fff;
+  font-family:var(--font);font-size:15px;color:var(--ink);cursor:pointer;}
+.prseg button.on{border-color:var(--accent);color:var(--accent);}
+.mbox .mlbl label{display:flex;align-items:center;gap:9px;text-transform:none;letter-spacing:0;font-size:16px;color:var(--ink);cursor:pointer;}
+.mbox .mlbl input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);}
+.prrow{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.primg{padding:9px 14px;border-radius:10px;border:1px solid #e5e5ea;background:rgba(242,242,247,.9);
+  font-family:var(--font);font-size:14px;color:var(--ink);cursor:pointer;flex-shrink:0;}
+.prprev{height:42px;max-width:120px;object-fit:contain;border:1px solid #e5e5ea;border-radius:6px;background:#fff;}
+.prdel{padding:6px 10px;border:none;background:none;color:var(--red);font-family:var(--font);font-size:14px;cursor:pointer;}
 /* filas de exportación — icono negro fino; presionado = línea roja */
 .exrow{display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;column-gap:14px;
   align-items:center;width:100%;text-align:left;background:transparent;border:1.5px solid #ececf0;
@@ -386,9 +398,10 @@ body{display:flex;flex-direction:column;background:#fff;}
 /* Íconos sobre la miniatura: imprimir hoja arriba-derecha; tacho abajo-derecha (gris, sin resaltar) */
 /* Todos los íconos de la tarjeta de hoja en GRIS (tacho, impresora, lápiz) */
 .pcard .iconbtn{color:#9a9a9e;}
-.pc-print{position:absolute;top:5px;right:7px;}
+.pc-print{position:absolute;top:5px;right:7px;color:var(--accent);}
+.pc-save{position:absolute;bottom:5px;left:7px;}
 .pc-trash{position:absolute;bottom:5px;right:7px;}
-.pc-print svg,.pc-trash svg{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff);}
+.pc-print svg,.pc-save svg,.pc-trash svg{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff);}
 /* Panel de edición del proyecto que se despliega inline en el dashboard */
 .pj-edit{display:flex;flex-direction:column;gap:11px;background:#fff;border:1px solid #e5e5ea;border-radius:14px;padding:16px;margin:2px 0 14px;}
 .pj-edit input[type=text],.pj-edit input[type=number]{background:rgba(242,242,247,.9);border:1px solid rgba(0,0,0,.1);border-radius:12px;padding:12px 14px;font-size:16px;font-family:var(--font);color:var(--ink);width:100%;}
@@ -571,6 +584,39 @@ details.mas[open] summary:before{content:'▾ ';}
   <h3>Nuevo dibujo</h3>
   <input type="text" id="npModalName" placeholder="Nombre del dibujo (opcional)…" onkeydown="if(event.key==='Enter')confirmNp()">
   <div class="mrow"><button onclick="closeNp()">Cancelar</button><button class="ok" onclick="confirmNp()">Crear</button></div>
+</div></div>
+
+<!-- Modal: imprimir dibujo (formato A4/A3/A2/A1 + encabezado y pie editable con imagen) -->
+<div class="modal" id="prModal"><div class="mbox" style="max-height:90vh;overflow:auto">
+  <h3>Imprimir dibujo</h3>
+  <div class="mlbl">Formato de hoja</div>
+  <div class="prseg" id="prFmt">
+    <button data-v="A4" onclick="prSeg('prFmt','A4')">A4</button>
+    <button data-v="A3" onclick="prSeg('prFmt','A3')">A3</button>
+    <button data-v="A2" onclick="prSeg('prFmt','A2')">A2</button>
+    <button data-v="A1" onclick="prSeg('prFmt','A1')">A1</button>
+  </div>
+  <div class="mlbl">Orientación</div>
+  <div class="prseg" id="prOri">
+    <button data-v="horiz" onclick="prSeg('prOri','horiz')">Apaisado</button>
+    <button data-v="vert" onclick="prSeg('prOri','vert')">Vertical</button>
+  </div>
+  <div class="mlbl"><label><input type="checkbox" id="prHeadOn" onchange="prToggle()"> Encabezado</label></div>
+  <div id="prHeadBox">
+    <input type="text" id="prHeadTxt" placeholder="Texto del encabezado…">
+    <div class="prrow"><button class="primg" onclick="prPick('head')">Cargar imagen</button>
+      <img id="prHeadImg" class="prprev" style="display:none" alt="">
+      <button id="prHeadDel" class="prdel" style="display:none" onclick="prClearImg('head')">Quitar</button></div>
+  </div>
+  <div class="mlbl"><label><input type="checkbox" id="prFootOn" onchange="prToggle()"> Pie de página</label></div>
+  <div id="prFootBox">
+    <input type="text" id="prFootTxt" placeholder="Texto del pie…">
+    <div class="prrow"><button class="primg" onclick="prPick('foot')">Cargar imagen</button>
+      <img id="prFootImg" class="prprev" style="display:none" alt="">
+      <button id="prFootDel" class="prdel" style="display:none" onclick="prClearImg('foot')">Quitar</button></div>
+  </div>
+  <input type="file" id="prFile" accept="image/*" style="display:none" onchange="prImgLoaded(event)">
+  <div class="mrow"><button onclick="prClose()">Cancelar</button><button class="ok" onclick="doImprimir()">Imprimir / PDF</button></div>
 </div></div>
 
 <!-- ══════════ SHELL: DASHBOARD DEL PROYECTO ══════════ -->
@@ -3944,6 +3990,7 @@ function crearHoja(nom){
 function abrirHoja(id){ const p=proyectos.find(x=>x.id===id); if(!p||!p.plantas||!p.plantas.length)return; proy=p; openPlanta(p.plantas[0].id); }
 function delHoja(id,ev){ if(ev)ev.stopPropagation(); if(!confirm('¿Borrar este dibujo?'))return; proyectos=proyectos.filter(p=>p.id!==id); persistProy(); renderHojas(); }
 const _SAVE_SVG='<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+const _PRINTER_SVG='<svg viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg>';
 function renderHojas(){
   const l=document.getElementById('hojaList'); if(!l)return;
   const list=_flashList();
@@ -3956,13 +4003,91 @@ function renderHojas(){
     const th=proyThumb(p);
     return `<div class="pcard" onclick="abrirHoja('${p.id}')">
       <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Sin dibujo todavía</span>`}
-        <button class="iconbtn pc-print" onclick="event.stopPropagation();exportHoja('${p.id}',event)" title="Guardar archivo">${_SAVE_SVG}</button>
+        <button class="iconbtn pc-print" onclick="event.stopPropagation();openPrint('${p.id}')" title="Imprimir / PDF">${_PRINTER_SVG}</button>
+        <button class="iconbtn pc-save" onclick="event.stopPropagation();exportHoja('${p.id}',event)" title="Guardar archivo">${_SAVE_SVG}</button>
         <button class="iconbtn pc-trash" onclick="event.stopPropagation();delHoja('${p.id}',event)" title="Borrar">${_TRASH_SVG}</button>
       </div>
       <div class="pcard-info"><div class="pcard-name">${esc(p.nombre)}</div>
         <div class="pcard-date">${p.mod?fFecha(p.mod):''}</div></div></div>`;
   }).join('');
   l.innerHTML=nueva+cards;
+}
+// ══════════ IMPRIMIR DESDE EL DASH: formato A4/A3/A2/A1 + encabezado y pie editable con imágenes ══════════
+let _prId=null, _prCfg={fmt:'A4',orient:'horiz'}, _prHeadImg=null, _prFootImg=null, _prImgTarget=null;
+function openPrint(id){
+  const p=proyectos.find(x=>x.id===id); if(!p)return;
+  _prId=id; const c=p.print||{};
+  _prCfg={fmt:c.fmt||'A4', orient:c.orient||'horiz'};
+  _prHeadImg=c.headImg||null; _prFootImg=c.footImg||null;
+  prSeg('prFmt',_prCfg.fmt); prSeg('prOri',_prCfg.orient);
+  document.getElementById('prHeadOn').checked=!!c.headOn;
+  document.getElementById('prFootOn').checked=!!c.footOn;
+  document.getElementById('prHeadTxt').value=c.headTxt||'';
+  document.getElementById('prFootTxt').value=c.footTxt||'';
+  _prShowImg('head'); _prShowImg('foot'); prToggle();
+  document.getElementById('prModal').classList.add('show');
+}
+function prClose(){ document.getElementById('prModal').classList.remove('show'); }
+function prSeg(group,v){ _prCfg[group==='prFmt'?'fmt':'orient']=v;
+  document.querySelectorAll('#'+group+' button').forEach(b=>b.classList.toggle('on',b.dataset.v===v)); }
+function prToggle(){
+  document.getElementById('prHeadBox').style.display=document.getElementById('prHeadOn').checked?'':'none';
+  document.getElementById('prFootBox').style.display=document.getElementById('prFootOn').checked?'':'none';
+}
+function prPick(which){ _prImgTarget=which; document.getElementById('prFile').click(); }
+function prImgLoaded(ev){
+  const f=ev.target.files&&ev.target.files[0]; ev.target.value=''; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{ const im=new Image(); im.onload=()=>{
+      const MX=1400, s=Math.min(1,MX/Math.max(im.naturalWidth,im.naturalHeight,1));
+      const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(im.naturalWidth*s)); c.height=Math.max(1,Math.round(im.naturalHeight*s));
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      let url; try{url=c.toDataURL('image/png');}catch(e){url=r.result;}
+      if(_prImgTarget==='head')_prHeadImg=url; else _prFootImg=url;
+      _prShowImg(_prImgTarget);
+    }; im.onerror=()=>toast('No se pudo leer la imagen'); im.src=r.result; };
+  r.readAsDataURL(f);
+}
+function _prShowImg(which){
+  const url=(which==='head')?_prHeadImg:_prFootImg;
+  const img=document.getElementById(which==='head'?'prHeadImg':'prFootImg');
+  const del=document.getElementById(which==='head'?'prHeadDel':'prFootDel');
+  if(url){ img.src=url; img.style.display=''; del.style.display=''; } else { img.style.display='none'; del.style.display='none'; }
+}
+function prClearImg(which){ if(which==='head')_prHeadImg=null; else _prFootImg=null; _prShowImg(which); }
+function doImprimir(){
+  const p=proyectos.find(x=>x.id===_prId); if(!p){prClose();return;}
+  const pl=(p.plantas&&p.plantas[0])||null;
+  const fmt=_prCfg.fmt, ori=_prCfg.orient;
+  const base=HOJAS_MM[fmt]||HOJAS_MM.A4;                     // [ancho,alto] apaisado
+  const [pw,ph]=(ori==='vert')?[base[1],base[0]]:[base[0],base[1]];
+  const headOn=document.getElementById('prHeadOn').checked, footOn=document.getElementById('prFootOn').checked;
+  const headTxt=document.getElementById('prHeadTxt').value, footTxt=document.getElementById('prFootTxt').value;
+  // Guardar los ajustes en el dibujo (quedan para la próxima)
+  p.print={fmt,orient:ori,headOn,footOn,headTxt,footTxt,headImg:_prHeadImg||null,footImg:_prFootImg||null};
+  try{persistProy();}catch(e){}
+  const img=pl?plantaThumb(pl,2600):null;                    // PNG del dibujo (alta resolución, fondo transparente)
+  prClose();
+  const bt=t=>'<div class="bt">'+esc(t||'').replace(/\n/g,'<br>')+'</div>';
+  const head=headOn?('<div class="band top">'+(_prHeadImg?'<img src="'+_prHeadImg+'">':'')+bt(headTxt)+'</div>'):'';
+  const foot=footOn?('<div class="band bot">'+(_prFootImg?'<img src="'+_prFootImg+'">':'')+bt(footTxt)+'</div>'):'';
+  const mid='<div class="mid">'+(img?'<img src="'+img+'">':'<div class="empty">Hoja en blanco</div>')+'</div>';
+  const w=window.open('','_blank'); if(!w){toast('Permití la ventana emergente');return;}
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+esc(p.nombre||'Dibujo')+'</title><style>'+
+    '@page{size:'+pw+'mm '+ph+'mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0}'+
+    '.page{width:'+pw+'mm;height:'+ph+'mm;display:flex;flex-direction:column;padding:8mm;font-family:sans-serif}'+
+    '.band{display:flex;align-items:center;gap:6mm;flex:0 0 auto}'+
+    '.band.top{border-bottom:1.2px solid #333;padding-bottom:3mm;margin-bottom:3mm}'+
+    '.band.bot{border-top:1.2px solid #333;padding-top:3mm;margin-top:3mm}'+
+    '.band img{max-height:20mm;max-width:70mm;object-fit:contain}'+
+    '.band .bt{font-size:13pt;color:#1c1c1e;white-space:pre-line;line-height:1.25}'+
+    '.mid{flex:1 1 auto;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0}'+
+    '.mid img{max-width:100%;max-height:100%;object-fit:contain}'+
+    '.empty{color:#b0b0b3;font-size:16pt}'+
+    '</style></head><body><div class="page">'+head+mid+foot+'</div>'+
+    '<scr'+'ipt>setTimeout(function(){window.print()},450)</scr'+'ipt></body></html>');
+  w.document.close();
+  toast('Elegí "Guardar como PDF"');
 }
 function exportHoja(id,ev){ if(ev)ev.stopPropagation(); const p=proyectos.find(x=>x.id===id); if(!p)return;
   const blob=new Blob([JSON.stringify({app:'iLDraw',v:1,dibujo:p})],{type:'application/json'});
