@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Exo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- Firebase (mismo proyecto que Bitácora). Si no cargan (offline) la app sigue 100% local. -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -21,7 +21,7 @@
   --bg:rgba(245,245,247,.82);--ink:#1c1c1e;--ink2:rgba(242,242,247,.9);--ink3:rgba(0,0,0,.1);
   --accent:#FE0000;--red:#C70000;--orange:#ff9f0a;--green:#34c759;--label:#8e8e93;
   --tb:56px;--prop:56px;
-  --font:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
+  --font:'Exo',-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;height:100dvh;overflow:hidden;touch-action:none;user-select:none;font-family:var(--font);}
@@ -918,11 +918,12 @@ details.mas[open] summary:before{content:'▾ ';}
   </div>
   <div id="grpGrid" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Grilla · guía de dibujo</span>
-      <span style="display:flex;gap:4px">
-        <button class="cmd-btn" onclick="setGrid(0.05)">5 cm</button>
-        <button class="cmd-btn" onclick="setGrid(0.15)">15 cm</button>
-        <button class="cmd-btn" onclick="setGrid(0.5)">50 cm</button>
-        <button class="cmd-btn" onclick="setGrid(1)">1 m</button>
+      <span style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="cmd-btn" id="gridOnBtn" onclick="toggleGridOn()">On</button>
+        <button class="cmd-btn gsz" data-m="0.05" onclick="setGrid(0.05)">5 cm</button>
+        <button class="cmd-btn gsz" data-m="0.15" onclick="setGrid(0.15)">15 cm</button>
+        <button class="cmd-btn gsz" data-m="0.5" onclick="setGrid(0.5)">50 cm</button>
+        <button class="cmd-btn gsz" data-m="1" onclick="setGrid(1)">1 m</button>
       </span></span>
   </div>
   <div id="grpExport" style="display:none;align-items:center;gap:10px">
@@ -979,7 +980,7 @@ details.mas[open] summary:before{content:'▾ ';}
 </div>
 
 <!-- TARJETA CONTEXTUAL DE TEXTO (§4) -->
-<div id="txtCard" style="display:none;position:fixed;z-index:60;background:#fff;border:1.5px solid #e5e5ea;border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.16);padding:12px 12px 10px;width:250px;font-family:Inter,-apple-system,sans-serif">
+<div id="txtCard" style="display:none;position:fixed;z-index:60;background:#fff;border:1.5px solid #e5e5ea;border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.16);padding:12px 12px 10px;width:250px;font-family:Exo,-apple-system,sans-serif">
   <input id="tcText" placeholder="Texto" oninput="tcUpdate()" style="width:100%;font-size:18px;padding:8px 10px;border:1.5px solid #e5e5ea;border-radius:8px;outline:none;box-sizing:border-box">
   <div style="display:flex;align-items:center;gap:8px;margin-top:9px">
     <span style="font-size:15px;color:#8e8e93;white-space:nowrap">Tamaño</span>
@@ -3267,7 +3268,14 @@ function _mountEntorno(){
   const pe=document.getElementById('panel-entorno');
   if(pe)pe.addEventListener('click',e=>{ if(e.target.closest('button')) setTimeout(()=>{ if(currentRibbon==='entorno')toggleRibbon('entorno'); },30); });
 }
-function toggleGrid(){gridOn=!gridOn;document.getElementById('gridBtn').classList.toggle('on',gridOn);if(_panelMode!=='grid')openBottomPanel('grid');else{refreshBottom();render();}toast('Grilla '+(gridOn?'ON':'OFF'));}
+// Grilla: el botón de Entorno ABRE el panel de medidas (encender/apagar + tamaño, con el activo marcado).
+function toggleGrid(){ openBottomPanel('grid'); _gridUI(); }
+function _gridUI(){
+  document.querySelectorAll('#grpGrid .gsz').forEach(b=>b.classList.toggle('on', Math.abs(parseFloat(b.dataset.m)-gridM)<1e-6));
+  const ob=document.getElementById('gridOnBtn'); if(ob){ ob.textContent=gridOn?'On':'Off'; ob.classList.toggle('on',gridOn); }
+  const gb=document.getElementById('gridBtn'); if(gb)gb.classList.toggle('on',gridOn);
+}
+function toggleGridOn(){ gridOn=!gridOn; _gridUI(); render(); toast('Grilla '+(gridOn?'ON':'OFF')); }
 function toggleSnapCursor(){snapObjOn=!snapObjOn;document.getElementById('snapBtn').classList.toggle('on',snapObjOn);render();toast('Snap '+(snapObjOn?'ON':'OFF'));}
 function toggleOrtho(){ orthoOn=!orthoOn; if(orthoOn){polarOn=false;document.getElementById('polarBtn').classList.remove('on');} document.getElementById('orthoBtn').classList.toggle('on',orthoOn); toast('Ortho '+(orthoOn?'ON':'OFF')); }
 function togglePolar(){ polarOn=!polarOn; if(polarOn){orthoOn=false;document.getElementById('orthoBtn').classList.remove('on');} document.getElementById('polarBtn').classList.toggle('on',polarOn); toast('Polar '+(polarOn?'ON · '+polarStep+'°':'OFF')); }
@@ -3596,6 +3604,7 @@ function openBottomPanel(mode){
   _hideAllGrp();
   const map={grid:'grpGrid',export:'grpExport',image:'grpImage'};
   const e=document.getElementById(map[mode]); if(e)e.style.display='flex';
+  if(mode==='grid')_gridUI();
   const pt=document.getElementById('pbTool'); if(pt)pt.textContent={grid:'Grilla',export:'Exportar',image:'Imagen'}[mode]||'';
   if(mode==='image'){ _setImgEditIcon(); }
   // línea de acción del panel: en Imagen el tacho quita el fondo; en todos el tick cierra/finaliza.
@@ -3617,7 +3626,7 @@ function _setImgEditIcon(){ const b=document.getElementById('imgEditBtn'); if(!b
   if(svg)svg.innerHTML=modoAjusteFondo?_ICON_CHECK:_ICON_EDIT; }
 function toggleEditFondo(){ modoAjusteFondo=!modoAjusteFondo; fondoAprobado=!modoAjusteFondo;
   _setImgEditIcon(); savePlanta(); render(); toast(modoAjusteFondo?'Movelo o reescalalo':'Plano fijo'); }
-function setGrid(m){ gridM=m; cellPx=PPM*gridM; if(planta)planta.gridM=m; markDirty(); render(); toast('Grilla '+m+' m'); }
+function setGrid(m){ gridM=m; cellPx=PPM*gridM; gridOn=true; if(planta)planta.gridM=m; _gridUI(); markDirty(); render(); toast('Grilla '+(m<1?Math.round(m*100)+' cm':m+' m')); }
 // ── PROPIEDADES DEL OBJETO SELECCIONADO ──
 function selObj(){ return selId!=null?objects.find(o=>o.id===selId):null; }
 // Toque: elige el objeto. En modo aislado, solo miembros del grupo (sueltos). Si el objeto
