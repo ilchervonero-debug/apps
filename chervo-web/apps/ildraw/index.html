@@ -455,6 +455,13 @@ body{display:flex;flex-direction:column;background:#fff;}
    (translateY) y el canvas/grilla llena todo el pie; al haber contexto, sube (.up). */
 .cmd-btn{flex-shrink:0;padding:8px 14px;border-radius:9px;border:1.5px solid #dcdcd8;background:#fff;color:var(--ink);font-size:16px;font-family:var(--font);cursor:pointer;}
 .cmd-btn.on{border-color:var(--accent);color:var(--accent);}
+/* Switch on/off (grilla) */
+.sw{position:relative;display:inline-flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;font-size:15px;color:var(--label);}
+.sw input{position:absolute;opacity:0;width:0;height:0;}
+.sw .sw-tr{position:relative;width:46px;height:27px;background:#d0d0d3;border-radius:27px;transition:background .18s;flex-shrink:0;}
+.sw .sw-tr:before{content:"";position:absolute;height:21px;width:21px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .18s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+.sw input:checked + .sw-tr{background:var(--accent);}
+.sw input:checked + .sw-tr:before{transform:translateX(19px);}
 .np-add{width:100%;background:#fff;border:1.5px dashed #FE0000;color:#FE0000;border-radius:11px;padding:13px;font-size:17px;font-family:var(--font);cursor:pointer;}
 .pj-title{font-size:24px;font-weight:500;color:var(--ink);border:none;border-bottom:1.5px solid transparent;background:none;width:100%;padding:4px 2px;margin:4px 0 14px;font-family:var(--font);}
 .pj-title:focus{outline:none;border-bottom-color:#FE0000;}
@@ -679,6 +686,7 @@ details.mas[open] summary:before{content:'▾ ';}
   <button class="ti ti-t" data-tip="Rehacer" onclick="redoAct()"><svg viewBox="0 0 24 24"><path d="M21 10H11a6 6 0 000 12h10"/><polyline points="17 6 21 10 17 14"/></svg></button>
   <button class="ti ti-t" id="imgBtn" data-tip="Imagen" onclick="openImagen()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
   <button class="ti ti-t on" id="snapBtn" data-tip="Snap del cursor" onclick="toggleSnapCursor()"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="13" rx="1" style="stroke-dasharray:2.2 2.2"/><rect x="13.5" y="3.5" width="7" height="7" rx="1" style="stroke:#FE0000"/></svg></button>
+  <button class="ti ti-t" id="snapGridBtn" data-tip="Snap a la grilla" onclick="toggleSnapGrid()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><circle cx="9" cy="9" r="1.9" fill="currentColor" stroke="none"/></svg></button>
   <button class="ti ti-t on" id="gridBtn" data-tip="Grilla y medidas" onclick="toggleGrid()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></button>
   <button class="ti ti-t" id="ptrBtn" data-tip="Modo de puntero" onclick="cyclePtrMode()"></button>
   <input type="file" id="planoInput" accept="image/*,application/pdf,.dxf" style="display:none" onchange="onImportFile(event)">
@@ -919,7 +927,7 @@ details.mas[open] summary:before{content:'▾ ';}
   <div id="grpGrid" style="display:none;align-items:center;gap:8px">
     <span class="fi"><span class="fl">Grilla · guía de dibujo</span>
       <span style="display:flex;gap:4px;flex-wrap:wrap">
-        <button class="cmd-btn" id="gridOnBtn" onclick="toggleGridOn()">On</button>
+        <label class="sw"><input type="checkbox" id="gridOnChk" onchange="toggleGridOn()"><span class="sw-tr"></span></label>
         <button class="cmd-btn gsz" data-m="0.05" onclick="setGrid(0.05)">5 cm</button>
         <button class="cmd-btn gsz" data-m="0.15" onclick="setGrid(0.15)">15 cm</button>
         <button class="cmd-btn gsz" data-m="0.5" onclick="setGrid(0.5)">50 cm</button>
@@ -1029,7 +1037,7 @@ const cv=document.getElementById('cv');let ctx=cv.getContext('2d');const wrap=do
 // STATE
 const PPM=100;              // px de mundo por metro (a zoom 1) — el mundo se mide en metros
 let gridM=1;                // metros por celda de grilla
-let vpX=0,vpY=0,vpZ=1,cellPx=PPM*gridM,gridOn=true,snapObjOn=true;
+let vpX=0,vpY=0,vpZ=1,cellPx=PPM*gridM,gridOn=true,snapObjOn=true,snapGridOn=false;   // grilla visible por defecto; snap a grilla NO
 let originX=0,originY=0;     // punto 0,0 (px de mundo)
 // ── Shell de proyectos ──
 let proyectos=JSON.parse(localStorage.getItem('ildraw_flash')||'[]');
@@ -1181,9 +1189,12 @@ function getW(e){
     if(drawing&&dragStartW)st(dragStartW.x,dragStartW.y);
     if(sb){snapHit={x:sb.x,y:sb.y,kind:'end'};return sb;}
   }
-  const THRESH=(tool==='sline'?42:(tool==='dim'||tool==='dim2'?52:(_DRAG_TOOLS.includes(tool)||tool==='pline'||tool==='mline'||tool==='line'?30:22)))/vpZ;   // cotas: imán MUY fuerte al vértice
+  const THRESH=(tool==='sline'?42:(tool==='dim'||tool==='dim2'?64:(_DRAG_TOOLS.includes(tool)||tool==='pline'||tool==='mline'||tool==='line'?30:22)))/vpZ;   // cotas: imán MUY fuerte al vértice/intersección
   let best=null,bestD=THRESH,kind=null;
-  const take=(x,y,k)=>{const d=hyp(raw.x-x,raw.y-y);if(d<bestD){bestD=d;best={x,y};kind=k;}};
+  // Pesos de prioridad: INTERSECCIÓN y EXTREMO son imanes más fuertes (ganan aunque estén más lejos). Cota exagera aún más.
+  const _dimT=(tool==='dim'||tool==='dim2');
+  const _W={int:_dimT?0.4:0.55, end:0.7, center:0.7, quad:0.85, mid:1, near:1.15, grid:1};
+  const take=(x,y,k)=>{const d=hyp(raw.x-x,raw.y-y)*(_W[k]||1);if(d<bestD){bestD=d;best={x,y};kind=k;}};
   // Snap a DIBUJOS (botón #snapBtn). Prioriza puntos precisos sobre "cercano".
   if(snapObjOn){
     const segs=[];
@@ -1213,8 +1224,8 @@ function getW(e){
     }
   }
   if(best){snapHit={x:best.x,y:best.y,kind};return best;}
-  // Snap a GRILLA: solo si la grilla está activa (botón)
-  if(gridOn){const g=snpGrid(raw.x,raw.y);snapHit={x:g.x,y:g.y,kind:'grid'};return g;}
+  // Snap a GRILLA: solo si el snap-a-grilla está activo (separado de la visibilidad de la grilla)
+  if(snapGridOn){const g=snpGrid(raw.x,raw.y);snapHit={x:g.x,y:g.y,kind:'grid'};return g;}
   snapHit=null;return raw;
 }
 // Glifos de snap (naranja neón) + cursor rojo con offset (dedo gordo)
@@ -1226,6 +1237,12 @@ function drawCursorSnap(){
       const g=5;ctx.save();ctx.strokeStyle='#9a9a9e';ctx.lineWidth=1.3;ctx.setLineDash([]);
       ctx.strokeRect(p.x-g,p.y-g,g*2,g*2);
       ctx.beginPath();ctx.moveTo(p.x,p.y-g);ctx.lineTo(p.x,p.y+g);ctx.moveTo(p.x-g,p.y);ctx.lineTo(p.x+g,p.y);ctx.stroke();
+      ctx.restore();
+    } else if(k==='int'){
+      // INTERSECCIÓN = X roja (símbolo CAD): se distingue del nodo/extremo, fácil de ubicar.
+      const s=8;ctx.save();ctx.setLineDash([]);ctx.lineCap='round';
+      ctx.strokeStyle='#fff';ctx.lineWidth=4.2;ctx.beginPath();ctx.moveTo(p.x-s,p.y-s);ctx.lineTo(p.x+s,p.y+s);ctx.moveTo(p.x+s,p.y-s);ctx.lineTo(p.x-s,p.y+s);ctx.stroke();
+      ctx.strokeStyle='#FE0000';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(p.x-s,p.y-s);ctx.lineTo(p.x+s,p.y+s);ctx.moveTo(p.x+s,p.y-s);ctx.lineTo(p.x-s,p.y+s);ctx.stroke();
       ctx.restore();
     } else {
       // Snap a DIBUJO = CUADRADITO ROJO (nodo/grip), como el icono de Ángel. Borde blanco = contraste.
@@ -2457,9 +2474,10 @@ function onTS(e){
   if(pinching)return;
   const now=Date.now();
   const _multi=(tool==='pline'||tool==='mline'||tool==='line');
+  const _pick=['select','move','copy','eraser','trim'].includes(tool);   // seleccionar/editar: toque directo (con offset), NO anclado
   // ── MODO ANCLADO (§1): arrastrás para mover la cruz, soltás y ANCLA; el próximo tap CONFIRMA en la coord anclada ──
-  // El SmartPen (lápiz libre) NUNCA usa anclado: dibuja arrastrando en cualquier modo.
-  if(ptrMode===1 && tool!=='pen'){
+  // El SmartPen (lápiz libre) NUNCA usa anclado; las de selección/edición TAMPOCO (se tocan directo).
+  if(ptrMode===1 && tool!=='pen' && !_pick){
     const s=getS(e);
     if(anchorArmed){                       // este tap = CONFIRMAR el pick en el punto anclado (no en el tap)
       _wasConfirm=true; cursorS=anchorS?{...anchorS}:s;
@@ -2508,8 +2526,8 @@ function onTE(e){
   for(const t of e.changedTouches)delete touches[t.identifier];
   if(Object.keys(touches).length<2){pinching=false;pinch0=null;panning=false;}
   if(pinching)return;
-  // ── MODO ANCLADO: soltar NO confirma; ancla la cruz y espera el tap de confirmación ──
-  if(ptrMode===1 && tool!=='pen'){
+  // ── MODO ANCLADO: soltar NO confirma; ancla la cruz y espera el tap de confirmación (salvo selección/edición) ──
+  if(ptrMode===1 && tool!=='pen' && !['select','move','copy','eraser','trim'].includes(tool)){
     if(_wasConfirm){ _wasConfirm=false; touchActive=false; render(); return; }   // era el tap de confirmar (ya ejecutado en onTS)
     const s=getS(e); cursorS={...s}; anchorS={...s}; anchorPt=constrainOP(getW(e)); anchorArmed=true;   // ANCLA (queda la cruz fija)
     render(); return;
@@ -3032,7 +3050,12 @@ function chooseColor(c){
 }
 
 // HINT
-function setHint(msg){const el=document.getElementById('pbHint');el.textContent=msg;el.style.display=msg?'inline':'none';}
+function setHint(msg){
+  const el=document.getElementById('pbHint'); if(el)el.style.display='none';   // el tip YA NO va en la barra de propiedades
+  const gT=document.getElementById('guideTxt'), gG=document.getElementById('l1-guide'), gN=document.getElementById('l1-normal');
+  if(msg){ if(gT)gT.innerHTML=msg; if(gG)gG.classList.add('show'); if(gN)gN.classList.remove('show'); }
+  else if(typeof updateGuide==='function'){ updateGuide(); }   // sin hint → vuelve a la guía normal de la herramienta (en el head)
+}
 
 // TOOL PANEL
 let _toolsOpen=false;
@@ -3257,7 +3280,8 @@ function _mountEntorno(){
     el.classList.remove('ti','ti-t'); if(lbl && !el.querySelector('.lbl'))el.setAttribute('data-lbl',lbl); host.appendChild(el); };
   mv(imp,'imgBtn','Imagen');
   mv(sp,'gridBtn','Grilla');
-  mv(sp,'snapBtn','Snap');
+  mv(sp,'snapBtn','Snap obj.');
+  mv(sp,'snapGridBtn','Snap grilla');
   mv(sp,'orthoBtn','Ortho');     // ortho/polar traen su propio .lbl
   mv(sp,'polarBtn','Polar');
   // El PUNTERO (3 modos) va al HEADER, no a Entorno (mantiene sus clases .ti para el estilo del head).
@@ -3272,11 +3296,12 @@ function _mountEntorno(){
 function toggleGrid(){ openBottomPanel('grid'); _gridUI(); }
 function _gridUI(){
   document.querySelectorAll('#grpGrid .gsz').forEach(b=>b.classList.toggle('on', Math.abs(parseFloat(b.dataset.m)-gridM)<1e-6));
-  const ob=document.getElementById('gridOnBtn'); if(ob){ ob.textContent=gridOn?'On':'Off'; ob.classList.toggle('on',gridOn); }
+  const chk=document.getElementById('gridOnChk'); if(chk)chk.checked=gridOn;
   const gb=document.getElementById('gridBtn'); if(gb)gb.classList.toggle('on',gridOn);
 }
 function toggleGridOn(){ gridOn=!gridOn; _gridUI(); render(); toast('Grilla '+(gridOn?'ON':'OFF')); }
-function toggleSnapCursor(){snapObjOn=!snapObjOn;document.getElementById('snapBtn').classList.toggle('on',snapObjOn);render();toast('Snap '+(snapObjOn?'ON':'OFF'));}
+function toggleSnapCursor(){snapObjOn=!snapObjOn;document.getElementById('snapBtn').classList.toggle('on',snapObjOn);render();toast('Snap objetos '+(snapObjOn?'ON':'OFF'));}
+function toggleSnapGrid(){snapGridOn=!snapGridOn;const b=document.getElementById('snapGridBtn');if(b)b.classList.toggle('on',snapGridOn);render();toast('Snap grilla '+(snapGridOn?'ON':'OFF'));}
 function toggleOrtho(){ orthoOn=!orthoOn; if(orthoOn){polarOn=false;document.getElementById('polarBtn').classList.remove('on');} document.getElementById('orthoBtn').classList.toggle('on',orthoOn); toast('Ortho '+(orthoOn?'ON':'OFF')); }
 function togglePolar(){ polarOn=!polarOn; if(polarOn){orthoOn=false;document.getElementById('orthoBtn').classList.remove('on');} document.getElementById('polarBtn').classList.toggle('on',polarOn); toast('Polar '+(polarOn?'ON · '+polarStep+'°':'OFF')); }
 // Draw order MANUAL: sube/baja el zLevel del/los objeto(s) seleccionados.
