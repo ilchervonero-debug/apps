@@ -150,7 +150,14 @@ Versión = número de caché del SW.
     **esquina = cuadro rojo (cantonera)**, **T/cruz = punto rojo (refuerzo)**. Status de import muestra
     nº de muros/esquinas/T/cruces. Verificado headless (rectángulo=4 esquinas, +stem=1 T; coma OK).
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v27) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v28) · fork del canvas de SketchVolt
+- **v28: tarjetas del dash con barra de acciones agrupada (igual que SketchVolt).** Las tarjetas de
+  "Dibujos" ya no tienen íconos flotando sobre la miniatura: nombre/fecha a la izquierda y **exportar ·
+  imprimir · borrar** agrupados a la derecha de la franja de datos (clases `pl-info2`/`pl-acts`, gap
+  constante). Se eliminó el posicionamiento absoluto `.pc-print/.pc-save/.pc-trash`. Verificado headless
+  (3 botones en la barra, 0 sobre la miniatura).
+  · **Regla nueva en CLAUDE.md:** SketchVolt es la fuente del canvas; iLDraw lo espeja (versión limpia,
+    sin eléctrica ni dashboard de proyectos) y es la base para otras apps de canvas.
 - **v27: ícono Guardar dibujo en el canvas.** Botón de guardar (disquete) en el header (l1-right, junto
   al puntero) → `guardarDibujoActual()` fija cambios (savePlanta) y baja el respaldo `.ildraw` del dibujo
   abierto. La impresora vive SÓLO en el dashboard (tarjetas), no en el canvas. Verificado headless.

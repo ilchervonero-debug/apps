@@ -393,15 +393,10 @@ body{display:flex;flex-direction:column;background:#fff;}
 .pl-info2 .pl-meta{flex:1;min-width:0;}
 /* Nombre largo: se corta con elipsis; los 3 íconos quedan SIEMPRE en su lugar a la derecha */
 .pl-info2 .pcard-name,.pl-info2 .pcard-date{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pl-acts{display:flex;align-items:center;gap:0;flex-shrink:0;}
-/* Esquina de la tarjeta: tacho + imprimir, sueltos (sin fondo) */
-/* Íconos sobre la miniatura: imprimir hoja arriba-derecha; tacho abajo-derecha (gris, sin resaltar) */
-/* Todos los íconos de la tarjeta de hoja en GRIS (tacho, impresora, lápiz) */
+/* Barra de acciones agrupada a la derecha de la franja de datos (gap constante, sin flotar). */
+.pl-acts{display:flex;align-items:center;gap:2px;flex-shrink:0;}
+/* Todos los íconos de la tarjeta en GRIS (contexto); rojo sólo al tocar. */
 .pcard .iconbtn{color:#9a9a9e;}
-.pc-print{position:absolute;top:5px;right:7px;color:var(--accent);}
-.pc-save{position:absolute;bottom:5px;left:7px;}
-.pc-trash{position:absolute;bottom:5px;right:7px;}
-.pc-print svg,.pc-save svg,.pc-trash svg{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff);}
 /* Panel de edición del proyecto que se despliega inline en el dashboard */
 .pj-edit{display:flex;flex-direction:column;gap:11px;background:#fff;border:1px solid #e5e5ea;border-radius:14px;padding:16px;margin:2px 0 14px;}
 .pj-edit input[type=text],.pj-edit input[type=number]{background:rgba(242,242,247,.9);border:1px solid rgba(0,0,0,.1);border-radius:12px;padding:12px 14px;font-size:16px;font-family:var(--font);color:var(--ink);width:100%;}
@@ -4003,17 +3998,21 @@ function renderHojas(){
   const nueva=`<div class="pcard pcard-new" onclick="nuevoProyPrompt()">
     <div class="pcard-plus">+</div>
     <div class="pcard-info"><div class="pcard-name">Nuevo dibujo</div><div class="pcard-date">Crear un dibujo</div></div></div>`;
-  // Tarjetas con miniatura del dibujo (proyThumb) + nombre y fecha.
+  // Tarjetas con miniatura del dibujo (proyThumb) + franja de datos: nombre/fecha a la izquierda,
+  // barra de acciones agrupada a la derecha (exportar · imprimir · borrar), igual que SketchVolt.
   const cards=list.map(p=>{
     const th=proyThumb(p);
-    return `<div class="pcard" onclick="abrirHoja('${p.id}')">
-      <div class="pcard-thumb">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Sin dibujo todavía</span>`}
-        <button class="iconbtn pc-print" onclick="event.stopPropagation();openPrint('${p.id}')" title="Imprimir / PDF">${_PRINTER_SVG}</button>
-        <button class="iconbtn pc-save" onclick="event.stopPropagation();exportHoja('${p.id}',event)" title="Guardar archivo">${_SAVE_SVG}</button>
-        <button class="iconbtn pc-trash" onclick="event.stopPropagation();delHoja('${p.id}',event)" title="Borrar">${_TRASH_SVG}</button>
-      </div>
-      <div class="pcard-info"><div class="pcard-name">${esc(p.nombre)}</div>
-        <div class="pcard-date">${p.mod?fFecha(p.mod):''}</div></div></div>`;
+    return `<div class="pcard">
+      <div class="pcard-thumb" onclick="abrirHoja('${p.id}')">${th?`<img src="${th}" alt="">`:`<span class="pcard-empty">Sin dibujo todavía</span>`}</div>
+      <div class="pcard-info pl-info2">
+        <div class="pl-meta" onclick="abrirHoja('${p.id}')"><div class="pcard-name">${esc(p.nombre)}</div>
+          <div class="pcard-date">${p.mod?fFecha(p.mod):''}</div></div>
+        <div class="pl-acts">
+          <button class="iconbtn" onclick="exportHoja('${p.id}',event)" title="Exportar / respaldo">${_SAVE_SVG}</button>
+          <button class="iconbtn" onclick="openPrint('${p.id}')" title="Imprimir / PDF">${_PRINTER_SVG}</button>
+          <button class="iconbtn" onclick="delHoja('${p.id}',event)" title="Borrar">${_TRASH_SVG}</button>
+        </div>
+      </div></div>`;
   }).join('');
   l.innerHTML=nueva+cards;
 }

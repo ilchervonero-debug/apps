@@ -9,6 +9,17 @@ No re-verificar con navegador/screenshots ni releer todo el código cada sesión
 confiar en este registro + edits cuidadosos. Investigar a fondo solo si Ángel
 reporta un problema puntual.
 
+## Relación iLDraw ↔ SketchVolt (regla fija — canvas espejo)
+
+- **iLDraw dio pie al canvas de SketchVolt.** SketchVolt evolucionó y hoy **es la
+  fuente del canvas**: todo desarrollo de canvas (y demás) se hace/valida en
+  SketchVolt y se **espeja en iLDraw**.
+- **iLDraw = versión LIMPIA del canvas** (sin Eléctrica ni el dashboard de proyectos
+  de SketchVolt): es la base que llevaremos a **otras apps de canvas**.
+- Consecuencia práctica: si algo del canvas cambia o falla en una, cambia/falla en la
+  otra → aplicar el mismo fix en ambas. La única diferencia permitida es lo propio de
+  cada una (SketchVolt: eléctrica/dashboard; iLDraw: flujo flash + su propio dash).
+
 ## Modo de trabajo ULTRA-EFICIENTE (interfaz móvil Android — ahorro máximo)
 
 Ángel controla desde un teléfono Android; pantalla chica, tokens al mínimo:
