@@ -116,7 +116,14 @@ Versión = número de caché del SW.
 - Motor, herramientas y export DXF/PNG/PDF **heredados de iLDraw**, intactos.
 - **Superado por SketchVolt** (abajo) como canvas de iLVolt. Se deja como respaldo.
 
-### iLWall — `apps/ilwall/` · (SW ilwall-v3) · cómputo de tabiques de yeso
+### iLWall — `apps/ilwall/` · (SW ilwall-v4) · cómputo de tabiques de yeso
+- **v4: cáscara IDÉNTICA a iLCielorraso (pedido Ángel: "quiero que sean iguales exactos").** Porté las clases
+  y el markup de cielorraso a iLWall (mismas vars mapeadas): **home** = `list-item` con ícono + **acumulado**
+  ("N sección(es) | Emplacado total: X m²") + fecha + `action-btn` borrar. **Proyecto** = `env-card` (borde rojo,
+  `env-info` con datos + `env-actions` con íconos editar/borrar), y **"RESUMEN DE MATERIALES (ACUMULADO)"** en
+  `summary-card` + `grid-2` + `data-box` (label mayúscula + valor, rojo para superficie/placas/cantoneras).
+  Mismo ORDEN que cielorraso (secciones → acumulado). Difieren solo en el contenido de uso (muros vs cielorrasos).
+  Verificado headless, 0 errores.
 - **v3: navegación como iLCielorraso (pedido Ángel: "quedas atrapado, no hay forma de volver").** La navegación
   existía (home→proj→editor, `goBack`/`btnBack`) pero el botón "Volver" era invisible (`border:none;background:none`)
   y el título no daba contexto. Alineado a cielorraso (su base): **botón "Volver" ahora es una caja roja visible**

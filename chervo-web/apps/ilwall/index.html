@@ -60,6 +60,28 @@ header{background:var(--white); padding:14px 20px; display:flex; align-items:cen
 .env-name{font-size:19px; flex:1;}
 .summary{background:var(--white); border:1px solid var(--gray-m); border-radius:10px; padding:20px; margin-bottom:18px;}
 .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:16px;}
+/* ── Cáscara IDÉNTICA a iLCielorraso (tarjetas, íconos, acumulado) ── */
+.icon-svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.list-item{display:flex;align-items:center;padding:20px;background:var(--white);border:1px solid var(--gray-m);border-radius:6px;margin-bottom:12px;cursor:pointer;transition:background .2s;}
+.list-item:active{background:var(--gray-l);}
+.list-icon{margin-right:16px;display:flex;align-items:center;color:var(--red);}
+.list-content{flex:1;min-width:0;}
+.list-title{font-size:18px;font-weight:600;color:var(--ink);margin-bottom:4px;}
+.list-subtitle{font-size:15px;color:var(--gray-t);font-weight:500;}
+.action-btn{background:none;border:none;cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;color:var(--gray-t);}
+.env-card{background:var(--white);border-radius:6px;padding:20px;margin-bottom:16px;border:1px solid var(--gray-m);display:flex;border-left:4px solid var(--red);}
+.env-info{flex:1;min-width:0;}
+.env-name{font-size:18px;font-weight:600;color:var(--ink);margin-bottom:10px;}
+.env-data{font-size:16px;color:var(--gray-t);line-height:1.7;font-weight:400;}
+.env-data b{color:var(--ink);}
+.env-actions{display:flex;flex-direction:column;justify-content:flex-start;gap:12px;padding-left:16px;margin-left:16px;border-left:1px solid var(--gray-l);}
+.data-box{display:flex;flex-direction:column;}
+.db-lbl{font-size:13px;color:var(--gray-t);margin-bottom:4px;font-weight:500;text-transform:uppercase;}
+.db-val{font-size:18px;font-weight:600;color:var(--ink);}
+.db-val-red{font-size:18px;font-weight:600;color:var(--red);}
+.section-title{padding:20px 0 12px;font-size:14px;font-weight:600;color:var(--ink);text-transform:uppercase;letter-spacing:1px;}
+.summary-card{background:var(--white);padding:24px;border-radius:6px;border:1px solid var(--gray-m);margin-bottom:20px;}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;}
 .data{display:flex; flex-direction:column;}
 .d-lbl{font-size:14px; color:var(--gray-t); text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px;}
 .d-val{font-size:19px; font-weight:500;}
@@ -148,10 +170,11 @@ canvas{display:block; touch-action:none;}
           </button>
         </div>
       </div>
-      <div id="pdTotals" style="display:none;">
-        <div class="summary"><div class="grid" id="pdGrid"></div></div>
-      </div>
       <div id="envList"></div>
+      <div id="pdTotals" style="display:none;">
+        <div class="section-title">Resumen de materiales (acumulado)</div>
+        <div class="summary-card"><div class="grid-2" id="pdGrid"></div></div>
+      </div>
     </div></div>
   </div>
 
@@ -278,13 +301,19 @@ function delProject(id, ev){
 }
 function renderHome(){
   const list=document.getElementById('projectsList');
-  if(!projects.length){ list.innerHTML='<div class="empty">Todavía no hay proyectos. Creá el primero arriba.</div>'; return; }
-  list.innerHTML = projects.map(p=>`
-    <div class="card" onclick="openProject(${p.id})">
-      <svg class="ic ic-red" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14"/><line x1="9" y1="21" x2="9" y2="10"/><line x1="15" y1="21" x2="15" y2="10"/></svg>
-      <div style="flex:1;"><div class="card-title">${esc(p.name)}</div><div class="card-sub">${p.envs.length} sección(es)</div></div>
-      <button class="btn-text" onclick="delProject(${p.id},event)">Borrar</button>
-    </div>`).join('');
+  if(!projects.length){ list.innerHTML='<div style="color:var(--gray-t);text-align:center;padding:50px 20px;font-weight:500;font-size:16px;">Lista vacía.<br>Creá tu primer proyecto arriba.</div>'; return; }
+  list.innerHTML = projects.map(p=>{
+    const t=totalsOf(p); const sup=(t.summary.find(s=>s.lbl==='Superficie')||{}).val||'0 m²';   // acumulado emplacado
+    const fch=new Date(p.created||p.id).toLocaleString('es-UY',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div class="list-item" onclick="openProject(${p.id})">
+      <div class="list-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14"/><line x1="9" y1="21" x2="9" y2="10"/><line x1="15" y1="21" x2="15" y2="10"/></svg></div>
+      <div class="list-content">
+        <div class="list-title">${esc(p.name)}</div>
+        <div class="list-subtitle">${p.envs.length} sección(es) | Emplacado total: ${sup}<br><span style="font-size:12px;">Creado: ${fch}</span></div>
+      </div>
+      <button class="action-btn" onclick="delProject(${p.id},event)"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+    </div>`;
+  }).join('');
 }
 
 // ---------- Proyecto: secciones + totales ----------
@@ -298,26 +327,37 @@ function renderProject(){
     return;
   }
   list.innerHTML = p.envs.map(e=>{
-    const c=computeEnv(e);
+    const c=computeEnv(e); const mult=Math.max(1,+e.mult||1);
+    const gv=(pfx)=>{ const r=c.rows.find(x=>x.name.startsWith(pfx)); return r?r.qty:0; };
+    const nMuros=(e.segments&&e.segments.length)||0;
+    const nn=nMuros?analyzeNodes(e.segments):{corners:0,tees:0,crosses:0};
+    const per=e.perfil||'70';
+    const mont=gv('Montante '+per+' ('), montML=gv('Montante '+per+' —'), solera=gv('Solera '), placas=gv('Placa de yeso'), cant=gv('Cantonera /');
+    const fch=new Date(e.created||e.id).toLocaleString('es-UY',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
     return `<div class="env-card">
-      <div class="env-head">
-        <div class="env-name">${esc(e.name)} ${e.mult>1?`<span class="card-sub">×${e.mult}</span>`:''}</div>
-        <button class="btn-text" onclick="editEnv(${e.id})">Editar</button>
-        <button class="btn-text" onclick="delEnv(${e.id})">Borrar</button>
+      <div class="env-info">
+        <div class="env-name">${esc(e.name)} ${mult>1?`<span style="color:var(--red);font-size:14px;font-weight:600;">(×${mult})</span>`:''}</div>
+        <div class="env-data">
+          <b>Muros:</b> ${nMuros||'—'} | <b>Largo:</b> ${fmt(e.largo)} m | <b>Alto:</b> ${fmt(e.alto)} m | <b>Caras:</b> ${e.caras==2?'doble':'simple'}<br>
+          <b>Montantes:</b> ${fmt(mont)} u (${fmt(montML)} ml) | <b>Solera:</b> ${fmt(solera)} ml | <b>Placas:</b> ${fmt(placas)} u<br>
+          <b>Encuentros:</b> ${nn.corners} esquina(s) · ${nn.tees} T · ${nn.crosses} cruce(s) — <b>Cantoneras:</b> ${fmt(cant)} u<br>
+          <b>Perfil:</b> Montante ${per} @ ${e.mod||40} cm<br>
+          <span style="font-size:12px;color:var(--gray-t);">Creado: ${fch}</span>
+        </div>
       </div>
-      <div class="card-sub" style="margin-bottom:12px;">
-        ${fmt(e.largo)} m largo · ${fmt(e.alto)} m alto · ${e.caras==2?'doble':'simple'} · mont. ${e.perfil} @ ${e.mod}cm
+      <div class="env-actions">
+        <button class="action-btn" onclick="editEnv(${e.id})" title="Editar"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn" onclick="delEnv(${e.id})" title="Eliminar"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>
-      <table class="mtable"><tbody>
-        ${c.rows.map(r=>`<tr><td>${r.name}</td><td class="q">${fmt(r.qty)}</td><td class="u">${r.unit}</td></tr>`).join('')}
-      </tbody></table>
     </div>`;
   }).join('');
-  // Totales
+  // Acumulado (resumen de materiales de todo el proyecto)
   const tot = totalsOf(p);
   document.getElementById('pdTotals').style.display='block';
-  document.getElementById('pdGrid').innerHTML = tot.summary.map(s=>`
-    <div class="data"><div class="d-lbl">${s.lbl}</div><div class="${s.red?'d-red':'d-val'}">${s.val}</div></div>`).join('');
+  document.getElementById('pdGrid').innerHTML = tot.rows.map(r=>{
+    const red=/Superficie|Placa de yeso|Cantonera \//.test(r.name);
+    return `<div class="data-box"><span class="db-lbl">${esc(r.name)}</span><span class="${red?'db-val-red':'db-val'}">${fmt(r.qty)} ${r.unit}</span></div>`;
+  }).join('');
 }
 function delEnv(id){
   const p=activeProj(); if(!confirm('¿Borrar esta sección?')) return;

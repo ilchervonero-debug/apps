@@ -1,4 +1,4 @@
-const CACHE = 'ilwall-v3';
+const CACHE = 'ilwall-v4';
 const ASSETS = [
   '/apps/ilwall/',
   '/apps/ilwall/index.html',
