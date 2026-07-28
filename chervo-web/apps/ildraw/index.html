@@ -704,6 +704,7 @@ details.mas[open] summary:before{content:'▾ ';}
       </div>
     </div>
     <div class="l1-right">
+      <button class="ti ti-t" onclick="guardarDibujoActual()" data-tip="Guardar dibujo"><svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
       <span id="hdrPtrSlot" class="hdr-ur"></span>
       <button class="cursor-btn" onclick="ST('select')" id="hdrSel" data-tip="Seleccionar / ESC"><svg viewBox="0 0 24 24"><path d="M4 3l16 10-7.5 .7-3.8 7.3z"/></svg></button>
     </div>
@@ -4104,6 +4105,8 @@ function doImprimir(){
 function exportHoja(id,ev){ if(ev)ev.stopPropagation(); const p=proyectos.find(x=>x.id===id); if(!p)return;
   const blob=new Blob([JSON.stringify({app:'iLDraw',v:1,dibujo:p})],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(p.nombre||'dibujo').replace(/[^\w\-]+/g,'_')+'.ildraw'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+// Guardar el dibujo ABIERTO en el canvas: fija los cambios y baja el archivo de respaldo.
+function guardarDibujoActual(){ if(typeof planta!=='undefined'&&planta&&typeof savePlanta==='function')savePlanta(); if(proy&&proy.id){ exportHoja(proy.id); toast('Dibujo guardado ✓'); } else { toast('Abrí un dibujo'); } }
 function importArchivo(e){ const f=e.target.files&&e.target.files[0]; if(!f)return;
   const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result), dib=d.dibujo||d;
     if(!dib||!dib.plantas){ toast('Archivo no válido'); return; }

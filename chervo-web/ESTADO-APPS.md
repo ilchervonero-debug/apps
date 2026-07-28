@@ -150,7 +150,10 @@ Versión = número de caché del SW.
     **esquina = cuadro rojo (cantonera)**, **T/cruz = punto rojo (refuerzo)**. Status de import muestra
     nº de muros/esquinas/T/cruces. Verificado headless (rectángulo=4 esquinas, +stem=1 T; coma OK).
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v26) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v27) · fork del canvas de SketchVolt
+- **v27: ícono Guardar dibujo en el canvas.** Botón de guardar (disquete) en el header (l1-right, junto
+  al puntero) → `guardarDibujoActual()` fija cambios (savePlanta) y baja el respaldo `.ildraw` del dibujo
+  abierto. La impresora vive SÓLO en el dashboard (tarjetas), no en el canvas. Verificado headless.
 - **v26: salida SIN marca de la app + exportar PNG/DXF desde el modal.**
   · **Cero branding por defecto** (pedido Ángel: nada de firma ni "hecho con esta app"): la impresión sólo
     lleva lo que el usuario escribe (encabezado/pie). DXF ahora usa **capa `0`** (antes `iLDraw`); PNG/DXF/PDF
