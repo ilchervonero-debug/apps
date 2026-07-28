@@ -111,9 +111,40 @@
   .app-name{font-weight:700;font-size:20px;letter-spacing:-.4px;margin-bottom:4px}
   .app-desc{color:var(--gray);font-size:14px}
   .app-arrow{font-size:22px;color:var(--gray-l);transition:.3s;flex-shrink:0}
+  /* ── Candado de acceso privado (reemplaza el control por Notion) ── */
+  #gate{position:fixed;inset:0;z-index:99999;background:#0e0e10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;}
+  #gate.hide{display:none;}
+  #gate .g-wm{font-size:32px;font-weight:800;color:#fff;letter-spacing:-1px;}
+  #gate .g-wm b{color:var(--red);}
+  #gate .g-sub{color:#9aa0a6;font-size:15px;margin-top:-6px;}
+  #gate .g-row{display:flex;gap:8px;width:100%;max-width:340px;margin-top:8px;}
+  #gate input{flex:1;min-width:0;background:#1b1c1f;border:1px solid #2c2e33;border-radius:12px;padding:14px 16px;font-size:17px;color:#fff;font-family:inherit;}
+  #gate input:focus{outline:none;border-color:var(--red);}
+  #gate button{flex:0 0 auto;background:var(--red);color:#fff;border:none;border-radius:12px;padding:14px 22px;font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;}
+  #gate .g-err{color:#ff6b6b;font-size:14px;min-height:18px;}
 </style>
 </head>
 <body>
+<!-- CANDADO DE ACCESO PRIVADO -->
+<div id="gate">
+  <div class="g-wm"><b>iL</b>Chervo</div>
+  <div class="g-sub">Acceso privado</div>
+  <div class="g-row">
+    <input type="password" id="gPass" placeholder="Clave" autocomplete="current-password" onkeydown="if(event.key==='Enter')gCheck()">
+    <button onclick="gCheck()">Entrar</button>
+  </div>
+  <div class="g-err" id="gErr"></div>
+</div>
+<script>
+  const G_HASH='96fb24203dd989cae43a3b79716aba27134d1455ad1bbf1d941a582644b820da';   // SHA-256 de la clave (no queda la clave en texto)
+  async function _sha(s){ const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+  async function gCheck(){ const i=document.getElementById('gPass'), e=document.getElementById('gErr');
+    const h=await _sha(i.value||''); if(h===G_HASH){ localStorage.setItem('il_access',G_HASH); document.getElementById('gate').classList.add('hide'); document.body.style.overflow=''; }
+    else { e.textContent='Clave incorrecta'; i.value=''; i.focus(); } }
+  // Chequeo inmediato (sin parpadeo si ya entró en este dispositivo)
+  if(localStorage.getItem('il_access')===G_HASH){ document.getElementById('gate').classList.add('hide'); }
+  else { document.body.style.overflow='hidden'; setTimeout(()=>{ const p=document.getElementById('gPass'); if(p)p.focus(); },150); }
+</script>
 
 <nav>
   <div class="wrap nav-in">
