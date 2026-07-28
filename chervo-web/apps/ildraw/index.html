@@ -2526,7 +2526,14 @@ function onTS(e){
       const wp=anchorPt||constrainOP(getW(e));
       if(now-plineLastTap<520&&_multi){ handleDbl(wp); plineLastTap=0; anchorArmed=false;anchorPt=null;anchorS=null; render(); return; } // doble confirmación = terminar
       plineLastTap=_multi?now:plineLastTap;
-      handleDown(wp,getRW(e),cursorS); handleUp(wp,cursorS);
+      if(_DRAG_TOOLS.includes(tool)){
+        // Herramientas de ARRASTRE (rect/círculo/polígono/…) en anclado = DOS confirmaciones:
+        // 1º confirm = esquina/centro A (arranca, NO cierra) · 2º confirm = punto B (cierra).
+        if(!drawing){ handleDown(wp,getRW(e),cursorS); }
+        else { dragCurW={...wp}; handleMove(wp,getRW(e),cursorS); handleUp(wp,cursorS); }
+      } else {
+        handleDown(wp,getRW(e),cursorS); handleUp(wp,cursorS);
+      }
       anchorArmed=false; anchorPt=null; anchorS=null; render(); return;
     }
     _wasConfirm=false; touchActive=true; cursorS=s;                 // arranca posicionamiento (mueve la cruz, sin comprometer)

@@ -150,7 +150,12 @@ Versión = número de caché del SW.
     **esquina = cuadro rojo (cantonera)**, **T/cruz = punto rojo (refuerzo)**. Status de import muestra
     nº de muros/esquinas/T/cruces. Verificado headless (rectángulo=4 esquinas, +stem=1 T; coma OK).
 
-### iLDraw — `apps/ildraw/` · (SW ildraw-v28) · fork del canvas de SketchVolt
+### iLDraw — `apps/ildraw/` · (SW ildraw-v29) · fork del canvas de SketchVolt
+- **v29 / SketchVolt v113: puntero desfasado (Anclado) dibuja rect/círculo/polígono (ambas apps).**
+  En modo Anclado el confirm hacía `handleDown+handleUp` en el MISMO punto anclado → figura de tamaño
+  cero → se descartaba (no se podía dibujar rect ni círculo). Ahora las herramientas de arrastre
+  (`_DRAG_TOOLS`: rect/circle/poly/sline/dim2) usan DOS confirmaciones: 1º = punto A (arranca), 2º = punto
+  B (cierra → pendiente/medida). Verificado headless (ptrMode 1: rect y círculo creados).
 - **v28: tarjetas del dash con barra de acciones agrupada (igual que SketchVolt).** Las tarjetas de
   "Dibujos" ya no tienen íconos flotando sobre la miniatura: nombre/fecha a la izquierda y **exportar ·
   imprimir · borrar** agrupados a la derecha de la franja de datos (clases `pl-info2`/`pl-acts`, gap
