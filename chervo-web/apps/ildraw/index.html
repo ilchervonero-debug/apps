@@ -3141,10 +3141,10 @@ function ST(t){
 }
 // Panel guía: pasos en texto por herramienta (comandos en rojo <b>). El head se cubre al usar una.
 const GUIA={
-  line:['Línea','<b>Tocá</b> cada punto (o <b>medida</b> m + <b>Enter</b>); la línea <b>encadena</b>. <b>Doble toque</b> o <b>✓</b> termina.'],
+  line:['Línea','<b>Tocá</b> cada punto (o <b>medida</b>: <b>3.5</b> · <b>3.5&lt;45</b> ángulo · <b>@2,3</b> relativa + <b>Enter</b>); <b>encadena</b>. <b>Doble toque</b> o <b>✓</b> termina.'],
   sline:['SmartLine','<b>Arrastrá</b> de un nodo a otro: los extremos se <b>enganchan</b> solos.'],
   pline:['Polilínea','<b>Tocá</b> cada vértice; <b>doble toque</b> para terminar.'],
-  mline:['Muro','<b>Tocá</b> las esquinas, o escribí la <b>medida</b> (m) + <b>Enter</b>. <b>Doble toque</b> cierra.'],
+  mline:['Muro','<b>Tocá</b> las esquinas, o <b>medida</b>: <b>3.5</b> · <b>3.5&lt;45</b> · <b>@2,3</b> + <b>Enter</b>. <b>Doble toque</b> cierra.'],
   tape:['Cinta métrica','Pick en <b>vacío</b> = medir A→B. Pick <b>sobre una línea</b> = guía paralela: escribí la <b>distancia</b> (m) + <b>Enter</b>.'],
   arch:['Bloque','<b>Tocá</b> para colocar. Puertas/ventanas se <b>anclan</b> al muro y lo cortan.'],
   rect:['Rectángulo','<b>Arrastrá</b> de una esquina a la opuesta.'],
@@ -3256,35 +3256,62 @@ function syncMeasureUI(){
   else if(selIds.length===0){ pa.style.display='none'; }   // sin selección NI comando → ocultar la fila
   // con selección (1 o varios): el tacho/✓ y agrupar los maneja showSelBar (no los tocamos acá).
 }
+// Parseo del campo Medida (estilo DWG, SIN comandos tecleados — todo en el mismo campo):
+//   "3.5"     → distancia sobre la dirección actual (comportamiento de siempre)
+//   "3.5<45"  → distancia 3.5 m a 45°  ("3.5/45" también)  · ángulo +Y arriba, CCW
+//   "@2,3"    → punto relativo al último (dx,dy en metros, +Y arriba)
+// Devuelve {dist} | {vec:[dxpx,dypx]} | {rel:[dxpx,dypx]} | null
+function _parseMed(raw){
+  let s=(raw||'').trim().toLowerCase().replace(/\s+/g,'');
+  if(!s) return null;
+  let m=s.match(/^@(-?\d*\.?\d+),(-?\d*\.?\d+)$/);
+  if(m) return {rel:[parseFloat(m[1])*PPM, -parseFloat(m[2])*PPM]};
+  m=s.replace(',','.').match(/^(\d*\.?\d+)[<\/](-?\d*\.?\d+)$/);
+  if(m){ const d=parseFloat(m[1])*PPM, a=parseFloat(m[2])*Math.PI/180; return {vec:[Math.cos(a)*d, -Math.sin(a)*d]}; }
+  const v=parseFloat(s.replace(',','.'));
+  return (v>0)?{dist:v}:null;
+}
 function commitMeasure(){
   const inp=document.getElementById('pbMeasure'); if(!inp)return;
-  const val=parseFloat((inp.value||'').replace(',','.')); if(!(val>0)){ inp.blur(); return; }
+  const parsed=_parseMed(inp.value);
+  const val=(parsed&&parsed.dist!=null)?parsed.dist:parseFloat((inp.value||'').replace(',','.'));
   // CINTA · GUÍA: distancia exacta escrita → línea guía paralela, del lado donde se arrastró el cursor.
   if(tool==='tape'&&tapeMode==='guide'&&tapeRef){
+    if(!(val>0)){ inp.blur(); return; }
     const cur=dragCurW||{x:tapeRef.px,y:tapeRef.py};
     const sign=(perpOf(tapeRef,cur).d>=0)?1:-1;
     saveHistory(); createGuide(tapeRef, sign*val*PPM); resetTape(); inp.value=''; inp.blur(); refreshBottom(); render(); return;
   }
   if(drawPending&&dragStartW&&dragCurW){
-    let a=[dragStartW.x,dragStartW.y],dx=dragCurW.x-a[0],dy=dragCurW.y-a[1],d=Math.hypot(dx,dy);
-    if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
-    dragCurW={x:a[0]+dx*val*PPM,y:a[1]+dy*val*PPM}; commitPendingDraw(); inp.blur(); return;
+    if(!parsed){ inp.blur(); return; }
+    const a=[dragStartW.x,dragStartW.y]; let end;
+    if(parsed.rel) end=[a[0]+parsed.rel[0], a[1]+parsed.rel[1]];
+    else if(parsed.vec) end=[a[0]+parsed.vec[0], a[1]+parsed.vec[1]];
+    else { let dx=dragCurW.x-a[0],dy=dragCurW.y-a[1],d=Math.hypot(dx,dy); if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;} end=[a[0]+dx*parsed.dist*PPM, a[1]+dy*parsed.dist*PPM]; }
+    dragCurW={x:end[0],y:end[1]}; commitPendingDraw(); inp.blur(); return;
   }
   if((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0){
-    const a=plinePts[plinePts.length-1]; let dx=(dragCurW?dragCurW.x:a[0]+1)-a[0],dy=(dragCurW?dragCurW.y:a[1])-a[1];
-    // La MEDIDA va EXACTA sobre el eje: si Ortho/Polar están activos, forzamos la dirección (no la del último toque torcido).
-    if(orthoOn){ if(Math.abs(dx)>=Math.abs(dy)){dy=0;}else{dx=0;} }
-    else if(polarOn){ const dd=Math.hypot(dx,dy)||1, step=polarStep*Math.PI/180, ang=Math.round(Math.atan2(dy,dx)/step)*step; dx=Math.cos(ang)*dd; dy=Math.sin(ang)*dd; }
-    let d=Math.hypot(dx,dy); if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
-    const np=[a[0]+dx*val*PPM,a[1]+dy*val*PPM]; plinePts.push(np); dragCurW={x:np[0],y:np[1]}; inp.value=''; inp.focus(); render(); return;
+    if(!parsed){ inp.blur(); return; }
+    const a=plinePts[plinePts.length-1]; let np;
+    if(parsed.rel) np=[a[0]+parsed.rel[0], a[1]+parsed.rel[1]];
+    else if(parsed.vec) np=[a[0]+parsed.vec[0], a[1]+parsed.vec[1]];
+    else {
+      let dx=(dragCurW?dragCurW.x:a[0]+1)-a[0],dy=(dragCurW?dragCurW.y:a[1])-a[1];
+      // La MEDIDA va EXACTA sobre el eje: si Ortho/Polar están activos, forzamos la dirección.
+      if(orthoOn){ if(Math.abs(dx)>=Math.abs(dy)){dy=0;}else{dx=0;} }
+      else if(polarOn){ const dd=Math.hypot(dx,dy)||1, step=polarStep*Math.PI/180, ang=Math.round(Math.atan2(dy,dx)/step)*step; dx=Math.cos(ang)*dd; dy=Math.sin(ang)*dd; }
+      let d=Math.hypot(dx,dy); if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
+      np=[a[0]+dx*parsed.dist*PPM, a[1]+dy*parsed.dist*PPM];
+    }
+    plinePts.push(np); dragCurW={x:np[0],y:np[1]}; inp.value=''; inp.focus(); render(); return;
   }
   const o=_selMeasObj();
-  if(o){ saveHistory(); _setObjMeasure(o,val); markDirty(); inp.blur(); render(); }
+  if(o){ if(!(val>0)){ inp.blur(); return; } saveHistory(); _setObjMeasure(o,val); markDirty(); inp.blur(); render(); }
 }
 // Enter = aceptar. Si hay medida escrita, la aplica; si NO, funciona igual que el ✓ (finaliza el comando).
 function _enterAccept(){
   const inp=document.getElementById('pbMeasure');
-  const has=inp&&parseFloat((inp.value||'').replace(',','.'))>0;
+  const has=inp&&_parseMed(inp.value);
   if(has){ commitMeasure(); return; }
   if(_paOkFn&&_paOkFn!==commitMeasure){ _paOkFn(); return; }   // sin medida → aceptar/finalizar (como el tick verde)
   commitMeasure();
@@ -3297,7 +3324,10 @@ document.addEventListener('keydown',e=>{
   const inp=document.getElementById('pbMeasure'); if(!inp||document.activeElement===inp)return;
   const ctx2=drawPending||((tool==='pline'||tool==='mline'||tool==='line')&&plineActive&&plinePts.length>0)||(tool==='tape'&&tapePh===1&&tapeMode==='guide')||(tool==='arc'&&arcPh>0)||(tool==='dim'&&dimPh>0)||_selMeasObj();
   if(!ctx2)return;
-  if(/^[0-9.,]$/.test(e.key)){ inp.value+=(e.key===','?'.':e.key); inp.focus(); }
+  // Auto-forward al campo: dígitos y también @ < / , para poder tipear ángulo/relativas sin tocar el campo.
+  if(/^[0-9.]$/.test(e.key)){ inp.value+=e.key; inp.focus(); }
+  else if(e.key===','){ inp.value+=(inp.value.includes('@')?',':'.'); inp.focus(); }
+  else if(e.key==='@'||e.key==='<'||e.key==='/'){ inp.value+=e.key; inp.focus(); }
   else if(e.key==='Enter'){ _enterAccept(); }
 });
 let _guideDismissed=false;
@@ -4619,6 +4649,70 @@ if(screen.orientation && screen.orientation.lock){
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
+</script>
+
+<!-- ============================================================
+     Sensación "AutoCAD" con MOUSE (aditivo, no toca nada del táctil).
+     Reusa los globales del script principal (script clásico, mismo scope léxico):
+     paneo con mouse, cursor crosshair, clic derecho real, encuadrar todo.
+     ============================================================ -->
+<script>
+(function(){
+  let spaceHeld=false, mousePan=false;
+
+  // ── Paneo con mouse: botón central (rueda) o Espacio+arrastre ──
+  // Reusa el mecanismo existente (panning/panRef): handleMove ya panea con eso.
+  cv.addEventListener('mousedown', function(e){
+    if(e.button===1 || (e.button===0 && spaceHeld)){
+      mousePan=true; panning=true; const s=getS(e);
+      panRef={sx:s.x, sy:s.y, vx:vpX, vy:vpY};
+      e.preventDefault(); e.stopImmediatePropagation(); // no dispares dibujo/selección
+    }
+  }, true);
+  window.addEventListener('mouseup', function(e){
+    if(mousePan){ mousePan=false; panning=false; panRef=null;
+      e.preventDefault(); e.stopImmediatePropagation(); render(); }
+  }, true);
+
+  // ── Clic derecho real → mismo menú contextual que el long-press ──
+  cv.addEventListener('contextmenu', function(e){
+    e.preventDefault();
+    doCtxAt(getW(e), getS(e));
+  });
+
+  // ── Encuadrar todo (ZOOM EXTENTS): tecla Home o F ──
+  function zoomExtents(){
+    if(!objects || !objects.length){ return; }
+    let a=Infinity,b=Infinity,c=-Infinity,d=-Infinity;
+    for(const o of objects){ const bb=objBounds(o); if(!bb)continue;
+      if(bb.minX<a)a=bb.minX; if(bb.minY<b)b=bb.minY; if(bb.maxX>c)c=bb.maxX; if(bb.maxY>d)d=bb.maxY; }
+    if(!isFinite(a)) return;
+    const w=(c-a)||1, h=(d-b)||1, pad=48;
+    const scale=clamp(Math.min((cv.width-2*pad)/w,(cv.height-2*pad)/h), .05, 30);
+    vpZ=scale;
+    vpX=cv.width/2 - (a+c)/2*scale;
+    vpY=cv.height/2 - (b+d)/2*scale;
+    render();
+  }
+  window.zoomExtents=zoomExtents; // por si querés un botón después
+
+  // ── Teclado: Espacio (paneo) y Home/F (encuadrar). No interfiere si estás tipeando. ──
+  window.addEventListener('keydown', function(e){
+    const t=e.target;
+    if(t && (t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable)) return;
+    if(e.code==='Space'){ spaceHeld=true; e.preventDefault(); }
+    else if(e.key==='Home' || e.key==='f' || e.key==='F'){ e.preventDefault(); zoomExtents(); }
+  });
+  window.addEventListener('keyup', function(e){ if(e.code==='Space') spaceHeld=false; });
+
+  // ── Cursor crosshair en modo dibujo (solo mouse; en touch no hay cursor visible) ──
+  function syncCursor(){
+    const want = mousePan ? 'grabbing' : (spaceHeld ? 'grab' : (tool!=='select' ? 'crosshair' : 'default'));
+    if(cv.style.cursor!==want) cv.style.cursor=want;
+    requestAnimationFrame(syncCursor);
+  }
+  requestAnimationFrame(syncCursor);
+})();
 </script>
 
 </body>
