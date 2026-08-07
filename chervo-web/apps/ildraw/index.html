@@ -153,6 +153,10 @@ body{display:flex;flex-direction:column;background:#fff;}
 #propActions #pbMeasure{width:78px;font-size:16px;font-family:var(--font);padding:6px 9px;
   border:1.5px solid #d0d0d3;border-radius:9px;outline:none;text-align:center;color:var(--ink);}  /* recuadro gris, no rojo */
 #propActions #pbMeasure:focus{border-color:#8e8e93;}
+#propActions #pbMeasBox.ang #pbMeasure{width:58px;}   /* al mostrar ángulo, achico distancia para que entren los dos en el móvil */
+#propActions #pbAngle{width:50px;font-size:16px;font-family:var(--font);padding:6px 7px;border:1.5px solid #d0d0d3;border-radius:9px;outline:none;text-align:center;color:var(--ink);}
+#propActions #pbAngle:focus{border-color:#8e8e93;}
+#propActions #pbAngSep{font-size:15px;color:#8e8e93;}
 #propActions #paCenter{grid-column:2;grid-row:1;justify-self:center;display:flex;align-items:center;gap:18px;}  /* undo + aceptar, al centro */
 #propActions #paDel{grid-column:3;grid-row:1;justify-self:end;color:#8e8e93;} /* Tacho = borrar objeto — aislado a la derecha */
 #propbar::-webkit-scrollbar{display:none;}
@@ -993,7 +997,7 @@ details.mas[open] summary:before{content:'▾ ';}
   </div>
   <!-- LÍNEA DE ACCIÓN (dinámica): borrar (tacho gris) · aprobar/finalizar (tick). Centrada, abajo. -->
   <div id="propActions">
-    <span id="pbMeasBox"><span class="ml">Medida</span><input type="text" inputmode="decimal" id="pbMeasure" placeholder="m" autocomplete="off" onkeydown="measureKey(event)"></span>
+    <span id="pbMeasBox"><span class="ml" id="pbMedLbl">Medida</span><input type="text" inputmode="decimal" id="pbMeasure" placeholder="m" autocomplete="off" onkeydown="measureKey(event)"><span class="ml" id="pbAngSep" style="display:none">∠</span><input type="text" inputmode="decimal" id="pbAngle" placeholder="°" autocomplete="off" onkeydown="measureKey(event)" style="display:none"></span>
     <span id="paCenter">
       <button id="paUndo" class="pib" data-tip="Un paso atrás" onclick="stepBack()"><svg viewBox="0 0 24 24"><path d="M3 10h10a6 6 0 010 12H6"/><polyline points="7 6 3 10 7 14"/></svg></button>
       <button id="paOk" class="pib ok" data-tip="Listo (Enter)" onclick="_paOkFn&&_paOkFn()"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
@@ -3229,10 +3233,18 @@ function syncMeasureUI(){
   const showBox=drawPending||multipt||dragging||tapeMeas||tapeGuide||!!selO;         // input de medida
   const cmdActive=drawPending||multipt||tapeMeas||tapeGuide||arcAct||dimAct;         // comando de dibujo en curso
   const box=document.getElementById('pbMeasBox'); if(box)box.style.display=showBox?'flex':'none';
+  // Campo de ÁNGULO (aparte, teclado numérico): solo al encadenar línea/muro/polilínea.
+  const showAng=multipt;
+  const angEl=document.getElementById('pbAngle'), angSep=document.getElementById('pbAngSep'), medLbl=document.getElementById('pbMedLbl');
+  if(box)box.classList.toggle('ang',showAng);
+  if(angEl)angEl.style.display=showAng?'':'none';
+  if(angSep)angSep.style.display=showAng?'':'none';
+  if(medLbl)medLbl.style.display=showAng?'none':'';
+  if(!showAng&&angEl)angEl.value='';
   if(showBox){
     if(selO&&document.activeElement!==inp){ inp.value=(+_objMeasure(selO).toFixed(2)); }
     if(tapeMeas&&document.activeElement!==inp){ inp.value=(hyp(dragCurW.x-tapeA[0],dragCurW.y-tapeA[1])/PPM).toFixed(2); }
-  } else { if(document.activeElement===inp)inp.blur(); inp.value=''; }
+  } else { if(document.activeElement===inp)inp.blur(); inp.value=''; if(angEl)angEl.value=''; }
   if(paUndo)paUndo.style.display=cmdActive?'':'none';   // "un paso atrás" solo con comando en curso
   if(drawPending||multipt||tapeMeas||tapeGuide||arcAct||dimAct||dragging||_isFabTool(tool)) _paIcon('x');   // comando en curso → X (Cancelar)
   if(drawPending){ _paDelFn=cancelPendingDraw; _paOkFn=commitPendingDraw; paDel.style.display=''; paOk.style.display=''; pa.style.display='grid'; }
@@ -3261,7 +3273,7 @@ function syncMeasureUI(){
 //   "3.5<45"  → distancia 3.5 m a 45°  ("3.5/45" también)  · ángulo +Y arriba, CCW
 //   "@2,3"    → punto relativo al último (dx,dy en metros, +Y arriba)
 // Devuelve {dist} | {vec:[dxpx,dypx]} | {rel:[dxpx,dypx]} | null
-function _parseMed(raw){
+function _parseMed(raw, angRaw){
   let s=(raw||'').trim().toLowerCase().replace(/\s+/g,'');
   if(!s) return null;
   let m=s.match(/^@(-?\d*\.?\d+),(-?\d*\.?\d+)$/);
@@ -3269,11 +3281,17 @@ function _parseMed(raw){
   m=s.replace(',','.').match(/^(\d*\.?\d+)[<\/](-?\d*\.?\d+)$/);
   if(m){ const d=parseFloat(m[1])*PPM, a=parseFloat(m[2])*Math.PI/180; return {vec:[Math.cos(a)*d, -Math.sin(a)*d]}; }
   const v=parseFloat(s.replace(',','.'));
-  return (v>0)?{dist:v}:null;
+  if(!(v>0)) return null;
+  // Campo de ángulo aparte (móvil, sin escribir "<"): distancia + ángulo → vector.
+  const ang=(angRaw!=null&&String(angRaw).trim()!=='')?parseFloat(String(angRaw).replace(',','.')):NaN;
+  if(!isNaN(ang)){ const d=v*PPM, a=ang*Math.PI/180; return {vec:[Math.cos(a)*d, -Math.sin(a)*d]}; }
+  return {dist:v};
 }
+function _angVal(){ const a=document.getElementById('pbAngle'); return a?a.value:''; }
 function commitMeasure(){
   const inp=document.getElementById('pbMeasure'); if(!inp)return;
-  const parsed=_parseMed(inp.value);
+  const angEl=document.getElementById('pbAngle');
+  const parsed=_parseMed(inp.value, _angVal());
   const val=(parsed&&parsed.dist!=null)?parsed.dist:parseFloat((inp.value||'').replace(',','.'));
   // CINTA · GUÍA: distancia exacta escrita → línea guía paralela, del lado donde se arrastró el cursor.
   if(tool==='tape'&&tapeMode==='guide'&&tapeRef){
@@ -3303,7 +3321,7 @@ function commitMeasure(){
       let d=Math.hypot(dx,dy); if(d<1e-6){dx=1;dy=0;}else{dx/=d;dy/=d;}
       np=[a[0]+dx*parsed.dist*PPM, a[1]+dy*parsed.dist*PPM];
     }
-    plinePts.push(np); dragCurW={x:np[0],y:np[1]}; inp.value=''; inp.focus(); render(); return;
+    plinePts.push(np); dragCurW={x:np[0],y:np[1]}; inp.value=''; if(angEl)angEl.value=''; inp.focus(); render(); return;
   }
   const o=_selMeasObj();
   if(o){ if(!(val>0)){ inp.blur(); return; } saveHistory(); _setObjMeasure(o,val); markDirty(); inp.blur(); render(); }
@@ -3311,7 +3329,7 @@ function commitMeasure(){
 // Enter = aceptar. Si hay medida escrita, la aplica; si NO, funciona igual que el ✓ (finaliza el comando).
 function _enterAccept(){
   const inp=document.getElementById('pbMeasure');
-  const has=inp&&_parseMed(inp.value);
+  const has=inp&&_parseMed(inp.value, _angVal());
   if(has){ commitMeasure(); return; }
   if(_paOkFn&&_paOkFn!==commitMeasure){ _paOkFn(); return; }   // sin medida → aceptar/finalizar (como el tick verde)
   commitMeasure();
