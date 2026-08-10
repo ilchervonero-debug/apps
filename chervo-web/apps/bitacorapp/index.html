@@ -771,6 +771,10 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Exportar respaldo (JSON)
             </button>
+            <button class="btn-cuenta-accion" onclick="pedirRespaldo()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 8 12 3 17 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Importar respaldo (JSON)
+            </button>
             <button class="btn-cuenta-accion" onclick="cambiarCuenta()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
                 Cambiar cuenta
@@ -819,6 +823,7 @@
 <input type="file" id="input-foto-galeria" accept="image/*" multiple onchange="onFotoNota(event)">
 <input type="file" id="input-foto-camara" accept="image/*" capture="environment" onchange="onFotoNota(event)">
 <input type="file" id="input-logo" accept="image/*" onchange="onLogoUpload(event)">
+<input type="file" id="input-respaldo" accept="application/json,.json" onchange="onRespaldoElegido(event)">
 <div class="toast" id="toast"></div>
 
 <script>
@@ -835,7 +840,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 db.enablePersistence().catch(() => {});
 
-const APP_VERSION = 'v2.12';
+const APP_VERSION = 'v2.13';
 
 // ===== ESTADO =====
 let currentUser = null;
@@ -1277,6 +1282,169 @@ function exportarRespaldo() {
     toast('Respaldo descargado');
 }
 
+// ----- Importar: lee el MISMO archivo que genera exportarRespaldo() -----
+// Nunca pisa ni borra lo que ya está: los proyectos que ya existen (mismo id) se
+// saltean, así reimportar el mismo respaldo dos veces no duplica nada.
+
+const LIMITE_DOC = 1024 * 1024; // tope de Firestore por documento
+
+function pedirRespaldo() {
+    if (!currentUser) { toast('Iniciá sesión primero', 'err'); return; }
+    const inp = document.getElementById('input-respaldo');
+    inp.value = ''; // permite volver a elegir el mismo archivo
+    inp.click();
+}
+
+function fechaValida(v) {
+    const d = v ? new Date(v) : null;
+    return (d && !isNaN(d.getTime())) ? d.toISOString() : new Date().toISOString();
+}
+
+// Una nota puede venir como objeto o, si el archivo es viejo/tocado a mano,
+// como texto pelado. Las fotos, como arreglo o como una sola cadena.
+function normalizarBloque(b) {
+    if (typeof b === 'string') b = { texto: b };
+    if (!b || typeof b !== 'object') return null;
+    let fotos = b.fotos;
+    if (typeof fotos === 'string') fotos = [fotos];
+    if (!Array.isArray(fotos)) fotos = [];
+    fotos = fotos.filter(f => typeof f === 'string' && f);
+    const texto = typeof b.texto === 'string' ? b.texto : '';
+    if (!texto && !fotos.length) return null; // nota vacía: no aporta nada
+    const bl = { texto, fotos, fecha: fechaValida(b.fecha) };
+    if (b.editado) bl.editado = fechaValida(b.editado);
+    return bl;
+}
+
+function normalizarProyecto(p) {
+    if (!p || typeof p !== 'object' || Array.isArray(p)) return null;
+    const nombre = (typeof p.nombre === 'string' && p.nombre.trim()) ? p.nombre.trim() : 'Sin nombre';
+    return {
+        _idOrigen: p.id,
+        nombre,
+        fechaCreacion: fechaValida(p.fechaCreacion),
+        bloques: Array.isArray(p.bloques) ? p.bloques.map(normalizarBloque).filter(Boolean) : [],
+        trabajo: typeof p.trabajo === 'string' ? p.trabajo : '',
+        encabezado: typeof p.encabezado === 'string' ? p.encabezado : '',
+        logo: typeof p.logo === 'string' ? p.logo : ''
+    };
+}
+
+async function onRespaldoElegido(ev) {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    if (!currentUser) { toast('Iniciá sesión primero', 'err'); return; }
+
+    let data;
+    try {
+        const txt = (await file.text()).replace(/^\uFEFF/, ''); // saca el BOM
+        data = JSON.parse(txt);
+    } catch (e) {
+        toast('El archivo no es un JSON válido', 'err');
+        return;
+    }
+
+    // Acepta el respaldo completo, un { proyectos: [...] } suelto, o el arreglo pelado.
+    const crudos = Array.isArray(data)
+        ? data
+        : (data && Array.isArray(data.proyectos) ? data.proyectos : null);
+    if (!crudos) { toast('No encontré proyectos en el archivo', 'err'); return; }
+
+    // 1) Trabajos (carpetas). Si ya existe uno con el mismo id o el mismo nombre,
+    //    se reusa el local: no se duplican carpetas.
+    const mapaTrabajo = {};   // id del archivo -> id que va a quedar
+    const trabajosNuevos = [];
+    const crudosTrab = (data && Array.isArray(data.trabajos)) ? data.trabajos : [];
+    crudosTrab.forEach((t, i) => {
+        const nombre = typeof t === 'string' ? t.trim() : (t && typeof t.nombre === 'string' ? t.nombre.trim() : '');
+        if (!nombre) return;
+        const idOrigen = (t && t.id) ? String(t.id) : '';
+        const existente = trabajos.find(x => (idOrigen && x.id === idOrigen)
+            || x.nombre.toLowerCase() === nombre.toLowerCase());
+        if (existente) {
+            if (idOrigen) mapaTrabajo[idOrigen] = existente.id;
+            return;
+        }
+        // el id del archivo se respeta salvo que falte o choque con otro del mismo archivo
+        const libre = idOrigen && !trabajosNuevos.some(x => x.id === idOrigen);
+        const id = libre ? idOrigen : 't' + (Date.now() + i);
+        if (idOrigen) mapaTrabajo[idOrigen] = id;
+        trabajosNuevos.push({ id, nombre });
+    });
+
+    // 2) Proyectos.
+    const idsLocales = new Set(proyectos.map(p => String(p.id)));
+    const idsVistos = new Set();
+    const nuevos = [];
+    let repetidos = 0, invalidos = 0, pesados = 0;
+
+    crudos.forEach((crudo, i) => {
+        const p = normalizarProyecto(crudo);
+        if (!p) { invalidos++; return; }
+
+        const idOrigen = p._idOrigen != null ? String(p._idOrigen) : '';
+        if (idOrigen && idsLocales.has(idOrigen)) { repetidos++; return; }
+        delete p._idOrigen;
+
+        // id: se respeta el del archivo salvo que falte o choque dentro del propio archivo
+        p.id = (idOrigen && !idsVistos.has(idOrigen)) ? idOrigen : String(Date.now() + i);
+        idsVistos.add(String(p.id));
+
+        // la carpeta que apunta a un trabajo inexistente pasa a General
+        p.trabajo = (p.trabajo && mapaTrabajo[p.trabajo]) ? mapaTrabajo[p.trabajo]
+            : (trabajos.some(t => t.id === p.trabajo) ? p.trabajo : '');
+
+        if (new Blob([JSON.stringify(p)]).size > LIMITE_DOC) { pesados++; return; }
+        nuevos.push(p);
+    });
+
+    const detalle = [];
+    if (repetidos) detalle.push(repetidos + ' ya estaban');
+    if (pesados) detalle.push(pesados + ' pasan 1 MB y no entran');
+    if (invalidos) detalle.push(invalidos + ' ilegibles');
+
+    if (!nuevos.length && !trabajosNuevos.length) {
+        toast(repetidos ? 'Ya tenías todo eso' : 'No hay nada para importar' , repetidos ? 'ok' : 'err');
+        return;
+    }
+
+    const resumen = nuevos.length + ' proyecto' + (nuevos.length !== 1 ? 's' : '')
+        + (trabajosNuevos.length ? ' y ' + trabajosNuevos.length + ' trabajo' + (trabajosNuevos.length !== 1 ? 's' : '') : '')
+        + '. No se pisa nada de lo que ya tenés'
+        + (detalle.length ? ' (' + detalle.join(', ') + ')' : '') + '.';
+
+    confirmar('Importar respaldo', resumen, () => aplicarImportacion(nuevos, trabajosNuevos), 'Importar');
+}
+
+async function aplicarImportacion(nuevos, trabajosNuevos) {
+    cerrarModal('modal-cuenta');
+    toast('Importando…');
+
+    if (trabajosNuevos.length) {
+        trabajos = trabajos.concat(trabajosNuevos);
+        await guardarTrabajos();
+    }
+
+    // mismo orden que usa cargarProyectos(): el más nuevo primero
+    proyectos = proyectos.concat(nuevos)
+        .sort((a, b) => (b.fechaCreacion || '').localeCompare(a.fechaCreacion || ''));
+    // los índices se corrieron, así que hay que salir del proyecto abierto
+    irDashboard();
+
+    let fallo = 0;
+    await Promise.all(nuevos.map(async p => {
+        try {
+            await colProyectos().doc(String(p.id)).set(p);
+        } catch (e) { fallo++; }
+    }));
+
+    if (fallo) {
+        toast(fallo + ' de ' + nuevos.length + ' no se pudieron guardar', 'err');
+    } else {
+        toast('Importado: ' + nuevos.length + ' proyecto' + (nuevos.length !== 1 ? 's' : ''));
+    }
+}
+
 function usoAlmacenamiento() {
     let total = 0, alerta = 0;
     proyectos.forEach(p => {
@@ -1639,10 +1807,12 @@ function initVoz() {
 function toggleVoz() { if (!recognition) return; grabando ? recognition.stop() : recognition.start(); }
 
 // ===== CONFIRMAR =====
-function confirmar(titulo, msg, onOk) {
+function confirmar(titulo, msg, onOk, okTexto) {
     document.getElementById('confirm-titulo').innerHTML = titulo.replace(' ', ' <span>') + '</span>';
     document.getElementById('confirm-msg').textContent = msg;
-    document.getElementById('confirm-ok-btn').onclick = () => { cerrarModal('modal-confirmar'); onOk(); };
+    const btn = document.getElementById('confirm-ok-btn');
+    btn.textContent = okTexto || 'Eliminar';
+    btn.onclick = () => { cerrarModal('modal-confirmar'); onOk(); };
     abrirModal('modal-confirmar');
 }
 

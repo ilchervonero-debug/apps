@@ -1,4 +1,4 @@
-const CACHE = 'bitacorapp-v33';
+const CACHE = 'bitacorapp-v34';
 const ASSETS = [
   '/apps/bitacorapp/',
   '/apps/bitacorapp/index.html',

@@ -1014,11 +1014,27 @@ Versión = número de caché del SW.
   menú hamburguesa a la **derecha**; wordmark mismo peso/tamaño (solo color);
   sin "Volver a iLStorage"; encabezado + foto editables al generar PDF.
 
-### Bitacorapp — `apps/bitacorapp/` · v33 · en grilla
+### Bitacorapp — `apps/bitacorapp/` · v2.13 / sw v34 · en grilla
 - **Qué es:** bitácora de proyectos con **notas, fotos y voz**; export PDF.
 - **Lógica/estado:** PDF con encabezado editable + logo, **sin nombre de proyecto
   ni fecha** en portada; impresión individual de una nota = **misma modal general**
   con esa nota pre-tildada (un solo sistema de impresión).
+- **Importar respaldo (v2.13).** En Cuenta, debajo de Exportar. Lee **el mismo JSON
+  que escribe `exportarRespaldo()`** — probado ida y vuelta: exportar e importar en
+  una cuenta vacía deja los proyectos idénticos campo por campo (notas, fotos en
+  base64, `editado`, encabezado, logo, carpeta).
+  · **Nunca pisa ni borra.** Los proyectos con id ya existente se saltean → reimportar
+  el mismo archivo dos veces no duplica nada.
+  · **Carpetas:** reusa la local si coincide id o nombre (sin distinguir mayúsculas);
+  si el id está libre lo respeta; si un proyecto apunta a una carpeta que no existe,
+  cae en General.
+  · **Tolerante al archivo:** acepta el respaldo completo, un `{proyectos:[...]}` suelto
+  o el arreglo pelado; se come el BOM; nota como texto pelado, foto como cadena,
+  fecha inválida, nombre vacío o id faltante se normalizan; ids repetidos dentro del
+  mismo archivo se separan.
+  · **Límite de Firestore:** los proyectos de más de 1 MB se saltean y se avisan en la
+  confirmación (no se pierden en silencio); si una escritura falla, lo dice.
+  · `confirmar()` acepta un 4º parámetro con el texto del botón (por defecto "Eliminar").
 
 ### Cielorraso DXF — `apps/cielorraso/` (título "iLCelling cgg") · v5 · en grilla
 - **Qué es:** metrado de **cielorraso de yeso desde DXF** — cenefa, materiales,
