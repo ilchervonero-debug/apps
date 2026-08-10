@@ -141,29 +141,32 @@
         .card-body { padding: 10px 12px 12px; border-top: 1px solid var(--border); }
         .card-titulo { font-size: 16px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-meta-row { display: flex; gap: 8px; margin-top: 4px; font-size: 16px; color: var(--ink-3); font-weight: 400; }
-        .card-del {
-            position: absolute; top: 2px; right: 2px; width: 44px; height: 44px;
+        /* Acciones de esquina de la tableta: borrar (arriba der.), mover (arriba izq.),
+           exportar (abajo der.). Fuera del modo edición están invisibles Y no se pueden
+           tocar: sin pointer-events el dedo las apretaba igual aunque no se vieran. */
+        .card-del, .card-move, .card-export {
+            position: absolute; width: 44px; height: 44px;
             border: none; background: transparent; color: var(--ink);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity .2s; z-index: 10;
+            opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 10;
         }
-        .card-del svg { width: 27px; height: 27px; stroke-width: 1.6; filter: drop-shadow(0 0 3px white) drop-shadow(0 0 6px rgba(255,255,255,.9)); }
+        .card-del { top: 2px; right: 2px; }
+        .card-move { top: 2px; left: 2px; }
+        .card-export { bottom: 2px; right: 2px; }
+        .card-del svg, .card-move svg, .card-export svg {
+            width: 27px; height: 27px; stroke-width: 1.6;
+            filter: drop-shadow(0 0 3px white) drop-shadow(0 0 6px rgba(255,255,255,.9));
+        }
         @keyframes wiggle {
             0%,100% { transform: rotate(0deg) scale(1); }
             25% { transform: rotate(-1.8deg) scale(1.01); }
             75% { transform: rotate(1.8deg) scale(1.01); }
         }
         .edit-mode .proyecto-card { animation: wiggle .45s ease-in-out infinite; }
-        .edit-mode .proyecto-card .card-del { opacity: 1; }
+        .edit-mode .proyecto-card .card-del,
+        .edit-mode .proyecto-card .card-move,
+        .edit-mode .proyecto-card .card-export { opacity: 1; pointer-events: auto; }
         .edit-mode .proyecto-card:hover { transform: none; box-shadow: none; }
-        .card-move {
-            position: absolute; top: 2px; left: 2px; width: 44px; height: 44px;
-            border: none; background: transparent; color: var(--ink);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity .2s; z-index: 10;
-        }
-        .card-move svg { width: 27px; height: 27px; stroke-width: 1.6; filter: drop-shadow(0 0 3px white) drop-shadow(0 0 6px rgba(255,255,255,.9)); }
-        .edit-mode .proyecto-card .card-move { opacity: 1; }
 
         /* ===== BUSQUEDA ===== */
         .search-bar { position: relative; margin-bottom: 20px; }
@@ -840,7 +843,7 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 db.enablePersistence().catch(() => {});
 
-const APP_VERSION = 'v2.13';
+const APP_VERSION = 'v2.14';
 
 // ===== ESTADO =====
 let currentUser = null;
@@ -1036,6 +1039,8 @@ const SVG_PDF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 
 // ===== DASHBOARD =====
 const SVG_MOVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6a2 2 0 0 1 2-2h4.5l2 2h8.5a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-15a2 2 0 0 1-2-2V6z"/><path d="M12 10.5v4.5"/><path d="M9.5 12.5 12 15l2.5-2.5"/></svg>';
+// mismo glifo que el "Exportar respaldo" de Cuenta, para que se lea igual
+const SVG_EXPORT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 
 function cardHtml(p, i, k) {
     const foto = (p.bloques||[]).find(b => (b.fotos||[]).length > 0);
@@ -1047,6 +1052,7 @@ function cardHtml(p, i, k) {
     return `<div class="proyecto-card" data-idx="${i}" style="animation-delay:${k*0.04}s">
         <button class="card-del" onclick="event.stopPropagation();eliminarProyecto(${i})">${SVG_TRASH}</button>
         <button class="card-move" onclick="event.stopPropagation();abrirModalMover(${i})" title="Mover a otro trabajo">${SVG_MOVE}</button>
+        <button class="card-export" onclick="event.stopPropagation();exportarProyecto(${i})" title="Exportar este proyecto">${SVG_EXPORT}</button>
         ${iconWrap}
         <div class="card-body">
             <div class="card-titulo">${esc(p.nombre)}</div>
@@ -1066,7 +1072,8 @@ function proyectosDe(tid) {
 function trabajoCardHtml(t, cant, k) {
     const acciones = t.id ? `
         <button class="card-del" onclick="event.stopPropagation();eliminarTrabajo('${t.id}')">${SVG_TRASH}</button>
-        <button class="card-move" onclick="event.stopPropagation();abrirModalTrabajo('${t.id}')" title="Renombrar">${SVG_EDIT}</button>` : '';
+        <button class="card-move" onclick="event.stopPropagation();abrirModalTrabajo('${t.id}')" title="Renombrar">${SVG_EDIT}</button>
+        <button class="card-export" onclick="event.stopPropagation();exportarTrabajo('${t.id}')" title="Exportar esta carpeta">${SVG_EXPORT}</button>` : '';
     return `<div class="proyecto-card trabajo-card" data-tid="${t.id}" style="animation-delay:${k*0.04}s">
         ${acciones}
         <div class="card-icon-wrap">${SVG_FOLDER}</div>
@@ -1262,24 +1269,57 @@ async function confirmarMover() {
 }
 
 // ===== RESPALDO =====
-function exportarRespaldo() {
+// Un solo formato para las tres salidas (todo / una carpeta / un proyecto): así
+// cualquiera de los tres archivos entra por el mismo importar.
+
+function nombreArchivo(base) {
+    const limpio = (base || 'respaldo')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // saca acentos y ñ
+        .replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+        .toLowerCase().slice(0, 40);
+    return 'bitacorapp_' + (limpio || 'respaldo') + '_' + new Date().toISOString().slice(0, 10) + '.json';
+}
+
+function descargarRespaldo(prjs, trbs, base) {
     const data = {
         app: 'Bitacorapp',
         version: APP_VERSION,
         exportado: new Date().toISOString(),
         usuario: currentUser ? (currentUser.email || '') : '',
-        trabajos: trabajos,
-        proyectos: proyectos.map(p => { const c = Object.assign({}, p); delete c._fid; return c; })
+        trabajos: trbs,
+        proyectos: prjs.map(p => { const c = Object.assign({}, p); delete c._fid; return c; })
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'bitacorapp_respaldo_' + new Date().toISOString().slice(0, 10) + '.json';
+    a.download = nombreArchivo(base);
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function exportarRespaldo() {
+    descargarRespaldo(proyectos, trabajos, 'respaldo');
     toast('Respaldo descargado');
+}
+
+// Tableta de proyecto: ese proyecto solo. Se lleva su carpeta para que al
+// importarlo caiga donde estaba y no suelto en General.
+function exportarProyecto(i) {
+    const p = proyectos[i];
+    if (!p) return;
+    descargarRespaldo([p], trabajos.filter(t => t.id === p.trabajo), p.nombre);
+    toast('Exportado: ' + p.nombre);
+}
+
+// Tableta de carpeta: la carpeta con todo lo que tiene adentro.
+function exportarTrabajo(tid) {
+    const t = trabajos.find(x => x.id === tid);
+    const items = proyectosDe(tid).map(x => x.p);
+    if (!items.length) { toast('La carpeta está vacía', 'err'); return; }
+    descargarRespaldo(items, t ? [t] : [], t ? t.nombre : 'general');
+    toast('Exportado: ' + items.length + ' proyecto' + (items.length !== 1 ? 's' : ''));
 }
 
 // ----- Importar: lee el MISMO archivo que genera exportarRespaldo() -----

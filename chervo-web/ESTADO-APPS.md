@@ -1014,7 +1014,7 @@ Versión = número de caché del SW.
   menú hamburguesa a la **derecha**; wordmark mismo peso/tamaño (solo color);
   sin "Volver a iLStorage"; encabezado + foto editables al generar PDF.
 
-### Bitacorapp — `apps/bitacorapp/` · v2.13 / sw v34 · en grilla
+### Bitacorapp — `apps/bitacorapp/` · v2.14 / sw v35 · en grilla
 - **Qué es:** bitácora de proyectos con **notas, fotos y voz**; export PDF.
 - **Lógica/estado:** PDF con encabezado editable + logo, **sin nombre de proyecto
   ni fecha** en portada; impresión individual de una nota = **misma modal general**
@@ -1035,6 +1035,22 @@ Versión = número de caché del SW.
   · **Límite de Firestore:** los proyectos de más de 1 MB se saltean y se avisan en la
   confirmación (no se pierden en silencio); si una escritura falla, lo dice.
   · `confirmar()` acepta un 4º parámetro con el texto del botón (por defecto "Eliminar").
+- **Exportar por tableta (v2.14).** El tope de 1 MB es de Firestore **por documento**
+  (= por proyecto) y no se puede subir, así que la salida se hizo granular: cada
+  tableta de la grilla exporta lo suyo, sin pasar por Cuenta.
+  · **Tableta de proyecto** → ese proyecto solo, y se lleva su carpeta para que al
+  importarlo vuelva a caer donde estaba.
+  · **Tableta de carpeta** → la carpeta con todos sus proyectos. Vacía: avisa y no
+  descarga nada.
+  · Ícono de exportar en la **esquina inferior derecha**, junto a borrar (sup. der.) y
+  mover (sup. izq.), y aparece con el mismo long-press (modo edición).
+  · **Un solo formato** para las tres salidas (`descargarRespaldo()`): el importar lee
+  cualquiera de los tres archivos sin cambios. Probado ida y vuelta por tableta.
+  · Nombre de archivo con el nombre del proyecto/carpeta (`bitacorapp_losa-piso-3_FECHA.json`),
+  acentos y ñ pasados a ascii.
+  · **Fix de paso:** las acciones de esquina tenían `opacity:0` pero seguían siendo
+  clickeables fuera del modo edición — tocar la esquina de una tarjeta disparaba
+  borrar o mover sin que se viera nada. Ahora llevan `pointer-events:none`.
 
 ### Cielorraso DXF — `apps/cielorraso/` (título "iLCelling cgg") · v5 · en grilla
 - **Qué es:** metrado de **cielorraso de yeso desde DXF** — cenefa, materiales,
