@@ -111,7 +111,6 @@
   .app-name{font-weight:700;font-size:20px;letter-spacing:-.4px;margin-bottom:4px}
   .app-desc{color:var(--gray);font-size:14px}
   .app-arrow{font-size:22px;color:var(--gray-l);transition:.3s;flex-shrink:0}
-  /* ── Candado de acceso privado (reemplaza el control por Notion) ── */
   #gate{position:fixed;inset:0;z-index:99999;background:#0e0e10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;}
   #gate.hide{display:none;}
   #gate .g-wm{font-size:32px;font-weight:800;color:#fff;letter-spacing:-1px;}
@@ -125,7 +124,6 @@
 </style>
 </head>
 <body>
-<!-- CANDADO DE ACCESO PRIVADO -->
 <div id="gate">
   <div class="g-wm"><b>iL</b>Chervo</div>
   <div class="g-sub">Acceso privado</div>
@@ -136,165 +134,37 @@
   <div class="g-err" id="gErr"></div>
 </div>
 <script>
-  const G_HASH='b9525f63c3415ac8240e9acacc7c7dbfe3c1209bf6671894c5217b844b355ae5';   // SHA-256 de la clave (no queda la clave en texto)
+  const G_HASH='b9525f63c3415ac8240e9acacc7c7dbfe3c1209bf6671894c5217b844b355ae5';
   async function _sha(s){ const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
-  async function gCheck(){ const i=document.getElementById('gPass'), e=document.getElementById('gErr');
-    const h=await _sha(i.value||''); if(h===G_HASH){ localStorage.setItem('il_access',G_HASH); document.getElementById('gate').classList.add('hide'); document.body.style.overflow=''; }
-    else { e.textContent='Clave incorrecta'; i.value=''; i.focus(); } }
-  // Chequeo inmediato (sin parpadeo si ya entró en este dispositivo)
-  if(localStorage.getItem('il_access')===G_HASH){ document.getElementById('gate').classList.add('hide'); }
-  else { document.body.style.overflow='hidden'; setTimeout(()=>{ const p=document.getElementById('gPass'); if(p)p.focus(); },150); }
+  async function gCheck(){ const i=document.getElementById('gPass'), e=document.getElementById('gErr'); const h=await _sha(i.value||''); if(h===G_HASH){ localStorage.setItem('il_access',G_HASH); document.getElementById('gate').classList.add('hide'); document.body.style.overflow=''; } else { e.textContent='Clave incorrecta'; i.value=''; i.focus(); } }
+  if(localStorage.getItem('il_access')===G_HASH){ document.getElementById('gate').classList.add('hide'); } else { document.body.style.overflow='hidden'; setTimeout(()=>{ const p=document.getElementById('gPass'); if(p)p.focus(); },150); }
 </script>
-
-<nav>
-  <div class="wrap nav-in">
-    <a class="brand" href="#top">
-      <img src="chervo_logo.svg" alt="Chervo" style="height:52px;width:auto">
-    </a>
-    <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
-    <div class="nav-links" id="navlinks">
-      <a href="#servicios">Servicios</a>
-      <a href="#sobre">Equipo</a>
-      <a href="#clientes">Clientes</a>
-      <a href="#apps">Apps</a>
-      <a href="#contacto" class="nav-cta">Por consultas</a>
-      <a href="/clientes/" class="nav-portal">Area clientes</a>
-    </div>
-  </div>
-</nav>
-
-<header class="hero" id="top">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="audience">Tienes una idea o proyecto en mente</div>
-  <h1>Buscando<br>ayuda?</h1>
-  <div class="rotwrap">con <span class="rot" id="rot">dibujo de planos</span></div>
-</header>
-
-<section class="ps">
-  <div class="wrap">
-    <div class="blk reveal">
-      <h2>El Problema</h2>
-      <p>Tienes una idea y no sabes por dónde empezar. Tienes trabajo atrasado y necesitas retomarlo. Te falta tiempo para una entrega. Quieres armar un proyecto y no tienes personal suficiente.</p>
-    </div>
-    <div class="blk reveal">
-      <h2>La Solucion</h2>
-      <p>Te ofrecemos <b>20 años de experiencia</b> en diseño y construcción, trabajando con estudios de arquitectura y arquitectos freelance. Desarrollamos proyectos desde la idea hasta su documentación para entrega a clientes y entidades gubernamentales.</p>
-    </div>
-  </div>
-</section>
-
-<div class="marquee">
-  <div class="track">
-    <span>DIBUJO 2D &amp; 3D<em>·</em>RENDERS<em>·</em>DRONE<em>·</em>VIDEO<em>·</em>DECLARACIONES JURADAS<em>·</em>PRESUPUESTOS<em>·</em>METRADOS<em>·</em>INTENDENCIA &amp; BPS<em>·</em>ASESORIAS<em>·</em>SOFTWARE REMOTO<em>·</em></span>
-    <span>DIBUJO 2D &amp; 3D<em>·</em>RENDERS<em>·</em>DRONE<em>·</em>VIDEO<em>·</em>DECLARACIONES JURADAS<em>·</em>PRESUPUESTOS<em>·</em>METRADOS<em>·</em>INTENDENCIA &amp; BPS<em>·</em>ASESORIAS<em>·</em>SOFTWARE REMOTO<em>·</em></span>
-  </div>
-</div>
-
-<section class="servicios" id="servicios">
-  <div class="wrap">
-    <div class="serv-list">
-      <div class="serv" data-item="Intendencia & BPS"><div class="serv-num">01</div><div class="serv-title">Intendencia & BPS</div><div class="serv-desc">Carpetas listas para presentar.</div><div class="serv-arrow">→</div></div>
-      <div class="serv" data-item="Declaraciones juradas"><div class="serv-num">02</div><div class="serv-title">Declaraciones juradas</div><div class="serv-desc">Armado y gestión de DDJJ.</div><div class="serv-arrow">→</div></div>
-      <div class="serv" data-item="Drone"><div class="serv-num">03</div><div class="serv-title">Drone</div><div class="serv-desc">Fotos aéreas y registro de obra.</div><div class="serv-arrow">→</div></div>
-      <div class="serv" data-item="Documentación de obra"><div class="serv-num">04</div><div class="serv-title">Documentación de obra</div><div class="serv-desc">Memoria, pliegos y avance.</div><div class="serv-arrow">→</div></div>
-      <div class="serv" data-item="Presupuestos"><div class="serv-num">05</div><div class="serv-title">Presupuestos</div><div class="serv-desc">Claros, ordenados, listos para firmar.</div><div class="serv-arrow">→</div></div>
-      <div class="serv" data-item="Metrados"><div class="serv-num">06</div><div class="serv-title">Metrados</div><div class="serv-desc">Cómputo métrico por rubro.</div><div class="serv-arrow">→</div></div>
-      <div class="serv" data-item="Asesorías"><div class="serv-num">07</div><div class="serv-title">Asesorías</div><div class="serv-desc">Gestión y viabilidad de proyectos.</div><div class="serv-arrow">→</div></div>
-    </div>
-  </div>
-</section>
-
-<section class="about" id="sobre">
-  <div class="wrap about-in reveal">
-    <div>
-      <span class="k">Un equipo para ti</span>
-      <p>Somos un equipo con más de 20 años de experiencia en representación de ideas y desarrollo de proyectos. Nos ajustamos a tus necesidades y a tu presupuesto.</p>
-    </div>
-    <div class="ph"><img src="chervo_retrato.jpg" alt="Chervo"></div>
-  </div>
-</section>
-
-<section class="clients" id="clientes">
-  <div class="wrap reveal">
-    <h2>Clientes</h2>
-    <div class="client-cloud">
-      <div class="cl"><span class="role">Arq.</span>Gerardo Neyra</div>
-      <div class="cl"><span class="role">Arq.</span>Victoria Silva Goñi</div>
-      <div class="cl"><span class="role">Arq.</span>José Miguel Entenza</div>
-      <div class="cl"><span class="role">Arq.</span>Karina Lucas</div>
-      <div class="cl"><span class="role">Cliente comercial</span>Casariego Automóviles</div>
-      <div class="cl"><span class="role">Cliente comercial</span>Eduardo Costa</div>
-    </div>
-  </div>
-</section>
-
-<section class="apps" id="apps">
-  <div class="wrap reveal">
-    <h2>Aplicaciones</h2>
-    <div class="app-grid">
-      <a class="app-card" href="https://ilnexo.vercel.app" target="_blank" rel="noopener"><div class="app-ic"><img src="/nexo-icon.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">Nexo</div><div class="app-desc">Tu segundo cerebro: capturá links, notas e ideas y encontralas con búsqueda semántica por IA</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="/ilframe/" target="_blank" rel="noopener"><div class="app-ic"><img src="/ilframe/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLFrame</div><div class="app-desc">Diseño de estructuras de acero con vistas sincronizadas Planta/Elevación</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="https://ilchervo.com/apps/ilwall/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilwall/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLWall</div><div class="app-desc">Cómputo de tabiques de yeso desde DXF: montantes, placas, refuerzos y exportar Excel/PDF</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="https://ilchervo.com/apps/ildraw/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ildraw/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLDraw</div><div class="app-desc">Pizarra de dibujo online para bocetar ideas y croquis</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="https://ilchervo.com/apps/ilme/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilme/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLMe</div><div class="app-desc">Agenda personal con memoria, rutinas y pagos</div></div><div class="app-arrow">→</div></a>
-      <!-- Hidden: GuideCad <a class="app-card" href="https://ilchervo.com/apps/guidecad/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/guidecad/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">GuideCad</div><div class="app-desc">Guía de comandos AutoCAD</div></div><div class="app-arrow">→</div></a> -->
-      <a class="app-card" href="https://ilchervo.com/apps/ilsanitaria/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilsanitaria/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLSanitaria</div><div class="app-desc">Cálculo hidráulico sanitario: desagües, pluviales, reserva y más</div></div><div class="app-arrow">→</div></a>
-      <!-- Hidden: iLCalc <a class="app-card" href="https://ilchervo.com/apps/ilcalc/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilcalc/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLCalc</div><div class="app-desc">Calculadora simple y rápida</div></div><div class="app-arrow">→</div></a> -->
-      <!-- Hidden: EMPLACADO <a class="app-card" href="https://ilchervo.com/apps/ilyorugua/emp/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilyorugua/emp/icon-192.png" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">EMPLACADO</div><div class="app-desc">Calculadora APU de muros y cielorrasos drywall · iLYorugua</div></div><div class="app-arrow">→</div></a> -->
-      <a class="app-card" href="https://ilchervo.com/apps/ildjcu/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ildjcu/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLDJCU</div><div class="app-desc">Relevamiento de campo para Declaraciones Juradas de Caracterización Urbana (DNC)</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="https://ilchervo.com/apps/bitacorapp/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/bitacorapp/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">Bitacorapp</div><div class="app-desc">Bitácora de proyectos con notas, fotos y voz</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="https://ilchervo.com/apps/cielorraso/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/cielorraso/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">Cielorraso DXF</div><div class="app-desc">Metrado de cielorraso de yeso desde DXF: cenefa, materiales y exportar Excel</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="https://ilchervo.com/apps/apucore/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/apucore/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">APU CORE</div><div class="app-desc">Cálculo de hormigón armado: materiales, encofrado, acero y mano de obra</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="https://ilchervo.com/apps/demoliciones/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/demoliciones/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">Demoliciones</div><div class="app-desc">APU de demoliciones por rubro: mano de obra, escombro, volquetas y precio con cascada</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="https://ilchervo.com/apps/ilvolt/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilvolt/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLVolt</div><div class="app-desc">Presupuesto eléctrico (UY): bocas por ambiente, ingeniería de tableros T1/T2, mano de obra SAU/BPS y costos</div></div><div class="app-arrow">→</div></a>
-      <a class="app-card" href="https://ilchervo.com/apps/sketchvolt/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/sketchvolt/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">SketchVolt</div><div class="app-desc">Dibujo eléctrico a escala real: proyectos y plantas, simbología UNIT, plano de fondo e impresión A4/A3/A2 con rótulo</div></div><div class="app-arrow">→</div></a>
-    </div>
-  </div>
-</section>
-
-<section class="contact" id="contacto">
-  <div class="wrap reveal">
-    <h2>Por consultas</h2>
-    <div class="ch-buttons">
-      <a class="ch-btn" href="https://wa.me/59892459376" target="_blank" rel="noopener">
-        <div class="ch-ic">&#9990;</div>
-        <div class="ch-tx"><div class="lbl">WhatsApp</div><div class="val">+598 92 459 376</div></div>
-        <div class="ch-arrow">&#8594;</div>
-      </a>
-      <a class="ch-btn" href="mailto:ilchervonero@gmail.com">
-        <div class="ch-ic">&#9993;</div>
-        <div class="ch-tx"><div class="lbl">Correo</div><div class="val">ilchervonero@gmail.com</div></div>
-        <div class="ch-arrow">&#8594;</div>
-      </a>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    &copy; 2026 Chervo &middot; IlChervoNero &middot;
-    <a href="https://wa.me/59892459376" target="_blank" rel="noopener">WhatsApp</a> &middot;
-    <a href="mailto:ilchervonero@gmail.com">Correo</a>
-  </div>
-</footer>
-
+<nav><div class="wrap nav-in"><a class="brand" href="#top"><img src="chervo_logo.svg" alt="Chervo" style="height:52px;width:auto"></a><button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navlinks"><a href="#servicios">Servicios</a><a href="#sobre">Equipo</a><a href="#clientes">Clientes</a><a href="#apps">Apps</a><a href="#contacto" class="nav-cta">Por consultas</a><a href="/clientes/" class="nav-portal">Area clientes</a></div></div></nav>
+<header class="hero" id="top"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="audience">Tienes una idea o proyecto en mente</div><h1>Buscando<br>ayuda?</h1><div class="rotwrap">con <span class="rot" id="rot">dibujo de planos</span></div></header>
+<section class="ps"><div class="wrap"><div class="blk reveal"><h2>El Problema</h2><p>Tienes una idea y no sabes por dónde empezar. Tienes trabajo atrasado y necesitas retomarlo. Te falta tiempo para una entrega. Quieres armar un proyecto y no tienes personal suficiente.</p></div><div class="blk reveal"><h2>La Solucion</h2><p>Te ofrecemos <b>20 años de experiencia</b> en diseño y construcción, trabajando con estudios de arquitectura y arquitectos freelance. Desarrollamos proyectos desde la idea hasta su documentación para entrega a clientes y entidades gubernamentales.</p></div></div></section>
+<div class="marquee"><div class="track"><span>DIBUJO 2D &amp; 3D<em>·</em>RENDERS<em>·</em>DRONE<em>·</em>VIDEO<em>·</em>DECLARACIONES JURADAS<em>·</em>PRESUPUESTOS<em>·</em>METRADOS<em>·</em>INTENDENCIA &amp; BPS<em>·</em>ASESORIAS<em>·</em>SOFTWARE REMOTO<em>·</em></span><span>DIBUJO 2D &amp; 3D<em>·</em>RENDERS<em>·</em>DRONE<em>·</em>VIDEO<em>·</em>DECLARACIONES JURADAS<em>·</em>PRESUPUESTOS<em>·</em>METRADOS<em>·</em>INTENDENCIA &amp; BPS<em>·</em>ASESORIAS<em>·</em>SOFTWARE REMOTO<em>·</em></span></div></div>
+<section class="servicios" id="servicios"><div class="wrap"><div class="serv-list"><div class="serv" data-item="Intendencia & BPS"><div class="serv-num">01</div><div class="serv-title">Intendencia & BPS</div><div class="serv-desc">Carpetas listas para presentar.</div><div class="serv-arrow">→</div></div><div class="serv" data-item="Declaraciones juradas"><div class="serv-num">02</div><div class="serv-title">Declaraciones juradas</div><div class="serv-desc">Armado y gestión de DDJJ.</div><div class="serv-arrow">→</div></div><div class="serv" data-item="Drone"><div class="serv-num">03</div><div class="serv-title">Drone</div><div class="serv-desc">Fotos aéreas y registro de obra.</div><div class="serv-arrow">→</div></div><div class="serv" data-item="Documentación de obra"><div class="serv-num">04</div><div class="serv-title">Documentación de obra</div><div class="serv-desc">Memoria, pliegos y avance.</div><div class="serv-arrow">→</div></div><div class="serv" data-item="Presupuestos"><div class="serv-num">05</div><div class="serv-title">Presupuestos</div><div class="serv-desc">Claros, ordenados, listos para firmar.</div><div class="serv-arrow">→</div></div><div class="serv" data-item="Metrados"><div class="serv-num">06</div><div class="serv-title">Metrados</div><div class="serv-desc">Cómputo métrico por rubro.</div><div class="serv-arrow">→</div></div><div class="serv" data-item="Asesorías"><div class="serv-num">07</div><div class="serv-title">Asesorías</div><div class="serv-desc">Gestión y viabilidad de proyectos.</div><div class="serv-arrow">→</div></div></div></div></section>
+<section class="about" id="sobre"><div class="wrap about-in reveal"><div><span class="k">Un equipo para ti</span><p>Somos un equipo con más de 20 años de experiencia en representación de ideas y desarrollo de proyectos. Nos ajustamos a tus necesidades y a tu presupuesto.</p></div><div class="ph"><img src="chervo_retrato.jpg" alt="Chervo"></div></div></section>
+<section class="clients" id="clientes"><div class="wrap reveal"><h2>Clientes</h2><div class="client-cloud"><div class="cl"><span class="role">Arq.</span>Gerardo Neyra</div><div class="cl"><span class="role">Arq.</span>Victoria Silva Goñi</div><div class="cl"><span class="role">Arq.</span>José Miguel Entenza</div><div class="cl"><span class="role">Arq.</span>Karina Lucas</div><div class="cl"><span class="role">Cliente comercial</span>Casariego Automóviles</div><div class="cl"><span class="role">Cliente comercial</span>Eduardo Costa</div></div></div></section>
+<section class="apps" id="apps"><div class="wrap reveal"><h2>Aplicaciones</h2><div class="app-grid">
+<a class="app-card" href="https://ilnexo.vercel.app" target="_blank" rel="noopener"><div class="app-ic"><img src="/nexo-icon.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">Nexo</div><div class="app-desc">Tu segundo cerebro: capturá links, notas e ideas y encontralas con búsqueda semántica por IA</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/del-trazo-al-pixel/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/del-trazo-al-pixel/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">Del Trazo al Píxel</div><div class="app-desc">Guía docente interactiva del curso: calendario, clases, seguimiento y avance</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="/ilframe/" target="_blank" rel="noopener"><div class="app-ic"><img src="/ilframe/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLFrame</div><div class="app-desc">Diseño de estructuras de acero con vistas sincronizadas Planta/Elevación</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/ilwall/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilwall/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLWall</div><div class="app-desc">Cómputo de tabiques de yeso desde DXF: montantes, placas, refuerzos y exportar Excel/PDF</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/ildraw/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ildraw/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLDraw</div><div class="app-desc">Pizarra de dibujo online para bocetar ideas y croquis</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/ilme/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilme/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLMe</div><div class="app-desc">Agenda personal con memoria, rutinas y pagos</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/ilsanitaria/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilsanitaria/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLSanitaria</div><div class="app-desc">Cálculo hidráulico sanitario: desagües, pluviales, reserva y más</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/ildjcu/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ildjcu/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLDJCU</div><div class="app-desc">Relevamiento de campo para Declaraciones Juradas de Caracterización Urbana (DNC)</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/bitacorapp/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/bitacorapp/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">Bitacorapp</div><div class="app-desc">Bitácora de proyectos con notas, fotos y voz</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/cielorraso/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/cielorraso/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">Cielorraso DXF</div><div class="app-desc">Metrado de cielorraso de yeso desde DXF: cenefa, materiales y exportar Excel</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/apucore/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/apucore/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">APU CORE</div><div class="app-desc">Cálculo de hormigón armado: materiales, encofrado, acero y mano de obra</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/demoliciones/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/demoliciones/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">Demoliciones</div><div class="app-desc">APU de demoliciones por rubro: mano de obra, escombro, volquetas y precio con cascada</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/ilvolt/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/ilvolt/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">iLVolt</div><div class="app-desc">Presupuesto eléctrico (UY): bocas por ambiente, ingeniería de tableros T1/T2, mano de obra SAU/BPS y costos</div></div><div class="app-arrow">→</div></a>
+<a class="app-card" href="https://ilchervo.com/apps/sketchvolt/" target="_blank" rel="noopener"><div class="app-ic"><img src="/apps/sketchvolt/icon-192.svg" alt="" style="width:100%;height:100%;display:block"></div><div class="app-info"><div class="app-name">SketchVolt</div><div class="app-desc">Dibujo eléctrico a escala real: proyectos y plantas, simbología UNIT, plano de fondo e impresión A4/A3/A2 con rótulo</div></div><div class="app-arrow">→</div></a>
+</div></div></section>
+<section class="contact" id="contacto"><div class="wrap reveal"><h2>Por consultas</h2><div class="ch-buttons"><a class="ch-btn" href="https://wa.me/59892459376" target="_blank" rel="noopener"><div class="ch-ic">&#9990;</div><div class="ch-tx"><div class="lbl">WhatsApp</div><div class="val">+598 92 459 376</div></div><div class="ch-arrow">&#8594;</div></a><a class="ch-btn" href="mailto:ilchervonero@gmail.com"><div class="ch-ic">&#9993;</div><div class="ch-tx"><div class="lbl">Correo</div><div class="val">ilchervonero@gmail.com</div></div><div class="ch-arrow">&#8594;</div></a></div></div></section>
+<footer><div class="wrap">&copy; 2026 Chervo &middot; IlChervoNero &middot;<a href="https://wa.me/59892459376" target="_blank" rel="noopener">WhatsApp</a> &middot;<a href="mailto:ilchervonero@gmail.com">Correo</a></div></footer>
 <a class="wa-float" href="https://wa.me/59892459376" target="_blank" rel="noopener" aria-label="WhatsApp">&#9990;</a>
-
-<script>
-  const burger=document.getElementById('burger'),nav=document.getElementById('navlinks');
-  burger.addEventListener('click',()=>nav.classList.toggle('open'));
-  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));
-  const words=["dibujo de planos","renders","presupuestos","trámites","documentación"];
-  let i=0;const rot=document.getElementById('rot');
-  setInterval(()=>{rot.classList.add('swap');setTimeout(()=>{i=(i+1)%words.length;rot.textContent=words[i];rot.classList.remove('swap')},350)},2400);
-  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:0,rootMargin:'0px 0px -10px 0px'});
-  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-  document.querySelectorAll('.serv[data-item]').forEach(b=>b.addEventListener('click',()=>{
-    const msg=encodeURIComponent('Hola Chervo, me gustaria una cotizacion para: '+b.dataset.item+'.');
-    window.open('https://wa.me/59892459376?text='+msg,'_blank');
-  }));
-</script>
-
+<script>const burger=document.getElementById('burger'),nav=document.getElementById('navlinks');burger.addEventListener('click',()=>nav.classList.toggle('open'));nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));const words=["dibujo de planos","renders","presupuestos","trámites","documentación"];let i=0;const rot=document.getElementById('rot');setInterval(()=>{rot.classList.add('swap');setTimeout(()=>{i=(i+1)%words.length;rot.textContent=words[i];rot.classList.remove('swap')},350)},2400);const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:0,rootMargin:'0px 0px -10px 0px'});document.querySelectorAll('.reveal').forEach(el=>io.observe(el));document.querySelectorAll('.serv[data-item]').forEach(b=>b.addEventListener('click',()=>{const msg=encodeURIComponent('Hola Chervo, me gustaria una cotizacion para: '+b.dataset.item+'.');window.open('https://wa.me/59892459376?text='+msg,'_blank');}));</script>
 </body>
-</html><!-- Updated 2026-08-01: Nexo en grilla -->
+</html><!-- Updated 2026-08-18: Del Trazo al Pixel en grilla -->
