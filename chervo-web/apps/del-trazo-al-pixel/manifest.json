@@ -3,10 +3,10 @@
   "short_name":"Trazo al Píxel",
   "description":"Guía docente interactiva del curso Del Trazo al Píxel.",
   "lang":"es",
-  "start_url":"./",
-  "scope":"./",
+  "start_url":"/apps/del-trazo-al-pixel/",
+  "scope":"/apps/del-trazo-al-pixel/",
   "display":"standalone",
   "background_color":"#f3f4f4",
   "theme_color":"#c83a2d",
-  "icons":[{"src":"icon-192.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons":[{"src":"/apps/del-trazo-al-pixel/icon-192.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"}]
 }
