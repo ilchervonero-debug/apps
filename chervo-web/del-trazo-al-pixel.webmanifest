@@ -1,0 +1,15 @@
+{
+  "name": "Del Trazo al Píxel · Guía Docente",
+  "short_name": "Trazo al Píxel",
+  "description": "Guía docente interactiva del curso Del Trazo al Píxel.",
+  "lang": "es",
+  "start_url": "/del-trazo-al-pixel",
+  "scope": "/del-trazo-al-pixel",
+  "display": "standalone",
+  "background_color": "#f3f4f4",
+  "theme_color": "#c83a2d",
+  "icons": [
+    {"src":"/del-trazo-al-pixel-icon.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any"},
+    {"src":"/del-trazo-al-pixel-maskable.svg","sizes":"512x512","type":"image/svg+xml","purpose":"maskable"}
+  ]
+}
