@@ -1,1 +1,50 @@
-const CACHE='dtp-v1';const CORE=['./','./index.html','./manifest.json','./icon-192.svg'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))))});
+const CACHE = 'del-trazo-al-pixel-v2';
+const ASSETS = [
+  '/apps/del-trazo-al-pixel/',
+  '/apps/del-trazo-al-pixel/index.html',
+  '/apps/del-trazo-al-pixel/manifest.json',
+  '/apps/del-trazo-al-pixel/icon-192.svg'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  const req = e.request;
+  const isHTML = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+
+  if (isHTML) {
+    e.respondWith(
+      fetch(req)
+        .then(res => {
+          caches.open(CACHE).then(c => c.put(req, res.clone()));
+          return res;
+        })
+        .catch(() => caches.match(req).then(r => r || caches.match('/apps/del-trazo-al-pixel/index.html')))
+    );
+  } else {
+    e.respondWith(
+      caches.match(req).then(r => {
+        const fresh = fetch(req)
+          .then(res => {
+            if (res.ok) caches.open(CACHE).then(c => c.put(req, res.clone()));
+            return res;
+          })
+          .catch(() => r);
+        return r || fresh;
+      })
+    );
+  }
+});
