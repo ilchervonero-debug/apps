@@ -3,16 +3,15 @@
   "buildCommand": "echo 'sitio estatico: index.html ya viene generado'",
   "outputDirectory": "chervo-web",
   "alias": ["ilchervo.com"],
+  "redirects": [
+    { "source": "/del-trazo-al-pixel", "destination": "/apps/del-trazo-al-pixel/", "permanent": false },
+    { "source": "/del-trazo-al-pixel/", "destination": "/apps/del-trazo-al-pixel/", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/ilframe", "destination": "/ilframe/index.html" },
     { "source": "/ilframe/:path*", "destination": "/ilframe/index.html" },
     { "source": "/apps/cielorraso", "destination": "/apps/cielorraso/index.html" },
-    { "source": "/del-trazo-al-pixel", "destination": "/del-trazo-al-pixel.html" },
-    { "source": "/del-trazo-al-pixel/", "destination": "/del-trazo-al-pixel.html" },
-    { "source": "/del-trazo-al-pixel/manifest.webmanifest", "destination": "/del-trazo-al-pixel.webmanifest" },
-    { "source": "/del-trazo-al-pixel/sw.js", "destination": "/del-trazo-al-pixel-sw.js" },
-    { "source": "/del-trazo-al-pixel/icon.svg", "destination": "/del-trazo-al-pixel-icon.svg" },
-    { "source": "/del-trazo-al-pixel/icon-maskable.svg", "destination": "/del-trazo-al-pixel-maskable.svg" }
+    { "source": "/apps/del-trazo-al-pixel/app.html", "destination": "/del-trazo-al-pixel.html" }
   ],
   "headers": [
     {
