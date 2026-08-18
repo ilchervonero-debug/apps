@@ -4,7 +4,8 @@
   "rewrites": [
     { "source": "/ilframe", "destination": "/ilframe/index.html" },
     { "source": "/ilframe/:path*", "destination": "/ilframe/index.html" },
-    { "source": "/apps/cielorraso", "destination": "/apps/cielorraso/index.html" }
+    { "source": "/apps/cielorraso", "destination": "/apps/cielorraso/index.html" },
+    { "source": "/del-trazo-al-pixel", "destination": "/del-trazo-al-pixel.html" }
   ],
   "headers": [
     {
