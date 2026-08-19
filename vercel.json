@@ -4,7 +4,6 @@
   "outputDirectory": "chervo-web",
   "alias": ["ilchervo.com"],
   "rewrites": [
-    { "source": "/nexo-icon.svg", "destination": "https://ilnexo.vercel.app/icon-192.png" },
     { "source": "/ilframe", "destination": "/ilframe/index.html" },
     { "source": "/ilframe/:path*", "destination": "/ilframe/index.html" },
     { "source": "/apps/cielorraso", "destination": "/apps/cielorraso/index.html" }
