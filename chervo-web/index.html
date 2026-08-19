@@ -111,34 +111,9 @@
   .app-name{font-weight:700;font-size:20px;letter-spacing:-.4px;margin-bottom:4px}
   .app-desc{color:var(--gray);font-size:14px}
   .app-arrow{font-size:22px;color:var(--gray-l);transition:.3s;flex-shrink:0}
-  #gate{position:fixed;inset:0;z-index:99999;background:#0e0e10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;}
-  #gate.hide{display:none;}
-  #gate .g-wm{font-size:32px;font-weight:800;color:#fff;letter-spacing:-1px;}
-  #gate .g-wm b{color:var(--red);}
-  #gate .g-sub{color:#9aa0a6;font-size:15px;margin-top:-6px;}
-  #gate .g-row{display:flex;gap:8px;width:100%;max-width:340px;margin-top:8px;}
-  #gate input{flex:1;min-width:0;background:#1b1c1f;border:1px solid #2c2e33;border-radius:12px;padding:14px 16px;font-size:17px;color:#fff;font-family:inherit;}
-  #gate input:focus{outline:none;border-color:var(--red);}
-  #gate button{flex:0 0 auto;background:var(--red);color:#fff;border:none;border-radius:12px;padding:14px 22px;font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;}
-  #gate .g-err{color:#ff6b6b;font-size:14px;min-height:18px;}
 </style>
 </head>
 <body>
-<div id="gate">
-  <div class="g-wm"><b>iL</b>Chervo</div>
-  <div class="g-sub">Acceso privado</div>
-  <div class="g-row">
-    <input type="password" id="gPass" placeholder="Clave" autocomplete="current-password" onkeydown="if(event.key==='Enter')gCheck()">
-    <button onclick="gCheck()">Entrar</button>
-  </div>
-  <div class="g-err" id="gErr"></div>
-</div>
-<script>
-  const G_HASH='b9525f63c3415ac8240e9acacc7c7dbfe3c1209bf6671894c5217b844b355ae5';
-  async function _sha(s){ const b=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
-  async function gCheck(){ const i=document.getElementById('gPass'), e=document.getElementById('gErr'); const h=await _sha(i.value||''); if(h===G_HASH){ localStorage.setItem('il_access',G_HASH); document.getElementById('gate').classList.add('hide'); document.body.style.overflow=''; } else { e.textContent='Clave incorrecta'; i.value=''; i.focus(); } }
-  if(localStorage.getItem('il_access')===G_HASH){ document.getElementById('gate').classList.add('hide'); } else { document.body.style.overflow='hidden'; setTimeout(()=>{ const p=document.getElementById('gPass'); if(p)p.focus(); },150); }
-</script>
 <nav><div class="wrap nav-in"><a class="brand" href="#top"><img src="chervo_logo.svg" alt="Chervo" style="height:52px;width:auto"></a><button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links" id="navlinks"><a href="#servicios">Servicios</a><a href="#sobre">Equipo</a><a href="#clientes">Clientes</a><a href="#apps">Apps</a><a href="#contacto" class="nav-cta">Por consultas</a><a href="/clientes/" class="nav-portal">Area clientes</a></div></div></nav>
 <header class="hero" id="top"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="audience">Tienes una idea o proyecto en mente</div><h1>Buscando<br>ayuda?</h1><div class="rotwrap">con <span class="rot" id="rot">dibujo de planos</span></div></header>
 <section class="ps"><div class="wrap"><div class="blk reveal"><h2>El Problema</h2><p>Tienes una idea y no sabes por dónde empezar. Tienes trabajo atrasado y necesitas retomarlo. Te falta tiempo para una entrega. Quieres armar un proyecto y no tienes personal suficiente.</p></div><div class="blk reveal"><h2>La Solucion</h2><p>Te ofrecemos <b>20 años de experiencia</b> en diseño y construcción, trabajando con estudios de arquitectura y arquitectos freelance. Desarrollamos proyectos desde la idea hasta su documentación para entrega a clientes y entidades gubernamentales.</p></div></div></section>
