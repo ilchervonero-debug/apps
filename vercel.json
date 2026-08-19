@@ -2,13 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "echo 'sitio estatico: index.html ya viene generado'",
   "outputDirectory": "chervo-web",
-  "alias": ["ilchervo.com", "www.ilchervo.com"],
   "rewrites": [
     { "source": "/ilframe", "destination": "/ilframe/index.html" },
     { "source": "/ilframe/:path*", "destination": "/ilframe/index.html" },
-    { "source": "/apps/cielorraso", "destination": "/apps/cielorraso/index.html" },
-    { "source": "/apps/del-trazo-al-pixel", "destination": "/apps/del-trazo-al-pixel/index.html" },
-    { "source": "/apps/del-trazo-al-pixel/", "destination": "/apps/del-trazo-al-pixel/index.html" }
+    { "source": "/apps/cielorraso", "destination": "/apps/cielorraso/index.html" }
   ],
   "headers": [
     {
