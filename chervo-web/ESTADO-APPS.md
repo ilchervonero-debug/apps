@@ -1157,6 +1157,41 @@ Versión = número de caché del SW.
   render" genérico); **10-1 postproducción** = Corel PHOTO-PAINT; **11-1 láminas** =
   base en AutoCAD Layout, terminación en Illustrator/CorelDRAW. Revisar si el resto del
   programa (semanas 6-12) tiene otros puntos sin programa nombrado.
+- **v5 (SW ildp-v5, reestructuración grande, pedido Ángel — sumar Revit sin agregar
+  tiempo ni plata):** cambio de fondo en semanas 6-11, validado por Ángel antes de subir:
+  · **Semana 6** = SketchUp solo (su curva real, 3 clases — Ángel: "por qué tanto
+    énfasis" si con 3 clases los chicos ya hacen cosas, siempre que haya objetivo).
+  · **Semanas 7-8** = **Revit** (no BIM — solo modelador 3D + generador de planos),
+    pagado comprimiendo lo que sobraba de SketchUp, no agregando clases. 7 = modelar +
+    ver cómo sale planta/corte coordinados solos. 8 = espacio/recorrido/componentes +
+    **8-3 "Dos caminos, un proyecto"**: comparan su propia planta AutoCAD vs. la que
+    generó Revit, sin declarar un programa "mejor" (pedido expreso: aprenden comparando).
+  · **Semana 9** comprimida (antes 8-9, 6 clases → ahora 3): materialidad+luz, render de
+    prueba, y **9-3 recupera el bloque "Wong vuelve"** que se había perdido al comprimir
+    (Wong cierra el círculo abierto en semana 1, aplicado ahora al encuadre de la imagen).
+  · **Semana 10-2 / 11-1**: mencionan el atajo de quien viene de Revit (ya coordinado)
+    vs. quien viene de AutoCAD+SketchUp (corrige a mano) — mismo objetivo, dos caminos.
+  · **Paralelismo 2D/3D** en 1-1/1-2/1-3 y 4-2/4-3: últimos 20 min de esos Programa (40+20
+    de los 60) muestran el mismo concepto en SketchUp — AutoCAD nunca hace 3D.
+  · **Patrón repetido "Entorno → Dibujo → Edición"** en 1-1 (AutoCAD), 6-1 (SketchUp) y
+    7-1 (Revit) — pedido expreso de Ángel: "el programa debe ser incremento por
+    repetición, no vertical", para que los chicos reconozcan el mismo lenguaje en
+    cualquier programa nuevo que toquen a futuro.
+  · **HATCH y GROUP** sumados a 1-1 (distinguir módulos por relleno; agrupar módulo/
+    macromódulo para moverlo entero).
+  · **Sección "Tus notas"** nueva al final de cada clase — textarea libre por el
+    docente, persistida en `localStorage` (`dtp-notes-<id>`), sin tocar el contenido
+    que arma Claude.
+  · Auditado antes de subir: las 36 clases verificadas en headless (Playwright), chequeo
+    automático de bibliografía contra el original (no se perdió ninguna referencia sin
+    querer — 2 pérdidas reales encontradas y corregidas: iluminación artificial y
+    escala humana/Neufert, ambas absorbidas por la compresión de semana 9).
+  · **Directriz del curso (palabras de Ángel, para no perderla):** "hoy los chicos
+    aprenden en la comparación, son más críticos, no tan tolerantes, más dispersos —
+    imposible mantenerlos enfocados en una sola cosa, por eso todo va en paralelo, con
+    un proyecto claro. Que aprendan, que respondan, que usen todas las herramientas, y
+    si algo requiere pasar por 3 programas que lo hagan sin miedo — cada uno con su
+    propio flujo de trabajo. Nada está garantizado, cada trabajo es un desafío."
 
 ---
 
