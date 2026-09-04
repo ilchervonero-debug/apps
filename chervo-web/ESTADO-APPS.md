@@ -1131,6 +1131,28 @@ Versión = número de caché del SW.
   - *Bitácora:* notas de "lo que se está haciendo" con **dictado de voz** (Web Speech API
     es-UY, se van acumulando) — para gente que no escribe. Igual criterio que el canvas iLFrame.
 
+### Del Trazo al Píxel — `apps/del-trazo-al-pixel/` · (SW del-trazo-al-pixel-v3) · en grilla
+- **Qué es:** guía docente interactiva de un taller integral de dibujo/edición 2D-3D
+  para 1er año de arquitectura (Wong/Ching/Neufert + AutoCAD/SketchUp). Calendario de
+  36 clases (12 semanas × 3), avance guardado en `localStorage`.
+- **Modelo del curso (definido por Ángel, no inventar variantes):** cada clase son
+  **90 min = 60 min Programa + 30 min Taller**. El **Programa** es contenido teórico +
+  herramienta de software (lo que ya traía la app). El **Taller NO es un ejercicio
+  nuevo dentro de la clase**: es **consulta** sobre **la casa propia** que cada
+  alumno/pareja diseña por su cuenta (su sitio, su programa) como proyecto de fondo
+  de todo el curso — arranca en la Clase 1. El orden Programa/Taller dentro de los
+  90 min es flexible según el día, no fijo.
+- **Hitos marcados con badge rojo en la tarjeta:** entrega obligatoria **semana 2**
+  (sitio + programa + primer acercamiento gráfico) y entrega final **semana 12**.
+- **v3 (esta sesión, pedido de Ángel):** se sacaron los horarios internos por minuto
+  de cada bloque del Programa (Ángel no quiere guía con reloj). Se agregó el campo
+  `taller` a las 36 clases: explicación desarrollada + tarea concreta (no bullets de
+  tema sueltos — pedido explícito de Ángel tras primer intento insuficiente). Se
+  reforzó el Programa de 1-1/1-2 (Wong), que era solo lista de términos sin explicar.
+- **Pendiente:** el Taller de semanas 6-12 lo mapeé por analogía con el Programa
+  existente de cada clase (mismo patrón que semanas 1-5, validadas por Ángel) pero
+  Ángel no lo revisó todavía en detalle — confirmar antes de darlo por cerrado.
+
 ---
 
 ## Notas
