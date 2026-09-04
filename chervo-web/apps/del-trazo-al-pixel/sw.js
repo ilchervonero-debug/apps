@@ -1,4 +1,4 @@
-const CACHE = 'del-trazo-al-pixel-v3';
+const CACHE = 'del-trazo-al-pixel-v4';
 const ASSETS = [
   '/apps/del-trazo-al-pixel/',
   '/apps/del-trazo-al-pixel/index.html',

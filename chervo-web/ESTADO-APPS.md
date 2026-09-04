@@ -1152,6 +1152,11 @@ Versión = número de caché del SW.
 - **Pendiente:** el Taller de semanas 6-12 lo mapeé por analogía con el Programa
   existente de cada clase (mismo patrón que semanas 1-5, validadas por Ángel) pero
   Ángel no lo revisó todavía en detalle — confirmar antes de darlo por cerrado.
+- **v4 (software específico, pedido Ángel):** el contenido original dejaba sin nombrar
+  el programa en 3 etapas. Ahora: **8-2 render** = Enscape / V-Ray (antes "motor de
+  render" genérico); **10-1 postproducción** = Corel PHOTO-PAINT; **11-1 láminas** =
+  base en AutoCAD Layout, terminación en Illustrator/CorelDRAW. Revisar si el resto del
+  programa (semanas 6-12) tiene otros puntos sin programa nombrado.
 
 ---
 
